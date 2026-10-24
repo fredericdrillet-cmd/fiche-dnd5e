@@ -1,0 +1,3692 @@
+[
+    {
+        "nom": "Aigle",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "3 (1d6)",
+        "vitesse": "3 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 6,
+                "mod": "-2"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +4",
+        "sens": "Perception passive 14",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Vue aiguisée.",
+            "A|Serres. +4, 1,50 m, 1d4+2 tranchants"
+        ]
+    },
+    {
+        "nom": "Aigle géant",
+        "description_type": "Bête de taille G, neutre bon",
+        "classe_d_armure": "13",
+        "points_de_vie": "26 (4d10 + 4)",
+        "vitesse": "3 m, vol 24 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 10,
+                "mod": "+0"
+            }
+        },
+        "competences": "Perception +4",
+        "sens": "Perception passive 14",
+        "langues": "",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Vue aiguisée.",
+            "A|Attaques multiples.",
+            "A|Bec. +5, 1,50 m, 1d6+3 perforants",
+            "A|Serres. +5, 1,50 m, 2d6+3 tranchants"
+        ]
+    },
+    {
+        "nom": "Araignée",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "6 m, escalade 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Pattes d'araignée.",
+            "Sens de la toile.",
+            "Déplacement sur la toile.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Araignée géante",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "14 (armure naturelle)",
+        "points_de_vie": "26 (4d10 + 4)",
+        "vitesse": "9 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Déplacement sur la toile.",
+            "Pattes d'araignée.",
+            "Sens de la toile.",
+            "A|Morsure. +5, 1,50 m, 1d8+3 perforants",
+            "A|Toile d'araignée (Recharge 5-6)."
+        ]
+    },
+    {
+        "nom": "Araignée-loup géante",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "12 m, escalade 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Déplacement sur la toile.",
+            "Pattes d'araignée.",
+            "Sens de la toile.",
+            "A|Morsure. +3, 1,50 m, 1d6+1 perforants"
+        ]
+    },
+    {
+        "nom": "Babouin",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "3 (1d6)",
+        "vitesse": "9 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 11",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Tactique de groupe.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Bec de hache",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Bec. +4, 1,50 m, 1d8+2 tranchants"
+        ]
+    },
+    {
+        "nom": "Belette",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Belette géante",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "9 (2d8)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "A|Morsure. +5, 1,50 m, 1d4+3 perforants"
+        ]
+    },
+    {
+        "nom": "Blaireau",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "3 (1d4 + 1)",
+        "vitesse": "6 m, creusement 1,50 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Blaireau géant",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "13 (2d8 + 4)",
+        "vitesse": "9 m, creusement 3 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Attaques multiples.",
+            "A|Griffes. +3, 1,50 m, 2d4+1 tranchants",
+            "A|Morsure. +3, 1,50 m, 1d6+1 perforants"
+        ]
+    },
+    {
+        "nom": "Cerf",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "4 (1d8)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 12",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +2, 1,50 m, 1d4 perforants"
+        ]
+    },
+    {
+        "nom": "Chacal",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "3 (1d6)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "Tactique de groupe.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Chameau",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "9",
+        "points_de_vie": "15 (2d10 + 4)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 9",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +5, 1,50 m, 1d4 contondants"
+        ]
+    },
+    {
+        "nom": "Chat",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "2 (1d4)",
+        "vitesse": "12 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Griffes."
+        ]
+    },
+    {
+        "nom": "Chauve-souris",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "1,50 m, vol 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Écholocalisation.",
+            "Ouïe aiguisée.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Chauve-souris géante",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "22 (4d10)",
+        "vitesse": "3 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Écholocalisation.",
+            "Ouïe aiguisée.",
+            "A|Morsure. +4, 1,50 m, 1d6+2 perforants"
+        ]
+    },
+    {
+        "nom": "Cheval de guerre",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 11",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Charge écrasante.",
+            "A|Sabots. +6, 1,50 m, 2d6+4 contondants"
+        ]
+    },
+    {
+        "nom": "Cheval de selle",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "13 (2d10 + 2)",
+        "vitesse": "18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Sabots. +5, 1,50 m, 2d4+3 contondants"
+        ]
+    },
+    {
+        "nom": "Cheval de trait",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Sabots. +6, 1,50 m, 2d4+4 contondants"
+        ]
+    },
+    {
+        "nom": "Chèvre",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "4 (1d8)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "Stable.",
+            "A|Coup de tête. +3, 1,50 m, 1d4+1",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Chèvre géante",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 11",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "Stable.",
+            "A|Coup de tête. +5, 1,50 m, 2d4+3",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Chouette",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "1,50 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Repli aérien.",
+            "Ouïe et vue aiguisées.",
+            "A|Serres."
+        ]
+    },
+    {
+        "nom": "Chouette géante",
+        "description_type": "Bête de taille G, neutre",
+        "classe_d_armure": "12",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "1,50 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "SAG": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 10,
+                "mod": "+0"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Repli aérien.",
+            "Ouïe et vue aiguisées.",
+            "A|Serres. +3, 1,50 m, 2d6+1 tranchants"
+        ]
+    },
+    {
+        "nom": "Corbeau",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "3 m, vol 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Imitation.",
+            "A|Bec."
+        ]
+    },
+    {
+        "nom": "Crabe",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "2 (1d4)",
+        "vitesse": "6 m, nage 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Amphibien.",
+            "A|Pinces."
+        ]
+    },
+    {
+        "nom": "Crabe géant",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "15 (armure naturelle)",
+        "points_de_vie": "13 (3d8)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Amphibien.",
+            "A|Pinces. +3, 1,50 m, 1d6+1 contondants"
+        ]
+    },
+    {
+        "nom": "Crapaud géant",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "39 (6d10 + 6)",
+        "vitesse": "6 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Amphibien.",
+            "Saut sans élan.",
+            "A|Morsure. +4, 1,50 m, 1d10+2",
+            "perforants",
+            "A|Engloutissement."
+        ]
+    },
+    {
+        "nom": "Crocodile",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "6 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Apnée.",
+            "A|Morsure. +4, 1,50 m, 1d10+2",
+            "perforants"
+        ]
+    },
+    {
+        "nom": "Crocodile géant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "14 (armure naturelle)",
+        "points_de_vie": "85 (9d12 + 27)",
+        "vitesse": "9 m, nage 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 21,
+                "mod": "+5"
+            },
+            "DEX": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CON": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "5 (1800 PX)",
+        "traits_et_attaques": [
+            "Apnée.",
+            "A|Attaques multiples.",
+            "A|Morsure. +8, 1,50 m, 3d10+5",
+            "perforants",
+            "A|Queue. +8, 3 m, 2d8+5 contondants"
+        ]
+    },
+    {
+        "nom": "Élan",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "13 (2d10 + 2)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "A|Coup de tête. +5, 1,50 m, 1d6+3",
+            "contondants",
+            "A|Sabots. +5, 1,50 m, 2d4+3 contondants"
+        ]
+    },
+    {
+        "nom": "Élan géant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "14 (armure naturelle)",
+        "points_de_vie": "42 (5d12 + 10)",
+        "vitesse": "18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 19,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 10,
+                "mod": "+0"
+            }
+        },
+        "competences": "Perception +4",
+        "sens": "Perception passive 14",
+        "langues": "",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "A|Coup de tête. +6, 3 m, 2d6+4",
+            "contondants",
+            "A|Sabots. +6, 1,50 m, 4d8+4 contondants"
+        ]
+    },
+    {
+        "nom": "Éléphant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "76 (8d12 + 24)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 22,
+                "mod": "+6"
+            },
+            "DEX": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CON": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "4 (1100 PX)",
+        "traits_et_attaques": [
+            "Charge écrasante.",
+            "A|Défenses. +8, 1,50 m, 3d8+6 perforants",
+            "A|Piétinement. +8, 1,50 m, 3d10+6",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Épaulard",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "90 (12d12 + 12)",
+        "vitesse": "0 m, nage 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 19,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "",
+        "langues": "—",
+        "puissance": "3 (700 PX)",
+        "traits_et_attaques": [
+            "Écholocalisation.",
+            "Apnée.",
+            "Ouïe aiguisée.",
+            "A|Morsure. +6, 1,50 m, 5d6+4 perforants"
+        ]
+    },
+    {
+        "nom": "Faucon",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "3 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 5,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +4",
+        "sens": "Perception passive 14",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Vue aiguisée.",
+            "A|Serres."
+        ]
+    },
+    {
+        "nom": "Faucon de sang",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "7 (2d6)",
+        "vitesse": "3 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 6,
+                "mod": "-2"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +4",
+        "sens": "Perception passive 14",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Tactique de groupe.",
+            "Vue aiguisée.",
+            "A|Bec. +4, 1,50 m, 1d4+2 perforants"
+        ]
+    },
+    {
+        "nom": "Grand singe",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "19 (3d8 + 6)",
+        "vitesse": "9 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 6,
+                "mod": "-2"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "A|Attaques multiples.",
+            "A|Poing. +5, 1,50 m, 1d6+3 contondants",
+            "A|Rocher. +5, 7,50/15 m, 1d6+3",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Grenouille",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "6 m, nage 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (0 PX)",
+        "traits_et_attaques": [
+            "Amphibien.",
+            "Saut sans élan."
+        ]
+    },
+    {
+        "nom": "Grenouille géante",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "18 (4d8)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Amphibien.",
+            "Saut sans élan.",
+            "A|Morsure. +3, 1,50 m, 1d6+1 perforants",
+            "A|Engloutissement."
+        ]
+    },
+    {
+        "nom": "Guêpe géante",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "13 (3d8)",
+        "vitesse": "3 m, vol 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "A|Dard. +4, 1,50 m, 1d6+2 perforants"
+        ]
+    },
+    {
+        "nom": "Hippocampe",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "0 m, nage 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "DEX": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "0 (0 PX)",
+        "traits_et_attaques": [
+            "Respiration aquatique."
+        ]
+    },
+    {
+        "nom": "Hippocampe géant",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "16 (3d10)",
+        "vitesse": "0 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 11",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "Respiration aquatique.",
+            "A|Coup de tête. +3, 1,50 m, 1d6+1",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Hyène",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "5 (1d8 + 1)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Tactique de groupe.",
+            "A|Morsure. +2, 1,50 m, 1d6 perforants"
+        ]
+    },
+    {
+        "nom": "Hyène géante",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "45 (6d10 + 12)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Déchaîné.",
+            "A|Morsure. +5, 1,50 m, 2d6+3 perforants"
+        ]
+    },
+    {
+        "nom": "Lézard",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "2 (1d4)",
+        "vitesse": "6 m, escalade 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Lézard géant",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "19 (3d10 + 3)",
+        "vitesse": "9 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +4, 1,50 m, 1d8+2 perforants"
+        ]
+    },
+    {
+        "nom": "Lion",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "26 (4d10 + 4)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 8,
+                "mod": "-1"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Tactique de groupe.",
+            "Bond agressif.",
+            "Saut avec élan.",
+            "A|Griffes. +5, 1,50 m, 1d6+3 tranchants",
+            "A|Morsure. +5, 1,50 m, 1d8+3 perforants"
+        ]
+    },
+    {
+        "nom": "Loup",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "Tactique de groupe.",
+            "A|Morsure. +4, 1,50 m, 2d4+2 perforants"
+        ]
+    },
+    {
+        "nom": "Loup sanguinaire",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "14 (armure naturelle)",
+        "points_de_vie": "37 (5d10 + 10)",
+        "vitesse": "15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "Tactique de groupe.",
+            "A|Morsure. +5, 1,50 m, 2d6+3 perforants"
+        ]
+    },
+    {
+        "nom": "Mammouth",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "126 (11d12 + 55)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 24,
+                "mod": "+7"
+            },
+            "DEX": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CON": {
+                "score": 21,
+                "mod": "+5"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "6 (2300 PX)",
+        "traits_et_attaques": [
+            "Charge écrasante.",
+            "A|Défenses. +10, 3 m, 4d8+7 perforants",
+            "A|Piétinement. +10, 1,50 m, 4d10+7",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Mille-pattes géant",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "4 (1d6 + 1)",
+        "vitesse": "9 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 5,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +4, 1,50 m, 1d4+2 perforants"
+        ]
+    },
+    {
+        "nom": "Molosse",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "5 (1d8 + 1)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Odorat et ouïe aiguisés.",
+            "A|Morsure. +3, 1,50 m, 1d6+1 perforants"
+        ]
+    },
+    {
+        "nom": "Mule",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Bête de somme.",
+            "Pied sûr.",
+            "A|Sabots. +2, 1,50 m, 1d4+2 contondants"
+        ]
+    },
+    {
+        "nom": "Nuée d'insectes",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "22 (5d8)",
+        "vitesse": "6 m, escalade 6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 1,
+                "mod": "-5"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Nuée.",
+            "A|Morsures. +3, 0 m, 4d4 perforants"
+        ]
+    },
+    {
+        "nom": "Nuée de chauves-souris",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "22 (5d8)",
+        "vitesse": "0 m, vol 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 5,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Écholocalisation.",
+            "Ouïe aiguisée.",
+            "Nuée.",
+            "A|Morsures. +4, 0 m, 2d4 perforants"
+        ]
+    },
+    {
+        "nom": "Nuée de corbeaux",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "24 (7d8 - 7)",
+        "vitesse": "3 m, vol 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 6,
+                "mod": "-2"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +5",
+        "sens": "Perception passive 15",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Nuée.",
+            "A|Becs. +4, 1,50 m, 2d6 perforants"
+        ]
+    },
+    {
+        "nom": "Nuée de piranhas",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "28 (8d8 - 8)",
+        "vitesse": "0 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Frénésie sanguinaire.",
+            "Nuée.",
+            "Respiration aquatique.",
+            "A|Morsures. +5, 0 m, 4d6 perforants"
+        ]
+    },
+    {
+        "nom": "Nuée de rats",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "24 (7d8 - 7)",
+        "vitesse": "9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Nuée.",
+            "A|Morsures. +2, 0 m, 2d6 perforants"
+        ]
+    },
+    {
+        "nom": "Nuée de serpents venimeux",
+        "description_type": "Nuée de bêtes TP de taille M, sans alignement",
+        "classe_d_armure": "14",
+        "points_de_vie": "36 (8d8)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "DEX": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Nuée.",
+            "A|Morsures. +6, 0 m, 2d6 perforants"
+        ]
+    },
+    {
+        "nom": "Ours brun",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "34 (4d10 + 12)",
+        "vitesse": "12 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 19,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Attaques multiples.",
+            "A|Griffes. +6, 1,50 m, 2d6+4 tranchants",
+            "A|Morsure. +6, 1,50 m, 1d8+4 perforants"
+        ]
+    },
+    {
+        "nom": "Ours noir",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "19 (3d8 + 6)",
+        "vitesse": "12 m, escalade 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Attaques multiples.",
+            "A|Griffes. +4, 1,50 m, 2d4+2 tranchants",
+            "A|Morsure. +4, 1,50 m, 1d6+2 perforants"
+        ]
+    },
+    {
+        "nom": "Ours polaire",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "42 (5d10 + 15)",
+        "vitesse": "12 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 20,
+                "mod": "+5"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Attaques multiples.",
+            "A|Griffes. +7, 1,50 m, 2d6+5 tranchants",
+            "A|Morsure. +7, 1,50 m, 1d8+5 perforants"
+        ]
+    },
+    {
+        "nom": "Panthère",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "13 (3d8)",
+        "vitesse": "15 m, escalade 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 14",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Bond agressif.",
+            "A|Griffes. +4, 1,50 m, 1d4+2 tranchants",
+            "A|Morsure. +4, 1,50 m, 1d6+2 perforants"
+        ]
+    },
+    {
+        "nom": "Pieuvre",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "3 (1d6)",
+        "vitesse": "1,50 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Apnée.",
+            "Camouflage dans l'eau.",
+            "Respiration aquatique.",
+            "A|Tentacules.",
+            "A|Nuage d'encre (Recharges après un",
+            "repos court ou long)."
+        ]
+    },
+    {
+        "nom": "Pieuvre géante",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11",
+        "points_de_vie": "52 (8d10 + 8)",
+        "vitesse": "3 m, nage 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Apnée.",
+            "Camouflage dans l'eau.",
+            "Respiration aquatique.",
+            "A|Tentacules. +5, 4,50 m, 2d6+3 contondants",
+            "A|Nuage d'encre (Recharge après un repos",
+            "court ou long)."
+        ]
+    },
+    {
+        "nom": "Piranha",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "0 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Frénésie sanguinaire.",
+            "Respiration aquatique.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Poney",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 10",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "A|Sabots. +4, 1,50 m, 2d4+2 contondants"
+        ]
+    },
+    {
+        "nom": "Rat",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "6 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Rat géant",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "7 (2d6)",
+        "vitesse": "9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Tactique de groupe.",
+            "A|Morsure. +4, 1,50 m, 1d4+2 perforants"
+        ]
+    },
+    {
+        "nom": "Requin-chasseur",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "45 (6d10 + 12)",
+        "vitesse": "0 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +2",
+        "sens": "",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Frénésie sanguinaire.",
+            "Respiration aquatique.",
+            "A|Morsure. +6, 1,50 m, 2d8+4 perforants"
+        ]
+    },
+    {
+        "nom": "Requin de récif",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "22 (4d8 + 4)",
+        "vitesse": "0 m, nage 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +2",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/2 (100 PX)",
+        "traits_et_attaques": [
+            "Tactique de groupe.",
+            "Respiration aquatique.",
+            "A|Morsure. +4, 1,50 m, 1d8+2 perforants"
+        ]
+    },
+    {
+        "nom": "Requin géant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "126 (11d12 + 55)",
+        "vitesse": "0 m, nage 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 23,
+                "mod": "+6"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 21,
+                "mod": "+5"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "",
+        "langues": "—",
+        "puissance": "5 (1800 PX)",
+        "traits_et_attaques": [
+            "Frénésie sanguinaire.",
+            "Respiration aquatique.",
+            "A|Morsure. +9, 1,50 m, 3d10+6",
+            "perforants"
+        ]
+    },
+    {
+        "nom": "Rhinocéros",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "45 (6d10 + 12)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 21,
+                "mod": "+5"
+            },
+            "DEX": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 6,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 11",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "A|Corne. +7, 1,50 m, 2d8+5 contondants"
+        ]
+    },
+    {
+        "nom": "Sanglier",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 9",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "Implacable (Recharge après un repos",
+            "court ou long).",
+            "A|Défenses. +3, 1,50 m, 1d6+1",
+            "tranchants"
+        ]
+    },
+    {
+        "nom": "Sanglier géant",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12 (armure naturelle)",
+        "points_de_vie": "42 (5d10 + 15)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 8",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Charge.",
+            "Implacable (Recharge après un Repos",
+            "court ou long).",
+            "A|Défenses. +5, 1,50 m, 2d6+3",
+            "tranchants"
+        ]
+    },
+    {
+        "nom": "Scarabée de feu géant",
+        "description_type": "Bête de taille P, sans alignement",
+        "classe_d_armure": "13 (armure naturelle)",
+        "points_de_vie": "4 (1d6 + 1)",
+        "vitesse": "9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Illumination.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Scorpion",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "11 (armure naturelle)",
+        "points_de_vie": "1 (1d4 - 1)",
+        "vitesse": "3 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 8,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 2,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "A|Dard."
+        ]
+    },
+    {
+        "nom": "Scorpion géant",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "15 (armure naturelle)",
+        "points_de_vie": "52 (7d10 + 14)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 9,
+                "mod": "-1"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "3 (700 PX)",
+        "traits_et_attaques": [
+            "A|Attaques multiples.",
+            "A|Pinces. +4, 1,50 m, 1d8+2 contondants",
+            "A|Dard. +4, 1,50 m, 1d10+2 perforants"
+        ]
+    },
+    {
+        "nom": "Serpent constricteur",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "13 (2d10 + 2)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +4, 1,50 m, 1d6+2 perforants",
+            "A|Constriction. +4, 1,50 m, 1d8+2",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Serpent constricteur géant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "60 (8d12 + 8)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 19,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "Perception +2",
+        "sens": "",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +6, 3 m, 2d6+4 perforants",
+            "A|Constriction. +6, 1,50 m, 2d8+4",
+            "contondants"
+        ]
+    },
+    {
+        "nom": "Serpent venimeux",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "13",
+        "points_de_vie": "2 (1d4)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "DEX": {
+                "score": 16,
+                "mod": "+3"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 1,
+                "mod": "-5"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Serpent venimeux géant",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "14",
+        "points_de_vie": "11 (2d8 + 2)",
+        "vitesse": "9 m, nage 9 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "DEX": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CHA": {
+                "score": 3,
+                "mod": "-4"
+            }
+        },
+        "competences": "Perception +2",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/4 (50 PX)",
+        "traits_et_attaques": [
+            "A|Morsure. +6, 3 m, 1d4+4 perforants"
+        ]
+    },
+    {
+        "nom": "Serpent volant",
+        "description_type": "Bête de taille TP, sans alignement",
+        "classe_d_armure": "14",
+        "points_de_vie": "5 (2d4)",
+        "vitesse": "9 m, nage 9 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 4,
+                "mod": "-3"
+            },
+            "DEX": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "CON": {
+                "score": 11,
+                "mod": "+0"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 5,
+                "mod": "-3"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1/8 (25 PX)",
+        "traits_et_attaques": [
+            "Repli aérien.",
+            "A|Morsure."
+        ]
+    },
+    {
+        "nom": "Singe géant",
+        "description_type": "Bête de taille TG, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "157 (15d12 + 60)",
+        "vitesse": "12 m, escalade 12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 23,
+                "mod": "+6"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "INT": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 14",
+        "langues": "—",
+        "puissance": "7 (2900 PX)",
+        "traits_et_attaques": [
+            "A|Attaques multiples.",
+            "A|Poing. +9, 3 m, 3d10+6 contondants",
+            "A|Rocher. +9, 15/30 m, 7d6+6 contondants"
+        ]
+    },
+    {
+        "nom": "Tigre",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "37 (5d10 + 10)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 17,
+                "mod": "+3"
+            },
+            "DEX": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 8,
+                "mod": "-1"
+            }
+        },
+        "competences": "",
+        "sens": "",
+        "langues": "—",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Bond agressif.",
+            "A|Griffes. +5, 1,50 m, 1d8+3 tranchants",
+            "A|Morsure. +5, 1,50 m, 1d10+3 perforants"
+        ]
+    },
+    {
+        "nom": "Tigre à dents de sabre",
+        "description_type": "Bête de taille G, sans alignement",
+        "classe_d_armure": "12",
+        "points_de_vie": "52 (7d10 + 14)",
+        "vitesse": "12 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 18,
+                "mod": "+4"
+            },
+            "DEX": {
+                "score": 14,
+                "mod": "+2"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 3,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 8,
+                "mod": "-1"
+            }
+        },
+        "competences": "",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "2 (450 PX)",
+        "traits_et_attaques": [
+            "Odorat aiguisé.",
+            "Bond agressif.",
+            "A|Griffes. +6, 1,50 m, 2d6+5 tranchants",
+            "A|Morsure. +6, 1,50 m, 1d10+5 perforants"
+        ]
+    },
+    {
+        "nom": "Vautour",
+        "description_type": "Bête de taille M, sans alignement",
+        "classe_d_armure": "10",
+        "points_de_vie": "5 (1d8 + 1)",
+        "vitesse": "3 m, vol 15 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 7,
+                "mod": "-2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 13,
+                "mod": "+1"
+            },
+            "INT": {
+                "score": 2,
+                "mod": "-4"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 4,
+                "mod": "-3"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "—",
+        "puissance": "0 (10 PX)",
+        "traits_et_attaques": [
+            "Odorat et vue aiguisés.",
+            "Tactique de groupe.",
+            "A|Bec. +2, 1,50 m, 1d4 perforants"
+        ]
+    },
+    {
+        "nom": "Vautour géant",
+        "description_type": "Bête de taille G, neutre mauvais",
+        "classe_d_armure": "10",
+        "points_de_vie": "22 (3d10 + 6)",
+        "vitesse": "3 m, vol 18 m",
+        "caracteristiques": {
+            "FOR": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "DEX": {
+                "score": 10,
+                "mod": "+0"
+            },
+            "CON": {
+                "score": 15,
+                "mod": "+2"
+            },
+            "INT": {
+                "score": 6,
+                "mod": "-2"
+            },
+            "SAG": {
+                "score": 12,
+                "mod": "+1"
+            },
+            "CHA": {
+                "score": 7,
+                "mod": "-2"
+            }
+        },
+        "competences": "Perception +3",
+        "sens": "Perception passive 13",
+        "langues": "",
+        "puissance": "1 (200 PX)",
+        "traits_et_attaques": [
+            "Odorat et vue aiguisés.",
+            "Tactique de groupe.",
+            "A|Attaques multiples.",
+            "A|Bec. +4, 1,50 m, 2d4+2 perforants",
+            "A|Serres. +5, 1,50 m, 2d6+2 tranchants"
+        ]
+    }
+]

@@ -1,0 +1,25 @@
+{
+  "races": {},
+  "vitesses": {
+    "Nain des collines": 7.5,
+    "Nain des montagnes": 7.5,
+    "Halfelin Pied-léger": 7.5,
+    "Halfelin robuste": 7.5,
+    "Gnome des forêts": 7.5,
+    "Gnome des roches": 7.5,
+    "Gnome des profondeurs": 9.0,
+    "Duergar": 9.0,
+    "Centaure": 12,
+    "Minotaure": 9,
+    "Kender": 9.0,
+    "Autognome": 9,
+    "Kobold": 9,
+    "Tortle": 9,
+    "Dhampir": 10.5,
+    "Genasi d'air": 10.5,
+    "Grung": 7.5,
+    "Léonin": 10.5,
+    "Satyre": 10.5
+  },
+  "sous_races": {}
+}

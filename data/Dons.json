@@ -1,0 +1,604 @@
+[
+  {
+    "don": "Acolyte de Strixhaven",
+    "source": "Strixhaven : Un curriculum de chaos",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous obtenez un lien avec l'une des collèges de Strixhaven, vous apprenez deux sorts mineurs et un sort de niveau 1 spécifiques à cette école."
+  },
+  {
+    "don": "Agent de Strixhaven",
+    "source": "Strixhaven : Un curriculum de chaos",
+    "prerequis": "Acolyte de Strixhaven",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous approfondissez vos études à Strixhaven, obtenant des avantages sur certains jets de compétences et de nouveaux sorts."
+  },
+  {
+    "don": "Artiste prodige",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Dextérité ou Charisme +1",
+    "description": "Vous gagnez la maîtrise d'un instrument de musique ou d'un outil d'artisan, et vos représentations artistiques charment plus facilement le public."
+  },
+  {
+    "don": "Bénédiction du dragon",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force, Dextérité ou Constitution +1",
+    "description": "Des écailles spectrales ou physiques apparaissent sur votre corps, vous conférant une résistance aux dégâts de type draconique choisi et une vision aveugle mineure."
+  },
+  {
+    "don": "Connaisseur des plans",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez le sort Protection contre le mal et le bien et pouvez le lancer sans dépenser d'emplacement une fois par repos long, tout en obtenant des affinités planaires."
+  },
+  {
+    "don": "Initié de la magie dragonne",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez des sorts liés à la magie des dragons et obtenez la capacité d'infuser vos attaques d'une lueur draconique."
+  },
+  {
+    "don": "Marque aberrante",
+    "source": "Eberron : Rising from the Last War",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous portez une marque magique mystérieuse et inquiétante qui vous octroie un sort mineur et un sort de niveau 1 que vous pouvez lancer en puisant dans votre vitalité."
+  },
+  {
+    "don": "Marque de recherche",
+    "source": "Eberron : Rising from the Last War",
+    "prerequis": "Humain ou autre race autorisée",
+    "augmentation_caracteristique": "Dextérité, Sagesse ou Intelligence +1",
+    "description": "Votre marque dragonne vous confère des bonus d'investigation, de perception et l'accès à des sorts de pistage."
+  },
+  {
+    "don": "Maître des ombres et de la nuit",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Dextérité ou Sagesse +1",
+    "description": "Vous bénéficiez d'avantages pour vous cacher dans la pénombre ou l'obscurité, et vos attaques surprises depuis l'ombre inflacent des dégâts accrus."
+  },
+  {
+    "don": "Spécialiste des pièges",
+    "source": "Guide de Xanathar sur le Tout",
+    "prerequis": "Maîtrise des outils de voleur",
+    "augmentation_caracteristique": "Dextérité ou Intelligence +1",
+    "description": "Vous pouvez désamorcer ou poser des pièges plus rapidement et gagnez un avantage lors des jets de sauvegarde contre les pièges."
+  },
+  {
+    "don": "Artisan des métaux",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Maîtrise des outils de forgeron",
+    "augmentation_caracteristique": "Force ou Constitution +1",
+    "description": "Vous savez travailler rapidement le métal pour réparer des équipements endommagés ou renforcer temporairement des armes et armures."
+  },
+  {
+    "don": "Audacieux",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Dextérité ou Charisme +1",
+    "description": "Vous gagnez un regain d'audace qui vous permet de vous dégager plus facilement des situations périlleuses et d'améliorer vos acrobaties."
+  },
+  {
+    "don": "Connaisseur des glyphes",
+    "source": "Guide de l'Aventurier pour la Côte des Epées",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence +1",
+    "description": "Vous apprenez à déchiffrer des écritures anciennes, des glyphes et bénéficiez d'un bonus aux tests d'investigation liés à la magie ancienne."
+  },
+  {
+    "don": "Ensorceleur des arcanes",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aptitude à lancer des sorts",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez un sort de divination ou d'évocation supplémentaire et pouvez modifier subtilement ses composantes."
+  },
+  {
+    "don": "Explorateur des souterrains",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Avantage aux tests d'Intelligence (Investigation) et de Sagesse (Perception) pour repérer des portes secrètes, des pièges ou des dangers souterrains, et résistance aux dégâts des pièges."
+  },
+  {
+    "don": "Initié aux arts martiaux",
+    "source": "Guide de l'Aventurier pour la Côte des Epées",
+    "prerequis": "Force ou Dextérité de 13 ou plus",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vos attaques à mains nues infligent un dé de dégâts supérieur (d4) et vous pouvez tenter un coup de pied rapide en action bonus."
+  },
+  {
+    "don": "Maître des bêtes",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Sagesse +1",
+    "description": "Vous obtenez un avantage aux tests pour interagir ou calmer les animaux sauvages et pouvez ordonner à une bête amicale de se battre à vos côtés."
+  },
+  {
+    "don": "Maître des poisons",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous obtenez la maîtrise du kit d'empoisonneur, ne risquez jamais de vous empoisonner par accident, et vos poisons ignorent les résistances adverses."
+  },
+  {
+    "don": "Médium spirituel",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous pouvez communiquer brièvement avec les esprits défunts ou obtenir des visions furtives du passé d'un lieu."
+  },
+  {
+    "don": "Résistant",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Augmente une caractéristique au choix de +1",
+    "description": "Vous obtenez la maîtrise des jets de sauvegarde liés à la caractéristique que vous venez d'augmenter."
+  },
+  {
+    "don": "Voyageur dimensionnel",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez des tours de magie liés au déplacement spatial et pouvez vous affranchir de certaines entraves magiques."
+  },
+  {
+    "don": "Acéré",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Vous pouvez relancer un dé de dégâts tranchants s'il affiche le résultat le plus bas, et vos coups critiques inflichent des saignements qui ralentissent l'adversaire."
+  },
+  {
+    "don": "Adepte de la pieuvre",
+    "source": "Le Donjon du Mage Mad Mage / Supplément",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous développez des affinités psioniques mineures et une résistance face aux influences mentales."
+  },
+  {
+    "don": "Adepte des ombres",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Dextérité +1",
+    "description": "Vous apprenez le sort Ténèbres, gagnez la vision dans le noir (ou l'améliorez) et pouvez vous fondre dans la pénombre."
+  },
+  {
+    "don": "Affinité draconique",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force, Dextérité ou Constitution +1",
+    "description": "Vous obtenez une résistance aux dégâts correspondant à un type de dragon ancêtre et gagnez des sens aiguisés."
+  },
+  {
+    "don": "Agent secret",
+    "source": "Guide de l'Aventurier pour la Côte des Epées",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Maîtrise de deux compétences ou outils liés au espionnage, et avantage pour décoder des messages cachés."
+  },
+  {
+    "don": "Ambassadeur des profondeurs",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Gnome des profondeurs (Svirfneblin)",
+    "augmentation_caracteristique": "Dextérité ou Sagesse +1",
+    "description": "Capacité à lancer des sorts d'invisibilité et de détection par la pure force de la volonté de l'Outreterre."
+  },
+  {
+    "don": "Ascendance ténébreuse",
+    "source": "Mordenkainen présente : Les Monstres du Multivers",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Capacité à invoquer une aura de peur ou de ténèbres mystiques autour de vous."
+  },
+  {
+    "don": "Bénédiction de la nature",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Sagesse +1",
+    "description": "Vous apprenez un sort mineur de druide et pouvez lancer le sort Parler avec les plantes ou communication animale sans dépenser d'emplacement une fois par repos."
+  },
+  {
+    "don": "Chirurgien de combat",
+    "source": "Guide de l'Aventurier pour la Côte des Epées",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Permet de stabiliser un allié mourant avec un kit de soins tout en lui redonnant des points de vie instantanément en action bonus."
+  },
+  {
+    "don": "Connaissance ancestrale",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence +1",
+    "description": "Vous obtenez la maîtrise de deux langues de votre choix et de deux compétences liées à l'histoire ou aux traditions."
+  },
+  {
+    "don": "Disciple des dragons",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force, Dextérité ou Charisme +1",
+    "description": "Vous obtenez des crocs ou des griffes draconiques naturels infligeant des dégâts élémentaires."
+  },
+  {
+    "don": "Émissaire des fées",
+    "source": "The Wild Beyond the Witchlight",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Capacité à charmer ou effrayer les créatures par la magie féerique de la Feywild."
+  },
+  {
+    "don": "Esprit affûté",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence +1",
+    "description": "Vous vous souvenez parfaitement de tout ce qui s'est passé au cours des 30 derniers jours et savez toujours quelle heure il est ou dans quelle direction se trouve le nord."
+  },
+  {
+    "don": "Explorateur robuste",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Constitution +1",
+    "description": "Vous gagnez des points de vie supplémentaires et résistez mieux aux environnements extrêmes et aux fatigues de voyage."
+  },
+  {
+    "don": "Maître de la forge",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Maîtrise des outils de forgeron",
+    "augmentation_caracteristique": "Force ou Constitution +1",
+    "description": "Permet de réparer ou d'entretenir rapidement des armures et armes, et de conférer de légers bonus temporaires d'aiguisage."
+  },
+  {
+    "don": "Prodige",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Humain, Demi-elfe ou Demi-orc",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous gagnez la maîtrise d'une compétence, d'un outil et d'une langue au choix, ainsi qu'un dé de maîtrise supplémentaire (expertise) dans l'un de ces domaines."
+  },
+  {
+    "don": "Résistance draconique",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Constitution +1",
+    "description": "Votre peau se durcit légèrement, augmentant votre classe d'armure de base de 1 lorsque vous ne portez pas d'armure lourde."
+  },
+  {
+    "don": "Vigueur surhumaine",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Constitution +1",
+    "description": "Vos points de vie maximum augmentent et vous pouvez ignorer une fois par jour un état de fatigue."
+  },
+  {
+    "don": "Acteur",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Charisme +1",
+    "description": "Avantage aux tests de Charisme (Tromperie et Représentation) lorsque vous essayez de vous faire passer pour quelqu'un d'autre, et capacité à imiter la voix d'une autre personne."
+  },
+  {
+    "don": "Adepte de métamagie",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aptitude à lancer des sorts ou magie de pacte",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez deux options de métamagie de sorcier et gagnez 2 points de sorcellerie."
+  },
+  {
+    "don": "Adepte élémentaire",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Capacité à lancer au moins un sort",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vos sorts ignorent la résistance aux dégâts d'un type choisi (acide, froid, feu, foudre ou tonnerre)."
+  },
+  {
+    "don": "Adepte martial",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez deux manœuvres du maître de bataille et gagnez un dé de supériorité (d6)."
+  },
+  {
+    "don": "Affamé de magie",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez le sort Passage brumeux et un sort d'illusion ou d'enchantement de niveau 1."
+  },
+  {
+    "don": "Agilité des courts-sur-pattes",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Nain ou race de taille Petite",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Votre vitesse augmente de 1,50 m et vous gagnez la maîtrise et l'avantage pour vous échapper."
+  },
+  {
+    "don": "Alerte",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "+5 à l'initiative, vous ne pouvez pas être surpris, et les attaques des ennemis cachés n'ont pas l'avantage contre vous."
+  },
+  {
+    "don": "Amateur d'armes à feu",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Dextérité +1",
+    "description": "Maîtrise des armes à feu, ignore la propriété de rechargement et supprime le désavantage à courte portée."
+  },
+  {
+    "don": "Artisan des arcanes",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous obtenez la maîtrise d'un outil d'artisan, un sort mineur d'artificier et un emplacement de sort de niveau 1."
+  },
+  {
+    "don": "Athlète",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Se relever d'une position couchée coûte moins de mouvement, l'escalade est facilitée et les sauts sont améliorés."
+  },
+  {
+    "don": "Attaquant sauvage",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous pouvez relancer les dés de dégâts d'une attaque au corps à corps une fois par tour et garder le meilleur résultat."
+  },
+  {
+    "don": "Bagarreur de tavernes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Constitution +1",
+    "description": "Maîtrise des armes improvisées, dégâts à mains nues augmentés (d4) et tentative de lutte en action bonus."
+  },
+  {
+    "don": "Briseur d'armes lourdes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Attaque bonus sur coup critique/mise à mort, et possibilité de sacrifier -5 au toucher pour infliger +10 dégâts avec une arme lourde."
+  },
+  {
+    "don": "Broyeur",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Constitution +1",
+    "description": "Déplace légèrement un ennemi sur un coup contondant réussi, et procure des avantages sur les coups critiques."
+  },
+  {
+    "don": "Chance abondante",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Halfelin",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Permet de faire relancer à un allié proche un résultat de 1 sur un d20."
+  },
+  {
+    "don": "Chanceux",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous possédez 3 points de chance par repos long pour modifier des jets d'attaque, de sauvegarde ou de compétence."
+  },
+  {
+    "don": "Chef cuisinier",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Constitution ou Sagesse +1",
+    "description": "Maîtrise des ustensiles de cuisine, soins accrus lors des repos courts et préparation de plats procurant des PV temporaires."
+  },
+  {
+    "don": "Combattant à deux armes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "+1 à la classe d'armure en maniant deux armes, possibilité d'utiliser des armes non légères et de les dégainer simultanément."
+  },
+  {
+    "don": "Combattant monté",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Avantage aux attaques au corps à corps contre les cibles non montées de taille inférieure à votre monture, et protection de la monture."
+  },
+  {
+    "don": "Constitution infernale",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Tieffelin",
+    "augmentation_caracteristique": "Constitution +1",
+    "description": "Résistance aux dégâts de froid et de poison, et avantage aux jets de sauvegarde contre le poison."
+  },
+  {
+    "don": "Dur à cuire",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Constitution +1",
+    "description": "Vous pouvez dépenser un dé de vie en action bonus pour récupérer des points de vie au cœur de l'action."
+  },
+  {
+    "don": "Érudit du feu",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence +1",
+    "description": "Ignore les résistances aux dégâts de feu des ennemis et maximise la puissance de vos sorts enflammés."
+  },
+  {
+    "don": "Expert en arbalètes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Ignore le désavantage à courte distance avec les armes à distance et permet d'attaquer avec une arme secondaire en action bonus."
+  },
+  {
+    "don": "Fureur des dragons",
+    "source": "Fizban's Treasury of Dragons",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force, Dextérité ou Constitution +1",
+    "description": "Confère une résistance élémentaire et une capacité de souffle draconique destructeur."
+  },
+  {
+    "don": "Initié à la magie",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez deux sorts mineurs et un sort de niveau 1 d'une classe de jeteur de sorts."
+  },
+  {
+    "don": "Initié aux arcanes occultes",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aptitude à lancer des sorts ou magie de pacte",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez une invocation occulte de sorcier de votre choix."
+  },
+  {
+    "don": "Initié au combat",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aptitude au combat",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vous apprenez un style de combat de la classe de guerrier."
+  },
+  {
+    "don": "Inquisiteur rigoureux",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Sagesse +1",
+    "description": "Avantage aux tests de Sagesse (Perception ou Perspicacité) pour déceler des mensonges ou des créatures dissimulées."
+  },
+  {
+    "don": "Lanceur de sorts",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Capacité à lancer au moins un sort",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Avantage aux jets de sauvegarde de Constitution pour maintenir la concentration et incantation en réaction."
+  },
+  {
+    "don": "Maître d'armes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Vous maîtrisez quatre armes de votre choix."
+  },
+  {
+    "don": "Maître des armes d'hast",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Attaque bonus avec le pommeau d'une arme d'hast et possibilité d'attaquer les ennemis entrant dans votre allonge."
+  },
+  {
+    "don": "Maître des armures intermédiaires",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Maîtrise des armures intermédiaires",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Supprime le désavantage aux tests de Discrétion des armures intermédiaires et autorise un bonus de Dextérité de +3 maximum à la CA."
+  },
+  {
+    "don": "Maître des armures lourdes",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Maîtrise des armures lourdes",
+    "augmentation_caracteristique": "Force +1",
+    "description": "Réduit de 3 tous les dégâts contondants, perforants et tranchants subis d'armes non magiques."
+  },
+  {
+    "don": "Maître des boucliers",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Permet de bousculer un ennemi avec son bouclier en action bonus et d'ajouter le bonus de CA du bouclier aux jets de sauvegarde de Dextérité."
+  },
+  {
+    "don": "Mobile",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Augmente la vitesse de déplacement, ignore les terrains difficiles en dash et neutralise les attaques d'opportunité des cibles frappées."
+  },
+  {
+    "don": "Observateur",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence ou Sagesse +1",
+    "description": "Augmente la valeur passive de Sagesse (Perception) et d'Intelligence (Investigation) de +5, et permet de lire sur les lèvres."
+  },
+  {
+    "don": "Perceptif",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez le sort Communication avec les animaux ou d'autres sorts de divination, ainsi qu'un acmé sensoriel."
+  },
+  {
+    "don": "Perçant",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Relance les dés de dégâts perforants les plus bas et inflige des blessures graves sur un coup critique."
+  },
+  {
+    "don": "Percheur",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Aptitude à lancer des sorts",
+    "augmentation_caracteristique": "Intelligence ou Sagesse +1",
+    "description": "Permet de modifier la zone d'effet de certains sorts ou d'ignorer des couvertures."
+  },
+  {
+    "don": "Prodigieusement doué",
+    "source": "Xanathar's Guide to Everything (XGE)",
+    "prerequis": "Humain",
+    "augmentation_caracteristique": "Augmente deux caractéristiques différentes de +1",
+    "description": "Vous apprenez une compétence au choix, un outil et gagnez un dé de maîtrise supplémentaire."
+  },
+  {
+    "don": "Résilient",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Augmente une caractéristique de +1",
+    "description": "Vous obtenez la maîtrise des jets de sauvegarde de la caractéristique choisie."
+  },
+  {
+    "don": "Ritualiste",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Intelligence ou Sagesse de 13 ou plus",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Obtention d'un livre de rituels contenant deux sorts de niveau 1 de votre choix que vous pouvez lancer sous forme de rituels."
+  },
+  {
+    "don": "Robuste",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Vos points de vie maximums augmentent de 2 points par niveau de personnage."
+  },
+  {
+    "don": "Télékinésiste",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous apprenez le sort Main de mage invisible et pouvez pousser des créatures par la force de l'esprit."
+  },
+  {
+    "don": "Télépathe",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Intelligence, Sagesse ou Charisme +1",
+    "description": "Vous obtenez une communication télépathique avec les créatures que vous pouvez voir dans un rayon de 9 mètres."
+  },
+  {
+    "don": "Tireur d'élite",
+    "source": "Manuel des Joueurs (PHB)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Aucune",
+    "description": "Ignore la couverture partielle ou intermédiaire, supprime le désavantage à longue portée, et permet de troquer -5 pour +10 aux dégâts à distance."
+  },
+  {
+    "don": "Tranchant",
+    "source": "Tasha's Cauldron of Everything (TCE)",
+    "prerequis": "Aucun",
+    "augmentation_caracteristique": "Force ou Dextérité +1",
+    "description": "Relance les dés de dégâts tranchants les plus bas et ralentit l'ennemi touché."
+  }
+]

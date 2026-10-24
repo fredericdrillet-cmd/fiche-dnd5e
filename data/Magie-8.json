@@ -1,0 +1,246 @@
+{
+  "sorts_niveau_8": [
+    {
+      "nom": "Aura sacrée",
+      "niveau": 8,
+      "ecole": "abjuration",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Les cibles dans un rayon de 9 m ont l'avantage aux JdS et les ennemis ont un désavantage pour les attaquer."
+    },
+    {
+      "nom": "Aversion/Attirance",
+      "niveau": 8,
+      "ecole": "enchantement",
+      "incantation": "1 heure",
+      "portee": "18 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Provoque une forte aversion ou attirance magique envers une cible ou un lieu."
+    },
+    {
+      "nom": "Bagou",
+      "niveau": 8,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Donne un bonus massif de +15 à un jet de Charisme et masque les mensonges face à la détection."
+    },
+    {
+      "nom": "Champ antimagie",
+      "niveau": 8,
+      "ecole": "abjuration",
+      "incantation": "1 action",
+      "portee": "personnel (sphère de 3 m)",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Crée une sphère de 3 m de rayon où la magie ne fonctionne plus."
+    },
+    {
+      "nom": "Clone",
+      "niveau": 8,
+      "ecole": "nécromancie",
+      "incantation": "1 heure",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée un clone inerte qui accueille l'âme du lanceur en cas de mort."
+    },
+    {
+      "nom": "Contrôle du climat",
+      "niveau": 8,
+      "ecole": "transmutation",
+      "incantation": "10 minutes",
+      "portee": "personnel (rayon de 7,5 km)",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Modifie progressivement les conditions climatiques dans une vaste zone extérieure."
+    },
+    {
+      "nom": "Dédale",
+      "niveau": 8,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Bannit une créature dans un labyrinthe extradimensionnel dont elle doit s'échapper."
+    },
+    {
+      "nom": "Demi-plan",
+      "niveau": 8,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Ouvre une porte vers un demi-plan isolé de 9 m de côté."
+    },
+    {
+      "nom": "Domination de monstre",
+      "niveau": 8,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Prend le contrôle mental d'un monstre (JdS de Sagesse)."
+    },
+    {
+      "nom": "Dragon illusoire",
+      "niveau": 8,
+      "ecole": "illusion",
+      "incantation": "1 action",
+      "portee": "36 m",
+      "composantes": "S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Invoque un dragon illusoire terrifiant capable d'infliger des dégâts psychiques."
+    },
+    {
+      "nom": "Éclat du soleil",
+      "niveau": 8,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Inflige 12d6 dégâts radiants et aveugle les cibles dans une large zone."
+    },
+    {
+      "nom": "Esprit faible",
+      "niveau": 8,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Réduit l'Intelligence et le Charisme de la cible à 1 et brise ses capacités mentales."
+    },
+    {
+      "nom": "Esprit impénétrable",
+      "niveau": 8,
+      "ecole": "abjuration",
+      "incantation": "1 action",
+      "portee": "contact",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Confère l'immunité aux dégâts psychiques, à la divination et au charme."
+    },
+    {
+      "nom": "Flétrissure épouvantable d'Abi-Dalzim",
+      "niveau": 8,
+      "ecole": "nécromancie",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Inflige 12d8 dégâts nécrotiques dans un cube de 9 m et tue instantanément les plantes."
+    },
+    {
+      "nom": "Formes animales",
+      "niveau": 8,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "9 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Transforme plusieurs alliés consentants en bêtes de FP 4 ou inférieur."
+    },
+    {
+      "nom": "Forteresse majestueuse",
+      "niveau": 8,
+      "ecole": "invocation",
+      "incantation": "1 minute",
+      "portee": "1,5 km",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Fait apparaître une immense forteresse de pierre fortifiée pour une durée de 7 jours."
+    },
+    {
+      "nom": "Mot de pouvoir étourdissant",
+      "niveau": 8,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Étourdit une créature ayant 150 PV ou moins jusqu'à ce qu'elle réussisse son JdS."
+    },
+    {
+      "nom": "Nuage incendiaire",
+      "niveau": 8,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Crée un nuage brûlant infligeant 10d8 dégâts de feu dans une sphère de 6 m."
+    },
+    {
+      "nom": "Télépathie",
+      "niveau": 8,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "illimitée",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Établit un lien télépathique illimité avec une créature connue sur le même plan."
+    },
+    {
+      "nom": "Ténèbres oppressantes",
+      "niveau": 8,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Remplit une sphère de ténèbres infligeant 8d8 dégâts psychiques (JdS de Sagesse)."
+    },
+    {
+      "nom": "Tremblement de terre",
+      "niveau": 8,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "150 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Secoue violemment le sol, renversant les créatures et endommageant les structures."
+    },
+    {
+      "nom": "Tsunami",
+      "niveau": 8,
+      "ecole": "invocation",
+      "incantation": "1 minute",
+      "portee": "champ de vision",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Invoque une immense vague destructrice infligeant 6d10 dégâts contondants."
+    }
+  ]
+}

@@ -1,0 +1,248 @@
+[
+  {
+    "classe": "Barbare",
+    "pv_initiaux": 12,
+    "de_vie": "d12",
+    "competences_disponibles": [
+      "Athlétisme",
+      "Dresseur de bêtes",
+      "Discrétion",
+      "Intimidation",
+      "Nature",
+      "Perception",
+      "Survie"
+    ],
+    "jets_de_sauvegarde": ["Force", "Constitution"],
+    "armures_maitrisees": ["Armures légères", "Armures intermédiaires", "Boucliers"],
+    "armes_maitrisees": ["Armes courantes", "Armes de guerre"]
+  },
+  {
+    "classe": "Barde",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Toutes les compétences au choix (au nombre de 3)"
+    ],
+    "jets_de_sauvegarde": ["Dextérité", "Charisme"],
+    "armures_maitrisees": ["Armures légères"],
+    "armes_maitrisees": [
+      "Armes courantes",
+      "Arbalètes de poing",
+      "Épées courtes",
+      "Épées longues",
+      "Rapières"
+    ]
+  },
+  {
+    "classe": "Clerc",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Discrétion",
+      "Histoire",
+      "Médecine",
+      "Persuasion",
+      "Religion"
+    ],
+    "jets_de_sauvegarde": ["Sagesse", "Charisme"],
+    "armures_maitrisees": ["Armures légères", "Armures intermédiaires", "Boucliers"],
+    "armes_maitrisees": ["Armes courantes"]
+  },
+  {
+    "classe": "Druide",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Arcanes",
+      "Dresseur de bêtes",
+      "Médecine",
+      "Nature",
+      "Perception",
+      "Religion",
+      "Survie"
+    ],
+    "jets_de_sauvegarde": ["Intelligence", "Sagesse"],
+    "armures_maitrisees": ["Armures légères", "Armures intermédiaires", "Boucliers (en bois ou non-métalliques selon les traditions)"],
+    "armes_maitrisees": [
+      "Gourdin",
+      "Dague",
+      "Fléchette",
+      "Javelot",
+      "Masse d'armes",
+      "Bâton",
+      "Cimeterre",
+      "Sling (Fronde)",
+      "Lance",
+      "Arbalète légère"
+    ]
+  },
+  {
+    "classe": "Guerrier",
+    "pv_initiaux": 10,
+    "de_vie": "d10",
+    "competences_disponibles": [
+      "Acrobaties",
+      "Athlétisme",
+      "Discrétion",
+      "Histoire",
+      "Intimidation",
+      "Perception",
+      "Survie"
+    ],
+    "jets_de_sauvegarde": ["Force", "Constitution"],
+    "armures_maitrisees": [
+      "Toutes les armures",
+      "Boucliers"
+    ],
+    "armes_maitrisees": ["Armes courantes", "Armes de guerre"]
+  },
+  {
+    "classe": "Moine",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Acrobaties",
+      "Athlétisme",
+      "Discrétion",
+      "Histoire",
+      "Religion",
+      "Discrétion"
+    ],
+    "jets_de_sauvegarde": ["Force", "Dextérité"],
+    "armures_maitrisees": ["Aucune"],
+    "armes_maitrisees": ["Armes courantes", "Épées courtes"]
+  },
+  {
+    "classe": "Paladin",
+    "pv_initiaux": 10,
+    "de_vie": "d10",
+    "competences_disponibles": [
+      "Athlétisme",
+      "Discrétion",
+      "Intimidation",
+      "Médecine",
+      "Persuasion",
+      "Religion"
+    ],
+    "jets_de_sauvegarde": ["Sagesse", "Charisme"],
+    "armures_maitrisees": ["Toutes les armures", "Boucliers"],
+    "armes_maitrisees": ["Armes courantes", "Armes de guerre"]
+  },
+  {
+    "classe": "Rôdeur",
+    "pv_initiaux": 10,
+    "de_vie": "d10",
+    "competences_disponibles": [
+      "Athlétisme",
+      "Discrétion",
+      "Dresseur de bêtes",
+      "Investigation",
+      "Nature",
+      "Perception",
+      "Survie"
+    ],
+    "jets_de_sauvegarde": ["Force", "Dextérité"],
+    "armures_maitrisees": ["Armures légères", "Armures intermédiaires", "Boucliers"],
+    "armes_maitrisees": ["Armes courantes", "Armes de guerre"]
+  },
+  {
+    "classe": "Roublard",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Acrobaties",
+      "Athlétisme",
+      "Discrétion",
+      "Escamotage",
+      "Intimidation",
+      "Investigation",
+      "Perception",
+      "Persuasion",
+      "Représentation"
+    ],
+    "jets_de_sauvegarde": ["Dextérité", "Intelligence"],
+    "armures_maitrisees": ["Armures légères"],
+    "armes_maitrisees": [
+      "Armes courantes",
+      "Arbalètes de poing",
+      "Épées courtes",
+      "Épées longues",
+      "Rapières"
+    ]
+  },
+  {
+    "classe": "Ensorceleur",
+    "pv_initiaux": 6,
+    "de_vie": "d6",
+    "competences_disponibles": [
+      "Arcanes",
+      "Discrétion",
+      "Intimidation",
+      "Persuasion",
+      "Religion"
+    ],
+    "jets_de_sauvegarde": ["Constitution", "Charisme"],
+    "armures_maitrisees": ["Aucune"],
+    "armes_maitrisees": [
+      "Dagues",
+      "Dard",
+      "Frondes",
+      "Bâtons",
+      "Arbalètes légères"
+    ]
+  },
+  {
+    "classe": "Magicien",
+    "pv_initiaux": 6,
+    "de_vie": "d6",
+    "competences_disponibles": [
+      "Arcanes",
+      "Histoire",
+      "Investigation",
+      "Médecine",
+      "Religion"
+    ],
+    "jets_de_sauvegarde": ["Intelligence", "Sagesse"],
+    "armures_maitrisees": ["Aucune"],
+    "armes_maitrisees": [
+      "Dagues",
+      "Dard",
+      "Frondes",
+      "Bâtons",
+      "Arbalètes légères"
+    ]
+  },
+  {
+    "classe": "Sorcier",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Arcanes",
+      "Discrétion",
+      "Histoire",
+      "Investigation",
+      "Nature",
+      "Religion"
+    ],
+    "jets_de_sauvegarde": ["Sagesse", "Charisme"],
+    "armures_maitrisees": ["Armures légères"],
+    "armes_maitrisees": ["Armes courantes"]
+  },
+  {
+    "classe": "Artificier",
+    "pv_initiaux": 8,
+    "de_vie": "d8",
+    "competences_disponibles": [
+      "Arcanes",
+      "Histoire",
+      "Investigation",
+      "Médecine",
+      "Nature",
+      "Perception",
+      "Escamotage"
+    ],
+    "jets_de_sauvegarde": ["Constitution", "Intelligence"],
+    "armures_maitrisees": ["Armures légères", "Armures intermédiaires", "Boucliers"],
+    "armes_maitrisees": ["Armes courantes"]
+  }
+]

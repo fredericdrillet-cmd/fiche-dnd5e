@@ -1,0 +1,443 @@
+{
+  "classe": {
+    "nom": "Moine",
+    "de_vie": "d8",
+    "carac_principale": "Dextérité et Sagesse",
+    "capacites_classe": [
+      {
+        "niveau": 1,
+        "nom": "Défense sans armure",
+        "description": "Tant que vous ne portez aucune armure et ne maniez pas de bouclier, votre Classe d'Armure est égale à 10 + votre modificateur de Dextérité + votre modificateur de Sagesse. Ce calcul ne se cumule pas avec une autre méthode de calcul de base de la CA (Défense sans armure d'une autre classe, Armure du mage…)."
+      },
+      {
+        "niveau": 1,
+        "nom": "Arts martiaux",
+        "description": "Tant que vous êtes à mains nues ou ne maniez que des armes de moine (épée courte et armes courantes de corps à corps sans les propriétés lourde ni à deux mains), sans armure ni bouclier : vous pouvez utiliser votre modificateur de Dextérité au lieu de votre modificateur de Force pour les jets d'attaque et de dégâts ; vous pouvez lancer votre dé d'arts martiaux à la place des dégâts normaux de l'arme ou de la frappe à mains nues ; et lorsque vous effectuez l'action Attaquer avec l'une de ces armes ou à mains nues, vous pouvez porter une frappe à mains nues par une action bonus. Le dé d'arts martiaux vaut d4 au niveau 1, d6 au niveau 5, d8 au niveau 11 et d10 au niveau 17."
+      },
+      {
+        "niveau": 2,
+        "nom": "Ki",
+        "description": "Vous disposez d'un nombre de points de ki égal à votre niveau de moine ; vous récupérez tous vos points dépensés à la fin d'un repos court ou long (au moins 30 minutes de méditation). Le DD des jets de sauvegarde contre vos aptitudes de ki est égal à 8 + votre bonus de maîtrise + votre modificateur de Sagesse. Options de base : Déluge de coups (après l'action Attaquer, 1 ki et une action bonus pour porter deux frappes à mains nues), Défense patiente (1 ki, action bonus Esquiver) et Déplacement aérien (1 ki, action bonus Se désengager ou Foncer, distance de saut doublée pour le tour)."
+      },
+      {
+        "niveau": 2,
+        "nom": "Déplacement sans armure",
+        "description": "Tant que vous ne portez ni armure ni bouclier, votre vitesse augmente de 3 m. Ce bonus passe à +4,50 m au niveau 6, +6 m au niveau 10, +7,50 m au niveau 14 et +9 m au niveau 18. À partir du niveau 9, vous pouvez vous déplacer le long des surfaces verticales et à la surface des liquides pendant votre tour sans tomber au cours du mouvement."
+      },
+      {
+        "niveau": 2,
+        "nom": "Arme dédiée (option Tasha)",
+        "description": "À la fin d'un repos court ou long, vous pouvez toucher une arme que vous maîtrisez et qui n'a ni la propriété lourde ni la propriété spéciale, et méditer : elle devient pour vous une arme de moine jusqu'à ce que vous utilisiez de nouveau cette aptitude. Vous ne pouvez avoir qu'une arme dédiée à la fois."
+      },
+      {
+        "niveau": 3,
+        "nom": "Tradition monastique",
+        "description": "Au niveau 3, vous vous engagez dans une tradition monastique (sous-classe) qui façonne votre style de combat et votre usage du ki. Elle vous confère des aptitudes aux niveaux 3, 6, 11 et 17."
+      },
+      {
+        "niveau": 3,
+        "nom": "Parade de projectiles",
+        "description": "Par une réaction, lorsqu'une attaque à distance avec une arme vous touche, vous réduisez ses dégâts de 1d10 + votre modificateur de Dextérité + votre niveau de moine. Si les dégâts tombent à 0 et que vous avez une main libre, vous attrapez le projectile (s'il est assez petit). Vous pouvez alors dépenser 1 point de ki pour le relancer aussitôt dans la même réaction : attaque à distance (portée 6 m/18 m) avec maîtrise, considérée comme une arme de moine, infligeant votre dé d'arts martiaux + votre modificateur de Dextérité."
+      },
+      {
+        "niveau": 3,
+        "nom": "Attaque alimentée par le ki (option Tasha)",
+        "description": "Lorsque vous dépensez au moins 1 point de ki dans le cadre de votre action pendant votre tour, vous pouvez, par une action bonus avant la fin de ce tour, effectuer une attaque avec une frappe à mains nues ou une arme de moine."
+      },
+      {
+        "niveau": 4,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 4,
+        "nom": "Chute ralentie",
+        "description": "Par une réaction lorsque vous tombez, vous réduisez les dégâts de chute subis d'un montant égal à 5 × votre niveau de moine."
+      },
+      {
+        "niveau": 4,
+        "nom": "Guérison accélérée (option Tasha)",
+        "description": "Par une action, vous dépensez 2 points de ki et lancez votre dé d'arts martiaux : vous récupérez un nombre de points de vie égal au résultat + votre bonus de maîtrise."
+      },
+      {
+        "niveau": 5,
+        "nom": "Attaque supplémentaire",
+        "description": "À partir du niveau 5, lorsque vous effectuez l'action Attaquer pendant votre tour, vous pouvez attaquer deux fois au lieu d'une. L'attaque à mains nues de l'action bonus d'Arts martiaux ou du Déluge de coups s'y ajoute."
+      },
+      {
+        "niveau": 5,
+        "nom": "Frappe étourdissante",
+        "description": "Lorsque vous touchez une créature avec une attaque d'arme au corps à corps, vous pouvez dépenser 1 point de ki pour tenter de l'étourdir. Elle doit réussir un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou être étourdie jusqu'à la fin de votre prochain tour. Vous pouvez tenter cette frappe à chaque attaque qui touche, tant qu'il vous reste du ki."
+      },
+      {
+        "niveau": 5,
+        "nom": "Visée concentrée (option Tasha)",
+        "description": "Lorsque vous ratez un jet d'attaque, vous pouvez dépenser de 1 à 3 points de ki pour augmenter le résultat de ce jet de 2 par point dépensé, ce qui peut transformer l'échec en réussite."
+      },
+      {
+        "niveau": 6,
+        "nom": "Frappes renforcées par le Ki",
+        "description": "À partir du niveau 6, vos frappes à mains nues comptent comme magiques pour surmonter la résistance et l'immunité aux attaques et aux dégâts non magiques."
+      },
+      {
+        "niveau": 7,
+        "nom": "Dérobade",
+        "description": "Lorsqu'un effet vous permet de faire un jet de sauvegarde de Dextérité pour ne subir que la moitié des dégâts (souffle de dragon, Boule de feu…), vous ne subissez aucun dégât en cas de réussite et seulement la moitié en cas d'échec."
+      },
+      {
+        "niveau": 7,
+        "nom": "Sérénité",
+        "description": "Par une action, vous mettez fin à un effet qui vous impose l'état charmé ou effrayé."
+      },
+      {
+        "niveau": 8,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 10,
+        "nom": "Pureté du corps",
+        "description": "À partir du niveau 10, votre maîtrise du ki vous rend immunisé contre les maladies ainsi que contre les dégâts de poison et l'état empoisonné."
+      },
+      {
+        "niveau": 12,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 13,
+        "nom": "Langue du soleil et de la lune",
+        "description": "Vous comprenez toutes les langues parlées. De plus, toute créature capable de comprendre une langue comprend ce que vous dites."
+      },
+      {
+        "niveau": 14,
+        "nom": "Âme diamantée",
+        "description": "Vous obtenez la maîtrise de tous les jets de sauvegarde. De plus, chaque fois que vous ratez un jet de sauvegarde, vous pouvez dépenser 1 point de ki pour le relancer ; vous devez conserver le second résultat."
+      },
+      {
+        "niveau": 15,
+        "nom": "Corps intemporel",
+        "description": "Votre ki vous préserve : vous ne souffrez plus des affres de la vieillesse et ne pouvez pas être vieilli par magie. Vous pouvez toujours mourir de vieillesse. Vous n'avez plus besoin de nourriture ni d'eau."
+      },
+      {
+        "niveau": 16,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 18,
+        "nom": "Corps vide",
+        "description": "Par une action, vous dépensez 4 points de ki pour devenir invisible pendant 1 minute ; pendant ce temps, vous avez aussi la résistance à tous les dégâts, sauf de force. En outre, vous pouvez dépenser 8 points de ki pour lancer le sort Projection astrale sans composantes matérielles, mais vous seul pouvez être projeté."
+      },
+      {
+        "niveau": 19,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 20,
+        "nom": "Yô perfectionné",
+        "description": "Au niveau 20, lorsque vous jouez l'initiative et qu'il ne vous reste aucun point de ki, vous en récupérez 4."
+      }
+    ],
+    "sous_classes": [
+      {
+        "nom": "Voie de la Paume",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Technique de la paume",
+            "description": "Chaque fois que vous touchez une créature avec l'une des frappes de votre Déluge de coups, vous pouvez lui imposer l'un de ces effets (sans coût de ki supplémentaire) : elle doit réussir un jet de sauvegarde de Dextérité (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou tomber à terre ; elle doit réussir un jet de sauvegarde de Force (même DD) ou être repoussée jusqu'à 4,50 m de vous ; ou elle ne peut pas effectuer de réaction jusqu'à la fin de votre prochain tour."
+          },
+          {
+            "niveau": 6,
+            "nom": "Plénitude physique",
+            "description": "Par une action, vous récupérez un nombre de points de vie égal à 3 × votre niveau de moine. Vous devez terminer un repos long avant de pouvoir réutiliser cette aptitude."
+          },
+          {
+            "niveau": 11,
+            "nom": "Ataraxie",
+            "description": "À la fin d'un repos long, vous bénéficiez de l'effet du sort Sanctuaire, qui dure jusqu'au début de votre prochain repos long (le sort peut prendre fin normalement, notamment si vous attaquez ou lancez un sort affectant un ennemi). Le DD du jet de sauvegarde de Sagesse est égal à 8 + votre bonus de maîtrise + votre modificateur de Sagesse."
+          },
+          {
+            "niveau": 17,
+            "nom": "Paume vibratoire",
+            "description": "Lorsque vous touchez une créature avec une frappe à mains nues, vous pouvez dépenser 3 points de ki pour y déclencher des vibrations imperceptibles qui durent un nombre de jours égal à votre niveau de moine (inoffensives sauf si vous agissez). Par une action, alors que vous êtes sur le même plan, vous y mettez fin : la cible fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, elle tombe à 0 point de vie ; en cas de réussite, elle subit 10d10 dégâts nécrotiques. Une seule créature à la fois peut subir cet effet ; vous pouvez aussi annuler les vibrations sans dégâts."
+          }
+        ]
+      },
+      {
+        "nom": "Voie de l'Ombre",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Illusion mineure",
+          "Silence",
+          "Ténèbres",
+          "Passage sans trace",
+          "Vision dans le noir"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Artiste des ombres",
+            "description": "Vous connaissez le sort mineur Illusion mineure. Par une action, vous pouvez dépenser 2 points de ki pour lancer Ténèbres, Vision dans le noir, Passage sans trace ou Silence, sans composantes matérielles. Votre caractéristique d'incantation est la Sagesse et le DD est égal à 8 + votre bonus de maîtrise + votre modificateur de Sagesse."
+          },
+          {
+            "niveau": 6,
+            "nom": "Foulée d'ombre",
+            "description": "Lorsque vous êtes dans une zone de lumière faible ou d'obscurité, vous pouvez, par une action bonus, vous téléporter jusqu'à 18 m vers un espace inoccupé que vous voyez et qui est lui aussi plongé dans la lumière faible ou l'obscurité. Vous avez alors l'avantage sur la première attaque au corps à corps que vous effectuez avant la fin de ce tour."
+          },
+          {
+            "niveau": 11,
+            "nom": "Linceul d'ombre",
+            "description": "Lorsque vous êtes dans une zone de lumière faible ou d'obscurité, vous pouvez utiliser votre action pour devenir invisible. Vous le restez jusqu'à ce que vous attaquiez, lanciez un sort ou entriez dans une zone de lumière vive."
+          },
+          {
+            "niveau": 17,
+            "nom": "Opportuniste",
+            "description": "Lorsqu'une créature située dans un rayon de 1,50 m autour de vous est touchée par une attaque effectuée par quelqu'un d'autre que vous, vous pouvez utiliser votre réaction pour effectuer une attaque au corps à corps contre elle."
+          }
+        ]
+      },
+      {
+        "nom": "Voie des Quatre Éléments",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Mains brûlantes",
+          "Vague tonnante",
+          "Immobilisation de personne",
+          "Bourrasque",
+          "Fracassement",
+          "Boule de feu",
+          "Forme gazeuse",
+          "Vol",
+          "Cône de froid",
+          "Peau de pierre",
+          "Mur de feu",
+          "Mur de pierre"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Disciple des éléments & Harmonisation",
+            "description": "Vous apprenez Harmonisation élémentaire (par une action, petits effets sans danger : allumer ou éteindre une flamme, refroidir ou réchauffer 500 g de matière pendant 1 heure, déplacer air, eau, feu ou terre dans un cube de 1,50 m pendant 1 minute…) et une autre discipline élémentaire. Vous apprenez une discipline supplémentaire aux niveaux 6, 11 et 17, et pouvez en échanger une à chacun de ces niveaux. Les disciplines coûtent du ki et peuvent lancer des sorts (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ; certaines permettent de dépenser du ki supplémentaire pour augmenter le niveau du sort. Le maximum de ki par sort est de 2 (niveaux 3-4), 3 (5-8), 4 (9-12), 5 (13-16) et 6 (17-20)."
+          },
+          {
+            "niveau": 6,
+            "nom": "Discipline élémentaire supplémentaire",
+            "description": "Au niveau 6, vous apprenez une nouvelle discipline élémentaire et pouvez en remplacer une que vous connaissez. Accessibles dès ce niveau : Gong du sommet (3 ki, Fracassement), Griffe du vent du nord (3 ki, Immobilisation de personne). Votre plafond de ki par sort passe à 3 dès le niveau 5."
+          },
+          {
+            "niveau": 11,
+            "nom": "Discipline élémentaire avancée",
+            "description": "Au niveau 11, vous apprenez une nouvelle discipline élémentaire. Les disciplines de niveau 11 deviennent accessibles : Flammes du phénix (4 ki, Boule de feu), Posture de brume (4 ki, Forme gazeuse, sur vous seul) et Chevaucher le vent (4 ki, Vol, sur vous seul)."
+          },
+          {
+            "niveau": 17,
+            "nom": "Maîtrise élémentaire ultime",
+            "description": "Au niveau 17, vous apprenez une nouvelle discipline élémentaire, et celles de niveau 17 deviennent accessibles : Souffle de l'hiver (6 ki, Cône de froid), Défense de la montagne éternelle (5 ki, Peau de pierre, sur vous seul), Rivière de flammes affamées (5 ki, Mur de feu) et Vague de terre déferlante (6 ki, Mur de pierre). Votre plafond de ki par sort est désormais de 6."
+          }
+        ]
+      },
+      {
+        "nom": "Voie de l'Âme solaire",
+        "source": "Guide de Xanathar",
+        "sorts_domaine": [
+          "Mains brûlantes"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Rayon de soleil radiant",
+            "description": "Vous pouvez lancer des rayons de lumière : attaque à distance (portée 9 m) avec maîtrise, utilisant votre modificateur de Dextérité, qui inflige votre dé d'arts martiaux + votre modificateur de Dextérité dégâts radiants. Ces rayons peuvent remplacer chacune des attaques de l'action Attaquer. Si vous effectuez l'action Attaquer à votre tour, vous pouvez dépenser 1 point de ki pour lancer deux rayons supplémentaires par une action bonus."
+          },
+          {
+            "niveau": 6,
+            "nom": "Vague brûlante",
+            "description": "Immédiatement après avoir effectué l'action Attaquer, vous pouvez dépenser 2 points de ki pour lancer Mains brûlantes au niveau 1 par une action bonus (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). Chaque point de ki supplémentaire augmente le niveau du sort de 1, le total dépensé ne pouvant dépasser la moitié de votre niveau de moine."
+          },
+          {
+            "niveau": 11,
+            "nom": "Éruption solaire ardente",
+            "description": "Par une action, vous créez un orbe lumineux qui explose en un point choisi à 45 m au plus : chaque créature dans une sphère de 6 m de rayon fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou subit 2d6 dégâts radiants (aucun dégât en cas de réussite). Cette version ne coûte pas de ki ; vous pouvez dépenser jusqu'à 3 points de ki pour ajouter 2d6 dégâts par point."
+          },
+          {
+            "niveau": 17,
+            "nom": "Bouclier solaire",
+            "description": "Vous émettez une aura de lumière vive sur 9 m et de lumière faible sur 9 m de plus (activable ou désactivable par une action bonus). Tant qu'elle brille, lorsqu'une créature vous touche avec une attaque au corps à corps, vous pouvez utiliser votre réaction pour lui infliger 5 + votre modificateur de Sagesse dégâts radiants."
+          }
+        ]
+      },
+      {
+        "nom": "Voie du Kensei",
+        "source": "Guide de Xanathar",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Armes du kensei, Parade agile & Tir du kensei",
+            "description": "Vous choisissez deux armes de kensei (une de corps à corps, une à distance, sans les propriétés lourde ni spéciale) qui deviennent des armes de moine ; vous en ajoutez une aux niveaux 6, 11 et 17. Parade agile : si vous portez une frappe à mains nues lors de l'action Attaquer en tenant une arme de kensei de corps à corps, vous gagnez +2 à la CA jusqu'au début de votre prochain tour. Tir du kensei : par une action bonus, vos attaques avec une arme de kensei à distance infligent 1d4 dégâts supplémentaires jusqu'à la fin du tour. Voie du pinceau : maîtrise du matériel de calligraphe ou de peintre."
+          },
+          {
+            "niveau": 6,
+            "nom": "Armes de kensei magiques & Frappe précise",
+            "description": "Vos attaques avec vos armes de kensei comptent comme magiques. Frappe précise : une fois par tour, lorsque vous touchez une cible avec une arme de kensei, vous pouvez dépenser 1 point de ki pour ajouter votre dé d'arts martiaux aux dégâts."
+          },
+          {
+            "niveau": 11,
+            "nom": "Lame affûtée",
+            "description": "Par une action bonus, vous dépensez jusqu'à 3 points de ki pour conférer à une arme de kensei que vous tenez un bonus aux jets d'attaque et de dégâts égal au nombre de points dépensés, pendant 1 minute (ou jusqu'à ce que vous réutilisiez l'aptitude). Sans effet sur une arme magique qui possède déjà un bonus."
+          },
+          {
+            "niveau": 17,
+            "nom": "Précision infaillible",
+            "description": "Une fois par tour, si vous ratez un jet d'attaque avec une arme de moine, vous pouvez le relancer. Vous ne pouvez le faire qu'une fois par tour, sans coût de ki."
+          }
+        ]
+      },
+      {
+        "nom": "Voie du Maître ivre",
+        "source": "Guide de Xanathar",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Maîtrises supplémentaires & Techniques de l'homme ivre",
+            "description": "Vous gagnez la maîtrise de la compétence Représentation et des ustensiles de brasseur (si vous l'avez déjà, une autre compétence ou outil). Technique de l'ivrogne : chaque fois que vous utilisez Déluge de coups, vous bénéficiez de l'action Se désengager et votre vitesse augmente de 3 m jusqu'à la fin du tour."
+          },
+          {
+            "niveau": 6,
+            "nom": "Chancellements éméchés",
+            "description": "Relevé d'un bond : se relever ne vous coûte que 1,50 m de déplacement. Réorientation : lorsqu'une créature rate une attaque au corps à corps contre vous, vous pouvez dépenser 1 point de ki et utiliser votre réaction pour que l'attaque touche à la place une autre créature de votre choix (autre que l'attaquant) située à 1,50 m de vous."
+          },
+          {
+            "niveau": 11,
+            "nom": "Chance de l'ivrogne",
+            "description": "Lorsque vous faites un test de caractéristique, un jet d'attaque ou un jet de sauvegarde avec le désavantage, vous pouvez dépenser 2 points de ki pour annuler ce désavantage sur ce jet."
+          },
+          {
+            "niveau": 17,
+            "nom": "Frénésie alcoolisée",
+            "description": "Lorsque vous utilisez Déluge de coups, vous pouvez porter jusqu'à trois attaques supplémentaires (cinq au total), à condition que chaque attaque du Déluge vise une créature différente."
+          }
+        ]
+      },
+      {
+        "nom": "Voie de l'Astre intérieur",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Bras astraux",
+            "description": "Par une action bonus, vous dépensez 1 point de ki pour invoquer des bras spectraux pendant 10 minutes. À leur apparition, chaque créature de votre choix à 3 m ou moins fait un jet de sauvegarde de Dextérité (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou subit deux dés d'arts martiaux de dégâts de force. Tant qu'ils sont présents : vous utilisez votre modificateur de Sagesse au lieu de votre modificateur de Force pour les tests et jets de sauvegarde de Force ; vos frappes à mains nues avec les bras ont une allonge accrue de 1,50 m, peuvent utiliser votre modificateur de Sagesse ou de Dextérité et infligent des dégâts de force."
+          },
+          {
+            "niveau": 6,
+            "nom": "Visage astral",
+            "description": "Par une action bonus, vous dépensez 1 point de ki pour invoquer un visage astral pendant 10 minutes (se combine avec les bras). Vision astrale : vous voyez normalement à 36 m dans les ténèbres, même magiques. Sagesse de l'esprit : avantage aux tests de Sagesse (Intuition) et de Charisme (Intimidation). Parole de l'esprit : votre voix porte jusqu'à 180 m, ou n'est audible que d'une créature choisie à 18 m ou moins."
+          },
+          {
+            "niveau": 11,
+            "nom": "Corps de l'astre intérieur",
+            "description": "Lorsque vos bras et votre visage astraux sont tous deux invoqués, vous gagnez : Détournement d'énergie (réaction, réduit des dégâts d'acide, de feu, de force, de foudre, de froid ou de tonnerre de 1d10 + votre modificateur de Sagesse + votre niveau de moine) et Bras renforcés (une fois par tour, lorsque vous touchez avec les bras astraux, +1 dé d'arts martiaux de dégâts)."
+          },
+          {
+            "niveau": 17,
+            "nom": "Astre intérieur accompli",
+            "description": "Par une action bonus, vous dépensez 5 points de ki pour invoquer bras, visage et corps astraux pendant 10 minutes. Armure de l'esprit : +2 à la CA. Barrage astral : lorsque vous effectuez l'action Attaquer, vous pouvez porter trois attaques avec les bras astraux au lieu de deux."
+          }
+        ]
+      },
+      {
+        "nom": "Voie de la Miséricorde",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Instrument de charité, Main guérisseuse & Main meurtrissante",
+            "description": "Maîtrise d'Intuition, de Médecine et du matériel d'herboriste, plus un masque rituel. Main guérisseuse : par une action, 1 point de ki pour qu'une créature touchée récupère un dé d'arts martiaux + votre modificateur de Sagesse points de vie ; lors d'un Déluge de coups, une frappe peut être remplacée par une Main guérisseuse sans coût de ki. Main meurtrissante : une fois par tour, quand vous touchez avec une frappe à mains nues, 1 point de ki ajoute un dé d'arts martiaux + votre modificateur de Sagesse dégâts nécrotiques."
+          },
+          {
+            "niveau": 6,
+            "nom": "Caresse médicale",
+            "description": "Votre Main guérisseuse met aussi fin à une maladie ou à l'un de ces états : aveuglé, assourdi, paralysé, empoisonné ou étourdi. Votre Main meurtrissante peut en outre empoisonner la cible jusqu'à la fin de votre prochain tour."
+          },
+          {
+            "niveau": 11,
+            "nom": "Déluge de soins et meurtrissures",
+            "description": "Lors d'un Déluge de coups, vous pouvez remplacer chaque frappe à mains nues par une Main guérisseuse sans dépenser de ki pour le soin. De plus, une frappe du Déluge peut déclencher la Main meurtrissante sans coût de ki (toujours une fois par tour au maximum)."
+          },
+          {
+            "niveau": 17,
+            "nom": "Main de l'ultime miséricorde",
+            "description": "Par une action, vous touchez le cadavre d'une créature morte depuis moins de 24 heures et dépensez 5 points de ki : elle revient à la vie avec 4d10 + votre modificateur de Sagesse points de vie, libérée des états aveuglé, assourdi, paralysé, empoisonné et étourdi. Utilisable une fois par repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Voie du Sang",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Rayon affaiblissant",
+          "Toucher du vampire"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Frappe hématologique & Sutures de Ki",
+            "description": "Frappe hématologique : lorsque vous touchez avec une frappe à mains nues, vous pouvez infliger des dégâts nécrotiques au lieu de contondants. Sutures de ki : par une action bonus, vous dépensez 1 point de ki et touchez une créature à 1,50 m ou moins ; elle récupère un dé d'arts martiaux + votre modificateur de Sagesse points de vie. Lors d'un Déluge de coups, vous pouvez remplacer une des deux frappes par une Suture sans coût de ki supplémentaire. Sans effet sur les créatures artificielles et les morts-vivants."
+          },
+          {
+            "niveau": 6,
+            "nom": "Marionnette sanguine",
+            "description": "Lorsque vous touchez avec une frappe à mains nues une créature qui n'a pas tous ses points de vie, vous pouvez dépenser 2 points de ki. Elle fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ; en cas d'échec, vous la déplacez immédiatement de 4,50 m au plus dans la direction de votre choix (sans provoquer d'attaque d'opportunité de votre part, et pas dans un danger évident comme un précipice) et elle ne peut pas effectuer de réaction jusqu'au début de votre prochain tour. Créatures artificielles, élémentaires, vases et morts-vivants y sont immunisés. Une fois par tour."
+          },
+          {
+            "niveau": 11,
+            "nom": "Transfusion de combat",
+            "description": "Lorsque vous obtenez un coup critique avec une frappe à mains nues, ou réduisez une créature hostile à 0 point de vie avec une frappe à mains nues, vous récupérez 1 point de ki et gagnez votre niveau de moine en points de vie temporaires. Une fois par tour, et un nombre de fois égal à votre bonus de maîtrise ; vous récupérez toutes les utilisations à la fin d'un repos long."
+          },
+          {
+            "niveau": 17,
+            "nom": "Ébullition de sang",
+            "description": "Par une action, vous dépensez 5 points de ki : chaque créature de votre choix dans un rayon de 6 m autour de vous fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, elle subit 6d10 dégâts nécrotiques et sa vitesse tombe à 0 jusqu'à la fin de votre prochain tour ; en cas de réussite, elle subit la moitié des dégâts sans autre effet. Créatures artificielles et morts-vivants sont immunisés."
+          }
+        ]
+      },
+      {
+        "nom": "Voie de la Tempête",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Vague tonnante",
+          "Appel de la foudre"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Pas fulgurant & Poings d'orage",
+            "description": "Poings d'orage : vos frappes à mains nues peuvent infliger des dégâts de foudre ou de tonnerre au lieu de contondants, et vous pouvez dépenser 2 points de ki pour lancer Vague tonnante par une action (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse), +1 ki par niveau de sort au-delà du 1er (même plafond que les disciplines élémentaires). Pas fulgurant : lorsque vous dépensez au moins 1 point de ki pendant votre tour, votre vitesse augmente de 3 m jusqu'à la fin de ce tour."
+          },
+          {
+            "niveau": 6,
+            "nom": "Décharge conductrice",
+            "description": "Une fois par tour, lorsque vous touchez une créature avec une frappe à mains nues, vous pouvez dépenser 1 point de ki : jusqu'à deux autres créatures de votre choix à 3 m ou moins de la cible font un jet de sauvegarde de Dextérité (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou subissent deux dés d'arts martiaux de dégâts de foudre (aucun dégât en cas de réussite)."
+          },
+          {
+            "niveau": 11,
+            "nom": "Forme d'éclair",
+            "description": "Par une action bonus, vous dépensez 2 points de ki : jusqu'à la fin du tour, votre vitesse augmente de 6 m, vous pouvez traverser l'espace des créatures hostiles et vos déplacements ne provoquent pas d'attaque d'opportunité. Chaque créature dont vous traversez l'espace pour la première fois ce tour fait un jet de sauvegarde de Dextérité (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou subit 3d8 dégâts de foudre (moitié en cas de réussite). Vous pouvez aussi dépenser 4 points de ki pour lancer Appel de la foudre."
+          },
+          {
+            "niveau": 17,
+            "nom": "Avatar de la tempête",
+            "description": "Par une action bonus, vous dépensez 5 points de ki pour devenir un avatar de la tempête pendant 1 minute (concentration, comme pour un sort). Vous gagnez une vitesse de vol égale à votre vitesse de marche, l'immunité aux dégâts de foudre et la résistance aux dégâts de tonnerre. Au début de chacun de vos tours, chaque créature de votre choix à 3 m ou moins fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou subit 2d10 dégâts de tonnerre et est repoussée de 3 m (moitié des dégâts, sans poussée, en cas de réussite)."
+          }
+        ]
+      }
+    ]
+  }
+}

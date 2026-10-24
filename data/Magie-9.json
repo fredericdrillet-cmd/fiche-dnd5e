@@ -1,0 +1,224 @@
+{
+  "sorts_niveau_9": [
+    {
+      "nom": "Arrêt du temps",
+      "niveau": 9,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Arrête le temps durant 1d4 + 1 tours pour tout le monde sauf pour le lanceur."
+    },
+    {
+      "nom": "Changement de forme",
+      "niveau": 9,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Le lanceur prend la forme d'une créature qu'il a déjà vue d'un FP égal ou inférieur à son niveau."
+    },
+    {
+      "nom": "Emprisonnement",
+      "niveau": 9,
+      "ecole": "abjuration",
+      "incantation": "1 minute",
+      "portee": "9 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "La cible rate un JdS de Sagesse ou est retenue prisonnière selon l'une des 6 options choisies."
+    },
+    {
+      "nom": "Ennemi subconscient",
+      "niveau": 9,
+      "ecole": "illusion",
+      "incantation": "1 action",
+      "portee": "36 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Les créatures dans un rayon de 9 m ratent un JdS de Sagesse ou sont effrayées et subissent 4d10 dégâts psychiques."
+    },
+    {
+      "nom": "Guérison de groupe",
+      "niveau": 9,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Répartit un total de 700 PV à soigner entre plusieurs créatures et guérit leurs affections."
+    },
+    {
+      "nom": "Hurlement psychique",
+      "niveau": 9,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "27 m",
+      "composantes": "S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Jusqu'à 10 créatures subissent 14d6 dégâts psychiques en cas d'échec à un JdS d'Intelligence."
+    },
+    {
+      "nom": "Invulnérabilité",
+      "niveau": 9,
+      "ecole": "abjuration",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Le lanceur gagne l'immunité à tous les types de dégâts."
+    },
+    {
+      "nom": "Lame du désastre",
+      "niveau": 9,
+      "ecole": "invocation",
+      "incantation": "1 action bonus",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Invoque une lame magique infligeant 4d12 dégâts de force (critique étendu) avec des attaques supplémentaires."
+    },
+    {
+      "nom": "Métamorphose de groupe",
+      "niveau": 9,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "36 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Transforme jusqu'à 10 créatures en nouvelles formes de bêtes de FP ou niveau équivalent."
+    },
+    {
+      "nom": "Métamorphose suprême",
+      "niveau": 9,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "9 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Transforme une créature ou un objet en une autre créature ou objet de FP/niveau équivalent."
+    },
+    {
+      "nom": "Mot de pouvoir guérisseur",
+      "niveau": 9,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "contact",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "La cible récupère tous ses PV et met fin à de multiples états altérés."
+    },
+    {
+      "nom": "Mot de pouvoir mortel",
+      "niveau": 9,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Tue instantanément une cible disposant de 100 PV ou moins."
+    },
+    {
+      "nom": "Mur prismatique",
+      "niveau": 9,
+      "ecole": "abjuration",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée un mur multicouche aux effets et dégâts destructeurs variés."
+    },
+    {
+      "nom": "Nuée de météores",
+      "niveau": 9,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "1,5 km",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Inflige 20d6 dégâts de feu et 20d6 dégâts contondants dans d'immenses zones d'impact."
+    },
+    {
+      "nom": "Portail",
+      "niveau": 9,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Crée un portail interplanaire permanent permettant de faire traverser des créatures."
+    },
+    {
+      "nom": "Prémonition",
+      "niveau": 9,
+      "ecole": "divination",
+      "incantation": "1 minute",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Accorde la vision du futur proche : immunité à la surprise, avantage aux jets et désavantage aux attaquants."
+    },
+    {
+      "nom": "Projection astrale",
+      "niveau": 9,
+      "ecole": "nécromancie",
+      "incantation": "1 heure",
+      "portee": "3 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Projette le corps astral du lanceur et de ses alliés vers le plan Astral."
+    },
+    {
+      "nom": "Résurrection suprême",
+      "niveau": 9,
+      "ecole": "nécromancie",
+      "incantation": "1 heure",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Ramène à la vie une créature morte depuis moins de 200 ans, même sans corps physique."
+    },
+    {
+      "nom": "Souhait",
+      "niveau": 9,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Duplique n'importe quel sort de niveau 8 ou inférieur ou modifie la réalité selon la volonté du MD."
+    },
+    {
+      "nom": "Tempête vengeresse",
+      "niveau": 9,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "champ de vision",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Déchaîne une tempête apocalyptique infligeant divers types de dégâts dans une vaste zone."
+    }
+  ]
+}

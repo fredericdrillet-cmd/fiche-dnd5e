@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+
+# Build de l'exécutable Windows (PyInstaller)
+build/
+*.spec
+dist/*.exe
+dist/journal_build.txt
+
+# Éditeurs / systèmes
+.vscode/
+.idea/
+.spyproject/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Fichiers locaux
+.env
+*.log

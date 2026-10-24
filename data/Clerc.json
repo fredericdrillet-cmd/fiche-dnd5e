@@ -1,0 +1,788 @@
+{
+  "classe": {
+    "nom": "Clerc",
+    "de_vie": "d8",
+    "carac_principale": "Sagesse",
+    "maitriser_sauvegardes": [
+      "Sagesse",
+      "Charisme"
+    ],
+    "maitriser_armures": [
+      "Armures légères",
+      "Armures moyennes",
+      "Boucliers"
+    ],
+    "maitriser_armes": [
+      "Armes courantes"
+    ],
+    "competences_choix": {
+      "nombre": 2,
+      "options": [
+        "Histoire",
+        "Médecine",
+        "Intuition",
+        "Persuasion",
+        "Religion"
+      ]
+    },
+    "capacites_classe": [
+      {
+        "niveau": 1,
+        "nom": "Incantation",
+        "description": "Vous lancez des sorts divins grâce à la Sagesse, votre caractéristique d'incantation. Vous connaissez 3 sorts mineurs de clerc (4 au niveau 4, 5 au niveau 10). Après chaque repos long, vous préparez un nombre de sorts de clerc égal à votre modificateur de Sagesse + votre niveau de clerc (minimum 1), choisis dans toute la liste du clerc parmi les niveaux pour lesquels vous avez des emplacements ; lancer un sort dépense un emplacement de niveau égal ou supérieur. DD de sauvegarde de vos sorts = 8 + votre bonus de maîtrise + votre modificateur de Sagesse ; bonus d'attaque des sorts = votre bonus de maîtrise + votre modificateur de Sagesse. Vous pouvez lancer en rituel tout sort préparé possédant l'étiquette rituel, et utiliser un symbole sacré comme focaliseur. Les sorts de domaine sont toujours préparés et ne comptent pas dans ce total."
+      },
+      {
+        "niveau": 1,
+        "nom": "Domaine divin",
+        "description": "Vous choisissez un domaine lié à votre divinité (Guerre, Lumière, Nature, Ruse, Savoir, Tempête, Vie, Mort, Forge, Tombe, Crépuscule, Ordre, Paix, Arcanes…). Il vous accorde dès le niveau 1 des aptitudes (souvent des maîtrises supplémentaires), puis d'autres aux niveaux 2, 6, 8 et 17. Ses sorts de domaine (deux par niveau de sort, obtenus aux niveaux de clerc 1, 3, 5, 7 et 9) sont toujours préparés, ne comptent pas dans votre nombre de sorts préparés et sont considérés comme des sorts de clerc pour vous."
+      },
+      {
+        "niveau": 1,
+        "nom": "Sorts de clerc supplémentaires (option Tasha)",
+        "description": "Option de classe (Chaudron des merveilles de Tasha, avec l'accord du MD). Les sorts suivants rejoignent la liste de sorts du clerc et peuvent donc être préparés comme n'importe quel sort de clerc dès que vous avez des emplacements du niveau voulu : Aura de vitalité et Voile spirituel (niveau 3), Aura de vie et Aura de pureté (niveau 4), Rayon de soleil (niveau 6), Éclat du soleil (niveau 8) et Mot de pouvoir guérisseur (niveau 9)."
+      },
+      {
+        "niveau": 2,
+        "nom": "Conduit divin (1/repos)",
+        "description": "Vous pouvez canaliser l'énergie divine pour produire un effet magique : Renvoi des morts-vivants, ou l'effet propre à votre domaine (chaque domaine en ajoute au moins un). Vous choisissez l'effet au moment d'utiliser le Conduit divin. Vous disposez d'une utilisation, récupérée à la fin d'un repos court ou long (2 utilisations au niveau 6, 3 au niveau 18). Les effets qui imposent un jet de sauvegarde utilisent le DD de vos sorts de clerc : 8 + votre bonus de maîtrise + votre modificateur de Sagesse."
+      },
+      {
+        "niveau": 2,
+        "nom": "Conduit divin : Renvoi des morts-vivants",
+        "description": "Par une action, vous brandissez votre symbole sacré et prononcez une prière. Chaque mort-vivant situé à 9 m ou moins qui peut vous voir ou vous entendre fait un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, il est renvoyé pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts : il doit s'éloigner de vous le plus possible, ne peut pas volontairement s'approcher à 9 m ou moins de vous ni prendre de réaction, et ne peut utiliser son action que pour Foncer ou tenter de se libérer d'un effet qui l'empêche de bouger (Esquiver s'il n'a nulle part où aller)."
+      },
+      {
+        "niveau": 2,
+        "nom": "Conduit divin : Canalisation de puissance divine (option Tasha)",
+        "description": "Option de classe (Chaudron des merveilles de Tasha). Par une action bonus, vous touchez votre symbole sacré, murmurez une prière et dépensez une utilisation de Conduit divin pour récupérer un emplacement de sort dépensé. Le niveau de cet emplacement ne peut pas dépasser la moitié (arrondie au supérieur) de votre bonus de maîtrise : niveau 1 jusqu'au niveau 4 de clerc, niveau 2 du niveau 5 au niveau 12, niveau 3 à partir du niveau 13. Cette option est utilisable une fois entre deux repos longs, deux fois à partir du niveau 6 et trois fois à partir du niveau 18."
+      },
+      {
+        "niveau": 4,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 4,
+        "nom": "Sorts mineurs polyvalents (option Tasha)",
+        "description": "Option de classe (Chaudron des merveilles de Tasha). Chaque fois que la classe de clerc vous accorde une Amélioration de caractéristique (niveaux 4, 8, 12, 16 et 19), vous pouvez remplacer l'un de vos sorts mineurs de clerc par un autre sort mineur de la liste du clerc."
+      },
+      {
+        "niveau": 5,
+        "nom": "Destruction des morts-vivants (FP 1/2)",
+        "description": "Lorsqu'un mort-vivant rate son jet de sauvegarde contre votre Renvoi des morts-vivants, il est instantanément détruit si son facteur de puissance est inférieur ou égal à 1/2 (squelettes, zombis…). Le seuil augmente avec les niveaux de clerc : FP 1 au niveau 8, FP 2 au niveau 11, FP 3 au niveau 14 et FP 4 au niveau 17. Les morts-vivants plus puissants qui échouent sont simplement renvoyés."
+      },
+      {
+        "niveau": 6,
+        "nom": "Conduit divin (2/repos)",
+        "description": "À partir du niveau 6, vous pouvez utiliser Conduit divin deux fois entre deux repos (les utilisations sont toutes récupérées à la fin d'un repos court ou long). Vous pouvez dépenser les deux pour le même effet ou pour deux effets différents (Renvoi des morts-vivants, option de domaine). Au niveau 18, vous passerez à trois utilisations."
+      },
+      {
+        "niveau": 8,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 8,
+        "nom": "Destruction des morts-vivants (FP 1)",
+        "description": "Un mort-vivant qui rate son jet de sauvegarde contre votre Renvoi des morts-vivants est désormais détruit instantanément si son facteur de puissance est inférieur ou égal à 1 (goules, ombres, spectres mineurs…). Le seuil passera à FP 2 au niveau 11, FP 3 au niveau 14 et FP 4 au niveau 17."
+      },
+      {
+        "niveau": 8,
+        "nom": "Frappes bénies (option Tasha)",
+        "description": "Option de classe (Chaudron des merveilles de Tasha). Au niveau 8, vous pouvez prendre cette aptitude à la place de la Frappe divine ou de l'Incantation puissante accordée par votre domaine. Lorsqu'une créature subit des dégâts de l'un de vos sorts mineurs ou de l'une de vos attaques d'arme, vous pouvez lui infliger 1d8 dégâts radiants supplémentaires. Une seule fois par tour ; ces dégâts n'augmentent pas au niveau 14."
+      },
+      {
+        "niveau": 10,
+        "nom": "Intervention divine",
+        "description": "Par une action, vous implorez l'aide de votre divinité en décrivant l'assistance souhaitée, puis vous lancez un d100 : si le résultat est inférieur ou égal à votre niveau de clerc, la divinité intervient. Le MD choisit la forme de l'intervention ; l'effet d'un sort de clerc ou de domaine est approprié. En cas de réussite, vous ne pouvez plus utiliser cette aptitude pendant 7 jours ; en cas d'échec, vous pouvez réessayer après avoir terminé un repos long."
+      },
+      {
+        "niveau": 11,
+        "nom": "Destruction des morts-vivants (FP 2)",
+        "description": "Au niveau 11, Renvoi des morts-vivants détruit instantanément tout mort-vivant qui rate son jet de sauvegarde et dont le facteur de puissance est inférieur ou égal à 2 (blêmes, goules de grande taille…). Le seuil passera à FP 3 au niveau 14 puis FP 4 au niveau 17."
+      },
+      {
+        "niveau": 12,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 14,
+        "nom": "Destruction des morts-vivants (FP 3)",
+        "description": "Au niveau 14, Renvoi des morts-vivants détruit instantanément tout mort-vivant qui rate son jet de sauvegarde et dont le facteur de puissance est inférieur ou égal à 3 (nécrophages, momies mineures…). Le seuil passera à FP 4 au niveau 17."
+      },
+      {
+        "niveau": 16,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 17,
+        "nom": "Destruction des morts-vivants (FP 4)",
+        "description": "Au niveau 17, Renvoi des morts-vivants détruit instantanément tout mort-vivant qui rate son jet de sauvegarde et dont le facteur de puissance est inférieur ou égal à 4 (fantômes, nécrophages puissants…)."
+      },
+      {
+        "niveau": 18,
+        "nom": "Conduit divin (3/repos)",
+        "description": "À partir du niveau 18, vous pouvez utiliser Conduit divin trois fois entre deux repos ; toutes les utilisations sont récupérées à la fin d'un repos court ou long. Chaque utilisation peut alimenter Renvoi des morts-vivants ou n'importe quelle option de Conduit divin accordée par votre domaine."
+      },
+      {
+        "niveau": 19,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 20,
+        "nom": "Intervention divine garantie",
+        "description": "Au niveau 20, votre appel à l'Intervention divine réussit automatiquement : vous n'avez plus besoin de lancer le d100. Vous utilisez toujours une action pour implorer l'aide de votre divinité, et après une intervention réussie vous devez encore attendre 7 jours avant de pouvoir y recourir de nouveau."
+      }
+    ],
+    "sous_classes": [
+      {
+        "nom": "Domaine de la Guerre",
+        "sorts_domaine": [
+          "Faveur divine",
+          "Bouclier de la foi",
+          "Arme magique",
+          "Arme spirituelle",
+          "Aura du croisé",
+          "Esprits gardiens",
+          "Liberté de mouvement",
+          "Peau de pierre",
+          "Colonne de flamme",
+          "Immobilisation de monstre"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Prêtre de guerre",
+            "description": "Maîtrises supplémentaires : armes de guerre et armures lourdes. Prêtre de guerre : quand vous utilisez l'action Attaquer, vous pouvez effectuer une attaque d'arme supplémentaire par une action bonus. Vous disposez d'un nombre d'utilisations égal à votre modificateur de Sagesse (minimum 1), récupérées à la fin d'un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Frappe guidée",
+            "description": "Lorsque vous effectuez un jet d'attaque, vous pouvez dépenser une utilisation de Conduit divin pour obtenir un bonus de +10 à ce jet. Vous décidez d'utiliser cette aptitude après avoir vu le résultat du d20, mais avant que le MD n'annonce si l'attaque touche ou rate."
+          },
+          {
+            "niveau": 6,
+            "nom": "Conduit divin : Bénédiction du dieu de la guerre",
+            "description": "Au niveau 6, quand une créature située à 9 m ou moins de vous effectue un jet d'attaque, vous pouvez utiliser votre réaction et dépenser une utilisation de Conduit divin pour lui accorder un bonus de +10 à ce jet. Vous prenez cette décision après avoir vu le d20, mais avant de savoir si l'attaque touche."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires du même type que ceux de l'arme. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Avatar de bataille",
+            "description": "Au niveau 17, vous obtenez la résistance aux dégâts contondants, perforants et tranchants infligés par des armes non magiques. Cette protection est permanente et ne demande aucune action."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Lumière",
+        "sorts_domaine": [
+          "Mains brûlantes",
+          "Lueurs féeriques",
+          "Sphère de feu",
+          "Rayon ardent",
+          "Boule de feu",
+          "Lumière du jour",
+          "Gardien de la foi",
+          "Mur de feu",
+          "Colonne de flamme",
+          "Scrutation"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Sort mineur supp. & Illumination protectrice",
+            "description": "Vous apprenez le sort mineur Lumière s'il ne vous est pas déjà connu (il ne compte pas dans vos sorts mineurs). Illumination protectrice : quand une créature que vous pouvez voir, à 9 m ou moins, vous attaque, vous pouvez utiliser votre réaction pour lui imposer un désavantage au jet d'attaque grâce à un éclair de lumière, avant de savoir si elle touche. Les créatures qui ne peuvent pas être aveuglées y sont immunisées. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Radiance de l'aube",
+            "description": "Par une action, vous brandissez votre symbole sacré : toute ténèbre magique à 9 m ou moins de vous est dissipée. Chaque créature hostile à 9 m ou moins fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ; elle subit 2d10 + votre niveau de clerc dégâts radiants en cas d'échec, la moitié en cas de réussite. Une créature bénéficiant d'un abri total contre vous n'est pas affectée."
+          },
+          {
+            "niveau": 6,
+            "nom": "Illumination protectrice améliorée",
+            "description": "Au niveau 6, vous pouvez aussi utiliser Illumination protectrice lorsqu'une créature que vous pouvez voir à 9 m ou moins attaque une autre créature que vous. Le coût reste votre réaction et une utilisation (un nombre de fois égal à votre modificateur de Sagesse, récupérées après un repos long), et l'attaquant subit le désavantage au jet d'attaque."
+          },
+          {
+            "niveau": 8,
+            "nom": "Incantation puissante",
+            "description": "Vous ajoutez votre modificateur de Sagesse aux dégâts que vous infligez avec n'importe quel sort mineur de clerc (une seule fois par lancement, même si le sort touche plusieurs cibles ou fait plusieurs jets de dégâts). Exemple : Flamme sacrée inflige alors 1d8 + votre modificateur de Sagesse dégâts radiants (2d8 au niveau 5, 3d8 au niveau 11, 4d8 au niveau 17). Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Couronne de lumière",
+            "description": "Au niveau 17, par une action, vous activez une aura de lumière solaire pendant 1 minute (ou jusqu'à ce que vous la congédiez par une autre action). Vous émettez une lumière vive dans un rayon de 18 m et une lumière faible sur 9 m supplémentaires. Vos ennemis situés dans la lumière vive ont un désavantage aux jets de sauvegarde contre les sorts qui infligent des dégâts de feu ou radiants."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Nature",
+        "sorts_domaine": [
+          "Amitié avec les animaux",
+          "Communication avec les animaux",
+          "Peau d'écorce",
+          "Croissance d'épines",
+          "Croissance végétale",
+          "Mur de vent",
+          "Domination de bête",
+          "Liane avide",
+          "Fléau d'insectes",
+          "Passage par les arbres"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Acolyte de la nature & Maîtrise sup.",
+            "description": "Acolyte de la nature : vous apprenez un sort mineur de druide de votre choix (il compte comme sort mineur de clerc) et obtenez la maîtrise d'une compétence parmi Dressage, Nature et Survie. Maîtrise supplémentaire : vous maîtrisez les armures lourdes."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Charme des animaux et des plantes",
+            "description": "Par une action, vous brandissez votre symbole sacré et nommez votre divinité. Chaque bête ou créature végétale qui peut vous voir à 9 m ou moins fait un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, elle est charmée par vous pendant 1 minute ou jusqu'à ce qu'elle subisse des dégâts, et se montre amicale envers vous et les créatures que vous désignez."
+          },
+          {
+            "niveau": 6,
+            "nom": "Atténuation des éléments",
+            "description": "Au niveau 6, lorsque vous ou une créature à 9 m ou moins de vous subissez des dégâts d'acide, de froid, de feu, de foudre ou de tonnerre, vous pouvez utiliser votre réaction pour accorder la résistance contre ce type de dégâts pour cette occurrence. Aucune limite d'utilisations : seule votre réaction (une par round) est consommée."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité, qui canalise les éléments. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires de froid, de feu ou de foudre (au choix à chaque coup). Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Maître de la nature",
+            "description": "Au niveau 17, tant que des créatures sont charmées par votre Charme des animaux et des plantes, vous pouvez, par une action bonus, leur ordonner verbalement ce qu'elles feront à leur prochain tour. Les ordres peuvent viser toutes les créatures charmées à la fois."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Ruse",
+        "sorts_domaine": [
+          "Charme-personne",
+          "Déguisement",
+          "Image miroir",
+          "Passage sans trace",
+          "Clignotement",
+          "Dissipation de la magie",
+          "Porte dimensionnelle",
+          "Métamorphose",
+          "Domination de personne",
+          "Modification de mémoire"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Bénédiction du filou",
+            "description": "Par une action, vous touchez une créature consentante autre que vous : elle obtient un avantage aux tests de Dextérité (Discrétion). L'effet dure 1 heure ou jusqu'à ce que vous utilisiez de nouveau cette aptitude. Aucune limite d'utilisations."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Invocation de réplique",
+            "description": "Par une action, vous créez un double illusoire parfait de vous-même dans un espace inoccupé visible à 9 m ou moins, pour 1 minute (comme un sort à concentration). Par une action bonus, vous pouvez le déplacer de 9 m au maximum ; il disparaît s'il se trouve à plus de 36 m de vous. Vous pouvez lancer vos sorts comme si vous étiez à sa place (avec vos propres sens), et vous avez un avantage aux jets d'attaque contre une créature si vous et le double êtes tous deux à 1,50 m ou moins d'elle."
+          },
+          {
+            "niveau": 6,
+            "nom": "Conduit divin : Linceul d'ombre",
+            "description": "Au niveau 6, par une action, vous dépensez une utilisation de Conduit divin pour devenir invisible jusqu'à la fin de votre prochain tour. L'invisibilité prend fin plus tôt si vous attaquez ou lancez un sort."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires de poison. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Réplique améliorée",
+            "description": "Au niveau 17, Invocation de réplique crée jusqu'à quatre doubles au lieu d'un. Par une action bonus, vous pouvez déplacer autant de doubles que vous le souhaitez, de 9 m chacun au maximum, et chacun doit rester à 36 m ou moins de vous. Vous pouvez lancer vos sorts depuis l'emplacement de n'importe lequel d'entre eux."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine du Savoir",
+        "sorts_domaine": [
+          "Injonction",
+          "Identification",
+          "Augure",
+          "Suggestion",
+          "Antidétection",
+          "Communication avec les morts",
+          "Oeil magique",
+          "Confusion",
+          "Mythes et légendes",
+          "Scrutation"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Bénédictions du savoir",
+            "description": "Vous apprenez deux langues de votre choix et obtenez la maîtrise de deux compétences parmi Arcanes, Histoire, Nature et Religion. Votre bonus de maîtrise est doublé pour tout test de caractéristique utilisant l'une de ces deux compétences."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Savoir des âges",
+            "description": "Par une action, vous choisissez une compétence ou un outil : vous en obtenez la maîtrise pendant 10 minutes. Cette maîtrise s'ajoute normalement à vos tests, mais ne se double pas avec d'autres effets d'expertise."
+          },
+          {
+            "niveau": 6,
+            "nom": "Conduit divin : Lecture des pensées",
+            "description": "Au niveau 6, par une action, vous choisissez une créature visible à 18 m ou moins ; elle fait un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). Si elle réussit, vous ne pouvez plus la cibler ainsi avant un repos long. Si elle échoue, vous lisez ses pensées de surface pendant 1 minute tant qu'elle reste à 18 m ou moins ; pendant ce temps, vous pouvez par une action mettre fin à l'effet pour lui lancer Suggestion sans dépenser d'emplacement, et elle rate automatiquement son jet."
+          },
+          {
+            "niveau": 8,
+            "nom": "Incantation puissante",
+            "description": "Vous ajoutez votre modificateur de Sagesse aux dégâts que vous infligez avec n'importe quel sort mineur de clerc (une seule fois par lancement, même si le sort touche plusieurs cibles ou fait plusieurs jets de dégâts). Exemple : Flamme sacrée inflige alors 1d8 + votre modificateur de Sagesse dégâts radiants (2d8 au niveau 5, 3d8 au niveau 11, 4d8 au niveau 17). Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Vision du passé",
+            "description": "Au niveau 17, après au moins 1 minute de méditation, vous recevez des visions du passé (en vous concentrant comme pour un sort, jusqu'à un nombre de minutes égal à votre valeur de Sagesse). Lecture d'objet : en tenant un objet, vous voyez son dernier propriétaire et comment il l'a perdu. Lecture des lieux : vous voyez les événements marquants survenus à proximité (cube d'environ 15 m) au cours d'un nombre de jours égal à votre valeur de Sagesse. Utilisable une fois, récupérée après un repos court ou long."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Tempête",
+        "sorts_domaine": [
+          "Nappe de brouillard",
+          "Vague tonnante",
+          "Bourrasque",
+          "Fracassement",
+          "Appel de la foudre",
+          "Tempête de neige",
+          "Contrôle de l'eau",
+          "Tempête de grêle",
+          "Vague destructrice",
+          "Fléau d'insectes"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Fureur de l'ouragan",
+            "description": "Maîtrises supplémentaires : armes de guerre et armures lourdes. Fureur de l'ouragan : quand une créature visible à 1,50 m ou moins vous touche avec une attaque, vous pouvez utiliser votre réaction pour lui imposer un jet de sauvegarde de Dextérité (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ; elle subit 2d8 dégâts de foudre ou de tonnerre (au choix) en cas d'échec, la moitié en cas de réussite. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Fureur destructrice",
+            "description": "Quand vous lancez les dés de dégâts de foudre ou de tonnerre, vous pouvez dépenser une utilisation de Conduit divin pour infliger le maximum possible au lieu de lancer les dés. Idéal avec Appel de la foudre, Vague tonnante ou Fureur de l'ouragan."
+          },
+          {
+            "niveau": 6,
+            "nom": "Frappe de l'éclair",
+            "description": "Au niveau 6, lorsque vous infligez des dégâts de foudre à une créature de taille Grande ou inférieure, vous pouvez aussi la repousser jusqu'à 3 m de vous. Aucune limite d'utilisations ni action requise."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires de tonnerre. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Né de la tempête",
+            "description": "Au niveau 17, vous obtenez une vitesse de vol égale à votre vitesse de marche lorsque vous n'êtes ni sous terre ni à l'intérieur d'un bâtiment."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Vie",
+        "sorts_domaine": [
+          "Bénédiction",
+          "Soins",
+          "Restauration partielle",
+          "Arme spirituelle",
+          "Lueur d'espoir",
+          "Retour à la vie",
+          "Protection contre la mort",
+          "Gardien de la foi",
+          "Soins de groupe",
+          "Rappel à la vie"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Disciple de la vie",
+            "description": "Maîtrise supplémentaire : armures lourdes. Disciple de la vie : chaque fois que vous utilisez un sort de niveau 1 ou supérieur pour rendre des points de vie à une créature, elle récupère en plus 2 + le niveau du sort points de vie (par exemple +3 avec Soins lancé au niveau 1, +5 au niveau 3)."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Préservation de la vie",
+            "description": "Par une action, vous brandissez votre symbole sacré et répartissez jusqu'à 5 × votre niveau de clerc points de vie entre les créatures de votre choix situées à 9 m ou moins. Aucune créature ne peut ainsi dépasser la moitié de son maximum de points de vie. Sans effet sur les morts-vivants et les créatures artificielles."
+          },
+          {
+            "niveau": 6,
+            "nom": "Guérisseur béni",
+            "description": "Au niveau 6, quand vous lancez un sort de niveau 1 ou supérieur qui rend des points de vie à une créature autre que vous, vous récupérez vous-même 2 + le niveau du sort points de vie."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires radiants. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Guérison suprême",
+            "description": "Au niveau 17, lorsque vous devriez lancer des dés pour déterminer les points de vie rendus par un sort, vous utilisez à la place le maximum de chaque dé (Soins au niveau 1 rend ainsi 8 + votre modificateur de Sagesse, plus le bonus de Disciple de la vie)."
+          }
+        ],
+        "source": "Manuel des Joueurs (PHB)"
+      },
+      {
+        "nom": "Domaine de la Mort",
+        "sorts_domaine": [
+          "Simulacre de vie",
+          "Rayon empoisonné",
+          "Cécité/Surdité",
+          "Rayon affaiblissant",
+          "Animation des morts",
+          "Toucher du vampire",
+          "Flétrissement",
+          "Protection contre la mort",
+          "Brume mortelle",
+          "Contagion"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Faucheur",
+            "description": "Maîtrise supplémentaire : armes de guerre. Faucheur : vous apprenez un sort mineur de nécromancie de n'importe quelle liste (il compte comme sort mineur de clerc). Quand vous lancez un sort mineur de nécromancie qui ne cible normalement qu'une créature, il peut en cibler deux situées à 1,50 m ou moins l'une de l'autre."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Toucher de la mort",
+            "description": "Quand vous touchez une créature avec une attaque au corps à corps, vous pouvez dépenser une utilisation de Conduit divin pour lui infliger 5 + 2 × votre niveau de clerc dégâts nécrotiques supplémentaires. Vous décidez après avoir touché."
+          },
+          {
+            "niveau": 6,
+            "nom": "Destruction inéluctable",
+            "description": "Au niveau 6, les dégâts nécrotiques infligés par vos sorts de clerc et par vos options de Conduit divin ignorent la résistance aux dégâts nécrotiques (l'immunité s'applique toujours)."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires nécrotiques. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Faucheur amélioré",
+            "description": "Au niveau 17, quand vous lancez un sort de nécromancie de niveau 1 à 5 qui ne cible qu'une seule créature, il peut en cibler deux situées à 1,50 m ou moins l'une de l'autre. Si le sort consomme des composantes matérielles, vous devez les fournir pour chaque cible."
+          }
+        ],
+        "source": "Dungeon Master's Guide"
+      },
+      {
+        "nom": "Domaine de la Forge",
+        "sorts_domaine": [
+          "Identification",
+          "Châtiment calcinant",
+          "Métal brûlant",
+          "Arme magique",
+          "Arme élémentaire",
+          "Protection contre une énergie",
+          "Fabrication",
+          "Mur de feu",
+          "Animation d'objets",
+          "Création"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Bénédiction de la forge",
+            "description": "Maîtrises supplémentaires : armures lourdes et outils de forgeron. Bénédiction de la forge : à la fin d'un repos long, vous touchez une arme ou une armure non magique ; jusqu'à la fin de votre prochain repos long, elle devient magique et confère +1 à la CA (armure) ou +1 aux jets d'attaque et de dégâts (arme). Utilisable une fois par repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Bénédiction de l'artisan",
+            "description": "Au cours d'un rituel d'une heure, vous créez un objet non magique contenant du métal : arme courante ou de guerre, armure, 10 munitions, outils ou autre objet métallique d'une valeur maximale de 100 po. Vous devez fournir du métal (pièces comprises) d'une valeur égale à celle de l'objet, qui est consommé. L'objet apparaît dans un espace inoccupé à 1,50 m ou moins de vous."
+          },
+          {
+            "niveau": 6,
+            "nom": "Âme de la forge",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts de feu. Tant que vous portez une armure lourde, vous bénéficiez en outre d'un bonus de +1 à la CA."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité, embrasée du feu de la forge. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires de feu. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Saint de la forge et du feu",
+            "description": "Au niveau 17, vous obtenez l'immunité aux dégâts de feu. Tant que vous portez une armure lourde, vous avez la résistance aux dégâts contondants, perforants et tranchants infligés par des attaques non magiques."
+          }
+        ],
+        "source": "Xanathar's Guide to Everything (XGE)"
+      },
+      {
+        "nom": "Domaine de la Tombe",
+        "sorts_domaine": [
+          "Fléau",
+          "Simulacre de vie",
+          "Préservation des morts",
+          "Rayon affaiblissant",
+          "Retour à la vie",
+          "Toucher du vampire",
+          "Bannissement",
+          "Protection contre la mort",
+          "Coquille antivie",
+          "Rappel à la vie"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Cercle de mortalité & Yeux de la tombe",
+            "description": "Cercle de mortalité : quand vous devriez lancer des dés pour rendre des points de vie, par un sort, à une créature à 0 point de vie, vous utilisez le maximum de chaque dé. Vous apprenez aussi Épargner les mourants (sans le décompter), avec une portée de 9 m et lancé par une action bonus. Yeux de la tombe : par une action, jusqu'à la fin de votre prochain tour, vous connaissez l'emplacement de tout mort-vivant à 18 m ou moins non protégé par un abri total ni par la magie de divination ; un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Chemin de la tombe",
+            "description": "Par une action, vous maudissez une créature visible à 9 m ou moins jusqu'à la fin de votre prochain tour. La prochaine fois que vous ou un allié la touchez avec une attaque, elle est vulnérable à tous les dégâts de cette attaque, puis la malédiction prend fin. Seule cette attaque est concernée."
+          },
+          {
+            "niveau": 6,
+            "nom": "Sentinelle au seuil de la mort",
+            "description": "Au niveau 6, quand vous ou une créature visible à 9 m ou moins subissez un coup critique, vous pouvez utiliser votre réaction pour le transformer en coup normal ; les effets déclenchés par le critique sont annulés. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 8,
+            "nom": "Incantation puissante",
+            "description": "Vous ajoutez votre modificateur de Sagesse aux dégâts que vous infligez avec n'importe quel sort mineur de clerc (une seule fois par lancement, même si le sort touche plusieurs cibles ou fait plusieurs jets de dégâts). Exemple : Flamme sacrée inflige alors 1d8 + votre modificateur de Sagesse dégâts radiants (2d8 au niveau 5, 3d8 au niveau 11, 4d8 au niveau 17). Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Gardien des âmes",
+            "description": "Au niveau 17, quand un ennemi visible meurt à 18 m ou moins de vous, vous ou une créature de votre choix à 18 m ou moins récupérez un nombre de points de vie égal au nombre de dés de vie de l'ennemi. Une fois par tour, et pas si vous êtes neutralisé."
+          }
+        ],
+        "source": "Xanathar's Guide to Everything (XGE)"
+      },
+      {
+        "nom": "Domaine du Crépuscule",
+        "sorts_domaine": [
+          "Lueurs féeriques",
+          "Sommeil",
+          "Rayon de lune",
+          "Voir l'invisible",
+          "Aura de vitalité",
+          "Petite hutte de Léomund",
+          "Aura de vie",
+          "Invisibilité supérieure",
+          "Cercle de pouvoir",
+          "Double illusoire"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup., Yeux de la nuit & Bénédiction de vigilance",
+            "description": "Maîtrises : armes de guerre et armures lourdes. Yeux de la nuit : vision dans le noir sur 90 m ; par une action, vous la partagez pendant 1 heure avec un nombre de créatures consentantes égal à votre modificateur de Sagesse (minimum 1) à 3 m ou moins (une fois par repos long, ou en dépensant un emplacement de sort). Bénédiction de vigilance : par une action, une créature (vous compris) a un avantage à son prochain jet d'initiative ; l'effet cesse après ce jet ou si vous réutilisez l'aptitude."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Sanctuaire du crépuscule",
+            "description": "Par une action, vous créez une sphère de pénombre de 9 m de rayon centrée sur vous, qui se déplace avec vous pendant 1 minute (ou jusqu'à ce que vous soyez neutralisé ou mouriez). Quand une créature (vous compris) termine son tour dans la sphère, vous pouvez lui accorder 1d6 + votre niveau de clerc points de vie temporaires, ou mettre fin à un effet qui la charme ou l'effraie."
+          },
+          {
+            "niveau": 6,
+            "nom": "Foulée crépusculaire",
+            "description": "Au niveau 6, par une action bonus, lorsque vous êtes dans une zone de lumière faible ou de ténèbres, vous obtenez une vitesse de vol égale à votre vitesse de marche pendant 1 minute. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires radiants. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Linceul crépusculaire",
+            "description": "Au niveau 17, vous et vos alliés bénéficiez d'un abri partiel (+2 à la CA et aux jets de sauvegarde de Dextérité) tant que vous êtes dans la sphère de votre Sanctuaire du crépuscule."
+          }
+        ],
+        "source": "Tasha's Cauldron of Everything (TCE)"
+      },
+      {
+        "nom": "Domaine de l'Ordre",
+        "sorts_domaine": [
+          "Héroïsme",
+          "Injonction",
+          "Immobilisation de personne",
+          "Zone de vérité",
+          "Lenteur",
+          "Communication à distance",
+          "Compulsion",
+          "Localisation de créature",
+          "Communion",
+          "Domination de personne"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Maîtrises sup. & Voix de l'autorité",
+            "description": "Maîtrises : armures lourdes et une compétence parmi Intimidation et Persuasion. Voix de l'autorité : quand vous lancez un sort de niveau 1 ou supérieur avec un emplacement et qu'il cible un allié, celui-ci peut utiliser sa réaction juste après pour faire une attaque d'arme contre une créature de votre choix qu'il peut voir. Si le sort cible plusieurs alliés, vous choisissez lequel attaque."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Exigence de l'ordre",
+            "description": "Par une action, vous brandissez votre symbole sacré : chaque créature de votre choix qui peut vous voir ou vous entendre à 9 m ou moins fait un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou est charmée jusqu'à la fin de votre prochain tour ou jusqu'à ce qu'elle subisse des dégâts. Vous pouvez aussi forcer les créatures charmées à lâcher ce qu'elles tiennent."
+          },
+          {
+            "niveau": 6,
+            "nom": "Incarnation de la loi",
+            "description": "Au niveau 6, quand vous lancez un sort d'enchantement de niveau 1 ou supérieur dont le temps d'incantation est d'une action, vous pouvez le lancer par une action bonus à la place. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires psychiques. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Courroux de l'ordre",
+            "description": "Au niveau 17, quand vous infligez les dégâts de Frappe divine à une créature pendant votre tour, vous pouvez la maudire jusqu'au début de votre prochain tour. La prochaine fois qu'un de vos alliés la touche avec une attaque, elle subit 2d8 dégâts psychiques supplémentaires et la malédiction prend fin. Une seule malédiction par tour."
+          }
+        ],
+        "source": "Tasha's Cauldron of Everything (TCE)"
+      },
+      {
+        "nom": "Domaine de la Paix",
+        "sorts_domaine": [
+          "Héroïsme",
+          "Sanctuaire",
+          "Aide",
+          "Lien de protection",
+          "Lueur d'espoir",
+          "Communication à distance",
+          "Aura de pureté",
+          "Sanctuaire privé de Mordenkainen",
+          "Restauration supérieure",
+          "Lien télépathique de Rary"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Instrument de paix & Lien de hardiesse",
+            "description": "Instrument de paix : maîtrise d'Intuition, de Persuasion ou de Représentation. Lien de hardiesse : par une action, vous liez un nombre de créatures consentantes égal à votre bonus de maîtrise (vous compris) à 9 m ou moins, pour 10 minutes. Tant qu'une créature liée est à 9 m ou moins d'une autre, elle peut, une fois par tour, ajouter 1d4 à un jet d'attaque, un test de caractéristique ou un jet de sauvegarde. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Baume de la paix",
+            "description": "Par une action, vous vous déplacez jusqu'à votre vitesse sans provoquer d'attaque d'opportunité. Quand vous passez à 1,50 m ou moins d'une autre créature pendant ce déplacement, vous pouvez lui rendre 2d6 + votre modificateur de Sagesse points de vie (minimum 1). Chaque créature ne peut en bénéficier qu'une fois par utilisation."
+          },
+          {
+            "niveau": 6,
+            "nom": "Lien protecteur",
+            "description": "Au niveau 6, quand une créature affectée par votre Lien de hardiesse est sur le point de subir des dégâts, une autre créature liée à 9 m ou moins d'elle peut utiliser sa réaction pour se téléporter dans un espace inoccupé à 1,50 m ou moins de la première et subir tous ces dégâts à sa place."
+          },
+          {
+            "niveau": 8,
+            "nom": "Incantation puissante",
+            "description": "Vous ajoutez votre modificateur de Sagesse aux dégâts que vous infligez avec n'importe quel sort mineur de clerc (une seule fois par lancement, même si le sort touche plusieurs cibles ou fait plusieurs jets de dégâts). Exemple : Flamme sacrée inflige alors 1d8 + votre modificateur de Sagesse dégâts radiants (2d8 au niveau 5, 3d8 au niveau 11, 4d8 au niveau 17). Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Lien étendu",
+            "description": "Au niveau 17, la portée de Lien de hardiesse et de Lien protecteur passe de 9 m à 18 m. De plus, une créature qui utilise sa réaction pour Lien protecteur obtient la résistance aux dégâts qu'elle encaisse ainsi."
+          }
+        ],
+        "source": "Tasha's Cauldron of Everything (TCE)"
+      },
+      {
+        "nom": "Domaine du Sang (Communauté)",
+        "sorts_domaine": [
+          "Fléau",
+          "Frayeur",
+          "Rayon affaiblissant",
+          "Immobilisation de personne",
+          "Toucher du vampire",
+          "Peur",
+          "Flétrissement",
+          "Compulsion",
+          "Contagion",
+          "Fléau d'insectes"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Focus sanguin & Sens de la vie",
+            "description": "Focus sanguin : quand vous lancez un sort de clerc dont la composante matérielle n'a pas de coût indiqué, vous pouvez la remplacer par votre sang en subissant 1d4 dégâts nécrotiques (ne pouvant être réduits). Sens de la vie : par une action, pendant 1 minute, vous percevez l'emplacement de toute créature vivante (ni mort-vivant ni créature artificielle) à 18 m ou moins qui n'est pas à son maximum de points de vie, sauf derrière un abri total. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Malédiction sanguine",
+            "description": "Par une action, vous choisissez une créature visible à 9 m ou moins qui possède du sang ; elle fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, sa vitesse tombe à 0 et elle a un désavantage à ses jets d'attaque jusqu'à la fin de son prochain tour. En cas de réussite, sa vitesse est seulement réduite de moitié pendant la même durée."
+          },
+          {
+            "niveau": 6,
+            "nom": "Marionnette de sang",
+            "description": "Au niveau 6, par une action, vous dépensez une utilisation de Conduit divin pour l'un de ces effets. Pantin : une créature vivante de taille Grande ou inférieure visible à 9 m ou moins fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ; en cas d'échec, vous la déplacez de la moitié de sa vitesse (ce mouvement provoque normalement les attaques d'opportunité) et elle ne peut pas prendre de réaction avant le début de votre prochain tour. Cadavre : un cadavre de taille Moyenne ou inférieure mort depuis moins d'une minute se relève comme zombi sous votre contrôle pendant 1 minute."
+          },
+          {
+            "niveau": 8,
+            "nom": "Frappe divine",
+            "description": "Vous imprégnez vos armes de la puissance de votre divinité, nourrie par le sang versé. Une fois à chacun de vos tours, lorsque vous touchez une créature avec une attaque d'arme, vous pouvez lui infliger 1d8 dégâts supplémentaires nécrotiques. Ces dégâts passent à 2d8 au niveau 14 de clerc. Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Transfusion vasculaire",
+            "description": "Au niveau 17, par une action, vous arrachez le sang de vos ennemis : chaque créature de votre choix dans une sphère de 6 m de rayon centrée sur un point à 18 m ou moins fait un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse), subissant 6d8 dégâts nécrotiques en cas d'échec, la moitié en cas de réussite (sans effet sur les morts-vivants et créatures artificielles). Vous répartissez ensuite la moitié des dégâts totaux infligés en points de vie rendus aux créatures de votre choix à 18 m ou moins. Une fois par repos long."
+          }
+        ],
+        "source": "Création de la communauté"
+      },
+      {
+        "nom": "Domaine de l'Arcane (Communauté)",
+        "sorts_domaine": [
+          "Détection de la magie",
+          "Projectile magique",
+          "Arme magique",
+          "Aura magique de Nystul",
+          "Dissipation de la magie",
+          "Cercle magique",
+          "Oeil magique",
+          "Coffre secret de Léomund",
+          "Contrat",
+          "Cercle de téléportation"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Initié aux arcanes",
+            "description": "Vous obtenez la maîtrise de la compétence Arcanes et apprenez deux sorts mineurs de votre choix dans la liste du magicien. Pour vous, ils comptent comme des sorts mineurs de clerc (la Sagesse est votre caractéristique d'incantation pour ces sorts) et ne sont pas décomptés de vos sorts mineurs connus."
+          },
+          {
+            "niveau": 2,
+            "nom": "Conduit divin : Abjuration arcanique",
+            "description": "Par une action, vous brandissez votre symbole sacré : un céleste, un élémentaire, une fée ou un fiélon visible à 9 m ou moins qui peut vous voir ou vous entendre fait un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Sagesse) ou est renvoyé pendant 1 minute ou jusqu'à ce qu'il subisse des dégâts (mêmes restrictions que Renvoi des morts-vivants). À partir du niveau 5, s'il échoue et que son FP ne dépasse pas le seuil de Destruction des morts-vivants, il est banni pendant 1 minute (comme Bannissement, sans concentration)."
+          },
+          {
+            "niveau": 6,
+            "nom": "Briseur de sorts",
+            "description": "Au niveau 6, quand vous rendez des points de vie à un allié avec un sort de niveau 1 ou supérieur, vous pouvez aussi mettre fin à un sort de votre choix qui l'affecte, à condition que son niveau soit inférieur ou égal à celui de l'emplacement utilisé pour le sort de soins."
+          },
+          {
+            "niveau": 8,
+            "nom": "Incantation puissante",
+            "description": "Vous ajoutez votre modificateur de Sagesse aux dégâts que vous infligez avec n'importe quel sort mineur de clerc (une seule fois par lancement, même si le sort touche plusieurs cibles ou fait plusieurs jets de dégâts). Exemple : Flamme sacrée inflige alors 1d8 + votre modificateur de Sagesse dégâts radiants (2d8 au niveau 5, 3d8 au niveau 11, 4d8 au niveau 17). Variante (Tasha) : l'option Frappes bénies peut remplacer cette aptitude."
+          },
+          {
+            "niveau": 17,
+            "nom": "Maîtrise des arcanes",
+            "description": "Au niveau 17, vous choisissez quatre sorts de la liste du magicien, un de chacun des niveaux 6, 7, 8 et 9. Ils s'ajoutent à vos sorts de domaine : toujours préparés, ne comptant pas dans votre total, et considérés comme des sorts de clerc pour vous."
+          }
+        ],
+        "source": "Guide de l'Aventurier pour la Côte des Epées"
+      }
+    ]
+  }
+}

@@ -1,0 +1,1023 @@
+{
+  "manifestations_occultes": [
+    {
+      "nom": "Armure d'ombres",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Armure de mage sur vous-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles. Tant que le sort est actif et que vous ne portez pas d'armure, votre CA de base devient 13 + modificateur de Dextérité.",
+      "sorts": [
+        {
+          "sort": "Armure de mage",
+          "usage": "À volonté (sans emplacement), sur soi",
+          "emplacement": false,
+          "limite": "",
+          "cible": "soi"
+        }
+      ],
+      "effets": [
+        "armure_mage"
+      ]
+    },
+    {
+      "nom": "Décharge déchirante",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "Décharge occulte",
+        "special": ""
+      },
+      "description": "Quand vous lancez Décharge occulte, ajoutez votre modificateur de Charisme aux dégâts de chaque rayon qui touche (1d10 + modificateur de Charisme par rayon).",
+      "sorts": [],
+      "effets": [
+        "decharge:plat_cha"
+      ]
+    },
+    {
+      "nom": "Décharge répulsive",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "Décharge occulte",
+        "special": ""
+      },
+      "description": "Quand vous touchez une créature avec un rayon de Décharge occulte, vous pouvez la repousser jusqu'à 3 m (2 cases) en ligne droite, à l'opposé de vous — à chaque rayon qui touche.",
+      "sorts": [],
+      "effets": [
+        "decharge:repousse"
+      ]
+    },
+    {
+      "nom": "Esprit occulte",
+      "categorie": "Communes",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous avez l'avantage aux jets de sauvegarde de Constitution effectués pour maintenir votre concentration sur un sort.",
+      "sorts": [],
+      "effets": [
+        "concentration_avantage"
+      ]
+    },
+    {
+      "nom": "Étreinte de Hadar",
+      "categorie": "Communes",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "Décharge occulte",
+        "special": ""
+      },
+      "description": "Une fois par tour, quand vous touchez une créature avec Décharge occulte, vous pouvez la déplacer en ligne droite de 3 m (2 cases) vers vous.",
+      "sorts": [],
+      "effets": [
+        "decharge:attire"
+      ]
+    },
+    {
+      "nom": "Lance de léthargie",
+      "categorie": "Communes",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "Décharge occulte",
+        "special": ""
+      },
+      "description": "Une fois par tour, quand vous touchez une créature avec Décharge occulte, vous pouvez réduire sa vitesse de 3 m (2 cases) jusqu'à la fin de votre prochain tour.",
+      "sorts": [],
+      "effets": [
+        "decharge:ralentit"
+      ]
+    },
+    {
+      "nom": "Lance occulte",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "Décharge occulte",
+        "special": ""
+      },
+      "description": "Quand vous lancez Décharge occulte, sa portée passe à 90 m (60 cases).",
+      "sorts": [],
+      "effets": [
+        "decharge:portee"
+      ]
+    },
+    {
+      "nom": "Langage animal",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Communication avec les animaux à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Communication avec les animaux",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Mille visages",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Déguisement à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Déguisement",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Œil du gardien des runes",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lire toutes les écritures.",
+      "sorts": [],
+      "effets": [
+        "lecture"
+      ]
+    },
+    {
+      "nom": "Perception transférée",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Par une action, vous touchez un humanoïde consentant et percevez par ses sens jusqu'à la fin de votre prochain tour. Tant que la créature est sur le même plan que vous, vous pouvez utiliser votre action lors des tours suivants pour maintenir ce lien jusqu'à la fin de votre tour suivant. Pendant ce temps, vous êtes aveuglé et assourdi vis-à-vis de votre propre environnement.",
+      "sorts": [],
+      "effets": [
+        "action:perception_transferee"
+      ]
+    },
+    {
+      "nom": "Présence captivante",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous gagnez la maîtrise des compétences Tromperie et Persuasion.",
+      "sorts": [],
+      "effets": [
+        "competence:Tromperie",
+        "competence:Persuasion"
+      ]
+    },
+    {
+      "nom": "Vigueur fiélonne",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Simulacre de vie sur vous-même à volonté, comme un sort de niveau 1, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "sorts": [
+        {
+          "sort": "Simulacre de vie",
+          "usage": "À volonté (sans emplacement), sur soi (niveau 1)",
+          "emplacement": false,
+          "limite": "",
+          "cible": "soi"
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Vision du diable",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous voyez normalement dans les ténèbres, magiques ou non, jusqu'à une distance de 36 m.",
+      "sorts": [],
+      "effets": [
+        "vision_diable"
+      ]
+    },
+    {
+      "nom": "Vision occulte",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Détection de la magie à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Détection de la magie",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Visions embrumées",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Image silencieuse à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "sorts": [
+        {
+          "sort": "Image silencieuse",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Voleur des cinq destinées",
+      "categorie": "Communes",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Fléau une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Fléau",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Arme de pacte améliorée",
+      "categorie": "Pacte de la lame",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte de la lame",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez utiliser toute arme invoquée par votre Pacte de la lame comme focaliseur d'incantation. Elle devient une arme magique avec un bonus de +1 aux jets d'attaque et de dégâts, sauf si c'est déjà une arme magique conférant un bonus à ces jets. Votre arme de pacte peut aussi être un arc court, un arc long, une arbalète légère ou une arbalète lourde.",
+      "sorts": [],
+      "effets": [
+        "arme_pacte:+1"
+      ]
+    },
+    {
+      "nom": "Attaque occulte",
+      "categorie": "Pacte de la lame (Niv. 5)",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "Pacte de la lame",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Une fois par tour, quand vous touchez une créature avec votre arme de pacte, vous pouvez dépenser un emplacement de sort d'occultiste : la cible subit 1d8 dégâts de force supplémentaires, plus 1d8 par niveau de l'emplacement, et tombe à terre si elle est de taille Très grande ou inférieure.",
+      "sorts": [],
+      "effets": [
+        "action:attaque_occulte"
+      ]
+    },
+    {
+      "nom": "Buveuse de vie",
+      "categorie": "Pacte de la lame (Niv. 12)",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 12,
+        "pacte": "Pacte de la lame",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand vous touchez une créature avec votre arme de pacte, elle subit des dégâts nécrotiques supplémentaires égaux à votre modificateur de Charisme (minimum 1).",
+      "sorts": [],
+      "effets": [
+        "arme_pacte:necrotique_cha"
+      ]
+    },
+    {
+      "nom": "Lame assoiffée",
+      "categorie": "Pacte de la lame (Niv. 5)",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "Pacte de la lame",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez attaquer deux fois, au lieu d'une, avec votre arme de pacte lorsque vous effectuez l'action Attaquer lors de votre tour.",
+      "sorts": [],
+      "effets": [
+        "attaques:2"
+      ]
+    },
+    {
+      "nom": "Aspect de la lune",
+      "categorie": "Pacte du grimoire",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte du grimoire",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous n'avez plus besoin de dormir et ne pouvez pas être forcé à dormir par quelque moyen que ce soit. Pour bénéficier d'un repos long, vous pouvez passer les 8 heures à pratiquer des activités légères, comme lire votre Livre des ombres et monter la garde.",
+      "sorts": [],
+      "effets": [
+        "sommeil_immunite"
+      ]
+    },
+    {
+      "nom": "Livre des secrets anciens",
+      "categorie": "Pacte du grimoire",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte du grimoire",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez inscrire des rituels magiques dans votre Livre des ombres. Choisissez deux sorts de niveau 1 possédant l'étiquette rituel, issus de la liste de sorts de n'importe quelle classe (pas forcément la même). Ils figurent dans le livre, ne comptent pas dans vos sorts connus et ne se lancent que comme rituels, sauf si vous les avez appris autrement. Vous pouvez y recopier d'autres rituels trouvés au fil de l'aventure, d'un niveau au plus égal à la moitié de votre niveau d'occultiste (arrondie au supérieur) : 2 heures et 50 po par niveau du sort.",
+      "sorts": [],
+      "effets": [
+        "livre_rituels"
+      ]
+    },
+    {
+      "nom": "Scribe des horizons",
+      "categorie": "Pacte du grimoire (Niv. 5)",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "Pacte du grimoire",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Une nouvelle page apparaît dans votre Livre des ombres. Par une action, une créature peut y écrire son nom : la page peut contenir un nombre de noms égal à votre bonus de maîtrise. Vous pouvez lancer Communication à distance en ciblant une créature dont le nom figure sur la page, sans dépenser d'emplacement de sort ni de composantes matérielles ; le message est écrit sur la page au lieu d'être prononcé.",
+      "sorts": [
+        {
+          "sort": "Communication à distance",
+          "usage": "À volonté (sans emplacement), noms inscrits uniquement",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": [
+        "noms_bm"
+      ]
+    },
+    {
+      "nom": "Présent des sauveurs",
+      "categorie": "Pacte du grimoire (Niv. 9)",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 9,
+        "pacte": "Pacte du grimoire",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Une nouvelle page apparaît dans votre Livre des ombres. Par une action, une créature peut y écrire son nom : la page peut contenir un nombre de noms égal à votre bonus de maîtrise. Quand une créature dont le nom figure sur la page tombe à 0 point de vie sans être tuée sur le coup, elle tombe à 1 point de vie à la place. Une fois cette protection déclenchée, elle ne peut plus l'être avant que vous ayez terminé un repos long.",
+      "sorts": [],
+      "effets": [
+        "action:present_sauveurs",
+        "noms_bm"
+      ]
+    },
+    {
+      "nom": "Don des immortels",
+      "categorie": "Pacte de la chaîne",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte de la chaîne",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand vous regagnez des points de vie alors que votre familier se trouve à 30 m ou moins de vous, traitez chaque dé lancé pour déterminer les points de vie regagnés comme s'il avait obtenu son résultat maximal.",
+      "sorts": [],
+      "effets": [
+        "soins_maximaux"
+      ]
+    },
+    {
+      "nom": "Engagement du maître",
+      "categorie": "Pacte de la chaîne",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte de la chaîne",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand vous lancez Appel de familier, la créature invoquée gagne : une vitesse de vol ou de nage (au choix) de 12 m ; par une action bonus, vous pouvez lui ordonner d'effectuer l'action Attaquer ; ses attaques d'arme sont magiques ; si elle force une créature à faire un jet de sauvegarde, elle utilise votre DD de sauvegarde des sorts ; quand elle subit des dégâts, vous pouvez utiliser votre réaction pour lui accorder la résistance contre ces dégâts.",
+      "sorts": [],
+      "effets": [
+        "familier_ameliore",
+        "action:engagement_ordre",
+        "action:engagement_resistance"
+      ]
+    },
+    {
+      "nom": "Voix du maître des chaînes",
+      "categorie": "Pacte de la chaîne",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte de la chaîne",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez communiquer télépathiquement avec votre familier et percevoir par ses sens tant que vous êtes sur le même plan d'existence. En outre, en percevant par ses sens, vous pouvez parler par sa bouche avec votre propre voix, même si votre familier est normalement incapable de parler.",
+      "sorts": [],
+      "effets": [
+        "familier_telepathie"
+      ]
+    },
+    {
+      "nom": "Chaîne des carcères",
+      "categorie": "Pacte de la chaîne (Niv. 15)",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 15,
+        "pacte": "Pacte de la chaîne",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Immobilisation de monstre à volonté, en ciblant uniquement un céleste, un fiélon ou un élémentaire, sans dépenser d'emplacement de sort ni de composantes matérielles. Vous devez terminer un repos long avant de pouvoir utiliser cette manifestation de nouveau sur la même créature.",
+      "sorts": [
+        {
+          "sort": "Immobilisation de monstre",
+          "usage": "À volonté (sans emplacement), céleste, fiélon ou élémentaire (pas deux fois la même créature avant un repos long)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Réprimande du talisman",
+      "categorie": "Pacte du talisman",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 0,
+        "pacte": "Pacte du talisman",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand le porteur de votre talisman est touché par un attaquant que vous voyez à 9 m ou moins de vous, vous pouvez utiliser votre réaction pour infliger à l'attaquant des dégâts psychiques égaux à votre bonus de maîtrise et le repousser jusqu'à 3 m de vous.",
+      "sorts": [],
+      "effets": [
+        "action:reprimande_talisman"
+      ]
+    },
+    {
+      "nom": "Protection du talisman",
+      "categorie": "Pacte du talisman (Niv. 7)",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "Pacte du talisman",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand le porteur de votre talisman rate un jet de sauvegarde, il peut ajouter 1d4 au jet, ce qui peut transformer l'échec en réussite. Utilisable un nombre de fois égal à votre bonus de maîtrise ; toutes les utilisations sont récupérées au repos long.",
+      "sorts": [],
+      "effets": [
+        "action:protection_talisman"
+      ]
+    },
+    {
+      "nom": "Lien du talisman",
+      "categorie": "Pacte du talisman (Niv. 12)",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 12,
+        "pacte": "Pacte du talisman",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Tant que quelqu'un porte votre talisman, vous pouvez utiliser votre action pour vous téléporter dans un espace inoccupé à 1,50 m ou moins de lui, à condition d'être sur le même plan. Le porteur peut faire de même pour vous rejoindre. Utilisable un nombre de fois égal à votre bonus de maîtrise ; toutes les utilisations sont récupérées au repos long.",
+      "sorts": [],
+      "effets": [
+        "action:lien_talisman"
+      ]
+    },
+    {
+      "nom": "Avachissement",
+      "categorie": "Niveau 5",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Lenteur une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Lenteur",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Don des profondeurs",
+      "categorie": "Niveau 5",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez respirer sous l'eau et vous gagnez une vitesse de nage égale à votre vitesse de marche. Vous pouvez aussi lancer Respiration aquatique une fois sans dépenser d'emplacement de sort ; vous récupérez cette possibilité à la fin d'un repos long.",
+      "sorts": [
+        {
+          "sort": "Respiration aquatique",
+          "usage": "1 fois / repos long (gratuit)",
+          "emplacement": false,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": [
+        "nage",
+        "respiration_eau"
+      ]
+    },
+    {
+      "nom": "Maître des ombres",
+      "categorie": "Niveau 5",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Quand vous vous trouvez dans une zone de lumière faible ou de ténèbres, vous pouvez utiliser votre action pour devenir invisible jusqu'à ce que vous vous déplaciez ou que vous effectuiez une action ou une réaction.",
+      "sorts": [],
+      "effets": [
+        "action:maitre_ombres"
+      ]
+    },
+    {
+      "nom": "Maléfice accablant",
+      "categorie": "Niveau 5",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": "le sort Maléfice ou une aptitude d'occultiste qui maudit (Malédiction de la Lame maudite)"
+      },
+      "description": "Par une action bonus, vous provoquez une vague de douleur psychique autour d'une créature maudite par votre sort Maléfice ou par une aptitude d'occultiste (Malédiction de la Lame maudite…). La cible et chaque créature de votre choix à 1,50 m ou moins d'elle subissent des dégâts psychiques égaux à votre modificateur de Charisme (minimum 1). La cible maudite doit se trouver à 9 m ou moins de vous.",
+      "sorts": [],
+      "effets": [
+        "action:malefice_accablant"
+      ]
+    },
+    {
+      "nom": "Servitude de la tombe",
+      "categorie": "Niveau 5",
+      "source": "TCoE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Animation des morts sans dépenser d'emplacement de sort. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Animation des morts",
+          "usage": "1 fois / repos long (gratuit)",
+          "emplacement": false,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Sombre présage",
+      "categorie": "Niveau 5",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Malédiction une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Malédiction",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Tombe de Levistus",
+      "categorie": "Niveau 5",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Par une réaction, quand vous subissez des dégâts, vous vous enfermez dans la glace jusqu'à la fin de votre prochain tour. Vous gagnez 10 points de vie temporaires par niveau d'occultiste, qui absorbent autant que possible les dégâts déclencheurs. Juste après, vous gagnez la vulnérabilité aux dégâts de feu, votre vitesse tombe à 0 et vous êtes neutralisé. À la fin de votre prochain tour, la glace fond et ces effets prennent fin. Une fois utilisée, cette manifestation se recharge au repos court ou long.",
+      "sorts": [],
+      "effets": [
+        "action:tombe_levistus"
+      ]
+    },
+    {
+      "nom": "Voile de mouches",
+      "categorie": "Niveau 5",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 5,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Par une action bonus, vous vous entourez d'une aura de mouches bourdonnantes dans un rayon de 1,50 m, jusqu'à ce que vous soyez neutralisé ou que vous la congédiiez par une action bonus. Vous avez l'avantage aux tests de Charisme (Intimidation), mais le désavantage à tous les autres tests de Charisme. Toute autre créature qui commence son tour dans l'aura subit des dégâts de poison égaux à votre modificateur de Charisme (minimum 0). Une fois utilisée, cette manifestation se recharge au repos court ou long.",
+      "sorts": [],
+      "effets": [
+        "action:voile_mouches"
+      ]
+    },
+    {
+      "nom": "Fuite de l'escamoteur",
+      "categorie": "Niveau 7",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Liberté de mouvement une fois sur vous-même sans dépenser d'emplacement de sort. Vous récupérez cette possibilité à la fin d'un repos long.",
+      "sorts": [
+        {
+          "sort": "Liberté de mouvement",
+          "usage": "1 fois / repos long (gratuit), sur soi",
+          "emplacement": false,
+          "limite": "repos long",
+          "cible": "soi"
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Maléfice implacable",
+      "categorie": "Niveau 7",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": "le sort Maléfice ou une aptitude d'occultiste qui maudit (Malédiction de la Lame maudite)"
+      },
+      "description": "Par une action bonus, vous vous téléportez jusqu'à 9 m vers un espace inoccupé que vous voyez, à 1,50 m ou moins de la créature maudite par votre sort Maléfice ou par une aptitude d'occultiste (Malédiction de la Lame maudite…). La cible doit se trouver à 9 m ou moins de vous.",
+      "sorts": [],
+      "effets": [
+        "action:malefice_implacable"
+      ]
+    },
+    {
+      "nom": "Mot d'effroi",
+      "categorie": "Niveau 7",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Confusion une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Confusion",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Murmures impérieux",
+      "categorie": "Niveau 7",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Compulsion une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Compulsion",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Regard fantomatique",
+      "categorie": "Niveau 7",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Par une action, vous gagnez la capacité de voir à travers les objets solides jusqu'à 9 m, pendant 1 minute au maximum, tant que vous vous concentrez (comme pour un sort). Durant ce temps, vous percevez les objets comme des images fantomatiques et transparentes, et vous voyez dans le noir comme dans la pénombre (vision dans le noir). Une fois utilisée, cette manifestation se recharge au repos court ou long.",
+      "sorts": [],
+      "effets": [
+        "action:regard_fantomatique"
+      ]
+    },
+    {
+      "nom": "Sculpteur de chair",
+      "categorie": "Niveau 7",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 7,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Métamorphose une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Métamorphose",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Murmures de la tombe",
+      "categorie": "Niveau 9",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 9,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Communication avec les morts à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Communication avec les morts",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Pas aérien",
+      "categorie": "Niveau 9",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 9,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Lévitation sur vous-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "sorts": [
+        {
+          "sort": "Lévitation",
+          "usage": "À volonté (sans emplacement), sur soi",
+          "emplacement": false,
+          "limite": "",
+          "cible": "soi"
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Saut d'outre-tombe",
+      "categorie": "Niveau 9",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 9,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Saut sur vous-même à volonté, sans dépenser d'emplacement de sort ni de composantes matérielles.",
+      "sorts": [
+        {
+          "sort": "Saut",
+          "usage": "À volonté (sans emplacement), sur soi",
+          "emplacement": false,
+          "limite": "",
+          "cible": "soi"
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Sbire du chaos",
+      "categorie": "Niveau 9",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 9,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Invocation d'élémentaire une fois en utilisant un emplacement de sort d'occultiste. Vous ne pouvez plus le faire avant d'avoir terminé un repos long.",
+      "sorts": [
+        {
+          "sort": "Invocation d'élémentaire",
+          "usage": "1 fois / repos long (emplacement d'occultiste)",
+          "emplacement": true,
+          "limite": "repos long",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Maître des formes",
+      "categorie": "Niveau 15",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 15,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Modification d'apparence à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Modification d'apparence",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": "soi"
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Royaumes lointains",
+      "categorie": "Niveau 15",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 15,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Œil magique à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Oeil magique",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    },
+    {
+      "nom": "Vision sorcière",
+      "categorie": "Niveau 15",
+      "source": "PHB",
+      "prerequis": {
+        "niveau": 15,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous voyez la véritable forme de tout métamorphe ou de toute créature dissimulée par une magie d'illusion ou de transmutation tant qu'elle se trouve à 9 m ou moins de vous et dans votre champ de vision.",
+      "sorts": [],
+      "effets": [
+        "vision_veritable_9m"
+      ]
+    },
+    {
+      "nom": "Voile d'ombres",
+      "categorie": "Niveau 15",
+      "source": "XGtE",
+      "prerequis": {
+        "niveau": 15,
+        "pacte": "",
+        "sort": "",
+        "special": ""
+      },
+      "description": "Vous pouvez lancer Invisibilité à volonté, sans dépenser d'emplacement de sort.",
+      "sorts": [
+        {
+          "sort": "Invisibilité",
+          "usage": "À volonté (sans emplacement)",
+          "emplacement": false,
+          "limite": "",
+          "cible": ""
+        }
+      ],
+      "effets": []
+    }
+  ]
+}

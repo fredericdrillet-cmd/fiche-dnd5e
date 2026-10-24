@@ -1,0 +1,138 @@
+{
+  "styles_de_combat_et_armures": {
+    "paladin": [
+      {
+        "nom": "Armes à deux mains",
+        "description": "Si vous obtenez 1 ou 2 aux dés de dégâts avec une arme à deux mains, vous pouvez relancer le dé."
+      },
+      {
+        "nom": "Défense",
+        "description": "Quand vous portez une armure, vous obtenez +1 à la CA."
+      },
+      {
+        "nom": "Duel",
+        "description": "Si vous maniez une arme de corps à corps à une main et aucune autre arme, vous gagnez +2 aux dégâts."
+      },
+      {
+        "nom": "Protection",
+        "description": "Si vous portez un bouclier, vous pouvez utiliser votre réaction pour imposer le désavantage à un ennemi qui attaque un allié à 1,5 m."
+      },
+      {
+        "nom": "Combat en aveugle",
+        "description": "Vous avez une vision aveugle de 3 m, vous permettant de percevoir votre environnement même dans les ténèbres ou face à des créatures invisibles."
+      },
+      {
+        "nom": "Combattant béni",
+        "description": "Vous apprenez deux sorts mineurs de clerc (basés sur le Charisme). L'un d'eux peut être changé à chaque montée de niveau."
+      },
+      {
+        "nom": "Interception",
+        "description": "Si vous maniez une arme ou un bouclier, vous pouvez utiliser votre réaction pour réduire les dégâts subis par un allié à 1,5 m de 1d10 + modificateur (ou bonus de maîtrise)."
+      }
+    ],
+    "guerrier": [
+      {
+        "nom": "Archerie",
+        "description": "+2 aux jets d'attaque lorsque vous attaquez avec une arme à distance."
+      },
+      {
+        "nom": "Armes à deux mains",
+        "description": "Si vous obtenez 1 ou 2 aux dés de dégâts, vous pouvez relancer le dé."
+      },
+      {
+        "nom": "Combat à deux armes",
+        "description": "Ajoutez votre modificateur de caractéristique aux dégâts de la deuxième attaque."
+      },
+      {
+        "nom": "Défense",
+        "description": "+1 à la CA lorsque vous portez une armure."
+      },
+      {
+        "nom": "Duel",
+        "description": "+2 aux dégâts si vous maniez une arme de corps à corps à une main sans autre arme."
+      },
+      {
+        "nom": "Protection",
+        "description": "Réaction avec un bouclier pour imposer le désavantage à une attaque ciblant un allié proche."
+      },
+      {
+        "nom": "Arme de lancer",
+        "description": "Vous pouvez dégainer une arme de jet dans le cadre de l'attaque et gagnez +2 aux jets de dégâts avec les armes de jet."
+      },
+      {
+        "nom": "Combat à mains nues",
+        "description": "Vos frappes à mains nues infligent 1d6 (ou 1d8 si aucune arme ni bouclier, et 1d4 supplémentaire aux créatures agrippées)."
+      },
+      {
+        "nom": "Combat en aveugle",
+        "description": "Vision aveugle de 3 m dans les ténèbres et contre l'invisibilité."
+      },
+      {
+        "nom": "Interception",
+        "description": "Réduction des dégâts d'un allié proche avec une arme ou un bouclier."
+      },
+      {
+        "nom": "Technique supérieure",
+        "description": "Vous apprenez une manœuvre de votre choix parmi celles du Maître de guerre et gagnez un dé de supériorité, un d6 (en plus de ceux d'une autre source). Il est dépensé quand vous l'utilisez et récupéré au terme d'un repos court ou long. DD des manœuvres : 8 + bonus de maîtrise + modificateur de Force ou de Dextérité."
+      }
+    ],
+    "rodeur": [
+      {
+        "nom": "Archerie",
+        "description": "+2 aux jets d'attaque avec une arme à distance."
+      },
+      {
+        "nom": "Combat à deux armes",
+        "description": "Ajoutez votre modificateur de caractéristique aux dégâts de la deuxième attaque."
+      },
+      {
+        "nom": "Défense",
+        "description": "+1 à la CA en portant une armure."
+      },
+      {
+        "nom": "Duel",
+        "description": "+2 aux dégâts avec une arme à une main."
+      },
+      {
+        "nom": "Arme de lancer",
+        "description": "Dégainez et attaquez facilement avec +2 aux dégâts de jet."
+      },
+      {
+        "nom": "Combat en aveugle",
+        "description": "Vision aveugle de 3 m."
+      },
+      {
+        "nom": "Combattant druidique",
+        "description": "Apprenez deux sorts mineurs de druide (basés sur la Sagesse), modifiables à chaque niveau."
+      }
+    ],
+    "barde_des_epees": [
+      {
+        "nom": "Duel",
+        "description": "+2 aux dégâts avec une arme de corps à corps à une main et aucune autre arme."
+      },
+      {
+        "nom": "Combat à deux armes",
+        "description": "Ajoutez votre modificateur de caractéristique aux dégâts de la deuxième attaque."
+      }
+    ],
+    "modeles_d_armure": [
+      {
+        "nom": "Gardien",
+        "description": "Attaques à main nue infligeant 1d8 dégâts de tonnerre. Les cibles ont un désavantage aux jets d'attaque contre d'autres que vous. Action bonus pour gagner 20 PV temporaires (6 fois/repos long)."
+      },
+      {
+        "nom": "Infiltré",
+        "description": "Lance-foudre (portée 27m/90m) infligeant 1d6 dégâts de foudre + 1d6 supplémentaire 1 fois/tour. Vitesse augmentée de 1,5 m et avantage aux tests de Discrétion."
+      },
+      {
+        "nom": "Gardien parachevé",
+        "description": "Si une créature à 9 m ou moins termine son tour, réaction pour effectuer un JS de Force (DD 14) afin de l'attirer de 9 m. Si elle est au corps à corps, vous pouvez l'attaquer (6 fois/long repos)."
+      },
+      {
+        "nom": "Infiltré parachevé",
+        "description": "Si une créature subit vos dégâts de foudre, elle subit un désavantage contre les cibles autres que vous, gagne un avantage sur votre prochaine attaque et lui inflige +1d6 dégâts de foudre supplémentaires."
+      }
+    ]
+  }
+}

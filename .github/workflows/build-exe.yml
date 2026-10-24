@@ -1,0 +1,28 @@
+# Compilation automatique de l'exécutable Windows à chaque envoi (push) sur GitHub.
+# Le fichier Fiche_Personnage_DnD5E.exe est téléchargeable dans l'onglet « Actions » du dépôt
+# (artefact « Fiche_Personnage_DnD5E »), avec le journal de build.
+name: Exécutable Windows
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dépendances
+        run: python -m pip install --upgrade pip pyinstaller PyQt6
+      - name: Tests, compilation et vérification
+        run: python build_executable.py
+      - name: Publication de l'exécutable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fiche_Personnage_DnD5E
+          path: |
+            dist/Fiche_Personnage_DnD5E.exe
+            dist/journal_build.txt

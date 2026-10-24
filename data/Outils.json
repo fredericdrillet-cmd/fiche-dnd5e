@@ -1,0 +1,408 @@
+{
+  "outils_dnd_5e": [
+    {
+      "nom": "Matériel d’alchimiste",
+      "categorie": "Outils d'artisan",
+      "prix": "50 po",
+      "caracteristique": "Intelligence",
+      "poids": "4 kg",
+      "utilisation": "identifier une substance (DD 15), allumer un feu (DD 15)",
+      "artisanat": [
+        "acide",
+        "feu grégeois",
+        "huile",
+        "papier",
+        "parfum",
+        "sacoche à composantes"
+      ]
+    },
+    {
+      "nom": "Matériel de brasseur",
+      "categorie": "Outils d'artisan",
+      "prix": "20 po",
+      "caracteristique": "Intelligence",
+      "poids": "4,5 kg",
+      "utilisation": "détecter qu’une boisson est empoisonnée (DD 15), identifier un alcool (DD 10)",
+      "artisanat": [
+        "antidote"
+      ]
+    },
+    {
+      "nom": "Matériel de calligraphe",
+      "categorie": "Outils d'artisan",
+      "prix": "10 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "écrire des textes avec des fioritures impressionnantes qui le prémunissent contre la contrefaçon (DD 15)",
+      "artisanat": [
+        "encre",
+        "parchemin de sort"
+      ]
+    },
+    {
+      "nom": "Matériel de peintre",
+      "categorie": "Outils d'artisan",
+      "prix": "10 po",
+      "caracteristique": "Sagesse",
+      "poids": "2,5 kg",
+      "utilisation": "produire une image ressemblante de quelque chose que vous avez vu (DD 10)",
+      "artisanat": [
+        "focaliseur druidique",
+        "symbole sacré"
+      ]
+    },
+    {
+      "nom": "Outils de bricoleur",
+      "categorie": "Outils d'artisan",
+      "prix": "50 po",
+      "caracteristique": "Dextérité",
+      "poids": "5 kg",
+      "utilisation": "assembler un objet de taille TP composé de ferraille, qui se désagrège au bout de 1 minute (DD 20)",
+      "artisanat": [
+        "mousquet",
+        "pistolet",
+        "boîte à amadou",
+        "cloche",
+        "lanterne à capote",
+        "lanterne sourde",
+        "menottes",
+        "pelle",
+        "piège à mâchoires",
+        "serrure",
+        "sifflet"
+      ]
+    },
+    {
+      "nom": "Outils de cartographe",
+      "categorie": "Outils d'artisan",
+      "prix": "15 po",
+      "caracteristique": "Sagesse",
+      "poids": "3 kg",
+      "utilisation": "cartographier une petite région (DD 15)",
+      "artisanat": [
+        "carte"
+      ]
+    },
+    {
+      "nom": "Outils de charpentier",
+      "categorie": "Outils d'artisan",
+      "prix": "8 po",
+      "caracteristique": "Force",
+      "poids": "3 kg",
+      "utilisation": "sceller ou forcer une porte ou un contenant (DD 20)",
+      "artisanat": [
+        "bâton de combat",
+        "bélier portable",
+        "coffre",
+        "échelle",
+        "gourdin",
+        "massue",
+        "perche",
+        "tonneau",
+        "torche"
+      ]
+    },
+    {
+      "nom": "Outils de cordonnier",
+      "categorie": "Outils d'artisan",
+      "prix": "5 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "modifier des chaussures afin d’octroyer un Avantage au prochain jet de Dextérité (Acrobaties) de leur porteur (DD 10)",
+      "artisanat": [
+        "matériel d’escalade"
+      ]
+    },
+    {
+      "nom": "Outils de forgeron",
+      "categorie": "Outils d'artisan",
+      "prix": "20 po",
+      "caracteristique": "Force",
+      "poids": "4 kg",
+      "utilisation": "forcer une porte ou un contenant (DD 20)",
+      "artisanat": [
+        "toute arme de corps à corps (hormis bâton de combat, gourdin, massue et fouet)",
+        "toute armure intermédiaire (hormis armure de peaux)",
+        "toute armure lourde",
+        "balles pour arme à feu",
+        "billes",
+        "billes de fronde",
+        "chaîne",
+        "chausse-trappes",
+        "grappin",
+        "pied-de-biche",
+        "pointes en fer",
+        "pot en fer",
+        "seau"
+      ]
+    },
+    {
+      "nom": "Outils de joaillier",
+      "categorie": "Outils d'artisan",
+      "prix": "25 po",
+      "caracteristique": "Intelligence",
+      "poids": "1 kg",
+      "utilisation": "déterminer la valeur d’une gemme (DD 15)",
+      "artisanat": [
+        "focaliseur arcanique",
+        "symbole sacré"
+      ]
+    },
+    {
+      "nom": "Outils de maçon",
+      "categorie": "Outils d'artisan",
+      "prix": "10 po",
+      "caracteristique": "Force",
+      "poids": "4 kg",
+      "utilisation": "ciseler un symbole ou creuser un trou dans la pierre (DD 10)",
+      "artisanat": [
+        "palan"
+      ]
+    },
+    {
+      "nom": "Outils de menuisier",
+      "categorie": "Outils d'artisan",
+      "prix": "1 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "sculpter un motif dans le bois (DD 10)",
+      "artisanat": [
+        "armes à distance (sauf fronde, mousquet et pistolet)",
+        "bâton de combat",
+        "carreaux d’arbalète",
+        "dards de sarbacane",
+        "flèches",
+        "focaliseur arcanique",
+        "focaliseur druidique",
+        "porte-plume"
+      ]
+    },
+    {
+      "nom": "Outils de potier",
+      "categorie": "Outils d'artisan",
+      "prix": "10 po",
+      "caracteristique": "Intelligence",
+      "poids": "1,5 kg",
+      "utilisation": "déterminer ce qu’a contenu un objet en céramique lors des dernières 24 heures (DD 15)",
+      "artisanat": [
+        "cruche",
+        "lampe"
+      ]
+    },
+    {
+      "nom": "Outils de souffleur de verre",
+      "categorie": "Outils d'artisan",
+      "prix": "30 po",
+      "caracteristique": "Intelligence",
+      "poids": "2,5 kg",
+      "utilisation": "déterminer ce qu’a contenu un objet en verre lors des dernières 24 heures (DD 15)",
+      "artisanat": [
+        "bouteille en verre",
+        "fiole",
+        "longue-vue",
+        "loupe"
+      ]
+    },
+    {
+      "nom": "Outils de tanneur",
+      "categorie": "Outils d'artisan",
+      "prix": "5 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "ajouter un motif à un objet en cuir (DD 10)",
+      "artisanat": [
+        "fouet",
+        "fronde",
+        "armure de cuir",
+        "armure de cuir clouté",
+        "armure de peaux",
+        "carquois",
+        "étui à carreaux d’arbalète",
+        "étui à cartes ou à parchemins",
+        "outre",
+        "parchemin",
+        "sacoche",
+        "sac à dos"
+      ]
+    },
+    {
+      "nom": "Outils de tisserand",
+      "categorie": "Outils d'artisan",
+      "prix": "1 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "raccommoder une déchirure dans un vêtement (DD 10), coudre un motif de taille TP (DD 10)",
+      "artisanat": [
+        "armure matelassée",
+        "beaux habits",
+        "corde",
+        "couverture",
+        "ficelle",
+        "filet",
+        "panier",
+        "robe",
+        "sac",
+        "sac de couchage",
+        "tente",
+        "tenue de voyage"
+      ]
+    },
+    {
+      "nom": "Ustensiles de cuisinier",
+      "categorie": "Outils d'artisan",
+      "prix": "1 po",
+      "caracteristique": "Sagesse",
+      "poids": "4 kg",
+      "utilisation": "améliorer la saveur des aliments (DD 10), détecter si un plat est avarié ou empoisonné (DD 15)",
+      "artisanat": [
+        "rations"
+      ]
+    },
+    {
+      "nom": "Accessoires de déguisement",
+      "categorie": "Autres outils",
+      "prix": "25 po",
+      "caracteristique": "Charisme",
+      "poids": "1,5 kg",
+      "utilisation": "appliquer du maquillage (DD 10)",
+      "artisanat": [
+        "costume"
+      ]
+    },
+    {
+      "nom": "Boîte de jeux",
+      "categorie": "Autres outils",
+      "prix": "variable",
+      "caracteristique": "Sagesse",
+      "poids": "—",
+      "utilisation": "déterminer si quelqu'un triche (DD 10), gagner la partie (DD 20)",
+      "variantes": [
+        {
+          "nom": "cartes à jouer",
+          "prix": "5 pa"
+        },
+        {
+          "nom": "dés",
+          "prix": "1 pa"
+        },
+        {
+          "nom": "échecs draconiques",
+          "prix": "1 po"
+        },
+        {
+          "nom": "jeu des dragons",
+          "prix": "1 po"
+        }
+      ]
+    },
+    {
+      "nom": "Instrument de musique",
+      "categorie": "Autres outils",
+      "prix": "variable",
+      "caracteristique": "Charisme",
+      "poids": "variable",
+      "utilisation": "jouer un air connu (DD 10), improviser une chanson (DD 15)",
+      "variantes": [
+        {
+          "nom": "chalemie",
+          "prix": "2 po",
+          "poids": "0,5 kg"
+        },
+        {
+          "nom": "cor",
+          "prix": "3 po",
+          "poids": "1 kg"
+        },
+        {
+          "nom": "cornemuse",
+          "prix": "30 po",
+          "poids": "3 kg"
+        },
+        {
+          "nom": "flûte",
+          "prix": "2 po",
+          "poids": "0,5 kg"
+        },
+        {
+          "nom": "flûte de pan",
+          "prix": "12 po",
+          "poids": "1 kg"
+        },
+        {
+          "nom": "luth",
+          "prix": "35 po",
+          "poids": "1 kg"
+        },
+        {
+          "nom": "lyre",
+          "prix": "30 po",
+          "poids": "1 kg"
+        },
+        {
+          "nom": "tambour",
+          "prix": "6 po",
+          "poids": "1,5 kg"
+        },
+        {
+          "nom": "tympanon",
+          "prix": "25 po",
+          "poids": "5 kg"
+        },
+        {
+          "nom": "viole",
+          "prix": "30 po",
+          "poids": "0,5 kg"
+        }
+      ]
+    },
+    {
+      "nom": "Instruments de navigateur",
+      "categorie": "Autres outils",
+      "prix": "25 po",
+      "caracteristique": "Sagesse",
+      "poids": "1 kg",
+      "utilisation": "tracer un cap (DD 10), déterminer sa position en observant les étoiles (DD 15)"
+    },
+    {
+      "nom": "Matériel d’empoisonneur",
+      "categorie": "Autres outils",
+      "prix": "50 po",
+      "caracteristique": "Intelligence",
+      "poids": "1 kg",
+      "utilisation": "déterminer qu’un objet est empoisonné (DD 10)",
+      "artisanat": [
+        "poison standard"
+      ]
+    },
+    {
+      "nom": "Matériel d’herboriste",
+      "categorie": "Autres outils",
+      "prix": "5 po",
+      "caracteristique": "Intelligence",
+      "poids": "1,5 kg",
+      "utilisation": "identifier une plante (DD 10)",
+      "artisanat": [
+        "antidote",
+        "bougie",
+        "trousse de soins",
+        "potion de guérison"
+      ]
+    },
+    {
+      "nom": "Matériel de contrefaçon",
+      "categorie": "Autres outils",
+      "prix": "15 po",
+      "caracteristique": "Dextérité",
+      "poids": "2,5 kg",
+      "utilisation": "imiter 10 mots ou moins de l’écriture d’autrui (DD 15), reproduire un cachet de cire (DD 20)"
+    },
+    {
+      "nom": "Outils de voleur",
+      "categorie": "Autres outils",
+      "prix": "25 po",
+      "caracteristique": "Dextérité",
+      "poids": "0,5 kg",
+      "utilisation": "crocheter une serrure (DD 15), désamorcer un piège (DD 15)"
+    }
+  ]
+}

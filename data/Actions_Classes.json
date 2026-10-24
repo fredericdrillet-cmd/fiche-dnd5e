@@ -1,0 +1,621 @@
+{
+  "_description": "Actions et capacités spéciales de classe (onglet Combat). cout.ressource : clé d'un compteur de sphères (rage, ki, superiorite, second_souffle, sursaut, conduit, inspiration, sens_divin) ; cout.emplacement : dépense un emplacement de sort. Variables de dégâts : {ARTS_MARTIAUX}, {MOD_FINESSE}, {NIV_<Classe>}, {SUPERIORITE}, {CHATIMENT}, {SOURNOISE}, {INSPIRATION}. passifs : capacités passives par classe (noms des aptitudes de classe ; description reprise du fichier de classe).",
+  "actions": [
+    {
+      "id": "rage",
+      "nom": "Entrer en rage",
+      "icone": "😡",
+      "classe": "Barbare",
+      "niveau": 1,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "rage",
+        "n": 1
+      },
+      "jet": "aucun",
+      "effet": "rage",
+      "description": "Avantage aux tests et JS de Force, bonus aux dégâts de Force, résistance contondant/perforant/tranchant pendant 1 minute. Si vous êtes déjà en rage, le bouton y met fin (sans coût).",
+      "bascule": true
+    },
+    {
+      "id": "attaque_temeraire",
+      "nom": "Attaque téméraire",
+      "icone": "🪓",
+      "classe": "Barbare",
+      "niveau": 2,
+      "type": "Spécial",
+      "jet": "aucun",
+      "effet": "attaque_temeraire",
+      "description": "Avantage à vos attaques au corps à corps utilisant la Force ce tour-ci ; les attaques contre vous ont l'avantage jusqu'à votre prochain tour."
+    },
+    {
+      "id": "frappe_martiale",
+      "nom": "Frappe à mains nues (Arts martiaux)",
+      "icone": "👊",
+      "classe": "Moine",
+      "niveau": 1,
+      "type": "Action bonus",
+      "jet": "attaque_mains_nues",
+      "degats": "{ARTS_MARTIAUX}+{MOD_FINESSE}",
+      "type_degats": "contondant",
+      "description": "Après l'action Attaquer, une frappe à mains nues par une action bonus (dé d'arts martiaux, FOR ou DEX)."
+    },
+    {
+      "id": "deluge_coups",
+      "nom": "Déluge de coups",
+      "icone": "🌀",
+      "classe": "Moine",
+      "niveau": 2,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "ki",
+        "n": 1
+      },
+      "jet": "attaque_mains_nues",
+      "degats": "{ARTS_MARTIAUX}+{MOD_FINESSE}",
+      "type_degats": "contondant",
+      "description": "Juste après l'action Attaquer : deux frappes à mains nues par une action bonus."
+    },
+    {
+      "id": "defense_patiente",
+      "nom": "Défense patiente",
+      "icone": "🧘",
+      "classe": "Moine",
+      "niveau": 2,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "ki",
+        "n": 1
+      },
+      "jet": "aucun",
+      "effet": "defense_patiente",
+      "description": "Action Esquive par une action bonus : les attaques contre vous ont le désavantage, avantage aux JS de Dextérité."
+    },
+    {
+      "id": "pas_du_vent",
+      "nom": "Pas du vent",
+      "icone": "💨",
+      "classe": "Moine",
+      "niveau": 2,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "ki",
+        "n": 1
+      },
+      "jet": "aucun",
+      "effet": "desengagement",
+      "description": "Action Se désengager ou Foncer par une action bonus ; votre distance de saut est doublée ce tour-ci."
+    },
+    {
+      "id": "coup_etourdissant",
+      "nom": "Coup étourdissant",
+      "icone": "💫",
+      "classe": "Moine",
+      "niveau": 5,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "ki",
+        "n": 1
+      },
+      "jet": "aucun",
+      "description": "Quand vous touchez avec une attaque d'arme au corps à corps : la cible fait un JS de Constitution (DD de ki) ou est étourdie jusqu'à la fin de votre prochain tour."
+    },
+    {
+      "id": "second_souffle",
+      "nom": "Second souffle",
+      "icone": "🌬️",
+      "classe": "Guerrier",
+      "niveau": 1,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "second_souffle",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "1d10+{NIV_Guerrier}",
+      "soin": true,
+      "description": "Vous regagnez 1d10 + votre niveau de guerrier points de vie (appliqués automatiquement)."
+    },
+    {
+      "id": "sursaut",
+      "nom": "Sursaut d'activité",
+      "icone": "💥",
+      "classe": "Guerrier",
+      "niveau": 2,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "sursaut",
+        "n": 1
+      },
+      "jet": "aucun",
+      "effet": "sursaut_activite",
+      "description": "Une action supplémentaire pendant votre tour."
+    },
+    {
+      "id": "manoeuvre",
+      "nom": "Manœuvre de combat",
+      "icone": "🎯",
+      "classe": "Guerrier",
+      "sous_classe": "Maître de guerre",
+      "niveau": 3,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "superiorite",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "{SUPERIORITE}",
+      "choix": "manoeuvres",
+      "description": "Choisissez une manœuvre : elle dépense un dé de supériorité, lancé et ajouté selon la manœuvre. DD des manœuvres : 8 + maîtrise + mod. de FOR ou DEX."
+    },
+    {
+      "id": "sens_divin",
+      "nom": "Sens divin",
+      "icone": "👁️",
+      "classe": "Paladin",
+      "niveau": 1,
+      "type": "Action",
+      "cout": {
+        "ressource": "sens_divin",
+        "n": 1
+      },
+      "jet": "aucun",
+      "description": "Jusqu'à la fin de votre prochain tour, vous détectez céleste, fiélon et mort-vivant à 18 m (hors abri total)."
+    },
+    {
+      "id": "imposition",
+      "nom": "Imposition des mains",
+      "icone": "🤲",
+      "classe": "Paladin",
+      "niveau": 1,
+      "type": "Action",
+      "cout": {
+        "ressource": "imposition",
+        "n": 1
+      },
+      "choix": "imposition",
+      "description": "Puisez dans votre réserve de guérison (5 × niveau de paladin) pour rendre autant de PV que vous le souhaitez à une créature touchée, ou dépensez 5 points pour guérir une maladie ou neutraliser un poison. Sans effet sur les morts-vivants et les créatures artificielles."
+    },
+    {
+      "id": "chatiment",
+      "nom": "Châtiment divin",
+      "icone": "✨",
+      "classe": "Paladin",
+      "niveau": 2,
+      "type": "Spécial",
+      "cout": {
+        "emplacement": true
+      },
+      "jet": "degats",
+      "degats": "{CHATIMENT}",
+      "type_degats": "radiant",
+      "description": "Quand vous touchez avec une attaque d'arme au corps à corps : dépensez un emplacement de sort pour 2d8 radiants (+1d8 par niveau au-delà du 1er, max 5d8 ; +1d8 contre mort-vivant ou fiélon)."
+    },
+    {
+      "id": "conduit_paladin",
+      "nom": "Conduit divin (serment)",
+      "icone": "🔆",
+      "classe": "Paladin",
+      "niveau": 3,
+      "type": "Action",
+      "cout": {
+        "ressource": "conduit",
+        "n": 1
+      },
+      "jet": "aucun",
+      "choix": "conduit",
+      "description": "Option de Conduit divin de votre serment (Arme sacrée, Vœu d'inimitié, Renvoi de l'impie…)."
+    },
+    {
+      "id": "renvoi",
+      "nom": "Conduit divin : Renvoi des morts-vivants",
+      "icone": "☀️",
+      "classe": "Clerc",
+      "niveau": 2,
+      "type": "Action",
+      "cout": {
+        "ressource": "conduit",
+        "n": 1
+      },
+      "jet": "aucun",
+      "description": "Chaque mort-vivant qui vous voit ou entend à 9 m fait un JS de Sagesse (DD de sorts) ou est renvoyé pendant 1 minute (détruit selon son FP à partir du niveau 5)."
+    },
+    {
+      "id": "conduit_clerc",
+      "nom": "Conduit divin (domaine)",
+      "icone": "🔆",
+      "classe": "Clerc",
+      "niveau": 2,
+      "type": "Action",
+      "cout": {
+        "ressource": "conduit",
+        "n": 1
+      },
+      "jet": "aucun",
+      "choix": "conduit",
+      "description": "Option de Conduit divin de votre domaine (Préserver la vie, Fureur destructrice, Frappe guidée…)."
+    },
+    {
+      "id": "sournoise",
+      "nom": "Attaque sournoise",
+      "icone": "🗡️",
+      "classe": "Roublard",
+      "niveau": 1,
+      "type": "Spécial",
+      "jet": "degats",
+      "degats": "{SOURNOISE}",
+      "description": "Une fois par tour, dégâts supplémentaires avec une arme de finesse ou à distance si vous avez l'avantage ou un allié à 1,50 m de la cible."
+    },
+    {
+      "id": "ruse",
+      "nom": "Action astucieuse",
+      "icone": "🦊",
+      "classe": "Roublard",
+      "niveau": 2,
+      "type": "Action bonus",
+      "jet": "aucun",
+      "effet": "desengagement",
+      "choix": "ruse",
+      "description": "Se précipiter (Foncer), Se désengager ou Se cacher par une action bonus."
+    },
+    {
+      "id": "esquive_instinctive",
+      "nom": "Esquive instinctive",
+      "icone": "🛡️",
+      "classe": "Roublard",
+      "niveau": 5,
+      "type": "Réaction",
+      "jet": "aucun",
+      "description": "Quand un attaquant que vous voyez vous touche, vous divisez les dégâts de cette attaque par deux."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "lame_psy",
+      "nom": "Lames psychiques",
+      "icone": "🗡️",
+      "niveau": 3,
+      "type": "Action",
+      "jet": "attaque_mains_nues",
+      "degats": "1d6+{MOD_FINESSE}",
+      "type_degats": "psychique",
+      "description": "Lors de l'action Attaquer, une lame d'énergie psychique (finesse, lancer 18/36 m) : 1d6 dégâts psychiques + modificateur. Ne consomme aucun dé."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "lame_psy_2",
+      "nom": "Seconde lame psychique",
+      "icone": "🔪",
+      "niveau": 3,
+      "type": "Action bonus",
+      "jet": "attaque_mains_nues",
+      "degats": "1d4+{MOD_FINESSE}",
+      "type_degats": "psychique",
+      "description": "Après une attaque avec une lame psychique, par une action bonus (main libre requise) : 1d4 dégâts psychiques + modificateur."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "savoir_faire",
+      "nom": "Savoir-faire renforcé",
+      "icone": "🧠",
+      "niveau": 3,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "psionique",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "{PSI}",
+      "type_degats": "",
+      "depense_si_reussite": true,
+      "description": "Si vous ratez un test avec une compétence ou un outil maîtrisé : lancez un dé psionique et ajoutez-le. Le dé n'est dépensé que si le test réussit alors."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "murmures",
+      "nom": "Murmures psychiques",
+      "icone": "💭",
+      "niveau": 3,
+      "type": "Action",
+      "cout": {
+        "ressource": "psionique",
+        "n": 1,
+        "gratuit": "murmures_gratuit"
+      },
+      "jet": "degats",
+      "degats": "{PSI}",
+      "type_degats": "",
+      "description": "Lien télépathique avec un nombre de créatures visibles égal à votre bonus de maîtrise (portée 1,5 km), pendant un nombre d'heures égal au résultat du dé. Première utilisation après un repos long gratuite."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "recup_psi",
+      "nom": "Récupération psionique",
+      "icone": "🔄",
+      "niveau": 3,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "psi_recup",
+        "n": 1
+      },
+      "rend": "psionique",
+      "description": "Une fois par repos court ou long, par une action bonus, vous récupérez un dé psionique dépensé."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "frappes_autoguidees",
+      "nom": "Frappes autoguidées",
+      "icone": "🎯",
+      "niveau": 9,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "psionique",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "{PSI}",
+      "type_degats": "",
+      "depense_si_reussite": true,
+      "description": "Si vous ratez une attaque avec vos lames psychiques : lancez un dé psionique et ajoutez-le au jet d'attaque. Le dé n'est dépensé que si l'attaque touche alors."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "teleport_psy",
+      "nom": "Téléportation psychique",
+      "icone": "✨",
+      "niveau": 9,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "psionique",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "{PSI}",
+      "type_degats": "",
+      "description": "Dépensez un dé psionique, lancez-le : vous vous téléportez jusqu'à 3 m × le résultat vers un espace inoccupé visible."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "voile_psy",
+      "nom": "Voile psychique",
+      "icone": "👻",
+      "niveau": 13,
+      "type": "Action",
+      "cout": {
+        "ressource": "psionique",
+        "n": 1,
+        "gratuit": "voile_gratuit"
+      },
+      "effet": "invisible",
+      "description": "Invisible pendant 1 heure (fin si vous infligez des dégâts ou imposez un jet de sauvegarde). 1 fois par repos long, ou 1 dé psionique."
+    },
+    {
+      "classe": "Roublard",
+      "sous_classe": "Lame psychique",
+      "id": "rupture",
+      "nom": "Rupture spirituelle",
+      "icone": "💥",
+      "niveau": 17,
+      "type": "Spécial",
+      "cout": {
+        "ressource": "psionique",
+        "n": 3,
+        "gratuit": "rupture_gratuit"
+      },
+      "description": "Avec l'Attaque sournoise de vos lames psychiques : JS de Sagesse (DD 8 + maîtrise + Dextérité) ou étourdie 1 minute. 1 fois par repos long, ou 3 dés psioniques."
+    },
+    {
+      "id": "inspiration",
+      "nom": "Inspiration bardique",
+      "icone": "🎵",
+      "classe": "Barde",
+      "niveau": 1,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "inspiration",
+        "n": 1
+      },
+      "jet": "degats",
+      "degats": "{INSPIRATION}",
+      "description": "Une créature à 18 m qui vous entend gagne un dé d'inspiration à ajouter à un test, une attaque ou un JS dans les 10 minutes."
+    },
+    {
+      "id": "chant_lame",
+      "nom": "Chant de la lame",
+      "icone": "🎶",
+      "classe": "Magicien",
+      "sous_classe": "Chantelame",
+      "niveau": 2,
+      "type": "Action bonus",
+      "cout": {
+        "ressource": "chant_lame",
+        "n": 1
+      },
+      "effet": "chant_lame",
+      "bascule": true,
+      "description": "Pendant 1 minute (sans armure intermédiaire ou lourde ni bouclier) : CA + modificateur d'Intelligence, vitesse +3 m, avantage aux tests de Dextérité (Acrobaties), + mod. d'Intelligence aux JS de Constitution de concentration. Cliquez à nouveau pour y mettre fin."
+    }
+  ],
+  "manoeuvres": [
+    {
+      "nom": "Attaque menaçante",
+      "description": "Ajoutez le dé aux dégâts ; JS de Sagesse ou la cible est effrayée jusqu'à la fin de votre prochain tour."
+    },
+    {
+      "nom": "Attaque précise",
+      "description": "Ajoutez le dé à votre jet d'attaque (avant ou après le jet, avant le résultat)."
+    },
+    {
+      "nom": "Attaque repoussante",
+      "description": "Ajoutez le dé aux dégâts ; JS de Force ou la cible (Grande ou moins) est repoussée de 4,50 m."
+    },
+    {
+      "nom": "Attaque avec feinte",
+      "description": "Action bonus : avantage à votre prochaine attaque contre la cible ce tour ; ajoutez le dé aux dégâts si elle touche."
+    },
+    {
+      "nom": "Croc-en-jambe",
+      "description": "Ajoutez le dé aux dégâts ; JS de Force ou la cible (Grande ou moins) tombe à terre."
+    },
+    {
+      "nom": "Désarmement",
+      "description": "Ajoutez le dé aux dégâts ; JS de Force ou la cible lâche un objet qu'elle tient."
+    },
+    {
+      "nom": "Distraction",
+      "description": "Ajoutez le dé aux dégâts ; la prochaine attaque d'un allié contre la cible a l'avantage."
+    },
+    {
+      "nom": "Fente",
+      "description": "Votre allonge augmente de 1,50 m pour une attaque ; ajoutez le dé aux dégâts."
+    },
+    {
+      "nom": "Jeu de jambes",
+      "description": "En vous déplaçant, ajoutez le dé à votre CA jusqu'à la fin du déplacement."
+    },
+    {
+      "nom": "Manœuvre tactique",
+      "description": "Quand vous touchez une créature avec une attaque d'arme, ajoutez le dé aux dégâts ; un allié qui vous voit peut utiliser sa réaction pour se déplacer de la moitié de sa vitesse sans provoquer d'attaque d'opportunité de la cible."
+    },
+    {
+      "nom": "Parade",
+      "description": "Réaction quand vous êtes touché au corps à corps : réduisez les dégâts du dé + votre modificateur de Dextérité."
+    },
+    {
+      "nom": "Provocation",
+      "description": "Ajoutez le dé aux dégâts ; JS de Sagesse ou la cible a le désavantage contre les autres que vous."
+    },
+    {
+      "nom": "Ralliement",
+      "description": "Action bonus : un allié gagne des PV temporaires égaux au dé + votre modificateur de Charisme."
+    },
+    {
+      "nom": "Riposte",
+      "description": "Réaction quand une créature vous rate au corps à corps : attaquez-la et ajoutez le dé aux dégâts."
+    },
+    {
+      "nom": "Attaque balayage",
+      "description": "Si vous touchez, une autre créature à 1,50 m de la cible subit le dé en dégâts (si votre jet l'aurait touchée)."
+    },
+    {
+      "nom": "Commandement",
+      "description": "Renoncez à une attaque : un allié utilise sa réaction pour attaquer et ajoute le dé aux dégâts."
+    },
+    {
+      "nom": "Embuscade",
+      "description": "Quand vous faites un test de Dextérité (Discrétion) ou un jet d'initiative, ajoutez le dé au jet (sauf si vous êtes neutralisé). (Tasha)"
+    },
+    {
+      "nom": "Échange de position",
+      "description": "À votre tour, avant ou après votre déplacement, échangez de place avec une créature consentante à 1,50 m (sans attaque d'opportunité) ; vous ou elle ajoutez le dé à la CA jusqu'au début de votre prochain tour. (Tasha)"
+    },
+    {
+      "nom": "Garde préparée",
+      "description": "Réaction quand une créature que vous voyez entre dans votre allonge : attaque d'arme contre elle, ajoutez le dé aux dégâts. (Tasha)"
+    },
+    {
+      "nom": "Présence imposante",
+      "description": "Quand vous faites un test de Charisme (Intimidation, Représentation ou Persuasion), ajoutez le dé au test. (Tasha)"
+    },
+    {
+      "nom": "Frappe agrippante",
+      "description": "Juste après avoir touché une créature avec une attaque au corps à corps à votre tour : action bonus pour tenter de l'agripper, en ajoutant le dé au test de Force (Athlétisme). (Tasha)"
+    },
+    {
+      "nom": "Lancer rapide",
+      "description": "Action bonus : attaque à distance avec une arme de lancer (dégainée dans le cadre de l'attaque) ; ajoutez le dé aux dégâts. (Tasha)"
+    },
+    {
+      "nom": "Évaluation tactique",
+      "description": "Quand vous faites un test d'Intelligence (Investigation ou Histoire) ou de Sagesse (Perspicacité), ajoutez le dé au test. (Tasha)"
+    }
+  ],
+  "ruse": [
+    "Foncer",
+    "Se désengager",
+    "Se cacher"
+  ],
+  "passifs": {
+    "Barbare": [
+      "Défense sans armure",
+      "Sens du danger",
+      "Attaque supplémentaire",
+      "Déplacement rapide",
+      "Instinct sauvage",
+      "Critique brutal",
+      "Rage implacable",
+      "Rage persistante",
+      "Puissance indomptable",
+      "Champion primitif"
+    ],
+    "Moine": [
+      "Arts martiaux",
+      "Défense sans armure",
+      "Déplacement sans armure",
+      "Frappes renforcées par le Ki",
+      "Attaque supplémentaire",
+      "Dérobade",
+      "Esprit tranquille",
+      "Pureté du corps",
+      "Corps intemporel",
+      "Âme du soleil et de la lune",
+      "Langue du soleil et de la lune",
+      "Perfection de soi"
+    ],
+    "Guerrier": [
+      "Attaque supplémentaire"
+    ],
+    "Roublard": [
+      "Expertise",
+      "Évasion",
+      "Talent fiable",
+      "Ouïe aveugle",
+      "Esprit fuyant",
+      "Insaisissable"
+    ],
+    "Paladin": [
+      "Santé divine",
+      "Attaque supplémentaire",
+      "Aura de protection",
+      "Aura de courage",
+      "Châtiment divin amélioré",
+      "Amélioration des auras"
+    ],
+    "Rôdeur": [
+      "Ennemi juré",
+      "Explorateur-né",
+      "Attaque supplémentaire",
+      "Déplacement terrestre",
+      "Sens sauvages",
+      "Tueur d'ennemis",
+      "Vagabond (option Tasha)"
+    ],
+    "Barde": [
+      "Touche-à-tout",
+      "Source d'inspiration",
+      "Inspiration supérieure"
+    ],
+    "Clerc": [
+      "Destruction des morts-vivants"
+    ],
+    "Druide": [
+      "Corps intemporel",
+      "Archidruide"
+    ],
+    "Magicien": [],
+    "Ensorceleur": [],
+    "Occultiste": [],
+    "Artificier": [
+      "Adepte des objets magiques",
+      "Érudit des objets magiques",
+      "Maître des objets magiques"
+    ]
+  }
+}

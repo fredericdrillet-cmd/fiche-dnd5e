@@ -1,0 +1,74 @@
+[
+  {
+    "competence": "Acrobaties",
+    "caracteristique": "Dextérité"
+  },
+  {
+    "competence": "Arcanes",
+    "caracteristique": "Intelligence"
+  },
+  {
+    "competence": "Athlétisme",
+    "caracteristique": "Force"
+  },
+  {
+    "competence": "Discrétion",
+    "caracteristique": "Dextérité"
+  },
+  {
+    "competence": "Dressage",
+    "caracteristique": "Sagesse"
+  },
+  {
+    "competence": "Escamotage",
+    "caracteristique": "Dextérité"
+  },
+  {
+    "competence": "Histoire",
+    "caracteristique": "Intelligence"
+  },
+  {
+    "competence": "Intimidation",
+    "caracteristique": "Charisme"
+  },
+  {
+    "competence": "Investigation",
+    "caracteristique": "Intelligence"
+  },
+  {
+    "competence": "Médecine",
+    "caracteristique": "Sagesse"
+  },
+  {
+    "competence": "Nature",
+    "caracteristique": "Intelligence"
+  },
+  {
+    "competence": "Perception",
+    "caracteristique": "Sagesse"
+  },
+  {
+    "competence": "Perspicacité",
+    "caracteristique": "Sagesse"
+  },
+  {
+    "competence": "Persuasion",
+    "caracteristique": "Charisme"
+  },
+  {
+    "competence": "Religion",
+    "caracteristique": "Intelligence"
+  },
+  {
+    "competence": "Représentation",
+    "caracteristique": "Charisme"
+  },
+  {
+    "competence": "Survie",
+    "caracteristique": "Sagesse"
+  },
+  {
+    "competence": "Tromperie",
+    "caracteristique": "Charisme"
+  }
+]

@@ -1,0 +1,2135 @@
+{
+  "especes": [
+    {
+      "nom": "Aarakocra",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Vol",
+          "description": "Vous disposez d'une vitesse de vol égale à votre vitesse de marche (9 m). Vous ne pouvez pas l'utiliser si vous portez une armure intermédiaire ou lourde."
+        },
+        {
+          "nom": "Serres",
+          "description": "Vos serres sont des armes naturelles avec lesquelles vous pouvez porter des attaques à mains nues. Un coup réussi inflige 1d6 + votre modificateur de Force dégâts tranchants, au lieu des dégâts contondants habituels d'une attaque à mains nues."
+        },
+        {
+          "nom": "Appel du vent",
+          "description": "Lancement : à partir du niveau 3, vous pouvez lancer *Bourrasque* (niv. 3, 1/repos long) sans composante matérielle. Vous pouvez aussi le lancer avec vos emplacements de sort de niveau 2 ou supérieur. Caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie en adoptant l'espèce)."
+        }
+      ]
+    },
+    {
+      "nom": "Aasimar protecteur",
+      "source": "Guide de Volo",
+      "caracteristiques": "Cha +2, Sag +1",
+      "langues": [
+        "Commun",
+        "Céleste"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Résistance céleste",
+          "description": "Résistance aux dégâts radiants et nécrotiques."
+        },
+        {
+          "nom": "Sort",
+          "description": "Connaît le sort mineur *Lumière* (Porteur de lumière). Le Charisme est votre caractéristique d'incantation pour ce sort."
+        },
+        {
+          "nom": "Âme radieuse",
+          "description": "À partir du niveau 3, par une action, vos yeux s'illuminent et deux ailes lumineuses apparaissent pendant 1 minute (1 fois par repos long) : vous gagnez une vitesse de vol de 9 m. Pendant la transformation, une fois par tour, une attaque ou un sort qui inflige des dégâts ajoute des dégâts radiants égaux à votre niveau de personnage à une cible. Vous pouvez y mettre fin par une action bonus."
+        },
+        {
+          "nom": "Mains guérisseuses",
+          "description": "Par une action, vous touchez une créature et lui rendez un nombre de points de vie égal à votre niveau de personnage. Utilisable 1 fois par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Aasimar déchu",
+      "source": "Guide de Volo",
+      "caracteristiques": "Cha +2, For +1",
+      "langues": [
+        "Commun",
+        "Céleste"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Résistance céleste",
+          "description": "Résistance aux dégâts radiants et nécrotiques."
+        },
+        {
+          "nom": "Sort",
+          "description": "Connaît le sort mineur *Lumière* (Porteur de lumière). Le Charisme est votre caractéristique d'incantation pour ce sort."
+        },
+        {
+          "nom": "Voile nécrotique",
+          "description": "À partir du niveau 3, par une action, vous déployez des ailes squelettiques et spectrales pendant 1 minute (1 fois par repos long). À l'activation, chaque créature autre que vos alliés située à 3 m ou moins et qui peut vous voir doit réussir un JS de Charisme (DD 8 + votre bonus de maîtrise + votre modificateur de Charisme) ou être effrayée jusqu'à la fin de votre prochain tour. Pendant la transformation, une fois par tour, une attaque ou un sort qui inflige des dégâts ajoute des dégâts nécrotiques égaux à votre niveau de personnage à une cible."
+        },
+        {
+          "nom": "Mains guérisseuses",
+          "description": "Par une action, vous touchez une créature et lui rendez un nombre de points de vie égal à votre niveau de personnage. Utilisable 1 fois par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Autognome",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Coque blindée",
+          "description": "Tant que vous ne portez pas d'armure, votre CA est égale à 13 + votre modificateur de Dextérité. Vous pouvez utiliser un bouclier et en conserver le bénéfice."
+        },
+        {
+          "nom": "Conçu pour réussir",
+          "description": "Lorsque vous effectuez un jet d'attaque, un test de caractéristique ou un jet de sauvegarde, vous pouvez lancer 1d4 et l'ajouter au résultat du d20. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Machine de guérison",
+          "description": "Quand le sort Réparation est lancé sur vous, vous pouvez dépenser un dé de vie, le lancer et récupérer ce résultat + votre modificateur de Constitution en points de vie (minimum 1). Les sorts Soins, Mot de guérison, leurs versions de groupe et Épargner les mourants fonctionnent sur vous malgré votre nature artificielle."
+        },
+        {
+          "nom": "Nature mécanique",
+          "description": "Vous avez la résistance aux dégâts de poison, l'immunité aux maladies et l'avantage aux jets de sauvegarde contre les états paralysé et empoisonné. Vous n'avez besoin ni de manger, ni de boire, ni de respirer."
+        },
+        {
+          "nom": "Repos de sentinelle",
+          "description": "Votre repos long ne dure que 6 heures, passées immobile et inactif mais sans perdre conscience : vous voyez et entendez normalement durant cette période."
+        },
+        {
+          "nom": "Conception spécialisée",
+          "description": "Maîtrise de deux outils au choix."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Petite taille ; vous êtes une Créature artificielle et non un Humanoïde."
+        }
+      ]
+    },
+    {
+      "nom": "Centaure",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Charge",
+          "description": "Si vous vous déplacez d'au moins 9 m en ligne droite vers une cible puis la touchez avec une attaque d'arme au corps à corps lors du même tour, vous pouvez immédiatement porter une attaque avec vos Sabots contre elle par une action bonus."
+        },
+        {
+          "nom": "Morphologie équine",
+          "description": "Vous comptez comme une créature de taille Grande pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever. En revanche, chaque mètre d'escalade vous coûte 4 m de déplacement supplémentaires."
+        },
+        {
+          "nom": "Sabots",
+          "description": "Vos sabots sont des armes naturelles avec lesquelles vous pouvez porter des attaques à mains nues. Un coup réussi inflige 1d6 + votre modificateur de Force dégâts contondants."
+        },
+        {
+          "nom": "Affinité naturelle",
+          "description": "Maîtrise au choix de Dressage, Médecine, Nature ou Survie."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Moyenne ; type Fée."
+        }
+      ]
+    },
+    {
+      "nom": "Changelin",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Changeforme",
+          "description": "Par une action, vous modifiez votre apparence et votre voix (traits, couleurs, longueur des cheveux, sexe, taille entre Moyenne et Petite), y compris pour paraître d'une autre espèce, sans changer vos statistiques. Vous ne pouvez pas copier un individu jamais vu, devez garder la même disposition de membres, et vos vêtements ne changent pas. La forme dure jusqu'à ce que vous repreniez votre forme véritable par une action ou mouriez."
+        },
+        {
+          "nom": "Instincts du changelin",
+          "description": "Vous obtenez la maîtrise de deux compétences parmi Intimidation, Intuition, Persuasion, Représentation et Tromperie."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Moyenne ou Petite (au choix) ; type Fée."
+        }
+      ]
+    },
+    {
+      "nom": "Conil",
+      "source": "Création de la communauté",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou petite."
+        },
+        {
+          "nom": "Comme un lièvre",
+          "description": "Vous ajoutez votre bonus de maîtrise à vos jets d'initiative."
+        },
+        {
+          "nom": "Gambade heureuse",
+          "description": "Lorsque vous ratez un jet de sauvegarde de Dextérité, vous pouvez utiliser votre réaction pour lancer 1d4 et l'ajouter au résultat, ce qui peut transformer l'échec en réussite. Impossible si vous êtes à terre ou si votre vitesse est de 0."
+        },
+        {
+          "nom": "Saut de lapin",
+          "description": "Par une action bonus, si votre vitesse n'est pas de 0, vous sautez d'une distance égale à 1,50 m × votre bonus de maîtrise sans provoquer d'attaque d'opportunité. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Sens léporides",
+          "description": "Maîtrise de la Perception."
+        }
+      ]
+    },
+    {
+      "nom": "Drakéide",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "For +2, Cha +1",
+      "langues": [
+        "Commun",
+        "Draconique"
+      ],
+      "capacites": [
+        {
+          "nom": "Ascendance draconique",
+          "description": "Choisissez un dragon, qui fixe le type de dégâts et la zone de votre souffle : Noir ou Cuivre (acide, ligne 1,50 × 9 m, JS Dex), Bleu ou Bronze (foudre, ligne 1,50 × 9 m, JS Dex), Airain (feu, ligne 1,50 × 9 m, JS Dex), Or ou Rouge (feu, cône 4,50 m, JS Dex), Vert (poison, cône 4,50 m, JS Con), Argent ou Blanc (froid, cône 4,50 m, JS Con)."
+        },
+        {
+          "nom": "Résistance draconique",
+          "description": "Résistance au type de dégâts de l'ascendance."
+        },
+        {
+          "nom": "Souffle",
+          "description": "Par une action, vous soufflez l'énergie de votre ascendance dans la zone indiquée. Chaque créature touchée effectue le JS correspondant, DD 8 + votre bonus de maîtrise + votre modificateur de Constitution, et subit 2d6, 3d6 au niveau 6, 4d6 au niveau 11, 5d6 au niveau 16 dégâts, la moitié en cas de réussite. Utilisable 1 fois par repos court ou long."
+        }
+      ]
+    },
+    {
+      "nom": "Dhampir",
+      "source": "Guide de Ravenloft",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou petite."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Sans-vie",
+          "description": "Aucun besoin de respirer."
+        },
+        {
+          "nom": "Ascension de l'araignée",
+          "description": "Vous avez une vitesse d'escalade égale à votre vitesse de marche (10,50 m). À partir du niveau 3, vous pouvez vous déplacer sur les surfaces verticales et au plafond, la tête en bas, en gardant les mains libres."
+        },
+        {
+          "nom": "Morsure vampirique",
+          "description": "Votre morsure est une arme naturelle maîtrisée (attaque à mains nues) qui inflige 1d4 + votre modificateur de Constitution dégâts perforants ; vous avez l'avantage à ce jet d'attaque tant qu'il vous manque au moins la moitié de vos points de vie. Quand elle blesse une créature qui n'est ni une Créature artificielle ni un Mort-vivant, vous pouvez soit récupérer autant de PV que les dégâts infligés, soit ajouter ce nombre à votre prochain test de caractéristique ou jet d'attaque. Ce bénéfice est utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Duergar",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Résilience naine",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état empoisonné et la résistance aux dégâts de poison."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "36 mètres."
+        },
+        {
+          "nom": "Fortitude psionique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre les états charmé et étourdi."
+        },
+        {
+          "nom": "Magie duergar",
+          "description": "Niveau 3 : *Agrandissement/Rapetissement* (sur vous uniquement, 1/repos long) ; Niveau 5 : *Invisibilité* (sur vous uniquement, 1/repos long). Ces sorts se lancent sans composante matérielle, et vous pouvez aussi les lancer avec vos emplacements de sort de niveau 2 ou supérieur. Caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie en adoptant l'espèce)."
+        }
+      ]
+    },
+    {
+      "nom": "Eladrin",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Pas féerique",
+          "description": "Par une action bonus, vous vous téléportez jusqu'à 9 m dans un espace inoccupé que vous voyez. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Changement de saison",
+          "description": "À la fin d'un repos long, vous adoptez une saison qui, à partir du niveau 3, ajoute un effet à votre Pas féerique (DD 8 + votre bonus de maîtrise + Int, Sag ou Cha choisi en adoptant l'espèce). Automne : jusqu'à deux créatures visibles à 3 m ou moins réussissent un JS de Sagesse ou sont charmées 1 minute (fin si vous ou vos alliés les blessez). Hiver : avant la téléportation, une créature visible à 1,50 m réussit un JS de Sagesse ou est effrayée jusqu'à la fin de votre prochain tour. Printemps : vous téléportez à votre place une créature consentante touchée à 1,50 m. Été : après la téléportation, chaque créature de votre choix à 1,50 m subit des dégâts de feu égaux à votre bonus de maîtrise."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde pour éviter ou mettre fin à l'état charmé."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Maîtrise de la compétence Perception."
+        },
+        {
+          "nom": "Transe",
+          "description": "Vous n'avez pas besoin de dormir et la magie ne peut pas vous endormir. Un repos long vous demande 4 heures de méditation consciente, à l'issue desquelles vous gagnez deux maîtrises d'arme ou d'outil de votre choix jusqu'à votre prochain repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Elfe des mers",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1",
+      "langues": [
+        "Commun",
+        "Elfique"
+      ],
+      "capacites": [
+        {
+          "nom": "Trance",
+          "description": "Vous n'avez pas besoin de dormir et la magie ne peut pas vous endormir. Un repos long vous demande 4 heures de méditation consciente, à l'issue desquelles vous gagnez deux maîtrises d'arme ou d'outil de votre choix jusqu'à votre prochain repos long."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Enfant de la mer",
+          "description": "Vous avez une vitesse de nage égale à votre vitesse de marche (9 m) et vous pouvez respirer aussi bien l'air que l'eau."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Maîtrise de la compétence Perception."
+        },
+        {
+          "nom": "Ami de la mer",
+          "description": "Vous pouvez communiquer des idées simples à toute Bête, tout Élémentaire et toute Créature monstrueuse disposant d'une vitesse de nage."
+        },
+        {
+          "nom": "Résistance",
+          "description": "Résistance aux dégâts de froid."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde pour éviter ou mettre fin à l'état charmé."
+        }
+      ]
+    },
+    {
+      "nom": "Elfe astral",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Feu astral",
+          "description": "Connaît un sort mineur au choix parmi *Lumières dansantes*, *Lumière* ou *Flamme sacrée*. Caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie en adoptant l'espèce)."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Avantage aux JS contre le charme."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Maîtrise de la Perception."
+        },
+        {
+          "nom": "Pas de lumière étoilée",
+          "description": "Par une action bonus, vous vous téléportez jusqu'à 9 m dans un espace inoccupé que vous voyez. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Trance astrale",
+          "description": "Vous n'avez pas besoin de dormir et la magie ne peut pas vous endormir. Un repos long vous demande 4 heures de méditation consciente, à l'issue desquelles vous gagnez la maîtrise d'une compétence et d'une arme ou d'un outil de votre choix jusqu'à votre prochain repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Fadette",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Petite ; type Fée."
+        },
+        {
+          "nom": "Vol",
+          "description": "Vous disposez d'une vitesse de vol égale à votre vitesse de marche (9 m). Vous ne pouvez pas l'utiliser si vous portez une armure intermédiaire ou lourde."
+        },
+        {
+          "nom": "Magie des fadettes",
+          "description": "Connaît le sort mineur *Druidisme* ; Niveau 3 : *Lueurs féeriques* (1/repos long) ; Niveau 5 : *Agrandissement/Rapetissement* (1/repos long). Vous pouvez aussi lancer ces deux sorts avec vos emplacements de sort de niveau approprié. Caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie en adoptant l'espèce)."
+        }
+      ]
+    },
+    {
+      "nom": "Féral",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "18 mètres."
+        },
+        {
+          "nom": "Instincts bestiaux",
+          "description": "Maîtrise au choix (Acrobatie, Athlétisme, Intimidation ou Survie)."
+        },
+        {
+          "nom": "Métamorphose",
+          "description": "Par une action bonus, vous prenez une apparence bestiale pendant 1 minute (fin anticipée par une action bonus ou si vous mourez) et gagnez des points de vie temporaires égaux à 2 × votre bonus de maîtrise. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long. Vous choisissez une forme à l'adoption de l'espèce (voir Formes de métamorphose)."
+        },
+        {
+          "nom": "Formes de métamorphose",
+          "description": "Peau de bête : +1d6 PV temporaires supplémentaires et +1 à la CA. Longues dents : par une action bonus à chaque tour, attaque à mains nues avec vos crocs, 1d6 + votre modificateur de Force dégâts perforants. Pas rapides : +3 m de vitesse, et par une réaction, quand une créature termine son tour à 1,50 m ou moins de vous, déplacement de 3 m sans provoquer d'attaque d'opportunité. Chasse sauvage : avantage aux tests de Sagesse, et aucune créature à 9 m ou moins n'a l'avantage à ses jets d'attaque contre vous (sauf si vous êtes neutralisé)."
+        }
+      ]
+    },
+    {
+      "nom": "Firbolg",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Magie firbolg",
+          "description": "Lancement de *Déguisement* (1/repos long) et de *Détection de la magie* (1/repos long). Avec ce Déguisement, vous pouvez paraître jusqu'à 90 cm plus petit, ce qui permet de passer pour un humain ou un elfe. Vous pouvez aussi lancer ces sorts avec vos emplacements de sort. Caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie en adoptant l'espèce)."
+        },
+        {
+          "nom": "Pas invisible",
+          "description": "Par une action bonus, vous devenez invisible jusqu'au début de votre prochain tour, ou jusqu'à ce que vous attaquiez, infligiez des dégâts ou imposiez un jet de sauvegarde. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Parler aux bêtes et aux plantes",
+          "description": "Vous pouvez communiquer de façon limitée avec les Bêtes, les Plantes et les végétaux, qui comprennent le sens de vos paroles sans que vous compreniez forcément les leurs. Vous avez l'avantage aux tests de Charisme destinés à les influencer."
+        },
+        {
+          "nom": "Puissante carrure",
+          "description": "Vous comptez comme une créature de taille Grande pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        }
+      ]
+    },
+    {
+      "nom": "Forgelier",
+      "source": "Eberron",
+      "caracteristiques": "Con +2, +1",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Résilience",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état empoisonné, la résistance aux dégâts de poison et l'immunité aux maladies. La magie ne peut pas vous endormir."
+        },
+        {
+          "nom": "Besoin vital",
+          "description": "Vous n'avez besoin ni de manger, ni de boire, ni de respirer, ni de dormir."
+        },
+        {
+          "nom": "Repos de la sentinelle",
+          "description": "6h inactif mais conscient pour un long repos."
+        },
+        {
+          "nom": "Protection intégrée",
+          "description": "Vous gagnez un bonus de +1 à la CA. Vous ne pouvez revêtir une armure qu'en l'intégrant à votre corps, ce qui prend 1 heure en restant en contact avec elle ; tant que vous êtes en vie, elle ne peut pas vous être retirée contre votre gré."
+        },
+        {
+          "nom": "Conception spécialisée",
+          "description": "Maîtrise d'une compétence et d'un outil d'artisanat."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Moyenne ; type Humanoïde (et non Créature artificielle)."
+        }
+      ]
+    },
+    {
+      "nom": "Genasi d'air",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Souffle infini",
+          "description": "Vous pouvez retenir votre respiration indéfiniment tant que vous n'êtes pas neutralisé."
+        },
+        {
+          "nom": "Mêlé au vent",
+          "description": "Connaît le tour de magie *Poigne électrique*. Niveau 3 : *Feuille morte* (1/repos long) ; Niveau 5 : *Lévitation* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort du niveau approprié ; ils ne demandent aucune composante matérielle et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Résistance à la foudre",
+          "description": "Vous avez la résistance aux dégâts de foudre."
+        }
+      ]
+    },
+    {
+      "nom": "Genasi d'eau",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Résistance à l'acide",
+          "description": "Vous avez la résistance aux dégâts d'acide."
+        },
+        {
+          "nom": "Amphibie",
+          "description": "Vous respirez aussi bien à l'air libre que sous l'eau. Vous disposez en outre d'une vitesse de nage égale à votre vitesse de marche (9 m)."
+        },
+        {
+          "nom": "Appel de la vague",
+          "description": "Connaît le tour de magie *Aspersion d'acide*. Niveau 3 : *Création ou destruction d'eau* (1/repos long) ; Niveau 5 : *Marche sur l'eau* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort du niveau approprié ; ils ne demandent aucune composante matérielle et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        }
+      ]
+    },
+    {
+      "nom": "Genasi de feu",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Résistance au feu",
+          "description": "Vous avez la résistance aux dégâts de feu."
+        },
+        {
+          "nom": "Toucher la flamme",
+          "description": "Connaît le tour de magie *Flammes*. Niveau 3 : *Mains brûlantes* (1/repos long) ; Niveau 5 : *Lame de feu* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort du niveau approprié ; ils ne demandent aucune composante matérielle et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        }
+      ]
+    },
+    {
+      "nom": "Genasi de terre",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Marche sur la terre",
+          "description": "Vous traversez les terrains difficiles faits de terre ou de pierre sans dépenser de mouvement supplémentaire."
+        },
+        {
+          "nom": "Fusion avec la pierre",
+          "description": "Connaît le tour de magie *Protection contre les armes*, que vous pouvez lancer par une action bonus un nombre de fois égal à votre bonus de maîtrise par repos long. Niveau 3 : *Passage sans trace* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort du niveau approprié ; ils ne demandent aucune composante matérielle et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        }
+      ]
+    },
+    {
+      "nom": "Giff",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Étincelle astrale",
+          "description": "Quand vous touchez une cible avec une arme courante ou de guerre, vous pouvez lui infliger un supplément de dégâts de force égal à votre bonus de maîtrise. Une seule fois par tour, et un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Maîtrise des armes à feu",
+          "description": "Vous maîtrisez toutes les armes à feu. Vous ignorez leur propriété de chargement, et attaquer à longue portée avec une arme à feu ne vous impose pas de désavantage."
+        },
+        {
+          "nom": "Physique d'hippopotame",
+          "description": "Vous avez l'avantage aux tests de Force et aux jets de sauvegarde de Force. Vous comptez comme une créature d'une taille supérieure pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        },
+        {
+          "nom": "Nageur",
+          "description": "Vous disposez d'une vitesse de nage égale à votre vitesse de marche (9 m)."
+        }
+      ]
+    },
+    {
+      "nom": "Githyanki",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Savoir astral",
+          "description": "À la fin de chaque repos long, vous gagnez la maîtrise d'une compétence au choix et d'une arme ou d'un type d'outil au choix. Ces maîtrises durent jusqu'à la fin de votre prochain repos long."
+        },
+        {
+          "nom": "Sorts psioniques",
+          "description": "Connaît le tour de magie *Main de mage* (la main spectrale est invisible). Niveau 3 : *Saut* (1/repos long) ; Niveau 5 : *Foulée brumeuse* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort ; ils ne demandent aucune composante et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Résilience psychique",
+          "description": "Vous avez la résistance aux dégâts psychiques."
+        }
+      ]
+    },
+    {
+      "nom": "Githzerai",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Discipline mentale",
+          "description": "Vous avez l'avantage aux jets de sauvegarde effectués pour éviter les états charmé et effrayé ou y mettre fin."
+        },
+        {
+          "nom": "Sorts psioniques",
+          "description": "Connaît le tour de magie *Main de mage* (la main spectrale est invisible). Niveau 3 : *Bouclier* (1/repos long) ; Niveau 5 : *Détection des pensées* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort ; ils ne demandent aucune composante et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        },
+        {
+          "nom": "Résilience psychique",
+          "description": "Vous avez la résistance aux dégâts psychiques."
+        }
+      ]
+    },
+    {
+      "nom": "Gobelin",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Petite."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Fuite agile",
+          "description": "À chacun de vos tours, vous pouvez effectuer l'action Se désengager ou Se cacher par une action bonus."
+        },
+        {
+          "nom": "Fureur des petits",
+          "description": "Quand vous blessez avec une attaque ou un sort une créature d'une taille supérieure à la vôtre, vous pouvez lui infliger un supplément de dégâts égal à votre bonus de maîtrise. Une fois par tour, un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde effectués pour éviter l'état charmé ou y mettre fin."
+        }
+      ]
+    },
+    {
+      "nom": "Gobelours",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Membres allongés",
+          "description": "Quand vous faites une attaque au corps à corps pendant votre tour, votre allonge augmente de 1,50 m pour cette attaque."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Furtif",
+          "description": "Vous maîtrisez la compétence Discrétion. De plus, vous pouvez vous glisser dans un espace assez grand pour une créature Petite sans qu'il soit considéré comme exigu pour vous."
+        },
+        {
+          "nom": "Attaque surprise",
+          "description": "Si vous touchez avec un jet d'attaque une créature qui n'a pas encore joué de tour dans ce combat, elle subit 2d6 dégâts supplémentaires. Une seule fois par combat."
+        },
+        {
+          "nom": "Puissante carrure",
+          "description": "Vous comptez comme une créature d'une taille supérieure pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde effectués pour éviter l'état charmé ou y mettre fin."
+        }
+      ]
+    },
+    {
+      "nom": "Goliath",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne (entre 2,10 m et 2,40 m) ; Petit géant vous fait compter comme Grand pour la charge."
+        },
+        {
+          "nom": "Petit géant",
+          "description": "Vous maîtrisez la compétence Athlétisme. Vous comptez comme une créature d'une taille supérieure pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        },
+        {
+          "nom": "Endurance de pierre",
+          "description": "Quand vous subissez des dégâts, vous pouvez utiliser votre réaction pour lancer 1d12 + votre modificateur de Constitution et réduire les dégâts de ce total. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Né des montagnes",
+          "description": "Vous avez la résistance aux dégâts de froid et vous êtes naturellement acclimaté à la haute altitude (au-delà de 6 000 m)."
+        }
+      ]
+    },
+    {
+      "nom": "Gnome des forêts",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Int +2, Dex +1",
+      "langues": [
+        "Commun",
+        "Gnome"
+      ],
+      "capacites": [
+        {
+          "nom": "Ruse gnomique",
+          "description": "Vous avez l'avantage à tous les jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre la magie."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Illusionniste-né",
+          "description": "Connaît le tour de magie *Illusion mineure* ; l'Intelligence est votre caractéristique d'incantation pour ce sort."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite (entre 90 cm et 1,20 m environ)."
+        },
+        {
+          "nom": "Communication avec les petits animaux",
+          "description": "Par des sons et des gestes, vous pouvez transmettre des idées simples aux bêtes de taille Petite ou inférieure. Les gnomes des forêts apprivoisent souvent ainsi écureuils, blaireaux ou lapins."
+        }
+      ]
+    },
+    {
+      "nom": "Gnome des profondeurs",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 36 mètres comme en lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Camouflage svirfnebelin",
+          "description": "Lorsque vous faites un test de Dextérité (Discrétion), vous pouvez le faire avec avantage, un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Ruse gnomique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre les sorts."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite."
+        },
+        {
+          "nom": "Don du svirfnebelin",
+          "description": "Sorts innés : Niveau 3 : *Déguisement* (1/repos long) ; Niveau 5 : *Antidétection* (1/repos long). Vous pouvez aussi lancer ces sorts avec vos emplacements de sort du niveau approprié ; ils ne demandent aucune composante matérielle et utilisent l'Intelligence, la Sagesse ou le Charisme (choisi à la création)."
+        }
+      ]
+    },
+    {
+      "nom": "Gnome des roches",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Int +2, Con +1",
+      "langues": [
+        "Commun",
+        "Gnome"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Ruse gnomique",
+          "description": "Vous avez l'avantage à tous les jets de sauvegarde d'Intelligence, de Sagesse et de Charisme contre la magie."
+        },
+        {
+          "nom": "Savoir de l'artificier",
+          "description": "Lors d'un test d'Intelligence (Histoire) portant sur un objet magique, alchimique ou technologique, vous ajoutez deux fois votre bonus de maîtrise au lieu de toute autre maîtrise."
+        },
+        {
+          "nom": "Bricoleur",
+          "description": "Vous maîtrisez les outils de bricoleur. En 1 heure et avec 10 po de matériaux, vous fabriquez un mécanisme de taille Très petite (CA 5, 1 PV) : jouet mécanique, briquet ou boîte à musique. Il fonctionne 24 heures (sauf réparation d'une heure) et vous ne pouvez en avoir que trois actifs à la fois ; une action permet d'en démonter un pour récupérer ses matériaux."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite (entre 90 cm et 1,20 m environ)."
+        }
+      ]
+    },
+    {
+      "nom": "Grung",
+      "source": "One Grung Above (DMs Guild, WotC)",
+      "caracteristiques": "Dex +2, Con +1",
+      "langues": [
+        "Grung"
+      ],
+      "capacites": [
+        {
+          "nom": "Escalade",
+          "description": "Vous disposez d'une vitesse d'escalade de 7,5 m, égale à votre vitesse de marche."
+        },
+        {
+          "nom": "Amphibie",
+          "description": "Vous respirez aussi bien à l'air libre que sous l'eau."
+        },
+        {
+          "nom": "Immunité",
+          "description": "Vous êtes immunisé contre les dégâts de poison et l'état empoisonné."
+        },
+        {
+          "nom": "Peau venimeuse",
+          "description": "Toute créature qui vous agrippe ou touche directement votre peau doit réussir un JS de Constitution DD 12 ou être empoisonnée pendant 1 minute (nouveau JS à la fin de chacun de ses tours une fois le contact rompu). Vous pouvez aussi enduire une arme perforante lors d'une attaque : une cible touchée doit réussir un JS de Constitution DD 12 ou subir 2d4 dégâts de poison."
+        },
+        {
+          "nom": "Saut",
+          "description": "Avec ou sans élan, vous pouvez sauter jusqu'à 7,5 m en longueur et 4,5 m en hauteur."
+        },
+        {
+          "nom": "Dépendance à l'eau",
+          "description": "Si vous ne restez pas immergé au moins 1 heure dans l'eau au cours d'une journée, vous subissez un niveau d'épuisement à la fin de celle-ci. Seules la magie ou une immersion d'1 heure permettent de récupérer de cet épuisement."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite (environ 90 cm)."
+        },
+        {
+          "nom": "Vigilance arboricole",
+          "description": "Vous maîtrisez la compétence Perception."
+        }
+      ]
+    },
+    {
+      "nom": "Hadozi",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        },
+        {
+          "nom": "Escalade",
+          "description": "Vous disposez d'une vitesse d'escalade égale à votre vitesse de marche (9 m)."
+        },
+        {
+          "nom": "Pied agile",
+          "description": "Par une action bonus, vous pouvez effectuer l'action Utiliser un objet en vous servant de vos pieds."
+        },
+        {
+          "nom": "Planer",
+          "description": "Quand vous tombez d'au moins 3 m, vous pouvez utiliser votre réaction pour déployer vos membranes : vous ne subissez aucun dégât de chute et vous planez horizontalement d'une distance égale à votre vitesse de marche, dans la direction de votre choix."
+        },
+        {
+          "nom": "Esquive hadozi",
+          "description": "Quand vous subissez des dégâts, vous pouvez utiliser votre réaction pour lancer 1d6 + votre bonus de maîtrise et réduire les dégâts de ce total. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Halfelin Pied-léger",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Dex +2, Cha +1",
+      "langues": [
+        "Commun",
+        "Halfelin"
+      ],
+      "capacites": [
+        {
+          "nom": "Chanceux",
+          "description": "Quand vous obtenez un 1 naturel au d20 d'un jet d'attaque, d'un test de caractéristique ou d'un jet de sauvegarde, vous relancez le dé et devez conserver le nouveau résultat."
+        },
+        {
+          "nom": "Brave",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état effrayé."
+        },
+        {
+          "nom": "Agilité halfeline",
+          "description": "Vous pouvez traverser l'espace occupé par une créature d'une taille supérieure à la vôtre."
+        },
+        {
+          "nom": "Discrétion naturelle",
+          "description": "Vous pouvez tenter de vous cacher même si vous n'êtes masqué que par une créature d'au moins une taille de plus que vous."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite (environ 90 cm)."
+        }
+      ]
+    },
+    {
+      "nom": "Halfelin robuste",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Dex +2, Con +1",
+      "langues": [
+        "Commun",
+        "Halfelin"
+      ],
+      "capacites": [
+        {
+          "nom": "Chanceux",
+          "description": "Quand vous obtenez un 1 naturel au d20 d'un jet d'attaque, d'un test de caractéristique ou d'un jet de sauvegarde, vous relancez le dé et devez conserver le nouveau résultat."
+        },
+        {
+          "nom": "Brave",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état effrayé."
+        },
+        {
+          "nom": "Résilience des robustes",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre le poison et la résistance aux dégâts de poison."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite (environ 90 cm)."
+        },
+        {
+          "nom": "Agilité halfeline",
+          "description": "Vous pouvez traverser l'espace occupé par une créature d'une taille supérieure à la vôtre."
+        }
+      ]
+    },
+    {
+      "nom": "Hobgobelin",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde effectués pour éviter l'état charmé ou y mettre fin."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Chance du nombre",
+          "description": "Quand vous ratez un jet d'attaque, un test de caractéristique ou un jet de sauvegarde, vous gagnez un bonus au jet égal au nombre d'alliés que vous voyez à 9 m ou moins (maximum +3). Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Don féerique",
+          "description": "Vous pouvez effectuer l'action Aider par une action bonus, un nombre de fois égal à votre bonus de maîtrise par repos long. À partir du niveau 3, chaque Aide ajoute une option au choix : Hospitalité (vous et la créature aidée gagnez 1d6 + votre bonus de maîtrise PV temporaires), Passage (vous et elle gagnez +3 m de vitesse jusqu'au début de votre prochain tour) ou Rancune (la cible de l'Aide a le désavantage à son prochain jet d'attaque avant ce moment)."
+        }
+      ]
+    },
+    {
+      "nom": "Homme lézard",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Morsure",
+          "description": "Votre gueule est une arme naturelle avec laquelle vous pouvez porter des attaques à mains nues : un coup inflige 1d6 + votre modificateur de Force dégâts tranchants."
+        },
+        {
+          "nom": "Apnée",
+          "description": "Vous pouvez retenir votre respiration jusqu'à 15 minutes."
+        },
+        {
+          "nom": "Mâchoires affamées",
+          "description": "Par une action bonus, vous effectuez une attaque spéciale avec votre Morsure ; si elle touche, elle inflige ses dégâts normaux et vous gagnez des PV temporaires égaux à votre bonus de maîtrise. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Armure naturelle",
+          "description": "Sans armure, votre CA est égale à 13 + votre modificateur de Dextérité. Vous pouvez utiliser un bouclier et conserver ce bénéfice."
+        },
+        {
+          "nom": "Intuition",
+          "description": "Vous maîtrisez deux compétences au choix parmi Dressage, Médecine, Nature, Perception, Discrétion et Survie."
+        },
+        {
+          "nom": "Nageur",
+          "description": "Vous disposez d'une vitesse de nage égale à votre vitesse de marche (9 m)."
+        }
+      ]
+    },
+    {
+      "nom": "Humain",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Toutes +1",
+      "langues": [
+        "Commun",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Augmentation de caractéristiques",
+          "description": "Toutes vos valeurs de caractéristiques augmentent de 1."
+        },
+        {
+          "nom": "Langues",
+          "description": "Vous parlez, lisez et écrivez le commun et une langue supplémentaire de votre choix."
+        }
+      ]
+    },
+    {
+      "nom": "Humain variant",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "+1, +1",
+      "langues": [
+        "Commun",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Compétence",
+          "description": "Vous obtenez la maîtrise d'une compétence de votre choix (à cocher dans l'onglet Compétences)."
+        },
+        {
+          "nom": "Don",
+          "description": "Vous obtenez un don de votre choix : emplacement « Humain variant — don de départ » de l'onglet Progression, dons (ses bonus s'appliquent automatiquement)."
+        },
+        {
+          "nom": "Augmentation de caractéristiques",
+          "description": "Deux valeurs de caractéristiques différentes de votre choix augmentent de 1 (à répartir dans l'onglet Caractéristiques, section Bonus raciaux)."
+        }
+      ]
+    },
+    {
+      "nom": "Hybride Simic",
+      "source": "Ravnica",
+      "caracteristiques": "Con +2, +1",
+      "langues": [
+        "Commun",
+        "Elfique ou Vedalken"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Améliorations",
+          "description": "Au niveau 1, choisissez une amélioration : Raie manta (en tombant, réduisez de 30 m la hauteur de chute pour les dégâts et avancez de 60 cm à l'horizontale par 30 cm de descente), Grimpeur agile (vitesse d'escalade égale à la marche) ou Adaptation aquatique (respiration aquatique et vitesse de nage égale à la marche)."
+        },
+        {
+          "nom": "Amélioration supplémentaire (niveau 5)",
+          "description": "Au niveau 5, choisissez une option de niveau 1 non prise ou : Appendices de saisie (attaque à mains nues 1d6 + votre modificateur de Force contondants, puis empoignade par une action bonus), Carapace (+1 CA sans armure lourde) ou Crachat d'acide (action, cible à 9 m, JS de Dextérité DD 8 + votre bonus de maîtrise + votre modificateur de Constitution, 2d10 acide, 3d10 au niveau 11, 4d10 au niveau 17 ; un nombre de fois égal à votre modificateur de Constitution, minimum 1, par repos long)."
+        }
+      ]
+    },
+    {
+      "nom": "Kalashtar",
+      "source": "Eberron",
+      "caracteristiques": "Sag +2, Cha +1",
+      "langues": [
+        "Commun",
+        "Quori",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Esprit double",
+          "description": "Vous avez l'avantage à tous les jets de sauvegarde de Sagesse."
+        },
+        {
+          "nom": "Discipline mentale",
+          "description": "Vous avez la résistance aux dégâts psychiques."
+        },
+        {
+          "nom": "Lien mental",
+          "description": "Vous parlez par télépathie à une créature que vous voyez dans un rayon en mètres égal à 3 × votre niveau de personnage, si elle comprend une langue que vous parlez. Par une action, vous lui permettez de vous répondre par télépathie pendant 1 heure."
+        },
+        {
+          "nom": "Séparé des rêves",
+          "description": "Les sorts et effets qui exigent que vous rêviez (comme le sort Songe) n'ont aucun effet sur vous ; ceux qui vous plongent simplement dans le sommeil fonctionnent normalement."
+        }
+      ]
+    },
+    {
+      "nom": "Kender",
+      "source": "Dragonlance",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Petite (environ 90 cm à 1,20 m)."
+        },
+        {
+          "nom": "Intrépide",
+          "description": "Vous avez l'avantage aux jets de sauvegarde pour éviter l'état effrayé ou y mettre fin. Une fois par repos long, vous pouvez transformer un échec à un tel jet en réussite."
+        },
+        {
+          "nom": "Aptitude kender",
+          "description": "Vous maîtrisez une compétence au choix parmi Perspicacité, Investigation, Escamotage, Discrétion et Survie."
+        },
+        {
+          "nom": "Provocation",
+          "description": "Par une action bonus, vous raillez une créature à 18 m ou moins qui peut vous entendre : elle doit réussir un JS de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur d'Intelligence, de Sagesse ou de Charisme, au choix) ou avoir le désavantage à ses jets d'attaque contre toute autre cible que vous jusqu'au début de votre prochain tour. Un nombre de fois égal à votre bonus de maîtrise par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Kenku",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Mimétisme",
+          "description": "Vous imitez avec précision les sons et voix que vous avez entendus. Un auditeur ne décèle l'imitation qu'en réussissant un test de Sagesse (Perspicacité) DD 8 + votre bonus de maîtrise + votre modificateur de Charisme."
+        },
+        {
+          "nom": "Duplication experte",
+          "description": "Quand vous copiez un écrit ou un ouvrage artisanal (le vôtre ou celui d'autrui), vous avez l'avantage aux tests effectués pour en produire une reproduction exacte."
+        },
+        {
+          "nom": "Mémoire kenku",
+          "description": "Vous maîtrisez deux compétences au choix. Avant un test utilisant une compétence que vous maîtrisez, vous pouvez vous accorder l'avantage, un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        }
+      ]
+    },
+    {
+      "nom": "Kobold",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Petite (environ 60 à 90 cm de haut). Votre type de créature est Humanoïde."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre. Dans le noir, vous ne distinguez pas les couleurs, seulement des nuances de gris."
+        },
+        {
+          "nom": "Cri draconique",
+          "description": "Par une action bonus, vous poussez un cri draconique visant les ennemis de votre choix situés à 3 mètres ou moins de vous. Jusqu'au début de votre prochain tour, vous et vos alliés avez l'avantage aux jets d'attaque contre ceux de ces ennemis qui ont pu vous entendre. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Héritage kobold",
+          "description": "Choisissez une option. Ingéniosité : maîtrise d'une compétence parmi Arcanes, Escamotage, Investigation, Médecine et Survie. Défiance : avantage aux jets de sauvegarde pour éviter ou mettre fin à l'état effrayé. Sorcellerie draconique : vous connaissez un sort mineur de la liste d'ensorceleur, lancé avec l'Intelligence, la Sagesse ou le Charisme (choisi avec cette option)."
+        }
+      ]
+    },
+    {
+      "nom": "Léonin",
+      "source": "Theros",
+      "caracteristiques": "Con +2, For +1",
+      "langues": [
+        "Commun",
+        "Léonin"
+      ],
+      "capacites": [
+        {
+          "nom": "Griffes",
+          "description": "Vos griffes sont des armes naturelles avec lesquelles vous pouvez porter des attaques à mains nues. En cas de coup au but, elles infligent 1d4 + votre modificateur de Force dégâts tranchants, au lieu des dégâts contondants normaux d'une attaque à mains nues."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Instincts de chasseur",
+          "description": "Vous obtenez la maîtrise d'une compétence au choix parmi Athlétisme, Intimidation, Perception et Survie."
+        },
+        {
+          "nom": "Rugissement intimidant",
+          "description": "Par une action bonus, vous poussez un rugissement : chaque créature de votre choix située à 3 mètres ou moins et capable de vous entendre doit réussir un jet de sauvegarde de Sagesse (DD 8 + votre bonus de maîtrise + votre modificateur de Constitution) ou être effrayée jusqu'à la fin de votre prochain tour. Une fois utilisé, ce trait revient après un repos court ou long."
+        }
+      ]
+    },
+    {
+      "nom": "Locathah",
+      "source": "L'Aube des Locathahs",
+      "caracteristiques": "For +2, Dex +1",
+      "langues": [
+        "Commun",
+        "Aquan"
+      ],
+      "capacites": [
+        {
+          "nom": "Nage",
+          "description": "Vous avez une vitesse de nage de 9 mètres, en plus de votre vitesse de marche de 9 mètres."
+        },
+        {
+          "nom": "Armure naturelle",
+          "description": "Votre peau écailleuse vous protège : sans armure, votre CA est égale à 12 + votre modificateur de Dextérité. Vous pouvez utiliser cette valeur si l'armure portée vous donnerait une CA inférieure ; un bouclier s'applique normalement."
+        },
+        {
+          "nom": "Volonté du Léviathan",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre les états charmé, effrayé, paralysé, empoisonné et étourdi, ainsi que contre le fait d'être endormi."
+        },
+        {
+          "nom": "Amphibie limitée",
+          "description": "Vous respirez aussi bien l'air que l'eau. Hors de l'eau, vous devez vous immerger au moins une fois toutes les 4 heures, sinon vous commencez à suffoquer."
+        },
+        {
+          "nom": "Observateur et athlétique",
+          "description": "Vous obtenez la maîtrise des compétences Athlétisme et Perception."
+        }
+      ]
+    },
+    {
+      "nom": "Loxodon",
+      "source": "Ravnica",
+      "caracteristiques": "Con +2, Sag +1",
+      "langues": [
+        "Commun",
+        "Loxodon"
+      ],
+      "capacites": [
+        {
+          "nom": "Puissante carrure",
+          "description": "Vous comptez comme une créature d'une taille de plus pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        },
+        {
+          "nom": "Sérénité",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre les états charmé et effrayé."
+        },
+        {
+          "nom": "Armure naturelle",
+          "description": "Sans armure, votre CA est égale à 12 + votre modificateur de Constitution. Vous pouvez utiliser cette valeur si l'armure portée vous donnerait une CA inférieure ; un bouclier s'applique normalement."
+        },
+        {
+          "nom": "Trompe",
+          "description": "Votre trompe peut saisir, soulever, pousser ou tirer un poids allant jusqu'à 2,5 kg × votre valeur de Force, avec une allonge de 1,50 mètre ; elle peut aussi servir de tuba sous l'eau. Elle ne peut ni manier d'arme ou de bouclier, ni accomplir de tâche exigeant de la précision (outils, objets magiques, composantes somatiques)."
+        },
+        {
+          "nom": "Odorat développé",
+          "description": "Vous avez l'avantage aux tests de Sagesse (Perception), de Sagesse (Survie) et d'Intelligence (Investigation) qui reposent sur l'odorat."
+        }
+      ]
+    },
+    {
+      "nom": "Minotaure",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Cornes",
+          "description": "Vos cornes sont des armes naturelles avec lesquelles vous portez des attaques à mains nues. En cas de coup au but, elles infligent 1d6 + votre modificateur de Force dégâts perforants."
+        },
+        {
+          "nom": "Ruée cornue",
+          "description": "Juste après avoir effectué l'action Foncer pendant votre tour et vous être déplacé d'au moins 6 mètres, vous pouvez porter une attaque de corps à corps avec vos cornes par une action bonus."
+        },
+        {
+          "nom": "Cornes martelantes",
+          "description": "Juste après avoir touché une créature avec une attaque de corps à corps faite dans le cadre de l'action Attaquer, vous pouvez, par une action bonus, tenter de la repousser de 3 mètres. La cible, d'une taille au plus supérieure à la vôtre, doit réussir un jet de sauvegarde de Force (DD 8 + votre bonus de maîtrise + votre modificateur de Force) ou être repoussée."
+        },
+        {
+          "nom": "Mémoire labyrinthique",
+          "description": "Vous savez toujours où se trouve le nord, et vous avez l'avantage aux tests de Sagesse (Survie) faits pour vous orienter ou pister."
+        }
+      ]
+    },
+    {
+      "nom": "Nain des collines",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Con +2, Sag +1",
+      "langues": [
+        "Commun",
+        "Nain"
+      ],
+      "capacites": [
+        {
+          "nom": "Résilience naine",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre le poison et la résistance aux dégâts de poison."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Maîtrise d'armes",
+          "description": "Vous maîtrisez la hache d'armes, la hachette, le marteau léger et le marteau de guerre."
+        },
+        {
+          "nom": "Outils",
+          "description": "Vous maîtrisez un outil d'artisan au choix : outils de forgeron, matériel de brasseur ou outils de maçon."
+        },
+        {
+          "nom": "Connaissance de la pierre",
+          "description": "Lors d'un test d'Intelligence (Histoire) portant sur l'origine d'un ouvrage de pierre, vous êtes considéré comme maîtrisant la compétence et ajoutez le double de votre bonus de maîtrise."
+        },
+        {
+          "nom": "Ténacité naine",
+          "description": "Vos points de vie maximum augmentent de 1, puis de 1 à chaque niveau supplémentaire (+1 PV par niveau)."
+        },
+        {
+          "nom": "Vitesse naine",
+          "description": "Votre vitesse de marche est de 7,50 mètres ; elle n'est pas réduite par le port d'une armure lourde."
+        }
+      ]
+    },
+    {
+      "nom": "Nain des montagnes",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Con +2, For +2",
+      "langues": [
+        "Commun",
+        "Nain"
+      ],
+      "capacites": [
+        {
+          "nom": "Résilience naine",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre le poison et la résistance aux dégâts de poison."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Armures naines",
+          "description": "Vous maîtrisez les armures légères et intermédiaires."
+        },
+        {
+          "nom": "Outils",
+          "description": "Vous maîtrisez un outil d'artisan au choix : outils de forgeron, matériel de brasseur ou outils de maçon."
+        },
+        {
+          "nom": "Maîtrise d'armes",
+          "description": "Vous maîtrisez la hache d'armes, la hachette, le marteau léger et le marteau de guerre."
+        },
+        {
+          "nom": "Connaissance de la pierre",
+          "description": "Lors d'un test d'Intelligence (Histoire) portant sur l'origine d'un ouvrage de pierre, vous êtes considéré comme maîtrisant la compétence et ajoutez le double de votre bonus de maîtrise."
+        },
+        {
+          "nom": "Vitesse naine",
+          "description": "Votre vitesse de marche est de 7,50 mètres ; elle n'est pas réduite par le port d'une armure lourde."
+        }
+      ]
+    },
+    {
+      "nom": "Orc",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Poussée d'adrénaline",
+          "description": "Vous pouvez effectuer l'action Foncer par une action bonus ; vous gagnez alors un nombre de points de vie temporaires égal à votre bonus de maîtrise. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long (les utilisations reviennent aussi après un repos court)."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Puissante carrure",
+          "description": "Vous comptez comme une créature d'une taille de plus pour déterminer votre capacité de charge et le poids que vous pouvez pousser, tirer ou soulever."
+        },
+        {
+          "nom": "Endurance implacable",
+          "description": "Lorsque vous tombez à 0 point de vie sans être tué sur le coup, vous pouvez tomber à 1 point de vie à la place. Une fois utilisé, ce trait revient après un repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Owlin",
+      "source": "Strixhaven",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Humanoïde."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 36 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Vol",
+          "description": "Grâce à vos ailes, vous avez une vitesse de vol égale à votre vitesse de marche (9 mètres). Vous ne pouvez pas voler si vous portez une armure intermédiaire ou lourde."
+        },
+        {
+          "nom": "Plume silencieuse",
+          "description": "Vous obtenez la maîtrise de la compétence Discrétion."
+        }
+      ]
+    },
+    {
+      "nom": "Plasmoïde",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Amorphe",
+          "description": "Vous pouvez vous faufiler dans un espace de 2,5 cm de large, à condition de ne rien porter (ni équipement ni vêtements). Vous avez l'avantage aux tests de caractéristique faits pour commencer une empoignade ou vous en libérer."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Résistance naturelle",
+          "description": "Vous avez la résistance aux dégâts d'acide et de poison, et l'avantage aux jets de sauvegarde contre l'état empoisonné."
+        },
+        {
+          "nom": "Modelage du corps",
+          "description": "Par une action, vous remodelez votre corps pour vous doter d'une tête, d'un ou deux bras et d'une ou deux jambes (vous portez alors vêtements et armures de taille Moyenne), ou redevenez une masse informe. Par une action bonus, vous étirez ou résorbez un pseudopode de 15 cm de large et 3 mètres de long, capable de manipuler un objet, ouvrir ou fermer une porte ou un contenant, ou ramasser un objet Très petit. Le pseudopode ne peut ni attaquer, ni activer d'objet magique, ni soulever plus de 5 kg."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Vase."
+        },
+        {
+          "nom": "Apnée",
+          "description": "Vous pouvez retenir votre souffle pendant 1 heure."
+        }
+      ]
+    },
+    {
+      "nom": "Sang-Maudit",
+      "source": "Guide de Ravenloft",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création."
+        },
+        {
+          "nom": "Nature féerique",
+          "description": "Votre type de créature est Fée (et non Humanoïde)."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Jeton étrange",
+          "description": "Par une action bonus, vous vous arrachez sans dommage une mèche, un ongle ou une dent, qui reste magique jusqu'à votre prochain repos long. Tant qu'il l'est, vous pouvez par une action, si le jeton est à 16 km ou moins, envoyer un message télépathique de 25 mots au plus à la créature qui le porte, ou voir et entendre autour du jeton pendant 1 minute (vous êtes alors aveugle et sourd à votre propre environnement). Vous ne pouvez créer un nouveau jeton qu'après un repos long."
+        },
+        {
+          "nom": "Magie maudite",
+          "description": "Sorts : *Déguisement* (niv. 1, 1/repos long) et *Maléfice* (niv. 1, 1/repos long), sans emplacement. Vous pouvez aussi les lancer avec vos emplacements de sort ; caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie avec cette lignée)."
+        }
+      ]
+    },
+    {
+      "nom": "Satyre",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Bélier",
+          "description": "Vous pouvez donner des coups de tête avec vos cornes, une attaque à mains nues qui inflige en cas de coup au but 1d6 + votre modificateur de Force dégâts contondants."
+        },
+        {
+          "nom": "Résistance à la magie",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre les sorts."
+        },
+        {
+          "nom": "Sauts joyeux",
+          "description": "Lorsque vous faites un saut en longueur ou en hauteur, même sans élan, vous pouvez lancer 1d8 et ajouter 30 cm par point obtenu à la distance couverte. Cette distance supplémentaire coûte du mouvement normalement."
+        },
+        {
+          "nom": "Fêtard",
+          "description": "Vous obtenez la maîtrise des compétences Représentation et Persuasion, ainsi que d'un instrument de musique au choix."
+        },
+        {
+          "nom": "Type",
+          "description": "Votre type de créature est Fée (et non Humanoïde). Taille Moyenne."
+        }
+      ]
+    },
+    {
+      "nom": "Shadar-kai",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Transe",
+          "description": "Vous n'avez pas besoin de dormir et la magie ne peut pas vous endormir. Vous terminez un repos long en 4 heures de méditation, pendant lesquelles vous restez conscient."
+        },
+        {
+          "nom": "Bénédiction de la Reine corbeau",
+          "description": "Par une action bonus, vous vous téléportez magiquement dans un espace inoccupé que vous voyez, à 9 mètres ou moins. À partir du niveau 3, vous obtenez aussi la résistance à tous les dégâts jusqu'au début de votre prochain tour après chaque téléportation. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Vous obtenez la maîtrise de la compétence Perception."
+        },
+        {
+          "nom": "Résistance nécrotique",
+          "description": "Vous avez la résistance aux dégâts nécrotiques."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde faits pour éviter ou mettre fin à l'état charmé."
+        }
+      ]
+    },
+    {
+      "nom": "Tabaxi",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Talent du chat",
+          "description": "Vous obtenez la maîtrise des compétences Perception et Discrétion."
+        },
+        {
+          "nom": "Griffes",
+          "description": "Vos griffes vous donnent une vitesse d'escalade égale à votre vitesse de marche (9 mètres). Ce sont aussi des armes naturelles : vos attaques à mains nues avec elles infligent 1d6 + votre modificateur de Force dégâts tranchants."
+        },
+        {
+          "nom": "Agilité féline",
+          "description": "Lorsque vous vous déplacez pendant votre tour en combat, vous pouvez doubler votre vitesse jusqu'à la fin du tour. Vous ne pouvez plus le faire tant que vous n'avez pas passé l'un de vos tours sans vous déplacer (0 mètre)."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Humanoïde."
+        }
+      ]
+    },
+    {
+      "nom": "Thri-kreen",
+      "source": "Spelljammer",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Carapace caméléon",
+          "description": "Sans armure, votre CA est égale à 13 + votre modificateur de Dextérité ; un bouclier s'applique normalement. Par une action, vous changez la couleur de votre carapace pour l'accorder à votre environnement, ce qui vous donne l'avantage aux tests de Dextérité (Discrétion) faits pour vous cacher dans ce décor."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Bras secondaires",
+          "description": "Votre deuxième paire de bras, plus petite, peut manipuler un objet, ouvrir ou fermer une porte ou un contenant, ramasser ou poser un objet Très petit, ou manier une arme dotée de la propriété légère."
+        },
+        {
+          "nom": "Sans sommeil",
+          "description": "Vous n'avez pas besoin de dormir et restez conscient pendant un repos long, à condition de vous abstenir de toute activité fatigante."
+        },
+        {
+          "nom": "Télépathie",
+          "description": "Sans magie, vous ne pouvez pas parler les langues non thri-kreen : vous transmettez vos pensées par télépathie aux créatures consentantes situées à 36 mètres ou moins. La créature n'a pas besoin de partager une langue avec vous mais doit en comprendre au moins une ; le lien se rompt au-delà de 36 mètres, si l'un de vous est neutralisé, ou à votre gré."
+        },
+        {
+          "nom": "Taille et type",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Monstruosité."
+        }
+      ]
+    },
+    {
+      "nom": "Tieffelin",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Cha +2, Int +1",
+      "langues": [
+        "Commun",
+        "Infernal"
+      ],
+      "capacites": [
+        {
+          "nom": "Résistance au feu",
+          "description": "Vous avez la résistance aux dégâts de feu."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Héritage infernal",
+          "description": "Sorts : *Thaumaturgie* (sort mineur) ; *Représailles infernales* (niv. 3, 1/repos long, lancé comme un sort de niveau 2) ; *Ténèbres* (niv. 5, 1/repos long). Le Charisme est votre caractéristique d'incantation pour ces sorts."
+        }
+      ]
+    },
+    {
+      "nom": "Tieffelin féral",
+      "source": "Guide de l'Aventurier pour la Côte des Épées",
+      "caracteristiques": "Dex +2, Int +1",
+      "langues": [
+        "Commun",
+        "Infernal"
+      ],
+      "capacites": [
+        {
+          "nom": "Résistance au feu",
+          "description": "Vous avez la résistance aux dégâts de feu."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Héritage infernal (variante au choix)",
+          "description": "Sorts au choix : une seule option parmi les quatre, Charisme. Héritage infernal : *Thaumaturgie* (sort mineur), *Représailles infernales* (niv. 3, 1/repos long, lancé comme un sort de niveau 2), *Ténèbres* (niv. 5, 1/repos long). Langue du diable : *Moquerie cruelle* (sort mineur), *Charme-personne* (niv. 3, 1/repos long, lancé comme un sort de niveau 2), *Discours captivant* (niv. 5, 1/repos long). Feu infernal : comme Héritage infernal, mais *Mains brûlantes* (niv. 3, 1/repos long, lancé comme un sort de niveau 2) remplace Représailles infernales. Ailé : aucun sort, mais une vitesse de vol de 9 mètres tant que vous ne portez pas d'armure lourde."
+        }
+      ]
+    },
+    {
+      "nom": "Tortle",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Humanoïde."
+        },
+        {
+          "nom": "Griffes",
+          "description": "Vos griffes sont des armes naturelles : vos attaques à mains nues avec elles infligent 1d6 + votre modificateur de Force dégâts tranchants."
+        },
+        {
+          "nom": "Apnée",
+          "description": "Vous pouvez retenir votre souffle pendant 1 heure."
+        },
+        {
+          "nom": "Armure naturelle",
+          "description": "Votre carapace vous donne une CA de base de 17, sur laquelle votre modificateur de Dextérité n'a aucun effet. Vous ne pouvez porter aucune armure (légère, intermédiaire ou lourde), mais un bouclier s'applique normalement."
+        },
+        {
+          "nom": "Défense de carapace",
+          "description": "Par une action, vous vous retirez dans votre carapace, et en sortez par une action bonus. Tant que vous y êtes : +4 à la CA, avantage aux jets de sauvegarde de Force et de Constitution, désavantage aux jets de sauvegarde de Dextérité, vous êtes à terre, votre vitesse est de 0 et ne peut pas augmenter, vous ne pouvez pas prendre de réaction et votre seule action possible est l'action bonus pour sortir."
+        },
+        {
+          "nom": "Intuition naturelle",
+          "description": "Vous obtenez la maîtrise d'une compétence au choix parmi Dressage, Médecine, Nature, Perception, Discrétion et Survie."
+        }
+      ]
+    },
+    {
+      "nom": "Triton",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Amphibie",
+          "description": "Vous respirez aussi bien l'air que l'eau, et vous avez une vitesse de nage égale à votre vitesse de marche (9 mètres)."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Gardien des profondeurs",
+          "description": "Adapté aux abysses glacés, vous avez la résistance aux dégâts de froid."
+        },
+        {
+          "nom": "Contrôle de l'air et de l'eau",
+          "description": "Sorts : *Nappe de brouillard* (niv. 1, 1/repos long) ; *Bourrasque* (niv. 3, 1/repos long) ; *Marche sur l'eau* (niv. 5, 1/repos long). Vous pouvez aussi les lancer avec vos emplacements de sort ; caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie avec cette espèce)."
+        },
+        {
+          "nom": "Émissaire de la mer",
+          "description": "Vous pouvez communiquer des idées simples à toute bête, tout élémentaire et toute monstruosité dotée d'une vitesse de nage. Elle comprend vos paroles, mais vous ne la comprenez pas en retour."
+        }
+      ]
+    },
+    {
+      "nom": "Vedalken",
+      "source": "Ravnica",
+      "caracteristiques": "Int +2, Sag +1",
+      "langues": [
+        "Commun",
+        "Vedalken",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Détachement vedalken",
+          "description": "Avantage JS Int, Sag et Cha."
+        },
+        {
+          "nom": "Précision inlassable",
+          "description": "Vous maîtrisez une compétence au choix parmi Arcanes, Escamotage, Histoire, Investigation, Médecine et Représentation, ainsi qu'un outil au choix. Lors d'un test utilisant cette compétence ou cet outil, lancez 1d4 et ajoutez le résultat."
+        },
+        {
+          "nom": "Amphibie",
+          "description": "Vous absorbez l'oxygène par la peau et pouvez respirer sous l'eau pendant 1 heure au plus. Une fois cette durée atteinte, vous devez terminer un repos long pour en bénéficier à nouveau."
+        }
+      ]
+    },
+    {
+      "nom": "Verdan",
+      "source": "Acquisitions Incorporées",
+      "caracteristiques": "Cha +2, Con +1",
+      "langues": [
+        "Commun",
+        "Gobelin",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Guérison",
+          "description": "Sang noir guérisseur : lorsque vous obtenez 1 ou 2 sur un dé de vie dépensé à la fin d'un repos court, vous pouvez le relancer et devez garder le nouveau résultat."
+        },
+        {
+          "nom": "Télépathie",
+          "description": "Télépathie limitée : vous pouvez parler par télépathie à toute créature que vous voyez à 9 mètres ou moins. Elle n'a pas besoin de partager une langue avec vous, mais ne peut répondre par télépathie que si elle en est capable ; vous ne transmettez que des concepts simples."
+        },
+        {
+          "nom": "Persuasif",
+          "description": "Vous obtenez la maîtrise de la compétence Persuasion."
+        },
+        {
+          "nom": "Intuition télépathique",
+          "description": "Vous avez l'avantage à tous les jets de sauvegarde de Sagesse et de Charisme."
+        },
+        {
+          "nom": "Taille",
+          "description": "Petite au niveau 1 ; vous devenez de taille Moyenne en atteignant le niveau 5."
+        }
+      ]
+    },
+    {
+      "nom": "Yuan-ti",
+      "source": "Monstres du Multivers",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Humanoïde."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Résistance magique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre les sorts."
+        },
+        {
+          "nom": "Résilience au poison",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état empoisonné et la résistance aux dégâts de poison."
+        },
+        {
+          "nom": "Incantation serpentine",
+          "description": "Sorts : *Bouffée de poison* (sort mineur) ; *Amitié avec les animaux* à volonté, en ne ciblant que des serpents ; *Suggestion* (niv. 3, 1/repos long). Vous pouvez aussi lancer Suggestion avec vos emplacements de sort ; caractéristique d'incantation : Intelligence, Sagesse ou Charisme (choisie avec cette espèce)."
+        }
+      ]
+    },
+    {
+      "nom": "Revenant",
+      "source": "Guide de Ravenloft",
+      "caracteristiques": "+2, +1 (ou +1, +1, +1)",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Nature immortelle",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre la mort ainsi que contre les maladies et l'état empoisonné, et la résistance aux dégâts de poison. Vous n'avez besoin ni de manger, ni de boire, ni de respirer, ni de dormir, et la magie ne peut pas vous endormir. Vous terminez un repos long en 4 heures d'inactivité, pendant lesquelles vous restez conscient."
+        },
+        {
+          "nom": "Connaissance d'une vie antérieure",
+          "description": "Juste après avoir vu le résultat du d20 d'un test de caractéristique utilisant une compétence, vous pouvez lancer 1d6 et ajouter le résultat au test. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        },
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix lors de la création. Votre type de créature est Humanoïde."
+        }
+      ]
+    },
+    {
+      "nom": "Kitsune",
+      "source": "Favori de la communauté",
+      "caracteristiques": "Dex +2, Cha +1",
+      "langues": [
+        "Commun",
+        "Sylvestre"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne ou Petite, au choix à la création du personnage."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans une lumière faible jusqu'à 18 mètres comme s'il s'agissait d'une lumière vive, et dans l'obscurité comme en lumière faible (en nuances de gris uniquement)."
+        },
+        {
+          "nom": "Magie innée des renards",
+          "description": "Connaît le tour de magie *Illusion mineure*. Vous pouvez aussi lancer *Déguisement* (1/repos long), ou avec vos emplacements de sort ; le Charisme est votre caractéristique d'incantation pour ces sorts."
+        },
+        {
+          "nom": "Forme hybride",
+          "description": "Par une action bonus, vous laissez paraître oreilles, queues et traits de renard pendant 1 minute : vous avez l'avantage aux tests de Charisme (Tromperie) et (Persuasion). Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Myconide éveillé",
+      "source": "Favori de la communauté",
+      "caracteristiques": "Con +2, Sag +1",
+      "langues": [
+        "Commun",
+        "Au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Nature végétale",
+          "description": "Votre type de créature est Plante et non Humanoïde : les effets qui ne ciblent que les humanoïdes ne vous affectent pas. Vous n'avez pas besoin de dormir, mais devez passer un repos long de 8 heures immobile dans l'humidité ou la pénombre."
+        },
+        {
+          "nom": "Réseau mycélien",
+          "description": "Vous pouvez communiquer par télépathie avec toute créature située à 9 mètres ou moins de vous qui comprend au moins une langue. La créature ne peut vous répondre par télépathie que si elle en est elle-même capable ; le lien cesse si elle s'éloigne au-delà de 9 mètres."
+        },
+        {
+          "nom": "Spores pacifiantes ou toxiques",
+          "description": "Par une action bonus, vous libérez des spores sur une créature située à 3 mètres ou moins, qui doit réussir un jet de sauvegarde de Constitution (DD 8 + votre bonus de maîtrise + votre modificateur de Constitution). Spores toxiques : en cas d'échec, elle subit 1d6 dégâts de poison (2d6 au niveau 6, 3d6 au niveau 11, 4d6 au niveau 16) et est empoisonnée jusqu'à la fin de votre prochain tour. Spores pacifiantes : en cas d'échec, elle ne peut pas effectuer de réaction jusqu'à la fin de votre prochain tour. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long."
+        }
+      ]
+    },
+    {
+      "nom": "Demi-elfe",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Cha +2, +1, +1",
+      "langues": [
+        "Commun",
+        "Elfique",
+        "1 au choix"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne (1,50 à 1,80 m environ). Vitesse de marche : 9 mètres."
+        },
+        {
+          "nom": "Augmentation de caractéristiques",
+          "description": "Votre Charisme augmente de 2, et deux autres caractéristiques de votre choix augmentent de 1."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre. Dans le noir, vous ne distinguez pas les couleurs, seulement des nuances de gris."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état charmé, et la magie ne peut pas vous endormir."
+        },
+        {
+          "nom": "Polyvalence",
+          "description": "Vous obtenez la maîtrise de deux compétences de votre choix (à cocher dans l'onglet Compétences)."
+        }
+      ]
+    },
+    {
+      "nom": "Drow (Elfe noir)",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Dex +2, Cha +1",
+      "langues": [
+        "Commun",
+        "Elfique"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne (1,50 à 1,80 m environ). Vitesse de marche : 9 mètres."
+        },
+        {
+          "nom": "Vision dans le noir supérieure",
+          "description": "Vous voyez dans la pénombre jusqu'à 36 mètres comme en lumière vive, et dans le noir comme en pénombre (nuances de gris uniquement)."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état charmé, et la magie ne peut pas vous endormir."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Vous avez la maîtrise de la compétence Perception."
+        },
+        {
+          "nom": "Transe",
+          "description": "Les elfes ne dorment pas : ils méditent profondément, en restant à demi conscients, 4 heures par jour. Après ce repos, vous obtenez les mêmes bénéfices qu'un humain après 8 heures de sommeil (repos long)."
+        },
+        {
+          "nom": "Sensibilité au soleil",
+          "description": "Vous avez le désavantage aux jets d'attaque et aux tests de Sagesse (Perception) basés sur la vue lorsque vous, la cible de votre attaque ou ce que vous essayez de percevoir êtes en plein soleil."
+        },
+        {
+          "nom": "Magie drow",
+          "description": "Sorts : *Lumières dansantes* (sort mineur) ; *Lueurs féeriques* (niv. 3, 1/repos long) ; *Ténèbres* (niv. 5, 1/repos long). Le Charisme est votre caractéristique d'incantation pour ces sorts."
+        },
+        {
+          "nom": "Entraînement aux armes drow",
+          "description": "Vous avez la maîtrise de la rapière, de l'épée courte et de l'arbalète de poing."
+        }
+      ]
+    },
+    {
+      "nom": "Elfe",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "Dex +2",
+      "langues": [
+        "Commun",
+        "Elfique"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne (1,50 à 1,80 m environ). Vitesse de marche : 9 mètres."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Vous voyez dans la pénombre jusqu'à 18 mètres comme en lumière vive, et dans le noir comme en pénombre. Dans le noir, vous ne distinguez pas les couleurs, seulement des nuances de gris."
+        },
+        {
+          "nom": "Ascendance féerique",
+          "description": "Vous avez l'avantage aux jets de sauvegarde contre l'état charmé, et la magie ne peut pas vous endormir."
+        },
+        {
+          "nom": "Sens aiguisés",
+          "description": "Vous avez la maîtrise de la compétence Perception."
+        },
+        {
+          "nom": "Transe",
+          "description": "Les elfes ne dorment pas : ils méditent profondément, en restant à demi conscients, 4 heures par jour. Après ce repos, vous obtenez les mêmes bénéfices qu'un humain après 8 heures de sommeil (repos long)."
+        }
+      ],
+      "sous_races": [
+        {
+          "nom": "Haut-elfe",
+          "caracteristiques": "Int +1",
+          "langues": [
+            "1 au choix"
+          ],
+          "capacites": [
+            {
+              "nom": "Entraînement aux armes elfiques",
+              "description": "Vous avez la maîtrise de l'épée longue, de l'épée courte, de l'arc court et de l'arc long."
+            },
+            {
+              "nom": "Sort mineur",
+              "description": "Vous connaissez un sort mineur de votre choix de la liste du magicien (à ajouter via « Sorts accordés » de l'onglet Magie). L'Intelligence est votre caractéristique d'incantation pour ce sort."
+            },
+            {
+              "nom": "Langue supplémentaire",
+              "description": "Vous parlez, lisez et écrivez une langue supplémentaire de votre choix."
+            }
+          ]
+        },
+        {
+          "nom": "Elfe des bois",
+          "caracteristiques": "Sag +1",
+          "vitesse": 10.5,
+          "capacites": [
+            {
+              "nom": "Entraînement aux armes elfiques",
+              "description": "Vous avez la maîtrise de l'épée longue, de l'épée courte, de l'arc court et de l'arc long."
+            },
+            {
+              "nom": "Pied léger",
+              "description": "Votre vitesse de marche de base passe à 10,5 mètres."
+            },
+            {
+              "nom": "Cachette naturelle",
+              "description": "Vous pouvez tenter de vous cacher même lorsque vous n'êtes que légèrement masqué par du feuillage, une forte pluie, de la neige qui tombe, de la brume ou un autre phénomène naturel."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

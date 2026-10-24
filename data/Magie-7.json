@@ -1,0 +1,290 @@
+{
+  "sorts_niveau_7": [
+    {
+      "nom": "Boule de feu à retardement",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Les créatures dans une sphère de 6 m de rayon doivent réussir un JdS de Dextérité ou subir 12d6 dégâts de feu."
+    },
+    {
+      "nom": "Cage de force",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "30 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée une cage de 6 m ou une boîte de 3 m de force magique qui emprisonne une créature."
+    },
+    {
+      "nom": "Changement de plan",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Transporte le lanceur et jusqu'à 8 créatures dans un autre plan d'existence."
+    },
+    {
+      "nom": "Couronne d'étoiles",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Invoque des sphères lumineuses infligeant chacune 4d12 dégâts radiants à l'impact."
+    },
+    {
+      "nom": "Dissimulation",
+      "niveau": 7,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Protège une créature consentante (qui devient invisible et inconsciente) contre la divination."
+    },
+    {
+      "nom": "Doigt de mort",
+      "niveau": 7,
+      "ecole": "nécromancie",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Inflige 7d8 + 30 dégâts nécrotiques (JdS de Constitution pour moitié). Crée un zombi si la cible meurt."
+    },
+    {
+      "nom": "Épée de Mordenkainen",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Crée une épée spectrale mobile infligeant 3d10 dégâts de force par attaque."
+    },
+    {
+      "nom": "Forme éthérée",
+      "niveau": 7,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "personnel",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Projette le lanceur (et éventuellement des alliés) dans le plan éthéré."
+    },
+    {
+      "nom": "Inversion de la gravité",
+      "niveau": 7,
+      "ecole": "transmutation",
+      "incantation": "1 action",
+      "portee": "30 m",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Inverse la gravité dans un cylindre de 30 x 30 m."
+    },
+    {
+      "nom": "Invocation de céleste",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "1 minute",
+      "portee": "27 m",
+      "composantes": "V, S",
+      "concentration": true,
+      "rituel": false,
+      "description": "Invoque un esprit céleste amical."
+    },
+    {
+      "nom": "Manoir somptueux de Mordenkainen",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "1 minute",
+      "portee": "90 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée un manoir extradimensionnel confortable pour abriter le groupe."
+    },
+    {
+      "nom": "Mirage",
+      "niveau": 7,
+      "ecole": "illusion",
+      "incantation": "10 minutes",
+      "portee": "champ de vision",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Transforme totalement l'apparence et les propriétés physiques d'un vaste terrain."
+    },
+    {
+      "nom": "Mot de pouvoir douloureux",
+      "niveau": 7,
+      "ecole": "enchantement",
+      "incantation": "1 action",
+      "portee": "18 m",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Afflige une cible de 100 PV max d'un malus de vitesse, de désavantage et de contraintes sur les sorts."
+    },
+    {
+      "nom": "Parole divine",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action bonus",
+      "portee": "9 m",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Blesse, assourdit, aveugle ou bannit les créatures ciblées selon leur FP ou type."
+    },
+    {
+      "nom": "Projection d'image",
+      "niveau": 7,
+      "ecole": "illusion",
+      "incantation": "1 action",
+      "portee": "750 km",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Crée un double illusoire contrôlable à longue distance."
+    },
+    {
+      "nom": "Rayons prismatiques",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "personnel (cône de 18 m)",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Projette un cône de rayons colorés infligeant des dégâts variables selon le type."
+    },
+    {
+      "nom": "Régénération",
+      "niveau": 7,
+      "ecole": "transmutation",
+      "incantation": "1 minute",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Rend 4d8 + 15 PV, puis 1 PV par round et fait repousser les membres coupés."
+    },
+    {
+      "nom": "Résurrection",
+      "niveau": 7,
+      "ecole": "nécromancie",
+      "incantation": "1 heure",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Ramène à la vie une créature morte depuis moins de 100 ans avec tous ses PV et membres."
+    },
+    {
+      "nom": "Simulacre",
+      "niveau": 7,
+      "ecole": "illusion",
+      "incantation": "12 heures",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée un double fidèle d'une bête ou d'un humanoïde avec la moitié de ses PV."
+    },
+    {
+      "nom": "Songe du voile bleu",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "10 minutes",
+      "portee": "6 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Plonge le lanceur et ses alliés dans le sommeil pour les transporter sur un autre monde."
+    },
+    {
+      "nom": "Symbole",
+      "niveau": 7,
+      "ecole": "abjuration",
+      "incantation": "1 minute",
+      "portee": "contact",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Place un glyphe magique déclenchant un effet mortel ou débilitant."
+    },
+    {
+      "nom": "Téléportation",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "1 action",
+      "portee": "3 m",
+      "composantes": "V",
+      "concentration": false,
+      "rituel": false,
+      "description": "Téléporte instantanément le groupe n'importe où sur le même plan (avec risque d'échec)."
+    },
+    {
+      "nom": "Tempête de feu",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "45 m",
+      "composantes": "V, S",
+      "concentration": false,
+      "rituel": false,
+      "description": "Crée des cubes de feu destructeurs (7d10 dégâts de feu)."
+    },
+    {
+      "nom": "Temple des dieux",
+      "niveau": 7,
+      "ecole": "invocation",
+      "incantation": "1 heure",
+      "portee": "36 m",
+      "composantes": "V, S, M",
+      "concentration": false,
+      "rituel": false,
+      "description": "Fait apparaître un temple fortifié et consacré pour une durée d'un jour."
+    },
+    {
+      "nom": "Tourbillon",
+      "niveau": 7,
+      "ecole": "évocation",
+      "incantation": "1 action",
+      "portee": "90 m",
+      "composantes": "V, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Invoque un tourbillon destructeur infligeant 10d6 dégâts contondants."
+    },
+    {
+      "nom": "Transformation draconique",
+      "niveau": 7,
+      "ecole": "transmutation",
+      "incantation": "1 action bonus",
+      "portee": "personnel",
+      "composantes": "V, S, M",
+      "concentration": true,
+      "rituel": false,
+      "description": "Confère des sens draconiques, des ailes et un souffle destructeur en cône."
+    }
+  ]
+}

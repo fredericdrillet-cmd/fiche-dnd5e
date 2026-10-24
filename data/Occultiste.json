@@ -1,0 +1,546 @@
+{
+  "classe": {
+    "nom": "Occultiste",
+    "de_vie": "d8",
+    "carac_principale": "Charisme",
+    "capacites_classe": [
+      {
+        "niveau": 1,
+        "nom": "Protecteur d'outre-monde",
+        "description": "Au niveau 1, vous concluez un marché avec une entité d'outre-monde qui devient votre patron : l'Archifée, le Fiélon, le Grand Ancien (PHB), le Céleste, la Lame maudite (XGE), le Génie, l'Insondable (TCE), ou un patron communautaire. Ce choix vous accorde des aptitudes aux niveaux 1, 6, 10 et 14, ainsi qu'une liste de sorts étendue : ces sorts (deux par niveau de sort, du 1er au 5e) s'ajoutent à la liste de sorts d'occultiste pour vous, sans être connus d'office ; vous pouvez les choisir lorsque vous apprenez un nouveau sort."
+      },
+      {
+        "niveau": 1,
+        "nom": "Magie des pactes",
+        "description": "Vous lancez vos sorts grâce au Charisme. DD de sauvegarde des sorts = 8 + votre bonus de maîtrise + votre modificateur de Charisme ; modificateur d'attaque des sorts = votre bonus de maîtrise + votre modificateur de Charisme. Vous pouvez utiliser un focaliseur arcanique. Sorts mineurs connus : 2 (3 au niveau 4, 4 au niveau 10). Sorts connus : 2 au niveau 1, puis +1 par niveau jusqu'à 10 au niveau 9, 11 au niveau 11, 12 au niveau 13, 13 au niveau 15, 14 au niveau 17 et 15 au niveau 19 ; à chaque niveau gagné, vous pouvez remplacer un sort connu par un autre de la liste. Particularité : tous vos emplacements de sorts sont du même niveau et sont récupérés à la fin de chaque repos court ou long. Emplacements : 1 (niveau 1), 2 (niveau 2), 3 (niveau 11), 4 (niveau 17). Niveau des emplacements : 1er (niveaux 1-2), 2e (3-4), 3e (5-6), 4e (7-8), 5e (niveau 9 et au-delà) ; le 5e niveau est le maximum de la Magie des pactes."
+      },
+      {
+        "niveau": 2,
+        "nom": "Invocations occultes",
+        "description": "Au niveau 2, vous apprenez deux manifestations occultes (invocations occultes) de votre choix : fragments de savoir interdit qui renforcent la Décharge occulte (Décharge déchirante : + votre modificateur de Charisme aux dégâts de chaque rayon ; Décharge répulsive : repousse de 3 m), donnent des sorts utilisables à volonté ou une fois par repos, ou des capacités permanentes (Vision du diable : voir dans les ténèbres magiques à 36 m). Certaines exigent un niveau minimal dans la classe, un pacte ou un sort précis. Nombre connu : 2, puis 3 au niveau 5, 4 au niveau 7, 5 au niveau 9, 6 au niveau 12, 7 au niveau 15 et 8 au niveau 18. À chaque niveau gagné dans cette classe, vous pouvez en remplacer une par une autre dont vous remplissez les conditions."
+      },
+      {
+        "niveau": 3,
+        "nom": "Pacte divin",
+        "description": "Au niveau 3, votre patron vous accorde une faveur de pacte. Pacte de la Lame : par une action, vous créez une arme de pacte de corps à corps de la forme de votre choix dans votre main ; vous la maîtrisez, elle est magique et disparaît si elle reste plus d'une minute à plus de 1,50 m de vous (un rituel d'une heure permet de lier une arme magique). Pacte de la Chaîne : vous apprenez Appel de familier (rituel) avec des formes spéciales (diablotin, pseudodragon, quasit, esprit follet) et pouvez renoncer à une de vos attaques pour que le familier attaque par sa réaction. Pacte du Grimoire : vous recevez un Livre des ombres contenant trois sorts mineurs de n'importe quelles listes, lançables à volonté tant que vous l'avez sur vous. Pacte du Talisman (Tasha) : son porteur peut ajouter 1d4 à un test de caractéristique raté, un nombre de fois égal à votre bonus de maîtrise par repos long."
+      },
+      {
+        "niveau": 4,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 4,
+        "nom": "Polyvalence occulte (option Tasha)",
+        "description": "Option de Tasha. Chaque fois que vous atteignez dans cette classe un niveau qui vous octroie l'aptitude Amélioration de caractéristique (niveaux 4, 8, 12, 16 et 19), vous pouvez effectuer un de ces changements : remplacer un sort mineur d'occultiste connu par un autre de la liste d'occultiste ; remplacer l'option de Pacte divin choisie au niveau 3 par une autre option de pacte (Pacte de la Chaîne, de la Lame, du Grimoire ou du Talisman) ; ou, à partir du niveau 12, remplacer le sort d'un de vos Arcanums mystiques par un autre sort d'occultiste du même niveau. Si ce changement vous fait perdre les prérequis d'une manifestation occulte, vous devez aussi remplacer cette manifestation par une autre dont vous remplissez les conditions."
+      },
+      {
+        "niveau": 8,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 11,
+        "nom": "Arcanum mystique (6e niveau)",
+        "description": "Au niveau 11, votre patron vous confie un secret : choisissez un sort de 6e niveau de la liste d'occultiste. Vous pouvez le lancer une fois sans dépenser d'emplacement ; il faut terminer un repos long pour recommencer. Il ne peut pas être lancé à un niveau supérieur et ne profite pas de vos emplacements de Magie des pactes. Vous obtenez d'autres arcanums aux niveaux 13 (7e), 15 (8e) et 17 (9e)."
+      },
+      {
+        "niveau": 12,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 13,
+        "nom": "Arcanum mystique (7e niveau)",
+        "description": "Au niveau 13, vous choisissez un sort de 7e niveau de la liste d'occultiste comme arcanum. Vous pouvez le lancer une fois sans emplacement de sort et récupérez cette utilisation à la fin d'un repos long. Comme pour les autres arcanums, le sort est lancé à son niveau de base uniquement."
+      },
+      {
+        "niveau": 15,
+        "nom": "Arcanum mystique (8e niveau)",
+        "description": "Au niveau 15, vous choisissez un sort de 8e niveau de la liste d'occultiste comme arcanum. Vous pouvez le lancer une fois sans emplacement de sort et récupérez cette utilisation à la fin d'un repos long. Le sort est lancé à son niveau de base uniquement."
+      },
+      {
+        "niveau": 16,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 17,
+        "nom": "Arcanum mystique (9e niveau)",
+        "description": "Au niveau 17, vous choisissez un sort de 9e niveau de la liste d'occultiste comme arcanum (Prémonition, Emprisonnement, Mot de pouvoir mortel, Projection astrale, Portail, Métamorphose suprême…). Vous pouvez le lancer une fois sans emplacement de sort et récupérez cette utilisation à la fin d'un repos long."
+      },
+      {
+        "niveau": 19,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 20,
+        "nom": "Maître de l'occulte",
+        "description": "Au niveau 20, vous pouvez puiser dans votre réserve intérieure de puissance mystique en implorant votre patron pendant 1 minute : vous récupérez tous les emplacements de Magie des pactes que vous avez dépensés. Une fois utilisée, cette aptitude n'est de nouveau disponible qu'après un repos long. Les arcanums mystiques ne sont pas concernés."
+      }
+    ],
+    "sous_classes": [
+      {
+        "nom": "L'Archifée",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Lueurs féeriques",
+          "Sommeil",
+          "Apaisement des émotions",
+          "Force fantasmagorique",
+          "Clignotement",
+          "Croissance végétale",
+          "Domination de bête",
+          "Invisibilité supérieure",
+          "Domination de personne",
+          "Apparence trompeuse"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Présence féerique",
+            "description": "Par une action, vous dégagez une aura de charme ou d'effroi : chaque créature dans un cube de 3 m d'arête partant de vous doit réussir un jet de sauvegarde de Sagesse (DD = 8 + votre bonus de maîtrise + votre modificateur de Charisme) ou être charmée ou effrayée par vous (au choix) jusqu'à la fin de votre prochain tour. Une fois utilisée, l'aptitude se recharge à la fin d'un repos court ou long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Échappatoire brumeuse",
+            "description": "Au niveau 6, lorsque vous subissez des dégâts, vous pouvez utiliser votre réaction pour devenir invisible et vous téléporter jusqu'à 18 m vers un espace inoccupé que vous voyez. L'invisibilité dure jusqu'au début de votre prochain tour, ou jusqu'à ce que vous attaquiez ou lanciez un sort. Une fois par repos court ou long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Charmantes défenses",
+            "description": "Au niveau 10, vous êtes immunisé contre l'état charmé. Lorsqu'une autre créature tente de vous charmer, vous pouvez utiliser votre réaction pour lui renvoyer l'effet : elle doit réussir un jet de sauvegarde de Sagesse contre votre DD de sauvegarde des sorts ou être charmée par vous pendant 1 minute, ou jusqu'à ce qu'elle subisse des dégâts."
+          },
+          {
+            "niveau": 14,
+            "nom": "Sombre délire",
+            "description": "Au niveau 14, par une action, choisissez une créature visible à 18 m ou moins : elle doit réussir un jet de sauvegarde de Sagesse contre votre DD de sauvegarde des sorts ou être charmée ou effrayée par vous (au choix) pendant 1 minute, ou jusqu'à ce que votre concentration soit rompue (comme pour un sort). Elle se croit perdue dans un royaume féerique brumeux et ne perçoit que vous ; l'effet prend fin si elle subit des dégâts. Une fois par repos court ou long."
+          }
+        ]
+      },
+      {
+        "nom": "Le Fiélon",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Mains brûlantes",
+          "Injonction",
+          "Cécité/Surdité",
+          "Rayon ardent",
+          "Boule de feu",
+          "Nuage nauséabond",
+          "Bouclier de feu",
+          "Mur de feu",
+          "Colonne de flamme",
+          "Sanctification"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Bénédiction du ténébreux",
+            "description": "Chaque fois que vous réduisez une créature hostile à 0 point de vie, vous gagnez un nombre de points de vie temporaires égal à votre modificateur de Charisme + votre niveau d'occultiste (minimum 1). Aucune limite d'utilisation ; comme tous les PV temporaires, ils ne se cumulent pas avec d'autres."
+          },
+          {
+            "niveau": 6,
+            "nom": "Chance du ténébreux",
+            "description": "Au niveau 6, lorsque vous effectuez un test de caractéristique ou un jet de sauvegarde, vous pouvez ajouter 1d10 au résultat, après avoir vu le jet mais avant que ses effets ne soient appliqués. Une fois utilisée, l'aptitude se recharge à la fin d'un repos court ou long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Résistance fiélonne",
+            "description": "Au niveau 10, à la fin de chaque repos court ou long, choisissez un type de dégâts : vous obtenez la résistance à ce type jusqu'à ce que vous en choisissiez un autre. Les dégâts infligés par des armes magiques ou en argent ignorent cette résistance."
+          },
+          {
+            "niveau": 14,
+            "nom": "Traversée des enfers",
+            "description": "Au niveau 14, lorsque vous touchez une créature avec un jet d'attaque, vous pouvez la projeter à travers les plans inférieurs : elle disparaît et revient à la fin de votre prochain tour à l'emplacement qu'elle occupait (ou au plus proche espace libre). Si ce n'est pas un fiélon, elle subit alors 10d10 dégâts psychiques en revenant, traumatisée. Une fois par repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Le Grand Ancien",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Murmures dissonants",
+          "Fou rire de Tasha",
+          "Détection des pensées",
+          "Force fantasmagorique",
+          "Clairvoyance",
+          "Communication à distance",
+          "Domination de bête",
+          "Tentacules noirs d'Evard",
+          "Domination de personne",
+          "Télékinésie"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Esprit éveillé",
+            "description": "Vous pouvez communiquer par télépathie avec toute créature que vous voyez à 9 m ou moins. Il n'est pas nécessaire de partager une langue, mais la créature doit comprendre au moins une langue pour saisir vos pensées. Il s'agit d'une communication à sens unique sauf si la créature répond à voix haute."
+          },
+          {
+            "niveau": 6,
+            "nom": "Protection entropique",
+            "description": "Au niveau 6, lorsqu'une créature effectue un jet d'attaque contre vous, vous pouvez utiliser votre réaction pour lui imposer le désavantage. Si l'attaque échoue, votre prochain jet d'attaque contre cette créature a l'avantage s'il a lieu avant la fin de votre prochain tour. Une fois par repos court ou long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Bouclier mental",
+            "description": "Au niveau 10, nul ne peut lire vos pensées par télépathie ou autre moyen sans votre accord. Vous avez la résistance aux dégâts psychiques, et chaque fois qu'une créature vous inflige des dégâts psychiques, elle subit la même quantité de dégâts."
+          },
+          {
+            "niveau": 14,
+            "nom": "Asservissement",
+            "description": "Au niveau 14, par une action, vous touchez un humanoïde neutralisé : il est charmé par vous jusqu'à ce qu'un sort de Délivrance des malédictions soit lancé sur lui, que l'état charmé lui soit retiré, ou que vous utilisiez de nouveau cette aptitude. Tant qu'il est sur le même plan que vous, vous pouvez communiquer télépathiquement avec lui, quelle que soit la distance."
+          }
+        ]
+      },
+      {
+        "nom": "Le Céleste",
+        "source": "Guide Tout-en-un de Xanathar",
+        "sorts_domaine": [
+          "Soins",
+          "Éclair traçant",
+          "Sphère de feu",
+          "Restauration partielle",
+          "Lumière du jour",
+          "Retour à la vie",
+          "Gardien de la foi",
+          "Mur de feu",
+          "Colonne de flamme",
+          "Restauration supérieure"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Sorts mineurs bonus & Lumière guérisseuse",
+            "description": "Vous apprenez les sorts mineurs Lumière et Flamme sacrée (ils comptent comme sorts d'occultiste sans entrer dans le total de sorts mineurs connus). Lumière guérisseuse : vous disposez d'une réserve de d6 dont le nombre est égal à 1 + votre niveau d'occultiste. Par une action bonus, vous soignez une créature visible à 18 m ou moins en dépensant des dés de la réserve (au maximum un nombre égal à votre modificateur de Charisme, minimum 1) : elle récupère des points de vie égaux au total obtenu. Les dés dépensés sont récupérés à la fin d'un repos long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Âme rayonnante",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts radiants. De plus, lorsque vous lancez un sort qui inflige des dégâts radiants ou de feu, vous ajoutez votre modificateur de Charisme à un jet de dégâts radiants ou de feu de ce sort contre une de ses cibles."
+          },
+          {
+            "niveau": 10,
+            "nom": "Persévérance céleste",
+            "description": "Au niveau 10, à la fin de chaque repos court ou long, vous gagnez des points de vie temporaires égaux à votre niveau d'occultiste + votre modificateur de Charisme. Choisissez en outre jusqu'à cinq créatures visibles : chacune gagne des PV temporaires égaux à la moitié de votre niveau d'occultiste + votre modificateur de Charisme."
+          },
+          {
+            "niveau": 14,
+            "nom": "Vengeance ardente",
+            "description": "Au niveau 14, lorsque vous devez effectuer un jet de sauvegarde contre la mort au début de votre tour, vous pouvez à la place vous relever dans une explosion de lumière : vous récupérez la moitié de vos points de vie maximum et vous redressez si vous le souhaitez. Chaque créature de votre choix à 9 m ou moins subit 2d8 + votre modificateur de Charisme dégâts radiants et est aveuglée jusqu'à la fin du tour en cours. Une fois par repos long."
+          }
+        ]
+      },
+      {
+        "nom": "La Lame maudite",
+        "source": "Guide Tout-en-un de Xanathar",
+        "sorts_domaine": [
+          "Bouclier",
+          "Châtiment courroucé",
+          "Flou",
+          "Châtiment révélateur",
+          "Clignotement",
+          "Arme élémentaire",
+          "Assassin imaginaire",
+          "Châtiment débilitant",
+          "Châtiment du ban",
+          "Cône de froid"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Guerrier des maléfices & Malédiction de la Lame",
+            "description": "Guerrier des maléfices : vous maîtrisez les armures intermédiaires, les boucliers et les armes de guerre. À la fin d'un repos long, touchez une arme que vous maîtrisez et dépourvue de la propriété à deux mains : vous utilisez votre Charisme au lieu de la Force ou de la Dextérité pour ses jets d'attaque et de dégâts (s'applique aussi à votre arme de pacte). Malédiction de la Lame : par une action bonus, maudissez une créature visible à 9 m ou moins pendant 1 minute. Vous gagnez un bonus aux dégâts contre elle égal à votre bonus de maîtrise, vos attaques contre elle sont critiques sur 19-20, et si elle meurt vous récupérez des points de vie égaux à votre niveau d'occultiste + votre modificateur de Charisme (minimum 1). Une fois par repos court ou long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Spectre maudit",
+            "description": "Au niveau 6, lorsque vous tuez un humanoïde, vous pouvez faire se relever son esprit sous forme de spectre dans un espace inoccupé à proximité. Il gagne des PV temporaires égaux à la moitié de votre niveau d'occultiste, obéit à vos ordres verbaux, agit à votre initiative et ajoute votre modificateur de Charisme (minimum 0) à ses jets d'attaque. Il reste jusqu'à la fin de votre prochain repos long, puis disparaît. Une fois par repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Armure de maléfices",
+            "description": "Au niveau 10, lorsque la cible de votre Malédiction de la Lame effectue un jet d'attaque contre vous, vous pouvez utiliser votre réaction pour lancer un d20 : sur un résultat de 4 ou plus, l'attaque échoue, quel que soit son jet."
+          },
+          {
+            "niveau": 14,
+            "nom": "Maître des maléfices",
+            "description": "Au niveau 14, lorsque la créature maudite par votre Malédiction de la Lame meurt, vous pouvez appliquer la malédiction à une autre créature visible à 9 m ou moins, à condition de ne pas être neutralisé. Vous ne récupérez alors pas les points de vie normalement octroyés par la mort de la première cible. Cela ne consomme pas d'utilisation de la Malédiction."
+          }
+        ]
+      },
+      {
+        "nom": "Le Génie (Dao - Terre)",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Sanctuaire",
+          "Croissance d'épines",
+          "Fusion dans la pierre",
+          "Façonnage de la pierre",
+          "Mur de pierre",
+          "Détection du mal et du bien",
+          "Force fantasmagorique",
+          "Création de nourriture et d'eau",
+          "Assassin imaginaire",
+          "Création",
+          "Souhait"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Vaisseau du Génie & Conduit du génie (Terre)",
+            "description": "Votre patron (dao) vous remet un vaisseau magique de taille Très petite (lampe, anneau, flacon…) qui vous sert de focaliseur d'incantation. Sa CA est égale à 8 + votre bonus de maîtrise + votre modificateur de Charisme, ses points de vie égaux à votre niveau d'occultiste + votre bonus de maîtrise, et il est immunisé contre les dégâts de poison et psychiques. Refuge en bouteille : par une action, vous disparaissez à l'intérieur (pièce cylindrique de 6 m de rayon et 6 m de haut) pendant au maximum 2 × votre bonus de maîtrise heures ; vous en sortez par une action bonus. Une fois par repos long. Courroux du génie : une fois à chacun de vos tours, lorsque vous touchez avec un jet d'attaque, la cible subit des dégâts contondants supplémentaires égaux à votre bonus de maîtrise. Votre liste de sorts étendue comprend aussi les sorts communs à tous les génies (Détection du mal et du bien, Force fantasmagorique, Création de nourriture et d'eau, Assassin imaginaire, Création), et Souhait s'y ajoute comme choix possible pour l'Arcanum mystique de 9e niveau."
+          },
+          {
+            "niveau": 6,
+            "nom": "Présent élémentaire (Terre)",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts contondants. De plus, par une action bonus, vous gagnez une vitesse de vol de 9 m pendant 10 minutes, avec la possibilité de faire du surplace. Vous pouvez utiliser ce vol un nombre de fois égal à votre bonus de maîtrise, et récupérez toutes les utilisations à la fin d'un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Sanctuaire du Vaisseau",
+            "description": "Au niveau 10, quand vous entrez dans votre vaisseau via Refuge en bouteille, vous pouvez y emmener jusqu'à cinq créatures consentantes situées dans un rayon de 9 m (choix au moment de l'action). Par une action bonus, vous pouvez expulser n'importe quelle créature présente ; tout le monde ressort si vous quittez le vaisseau. Un repos court pris à l'intérieur ne dure que 10 minutes, et chaque créature qui le termine ajoute votre bonus de maîtrise aux points de vie récupérés par ses dés de vie."
+          },
+          {
+            "niveau": 14,
+            "nom": "Souhait limité",
+            "description": "Au niveau 14, par une action, vous pouvez demander à votre patron de produire l'effet d'un sort de 6e niveau ou moins dont le temps d'incantation est d'une action, issu de n'importe quelle liste de classe. Le sort ne requiert aucune composante et ne dépense aucun emplacement. Après utilisation, vous devez terminer 1d4 repos longs avant de pouvoir recommencer."
+          }
+        ]
+      },
+      {
+        "nom": "Le Génie (Djinn - Air)",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Vague tonnante",
+          "Bourrasque",
+          "Mur de vent",
+          "Invisibilité supérieure",
+          "Apparence trompeuse",
+          "Détection du mal et du bien",
+          "Force fantasmagorique",
+          "Création de nourriture et d'eau",
+          "Assassin imaginaire",
+          "Création",
+          "Souhait"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Vaisseau du Génie & Conduit du génie (Air)",
+            "description": "Votre patron (djinn) vous remet un vaisseau magique de taille Très petite (lampe, anneau, flacon…) qui vous sert de focaliseur d'incantation. Sa CA est égale à 8 + votre bonus de maîtrise + votre modificateur de Charisme, ses points de vie égaux à votre niveau d'occultiste + votre bonus de maîtrise, et il est immunisé contre les dégâts de poison et psychiques. Refuge en bouteille : par une action, vous disparaissez à l'intérieur (pièce cylindrique de 6 m de rayon et 6 m de haut) pendant au maximum 2 × votre bonus de maîtrise heures ; vous en sortez par une action bonus. Une fois par repos long. Courroux du génie : une fois à chacun de vos tours, lorsque vous touchez avec un jet d'attaque, la cible subit des dégâts de tonnerre supplémentaires égaux à votre bonus de maîtrise. Votre liste de sorts étendue comprend aussi les sorts communs à tous les génies (Détection du mal et du bien, Force fantasmagorique, Création de nourriture et d'eau, Assassin imaginaire, Création), et Souhait s'y ajoute comme choix possible pour l'Arcanum mystique de 9e niveau."
+          },
+          {
+            "niveau": 6,
+            "nom": "Présent élémentaire (Air)",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts de tonnerre. De plus, par une action bonus, vous gagnez une vitesse de vol de 9 m pendant 10 minutes, avec la possibilité de faire du surplace. Vous pouvez utiliser ce vol un nombre de fois égal à votre bonus de maîtrise, et récupérez toutes les utilisations à la fin d'un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Sanctuaire du Vaisseau",
+            "description": "Au niveau 10, quand vous entrez dans votre vaisseau via Refuge en bouteille, vous pouvez y emmener jusqu'à cinq créatures consentantes situées dans un rayon de 9 m (choix au moment de l'action). Par une action bonus, vous pouvez expulser n'importe quelle créature présente ; tout le monde ressort si vous quittez le vaisseau. Un repos court pris à l'intérieur ne dure que 10 minutes, et chaque créature qui le termine ajoute votre bonus de maîtrise aux points de vie récupérés par ses dés de vie."
+          },
+          {
+            "niveau": 14,
+            "nom": "Souhait limité",
+            "description": "Au niveau 14, par une action, vous pouvez demander à votre patron de produire l'effet d'un sort de 6e niveau ou moins dont le temps d'incantation est d'une action, issu de n'importe quelle liste de classe. Le sort ne requiert aucune composante et ne dépense aucun emplacement. Après utilisation, vous devez terminer 1d4 repos longs avant de pouvoir recommencer."
+          }
+        ]
+      },
+      {
+        "nom": "Le Génie (Éfrit - Feu)",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Mains brûlantes",
+          "Rayon ardent",
+          "Boule de feu",
+          "Bouclier de feu",
+          "Colonne de flamme",
+          "Détection du mal et du bien",
+          "Force fantasmagorique",
+          "Création de nourriture et d'eau",
+          "Assassin imaginaire",
+          "Création",
+          "Souhait"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Vaisseau du Génie & Conduit du génie (Feu)",
+            "description": "Votre patron (éfrit) vous remet un vaisseau magique de taille Très petite (lampe, anneau, flacon…) qui vous sert de focaliseur d'incantation. Sa CA est égale à 8 + votre bonus de maîtrise + votre modificateur de Charisme, ses points de vie égaux à votre niveau d'occultiste + votre bonus de maîtrise, et il est immunisé contre les dégâts de poison et psychiques. Refuge en bouteille : par une action, vous disparaissez à l'intérieur (pièce cylindrique de 6 m de rayon et 6 m de haut) pendant au maximum 2 × votre bonus de maîtrise heures ; vous en sortez par une action bonus. Une fois par repos long. Courroux du génie : une fois à chacun de vos tours, lorsque vous touchez avec un jet d'attaque, la cible subit des dégâts de feu supplémentaires égaux à votre bonus de maîtrise. Votre liste de sorts étendue comprend aussi les sorts communs à tous les génies (Détection du mal et du bien, Force fantasmagorique, Création de nourriture et d'eau, Assassin imaginaire, Création), et Souhait s'y ajoute comme choix possible pour l'Arcanum mystique de 9e niveau."
+          },
+          {
+            "niveau": 6,
+            "nom": "Présent élémentaire (Feu)",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts de feu. De plus, par une action bonus, vous gagnez une vitesse de vol de 9 m pendant 10 minutes, avec la possibilité de faire du surplace. Vous pouvez utiliser ce vol un nombre de fois égal à votre bonus de maîtrise, et récupérez toutes les utilisations à la fin d'un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Sanctuaire du Vaisseau",
+            "description": "Au niveau 10, quand vous entrez dans votre vaisseau via Refuge en bouteille, vous pouvez y emmener jusqu'à cinq créatures consentantes situées dans un rayon de 9 m (choix au moment de l'action). Par une action bonus, vous pouvez expulser n'importe quelle créature présente ; tout le monde ressort si vous quittez le vaisseau. Un repos court pris à l'intérieur ne dure que 10 minutes, et chaque créature qui le termine ajoute votre bonus de maîtrise aux points de vie récupérés par ses dés de vie."
+          },
+          {
+            "niveau": 14,
+            "nom": "Souhait limité",
+            "description": "Au niveau 14, par une action, vous pouvez demander à votre patron de produire l'effet d'un sort de 6e niveau ou moins dont le temps d'incantation est d'une action, issu de n'importe quelle liste de classe. Le sort ne requiert aucune composante et ne dépense aucun emplacement. Après utilisation, vous devez terminer 1d4 repos longs avant de pouvoir recommencer."
+          }
+        ]
+      },
+      {
+        "nom": "Le Génie (Maride - Eau)",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Nappe de brouillard",
+          "Flou",
+          "Tempête de neige",
+          "Contrôle de l'eau",
+          "Cône de froid",
+          "Détection du mal et du bien",
+          "Force fantasmagorique",
+          "Création de nourriture et d'eau",
+          "Assassin imaginaire",
+          "Création",
+          "Souhait"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Vaisseau du Génie & Conduit du génie (Eau)",
+            "description": "Votre patron (maride) vous remet un vaisseau magique de taille Très petite (lampe, anneau, flacon…) qui vous sert de focaliseur d'incantation. Sa CA est égale à 8 + votre bonus de maîtrise + votre modificateur de Charisme, ses points de vie égaux à votre niveau d'occultiste + votre bonus de maîtrise, et il est immunisé contre les dégâts de poison et psychiques. Refuge en bouteille : par une action, vous disparaissez à l'intérieur (pièce cylindrique de 6 m de rayon et 6 m de haut) pendant au maximum 2 × votre bonus de maîtrise heures ; vous en sortez par une action bonus. Une fois par repos long. Courroux du génie : une fois à chacun de vos tours, lorsque vous touchez avec un jet d'attaque, la cible subit des dégâts de froid supplémentaires égaux à votre bonus de maîtrise. Votre liste de sorts étendue comprend aussi les sorts communs à tous les génies (Détection du mal et du bien, Force fantasmagorique, Création de nourriture et d'eau, Assassin imaginaire, Création), et Souhait s'y ajoute comme choix possible pour l'Arcanum mystique de 9e niveau."
+          },
+          {
+            "niveau": 6,
+            "nom": "Présent élémentaire (Eau)",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts de froid. De plus, par une action bonus, vous gagnez une vitesse de vol de 9 m pendant 10 minutes, avec la possibilité de faire du surplace. Vous pouvez utiliser ce vol un nombre de fois égal à votre bonus de maîtrise, et récupérez toutes les utilisations à la fin d'un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Sanctuaire du Vaisseau",
+            "description": "Au niveau 10, quand vous entrez dans votre vaisseau via Refuge en bouteille, vous pouvez y emmener jusqu'à cinq créatures consentantes situées dans un rayon de 9 m (choix au moment de l'action). Par une action bonus, vous pouvez expulser n'importe quelle créature présente ; tout le monde ressort si vous quittez le vaisseau. Un repos court pris à l'intérieur ne dure que 10 minutes, et chaque créature qui le termine ajoute votre bonus de maîtrise aux points de vie récupérés par ses dés de vie."
+          },
+          {
+            "niveau": 14,
+            "nom": "Souhait limité",
+            "description": "Au niveau 14, par une action, vous pouvez demander à votre patron de produire l'effet d'un sort de 6e niveau ou moins dont le temps d'incantation est d'une action, issu de n'importe quelle liste de classe. Le sort ne requiert aucune composante et ne dépense aucun emplacement. Après utilisation, vous devez terminer 1d4 repos longs avant de pouvoir recommencer."
+          }
+        ]
+      },
+      {
+        "nom": "L'Insondable",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Création ou destruction d'eau",
+          "Vague tonnante",
+          "Bourrasque",
+          "Silence",
+          "Éclair",
+          "Tempête de neige",
+          "Contrôle de l'eau",
+          "Convocation d'élémentaire",
+          "Main de Bigby",
+          "Cône de froid"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Tentacule abyssal & Faveur de la mer",
+            "description": "Faveur de la mer : vous gagnez une vitesse de nage de 12 m et pouvez respirer sous l'eau. Tentacule abyssal : par une action bonus, vous créez un tentacule spectral de 3 m de long en un point visible à 18 m ou moins, pour 1 minute ou jusqu'à ce que vous en recréiez un. À sa création, vous pouvez faire une attaque de sort au corps à corps contre une créature à 3 m ou moins de lui : 1d8 dégâts de froid (2d8 au niveau 10) et vitesse de la cible réduite de 3 m jusqu'au début de votre prochain tour. Par une action bonus lors des tours suivants, vous pouvez le déplacer de 9 m et répéter l'attaque. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Âme océane & Tentacule gardien",
+            "description": "Au niveau 6, vous obtenez la résistance aux dégâts de froid ; lorsque vous et une autre créature êtes totalement immergés, vous vous comprenez mutuellement quelle que soit la langue. Tentacule gardien : lorsque vous ou une créature visible subissez des dégâts en étant à 3 m ou moins de votre tentacule, vous pouvez utiliser votre réaction pour réduire ces dégâts de 1d8 (2d8 au niveau 10)."
+          },
+          {
+            "niveau": 10,
+            "nom": "Tentacules agrippants",
+            "description": "Au niveau 10, vous apprenez Tentacules noirs d'Evard ; il compte comme sort d'occultiste sans entrer dans vos sorts connus. Vous pouvez le lancer une fois sans emplacement, récupéré après un repos long. Chaque fois que vous lancez ce sort, vous gagnez des PV temporaires égaux à votre niveau d'occultiste, et les dégâts ne peuvent pas rompre votre concentration sur lui."
+          },
+          {
+            "niveau": 14,
+            "nom": "Plongeon abyssal",
+            "description": "Au niveau 14, par une action, vous vous téléportez avec jusqu'à cinq créatures consentantes visibles à 9 m ou moins. Vous réapparaissez dans des espaces inoccupés à 9 m ou moins d'une étendue d'eau d'au moins la taille d'un bassin que vous avez déjà vue, située à 1,5 km ou moins. Une fois par repos court ou long."
+          }
+        ]
+      },
+      {
+        "nom": "Le Moissonneur",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Simulacre de vie",
+          "Rayon empoisonné",
+          "Rayon affaiblissant",
+          "Cécité/Surdité",
+          "Animation des morts",
+          "Mort simulée",
+          "Flétrissement",
+          "Protection contre la mort",
+          "Brume mortelle",
+          "Contagion"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Toucher de la faucheuse",
+            "description": "Vous apprenez le sort mineur Contact glacial s'il ne vous est pas déjà connu (il ne compte pas dans vos sorts mineurs). Une fois à chacun de vos tours, lorsque vous lancez un sort mineur d'occultiste qui cible une seule créature et inflige des dégâts nécrotiques, vous pouvez désigner une seconde cible à portée, située à 1,50 m ou moins de la première ; elle effectue son propre jet ou subit sa propre attaque. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Moisson d'âmes",
+            "description": "Au niveau 6, lorsqu'une créature hostile qui n'est ni un artificiel ni un mort-vivant meurt à 9 m ou moins de vous et que vous la voyez, vous pouvez absorber son essence (aucune action) : vous récupérez un emplacement de Magie des pactes dépensé. Une fois par repos long. Si vous n'avez aucun emplacement à récupérer, vous gagnez à la place des PV temporaires égaux à votre niveau d'occultiste."
+          },
+          {
+            "niveau": 10,
+            "nom": "Marche macabre",
+            "description": "Au niveau 10, vous obtenez la résistance aux dégâts nécrotiques. Par une action bonus, vous devenez semi-intangible jusqu'à la fin de votre tour : vous pouvez traverser créatures et objets comme un terrain difficile, avez la résistance aux dégâts contondants, perforants et tranchants, et les attaques d'opportunité contre vous ont le désavantage. Si vous terminez votre tour dans un objet, vous êtes expulsé vers l'espace libre le plus proche et subissez 1d10 dégâts de force par tranche de 1,50 m parcourue. Utilisations : un nombre de fois égal à votre bonus de maîtrise par repos long."
+          },
+          {
+            "niveau": 14,
+            "nom": "Avatar de la Mort",
+            "description": "Au niveau 14, par une action bonus, vous revêtez une forme spectrale armée d'une faux pendant 1 minute (pas de concentration) : une aura de 3 m de rayon vous entoure. Les créatures hostiles dans l'aura ne peuvent pas récupérer de points de vie et leur régénération est suspendue. Une créature hostile qui commence son tour dans l'aura effectue un jet de sauvegarde de Constitution (DD = 8 + votre bonus de maîtrise + votre modificateur de Charisme) : 3d8 dégâts nécrotiques en cas d'échec, moitié en cas de réussite. Vos dégâts nécrotiques ignorent la résistance à ce type. Une fois par repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Le Protecteur astral",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Lueurs féeriques",
+          "Feuille morte",
+          "Lévitation",
+          "Force fantasmagorique",
+          "Clairvoyance",
+          "Clignotement",
+          "Porte dimensionnelle",
+          "Oeil magique",
+          "Télékinésie",
+          "Cercle de téléportation"
+        ],
+        "capacites": [
+          {
+            "niveau": 1,
+            "nom": "Puits de gravité & Éclat stellaire",
+            "description": "Vous apprenez le sort mineur Illusion mineure (il ne compte pas dans vos sorts mineurs connus). Éclat stellaire : une fois à chacun de vos tours, lorsque vous infligez des dégâts de force ou radiants à une créature de taille G ou inférieure avec un sort, vous pouvez la déplacer de 1,50 m horizontalement dans la direction de votre choix (sans jet de sauvegarde). Ce déplacement se cumule avec celui de la manifestation Décharge répulsive."
+          },
+          {
+            "niveau": 6,
+            "nom": "Saut de météore",
+            "description": "Au niveau 6, par une action bonus, vous vous téléportez jusqu'à 9 m vers un espace inoccupé visible. À votre point de départ éclate une onde de choc : chaque créature de votre choix à 3 m ou moins de ce point effectue un jet de sauvegarde de Force (DD = 8 + votre bonus de maîtrise + votre modificateur de Charisme) ; en cas d'échec, elle subit 1d10 dégâts de force et est attirée jusqu'à 3 m vers le point de départ. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Voile d'apesanteur",
+            "description": "Au niveau 10, vous ne subissez plus de dégâts de chute et pouvez ralentir votre chute à volonté (comme Feuille morte). Par une action bonus, vous gagnez une vitesse de vol égale à votre vitesse de marche, avec la possibilité de faire du surplace, pendant 10 minutes. Une fois par repos court ou long ; vous pouvez aussi dépenser un emplacement de Magie des pactes pour l'utiliser de nouveau."
+          },
+          {
+            "niveau": 14,
+            "nom": "Effondrement singulier",
+            "description": "Au niveau 14, par une action, vous créez une singularité en un point visible à 36 m ou moins, qui persiste jusqu'au début de votre prochain tour. Chaque créature dans une sphère de 6 m de rayon centrée sur ce point effectue un jet de sauvegarde de Force contre votre DD de sauvegarde des sorts : en cas d'échec, elle subit 6d10 dégâts de force, est attirée jusqu'à 4,50 m vers le centre et est entravée jusqu'à la fin de votre prochain tour ; en cas de réussite, elle subit la moitié des dégâts seulement. Une fois par repos long."
+          }
+        ]
+      }
+    ]
+  }
+}

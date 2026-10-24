@@ -1,0 +1,384 @@
+{
+  "armes_dnd_5e": [
+    {
+      "nom": "Bâton de combat",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d6 contondants",
+      "proprietes": "Polyvalente (1d8)",
+      "botte_arme": "Renversement",
+      "description_botte": "Si vous touchez une créature, vous pouvez la forcer à faire un JdS de Force ou tomber à terre.",
+      "poids": "2 kg",
+      "prix": "2 pa"
+    },
+    {
+      "nom": "Dague",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d4 perforants",
+      "proprietes": "Finesse, Lancer (portée 6/18), Légère",
+      "botte_arme": "Coup double",
+      "description_botte": "Permet de porter l'attaque supplémentaire d'une arme légère dans le cadre de l'action principale sans utiliser l'action bonus.",
+      "poids": "0,5 kg",
+      "prix": "2 po"
+    },
+    {
+      "nom": "Gourdin",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d4 contondants",
+      "proprietes": "Légère",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "1 pa"
+    },
+    {
+      "nom": "Hachette",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d6 tranchants",
+      "proprietes": "Lancer (portée 6/18), Légère",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Javeline",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d6 perforants",
+      "proprietes": "Lancer (portée 9/36)",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Lance",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d6 perforants",
+      "proprietes": "Lancer (portée 6/18), Polyvalente (1d8)",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "1,5 kg",
+      "prix": "1 po"
+    },
+    {
+      "nom": "Marteau léger",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d4 contondants",
+      "proprietes": "Lancer (portée 6/18), Légère",
+      "botte_arme": "Coup double",
+      "description_botte": "Permet de porter l'attaque supplémentaire d'une arme légère dans le cadre de l'action principale sans utiliser l'action bonus.",
+      "poids": "1 kg",
+      "prix": "2 po"
+    },
+    {
+      "nom": "Masse d’armes",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d6 contondants",
+      "proprietes": "—",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "2 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Massue",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d8 contondants",
+      "proprietes": "Deux mains",
+      "botte_arme": "Poussée",
+      "description_botte": "Repousse la cible touchée de 3 mètres en ligne droite si elle est de taille Grande ou inférieure.",
+      "poids": "5 kg",
+      "prix": "2 pa"
+    },
+    {
+      "nom": "Serpe",
+      "categorie": "Armes courantes de corps à corps",
+      "degats": "1d4 tranchants",
+      "proprietes": "Légère",
+      "botte_arme": "Coup double",
+      "description_botte": "Permet de porter l'attaque supplémentaire d'une arme légère dans le cadre de l'action principale sans utiliser l'action bonus.",
+      "poids": "1 kg",
+      "prix": "1 pa"
+    },
+    {
+      "nom": "Arbalète légère",
+      "categorie": "Armes courantes à distance",
+      "degats": "1d8 perforants",
+      "proprietes": "Chargement, Deux mains, Munitions (portée 24/96 ; carreaux)",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "2,5 kg",
+      "prix": "25 po"
+    },
+    {
+      "nom": "Arc court",
+      "categorie": "Armes courantes à distance",
+      "degats": "1d6 perforants",
+      "proprietes": "Deux mains, Munitions (portée 24/96 ; flèches)",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "25 po"
+    },
+    {
+      "nom": "Fléchette",
+      "categorie": "Armes courantes à distance",
+      "degats": "1d4 perforants",
+      "proprietes": "Finesse, Lancer (portée 6/18)",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "125 g",
+      "prix": "5 pc"
+    },
+    {
+      "nom": "Fronde",
+      "categorie": "Armes courantes à distance",
+      "degats": "1d4 contondants",
+      "proprietes": "Munitions (portée 9/36 ; billes)",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "—",
+      "prix": "1 pa"
+    },
+    {
+      "nom": "Cimeterre",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d6 tranchants",
+      "proprietes": "Finesse, Légère",
+      "botte_arme": "Coup double",
+      "description_botte": "Permet de porter l'attaque supplémentaire d'une arme légère dans le cadre de l'action principale sans utiliser l'action bonus.",
+      "poids": "1,5 kg",
+      "prix": "25 po"
+    },
+    {
+      "nom": "Coutille",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d10 tranchants",
+      "proprietes": "Allonge, Deux mains, Lourde",
+      "botte_arme": "Écorchure",
+      "description_botte": "Inflige des dégâts équivalents au modificateur d'attaque même si le jet d'attaque initial est raté.",
+      "poids": "3 kg",
+      "prix": "20 po"
+    },
+    {
+      "nom": "Épée à deux mains",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "2d6 tranchants",
+      "proprietes": "Deux mains, Lourde",
+      "botte_arme": "Écorchure",
+      "description_botte": "Inflige des dégâts équivalents au modificateur d'attaque même si le jet d'attaque initial est raté.",
+      "poids": "3 kg",
+      "prix": "50 po"
+    },
+    {
+      "nom": "Épée courte",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d6 perforants",
+      "proprietes": "Finesse, Légère",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "10 po"
+    },
+    {
+      "nom": "Épée longue",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 tranchants",
+      "proprietes": "Polyvalente (1d10)",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "1,5 kg",
+      "prix": "15 po"
+    },
+    {
+      "nom": "Fléau d’armes",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 contondants",
+      "proprietes": "—",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "10 po"
+    },
+    {
+      "nom": "Fouet",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d4 tranchants",
+      "proprietes": "Allonge, Finesse",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "1,5 kg",
+      "prix": "2 po"
+    },
+    {
+      "nom": "Hache à deux mains",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d12 tranchants",
+      "proprietes": "Deux mains, Lourde",
+      "botte_arme": "Enchaînement",
+      "description_botte": "Permet d'attaquer une seconde créature adjacente en cas de coup réussi.",
+      "poids": "3,5 kg",
+      "prix": "30 po"
+    },
+    {
+      "nom": "Hache d’armes",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 tranchants",
+      "proprietes": "Polyvalente (1d10)",
+      "botte_arme": "Renversement",
+      "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
+      "poids": "2 kg",
+      "prix": "10 po"
+    },
+    {
+      "nom": "Hallebarde",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d10 tranchants",
+      "proprietes": "Allonge, Deux mains, Lourde",
+      "botte_arme": "Enchaînement",
+      "description_botte": "Permet d'attaquer une seconde créature adjacente en cas de coup réussi.",
+      "poids": "3 kg",
+      "prix": "20 po"
+    },
+    {
+      "nom": "Lance d’arçon",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d10 perforants",
+      "proprietes": "Allonge, Deux mains (sauf à cheval), Lourde",
+      "botte_arme": "Renversement",
+      "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
+      "poids": "3 kg",
+      "prix": "10 po"
+    },
+    {
+      "nom": "Maillet d’armes",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "2d6 contondants",
+      "proprietes": "Deux mains, Lourde",
+      "botte_arme": "Renversement",
+      "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
+      "poids": "5 kg",
+      "prix": "10 po"
+    },
+    {
+      "nom": "Marteau de guerre",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 contondants",
+      "proprietes": "Polyvalente (1d10)",
+      "botte_arme": "Poussée",
+      "description_botte": "Repousse la cible touchée de 3 mètres en ligne droite si elle est de taille Grande ou inférieure.",
+      "poids": "2,5 kg",
+      "prix": "15 po"
+    },
+    {
+      "nom": "Morgenstern",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 perforants",
+      "proprietes": "—",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "2 kg",
+      "prix": "15 po"
+    },
+    {
+      "nom": "Pic de guerre",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 perforants",
+      "proprietes": "Polyvalente (1d10)",
+      "botte_arme": "Sape",
+      "description_botte": "Inflige un désavantage à la cible touchée sur son prochain jet d'attaque avant votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Pique",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d10 perforants",
+      "proprietes": "Allonge, Deux mains, Lourde",
+      "botte_arme": "Poussée",
+      "description_botte": "Repousse la cible touchée de 3 mètres en ligne droite si elle est de taille Grande ou inférieure.",
+      "poids": "9 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Rapière",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 perforants",
+      "proprietes": "Finesse",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "25 po"
+    },
+    {
+      "nom": "Trident",
+      "categorie": "Armes de guerre de corps à corps",
+      "degats": "1d8 perforants",
+      "proprietes": "Lancer (portée 6/18), Polyvalente (1d10)",
+      "botte_arme": "Renversement",
+      "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
+      "poids": "2 kg",
+      "prix": "5 po"
+    },
+    {
+      "nom": "Arbalète de poing",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1d6 perforants",
+      "proprietes": "Chargement, Légère, Munitions (portée 9/36 ; carreaux)",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1,5 kg",
+      "prix": "75 po"
+    },
+    {
+      "nom": "Arbalète lourde",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1d10 perforants",
+      "proprietes": "Chargement, Deux mains, Lourde, Munitions (portée 30/120 ; carreaux)",
+      "botte_arme": "Poussée",
+      "description_botte": "Repousse la cible touchée de 3 mètres en ligne droite si elle est de taille Grande ou inférieure.",
+      "poids": "9 kg",
+      "prix": "50 po"
+    },
+    {
+      "nom": "Arc long",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1d8 perforants",
+      "proprietes": "Deux mains, Lourde, Munitions (portée 45/180 ; flèches)",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "1 kg",
+      "prix": "50 po"
+    },
+    {
+      "nom": "Mousquet",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1d12 perforants",
+      "proprietes": "Chargement, Deux mains, Munitions (portée 12/36 ; balles)",
+      "botte_arme": "Ralentissement",
+      "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
+      "poids": "5 kg",
+      "prix": "500 po"
+    },
+    {
+      "nom": "Pistolet",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1d10 perforants",
+      "proprietes": "Chargement, Munitions (portée 9/27 ; balles)",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "1,5 kg",
+      "prix": "250 po"
+    },
+    {
+      "nom": "Sarbacane",
+      "categorie": "Armes de guerre à distance",
+      "degats": "1 perforant",
+      "proprietes": "Chargement, Munitions (portée 7,50/30 ; dards)",
+      "botte_arme": "Ouverture",
+      "description_botte": "Confère l'avantage au prochain jet d'attaque contre la cible touchée avant la fin de votre prochain tour.",
+      "poids": "0,5 kg",
+      "prix": "10 po"
+    }
+  ]
+}

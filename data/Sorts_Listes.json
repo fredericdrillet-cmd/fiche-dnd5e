@@ -1,0 +1,2265 @@
+{
+ "listes_de_classes": {
+  "Amis": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Aspersion d'acide": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Assistance": [
+   "Clerc",
+   "Druide",
+   "Artificier"
+  ],
+  "Bouffée de poison": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Contact glacial": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Contrôle des flammes": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Coup au but": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Coup de tonnerre": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Décharge occulte": [
+   "Occultiste"
+  ],
+  "Druidisme": [
+   "Druide"
+  ],
+  "Embrasement": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Éruption de lames": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Façonnage de l'eau": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Façonnage de la terre": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Ferrage foudroyant": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Flamme sacrée": [
+   "Clerc"
+  ],
+  "Flammes": [
+   "Druide"
+  ],
+  "Fouet épineux": [
+   "Druide",
+   "Artificier"
+  ],
+  "Gelure": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Glas": [
+   "Clerc",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Gourdin magique": [
+   "Druide"
+  ],
+  "Illusion mineure": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Infestation": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Lame aux flammes vertes": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Lame retentissante": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Lumière": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Lumières dansantes": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Main de mage": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Message": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Moquerie cruelle": [
+   "Barde"
+  ],
+  "Mot de radiance": [
+   "Clerc"
+  ],
+  "Pierre magique": [
+   "Druide",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Piqûre mentale": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Poigne électrique": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Prestidigitation": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Protection contre les armes": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Rayon de givre": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Réparation": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Résistance": [
+   "Clerc",
+   "Druide",
+   "Artificier"
+  ],
+  "Sauvagerie primitive": [
+   "Druide"
+  ],
+  "Saute de vent": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Stabilisation": [
+   "Clerc",
+   "Artificier"
+  ],
+  "Thaumaturgie": [
+   "Clerc"
+  ],
+  "Trait de feu": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Absorption des éléments": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Alarme": [
+   "Magicien",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Amitié avec les animaux": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Appel de familier": [
+   "Magicien"
+  ],
+  "Armure d'Agathys": [
+   "Occultiste"
+  ],
+  "Armure de mage": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Baies nourricières": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Barbes argentées": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Bénédiction": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Blessure": [
+   "Clerc"
+  ],
+  "Bouclier": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Bouclier de la foi": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Catapulte": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Cérémonie": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Charme-personne": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Châtiment calcinant": [
+   "Paladin"
+  ],
+  "Châtiment courroucé": [
+   "Paladin"
+  ],
+  "Châtiment tonitruant": [
+   "Paladin"
+  ],
+  "Collet": [
+   "Druide",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Communication avec les animaux": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Compréhension des langues": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Couleurs dansantes": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Couteau de glace": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Création ou destruction d'eau": [
+   "Clerc",
+   "Druide"
+  ],
+  "Déguisement": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Détection de la magie": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Paladin",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Détection du mal et du bien": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Détection du poison et des maladies": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur"
+  ],
+  "Disque flottant de Tenser": [
+   "Magicien"
+  ],
+  "Duel forcé": [
+   "Paladin"
+  ],
+  "Éclair de chaos": [
+   "Ensorceleur"
+  ],
+  "Éclair traçant": [
+   "Clerc"
+  ],
+  "Enchevêtrement": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Faveur divine": [
+   "Paladin"
+  ],
+  "Feuille morte": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Fléau": [
+   "Barde",
+   "Clerc"
+  ],
+  "Fou rire de Tasha": [
+   "Barde",
+   "Magicien"
+  ],
+  "Frappe du zéphyr": [
+   "Rôdeur"
+  ],
+  "Frappe piégeuse": [
+   "Rôdeur"
+  ],
+  "Frayeur": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Graisse": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Grande foulée": [
+   "Barde",
+   "Druide",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Héroïsme": [
+   "Barde",
+   "Paladin"
+  ],
+  "Identification": [
+   "Barde",
+   "Magicien",
+   "Artificier"
+  ],
+  "Image silencieuse": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Injonction": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Lien avec une bête": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Lueurs féeriques": [
+   "Barde",
+   "Druide",
+   "Artificier"
+  ],
+  "Mains brûlantes": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Maléfice": [
+   "Occultiste"
+  ],
+  "Marque du chasseur": [
+   "Rôdeur"
+  ],
+  "Mixture caustique de Tasha": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Mot de guérison": [
+   "Barde",
+   "Clerc",
+   "Druide"
+  ],
+  "Murmures dissonants": [
+   "Barde"
+  ],
+  "Nappe de brouillard": [
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Magicien"
+  ],
+  "Orbe chromatique": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Projectile élémentaire": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Projectile magique": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Protection contre le mal et le bien": [
+   "Clerc",
+   "Magicien",
+   "Occultiste",
+   "Paladin"
+  ],
+  "Rayon empoisonné": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Repli expéditif": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Représailles infernales": [
+   "Occultiste"
+  ],
+  "Sanctuaire": [
+   "Clerc",
+   "Artificier"
+  ],
+  "Saut": [
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Secousse sismique": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Serviteur invisible": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Simulacre de vie": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Soins": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Sommeil": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Tentacules de Hadar": [
+   "Occultiste"
+  ],
+  "Texte illusoire": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Trait ensorcelé": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Vague tonnante": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Vents contraires": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Agrandissement/Rapetissement": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Aide": [
+   "Clerc",
+   "Paladin",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Amélioration de caractéristique": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Artificier"
+  ],
+  "Apaisement des émotions": [
+   "Barde",
+   "Clerc"
+  ],
+  "Appel de destrier": [
+   "Paladin"
+  ],
+  "Arme magique": [
+   "Paladin",
+   "Magicien",
+   "Artificier"
+  ],
+  "Arme spirituelle": [
+   "Clerc"
+  ],
+  "Attraction terrestre": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Augure": [
+   "Clerc"
+  ],
+  "Aura magique de Nystul": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Bouche magique": [
+   "Barde",
+   "Magicien"
+  ],
+  "Bourrasque": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Cécité/Surdité": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Châtiment révélateur": [
+   "Paladin"
+  ],
+  "Convocation de bête": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Corde enchantée": [
+   "Magicien"
+  ],
+  "Cordon de flèches": [
+   "Rôdeur"
+  ],
+  "Couronne du dément": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Croissance d'épines": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Déblocage": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Détection des pensées": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Discours captivant": [
+   "Barde"
+  ],
+  "Entraves de givre": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Épine mentale": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Espièglerie de Nathair": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Esprit guérisseur": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Flambée d'Aganazzar": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Flamme éternelle": [
+   "Clerc",
+   "Druide",
+   "Magicien",
+   "Artificier"
+  ],
+  "Flèche acide de Melf": [
+   "Magicien"
+  ],
+  "Flou": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Force fantasmagorique": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Fouet mental de Tasha": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Foulée brumeuse": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Fracassement": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Image miroir": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Immobilisation de personne": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Invisibilité": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Lame d'ombres": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Lame de feu": [
+   "Druide",
+   "Ensorceleur"
+  ],
+  "Lévitation": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Libellé aérien": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Lien de protection": [
+   "Clerc"
+  ],
+  "Localisation d'animaux ou de plantes": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Localisation d'objet": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur",
+   "Magicien"
+  ],
+  "Messager animal": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Métal brûlant": [
+   "Barde",
+   "Druide",
+   "Artificier"
+  ],
+  "Modification d'apparence": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Nuée de boules de neige de Snilloc": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Nuée de dagues": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Passage sans trace": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Pattes d'araignée": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Peau d'écorce": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Poigne terreuse de Maximilien": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Préservation des morts": [
+   "Clerc",
+   "Magicien"
+  ],
+  "Prière de guérison": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Protection contre le poison": [
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Pyrotechnie": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Rayon affaiblissant": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Rayon ardent": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Rayon de lune": [
+   "Druide"
+  ],
+  "Restauration partielle": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Sens animal": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Sens de la distorsion": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sens des pièges": [
+   "Clerc",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Silence": [
+   "Barde",
+   "Clerc",
+   "Rôdeur"
+  ],
+  "Souffle du dragon": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sphère de feu": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Suggestion": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Ténèbres": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Toile d'araignée": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Tourbillon de poussière": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Vent protecteur": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Verrou magique": [
+   "Magicien"
+  ],
+  "Vision dans le noir": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Rôdeur"
+  ],
+  "Voir l'invisible": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Zone de vérité": [
+   "Barde",
+   "Clerc",
+   "Paladin"
+  ],
+  "Animation des morts": [
+   "Clerc",
+   "Magicien"
+  ],
+  "Antidétection": [
+   "Barde",
+   "Rôdeur",
+   "Magicien"
+  ],
+  "Appel de la foudre": [
+   "Druide"
+  ],
+  "Arme élémentaire": [
+   "Druide",
+   "Paladin",
+   "Artificier"
+  ],
+  "Aura de vitalité": [
+   "Clerc",
+   "Druide",
+   "Paladin"
+  ],
+  "Aura du croisé": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Boule de feu": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Cercle magique": [
+   "Clerc",
+   "Magicien",
+   "Occultiste",
+   "Paladin"
+  ],
+  "Châtiment aveuglant": [
+   "Paladin"
+  ],
+  "Clairvoyance": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Clignotement": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Communication à distance": [
+   "Barde",
+   "Clerc",
+   "Magicien"
+  ],
+  "Communication avec les morts": [
+   "Barde",
+   "Clerc"
+  ],
+  "Communication avec les plantes": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Contresort": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Convocation de démons mineurs": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Convocation de fée": [
+   "Druide",
+   "Magicien",
+   "Occultiste",
+   "Rôdeur"
+  ],
+  "Convocation de mort-vivant": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Convocation de rejeton d'ombre": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Création de nourriture et d'eau": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Croissance végétale": [
+   "Barde",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Délivrance des malédictions": [
+   "Clerc",
+   "Magicien",
+   "Occultiste",
+   "Paladin"
+  ],
+  "Dissipation de la magie": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Paladin",
+   "Artificier"
+  ],
+  "Don des langues": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Éclair": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Ennemis à foison": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Éruption de terre": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Esprits gardiens": [
+   "Clerc"
+  ],
+  "Flèche de foudre": [
+   "Rôdeur"
+  ],
+  "Flèches enflammées": [
+   "Druide",
+   "Rôdeur",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Forme gazeuse": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Forteresse d'intellect": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Foulée d'Ashardalon": [
+   "Ensorceleur",
+   "Magicien",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Foulée tonitruante": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Fusion dans la pierre": [
+   "Clerc",
+   "Druide",
+   "Rôdeur"
+  ],
+  "Glyphe de protection": [
+   "Barde",
+   "Clerc",
+   "Magicien",
+   "Artificier"
+  ],
+  "Hâte": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Image majeure": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Invocation d'animaux": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Invocation de projectiles": [
+   "Rôdeur"
+  ],
+  "Lenteur": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Lueur d'espoir": [
+   "Clerc"
+  ],
+  "Lumière du jour": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Paladin",
+   "Rôdeur"
+  ],
+  "Malédiction": [
+   "Barde",
+   "Clerc",
+   "Magicien"
+  ],
+  "Marche sur l'eau": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Artificier"
+  ],
+  "Minuscules météores de Melf": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Monture fantôme": [
+   "Magicien"
+  ],
+  "Mort simulée": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Magicien"
+  ],
+  "Mot de guérison de groupe": [
+   "Clerc"
+  ],
+  "Motif hypnotique": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Mur d'eau": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Mur de sable": [
+   "Magicien"
+  ],
+  "Mur de vent": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Nuage nauséabond": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Petite hutte de Léomund": [
+   "Barde",
+   "Magicien"
+  ],
+  "Peur": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Protection contre une énergie": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Raz-de-marée": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Respiration aquatique": [
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Retour à la vie": [
+   "Clerc",
+   "Paladin",
+   "Artificier"
+  ],
+  "Serviteur miniature": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Sieste": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Tempête de neige": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Toucher du vampire": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Transfert de vie": [
+   "Clerc",
+   "Magicien"
+  ],
+  "Voile spirituel": [
+   "Clerc",
+   "Magicien",
+   "Occultiste",
+   "Paladin"
+  ],
+  "Vol": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Voracité de Hadar": [
+   "Occultiste"
+  ],
+  "Appel de destrier supérieur": [
+   "Paladin"
+  ],
+  "Assassin imaginaire": [
+   "Barde",
+   "Magicien"
+  ],
+  "Aura de pureté": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Aura de vie": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Bannissement": [
+   "Clerc",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste",
+   "Paladin"
+  ],
+  "Bouclier de feu": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Charme-monstre": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Châtiment débilitant": [
+   "Paladin"
+  ],
+  "Chien de garde de Mordenkainen": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Coffre secret de Léomund": [
+   "Magicien"
+  ],
+  "Compulsion": [
+   "Barde"
+  ],
+  "Confusion": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Contrôle de l'eau": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Convocation d'aberration": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Convocation d'artificiel": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Convocation d'élémentaire": [
+   "Druide",
+   "Magicien"
+  ],
+  "Convocation de démon majeur": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Divination": [
+   "Clerc",
+   "Druide",
+   "Magicien"
+  ],
+  "Domination de bête": [
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur"
+  ],
+  "Fabrication": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Façonnage de la pierre": [
+   "Clerc",
+   "Druide",
+   "Magicien",
+   "Artificier"
+  ],
+  "Fléau élémentaire": [
+   "Druide",
+   "Magicien",
+   "Occultiste",
+   "Artificier"
+  ],
+  "Flétrissement": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Gardien de la foi": [
+   "Clerc"
+  ],
+  "Gardien de la nature": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Insecte géant": [
+   "Druide"
+  ],
+  "Invisibilité supérieure": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Invocation d'élémentaires mineurs": [
+   "Druide",
+   "Magicien"
+  ],
+  "Invocation d'êtres sylvestres": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Invocation d'ombres": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Lance d'arçon psychique de Raulothim": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Liane avide": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Liberté de mouvement": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Rôdeur",
+   "Paladin",
+   "Artificier"
+  ],
+  "Localisation de créature": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Rôdeur",
+   "Magicien"
+  ],
+  "Métamorphose": [
+   "Barde",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Mur de feu": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Oeil magique": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Ombre d'égarement": [
+   "Occultiste"
+  ],
+  "Peau de pierre": [
+   "Druide",
+   "Ensorceleur",
+   "Rôdeur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Porte dimensionnelle": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Protection contre la mort": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Rayonnement écoeurant": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Sanctuaire privé de Mordenkainen": [
+   "Magicien"
+  ],
+  "Scellé de portail": [
+   "Magicien"
+  ],
+  "Sphère aqueuse": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sphère de tempête": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sphère de vitriol": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sphère résiliente d'Otiluke": [
+   "Magicien",
+   "Artificier"
+  ],
+  "Tempête de grêle": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Tentacules noirs d'Evard": [
+   "Magicien"
+  ],
+  "Terrain hallucinatoire": [
+   "Barde",
+   "Druide",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Amélioration de compétences": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Animation d'objets": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Apparence trompeuse": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Arme sacrée": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Assignation infernale": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Aube": [
+   "Clerc",
+   "Magicien"
+  ],
+  "Brume mortelle": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Carquois magique": [
+   "Rôdeur"
+  ],
+  "Cercle de pouvoir": [
+   "Paladin"
+  ],
+  "Cercle de téléportation": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Châtiment du ban": [
+   "Paladin"
+  ],
+  "Colonne de flamme": [
+   "Clerc"
+  ],
+  "Communion": [
+   "Clerc"
+  ],
+  "Communion avec la nature": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Cône de froid": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Contact avec un autre plan": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Contagion": [
+   "Clerc",
+   "Druide"
+  ],
+  "Contrat": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Magicien"
+  ],
+  "Contrôle des vents": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Convocation d'esprit draconique": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Convocation de céleste": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Coquille antivie": [
+   "Druide"
+  ],
+  "Création": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Danse macabre": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Déluge d'énergie négative": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Dissipation du mal et du bien": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Domination de personne": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Double illusoire": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Énervation": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Éveil": [
+   "Barde",
+   "Druide"
+  ],
+  "Fléau d'insectes": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur"
+  ],
+  "Foulée dimensionnelle": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Frappe du vent d'acier": [
+   "Rôdeur",
+   "Magicien"
+  ],
+  "Fureur de la nature": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Immobilisation de monstre": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Immolation": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Invocation d'élémentaire": [
+   "Druide",
+   "Magicien"
+  ],
+  "Invocation de volée": [
+   "Rôdeur"
+  ],
+  "Lien télépathique de Rary": [
+   "Barde",
+   "Magicien"
+  ],
+  "Maelström": [
+   "Druide"
+  ],
+  "Main de Bigby": [
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Modification de mémoire": [
+   "Barde",
+   "Magicien"
+  ],
+  "Mur de force": [
+   "Magicien"
+  ],
+  "Mur de lumière": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Mur de pierre": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Artificier"
+  ],
+  "Mythes et légendes": [
+   "Barde",
+   "Clerc",
+   "Magicien"
+  ],
+  "Passage par les arbres": [
+   "Druide",
+   "Rôdeur"
+  ],
+  "Passe-muraille": [
+   "Magicien"
+  ],
+  "Perturbations synaptiques": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Quête": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Paladin",
+   "Magicien"
+  ],
+  "Rappel à la vie": [
+   "Barde",
+   "Clerc",
+   "Paladin"
+  ],
+  "Réincarnation": [
+   "Druide"
+  ],
+  "Restauration supérieure": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Artificier"
+  ],
+  "Sanctification": [
+   "Clerc"
+  ],
+  "Scrutation": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Soins de groupe": [
+   "Barde",
+   "Clerc",
+   "Druide"
+  ],
+  "Songe": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Télékinésie": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Transmutation de la pierre": [
+   "Druide",
+   "Magicien",
+   "Artificier"
+  ],
+  "Vague destructrice": [
+   "Clerc",
+   "Paladin"
+  ],
+  "Allié planaire": [
+   "Clerc"
+  ],
+  "Barrière de lames": [
+   "Clerc"
+  ],
+  "Bosquet des druides": [
+   "Druide"
+  ],
+  "Bouclier de platine de Fizban": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Cage des âmes": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Cercle de mort": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Chaîne d'éclairs": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Contamination": [
+   "Clerc"
+  ],
+  "Convocation de fiélon": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Convocations instantanées de Drawmij": [
+   "Magicien"
+  ],
+  "Costume d'Outremonde de Tasha": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Création d'homoncule": [
+   "Magicien"
+  ],
+  "Création de mort-vivant": [
+   "Clerc",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Danse irrésistible d'Otto": [
+   "Barde",
+   "Magicien"
+  ],
+  "Désintégration": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Dispersion": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Festin des héros": [
+   "Clerc",
+   "Druide"
+  ],
+  "Globe d'invulnérabilité": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Guérison": [
+   "Clerc",
+   "Druide"
+  ],
+  "Illusion programmée": [
+   "Barde",
+   "Magicien"
+  ],
+  "Interdiction": [
+   "Clerc"
+  ],
+  "Invocation de fée": [
+   "Druide",
+   "Occultiste"
+  ],
+  "Marche sur le vent": [
+   "Druide"
+  ],
+  "Mauvais oeil": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Mot de retour": [
+   "Clerc"
+  ],
+  "Mur d'épines": [
+   "Druide"
+  ],
+  "Mur de glace": [
+   "Magicien"
+  ],
+  "Ossements de la Terre": [
+   "Druide"
+  ],
+  "Pétrification": [
+   "Magicien"
+  ],
+  "Portail magique": [
+   "Magicien"
+  ],
+  "Prévoyance": [
+   "Magicien"
+  ],
+  "Prison mentale": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Protection primordiale": [
+   "Druide"
+  ],
+  "Protections et sceaux": [
+   "Barde",
+   "Magicien"
+  ],
+  "Rayon de soleil": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Sacre de la glace": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Sacre de la pierre": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Sacre des flammes": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Sacre du vent": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Sens de l'orientation": [
+   "Barde",
+   "Clerc",
+   "Druide"
+  ],
+  "Sphère glaciale d'Otiluke": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Suggestion de groupe": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Terraformage": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Transformation de Tenser": [
+   "Magicien"
+  ],
+  "Urne magique": [
+   "Magicien"
+  ],
+  "Vision suprême": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Voie végétale": [
+   "Druide"
+  ],
+  "Boule de feu à retardement": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Cage de force": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Changement de plan": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Couronne d'étoiles": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Dissimulation": [
+   "Magicien"
+  ],
+  "Doigt de mort": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Épée de Mordenkainen": [
+   "Magicien"
+  ],
+  "Forme éthérée": [
+   "Barde",
+   "Clerc",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Inversion de la gravité": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Invocation de céleste": [
+   "Clerc"
+  ],
+  "Manoir somptueux de Mordenkainen": [
+   "Barde",
+   "Magicien"
+  ],
+  "Mirage": [
+   "Barde",
+   "Druide",
+   "Magicien"
+  ],
+  "Mot de pouvoir douloureux": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Parole divine": [
+   "Clerc"
+  ],
+  "Projection d'image": [
+   "Barde",
+   "Magicien"
+  ],
+  "Rayons prismatiques": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Régénération": [
+   "Barde",
+   "Clerc",
+   "Druide"
+  ],
+  "Résurrection": [
+   "Barde",
+   "Clerc"
+  ],
+  "Simulacre": [
+   "Magicien"
+  ],
+  "Songe du voile bleu": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Symbole": [
+   "Barde",
+   "Clerc",
+   "Druide",
+   "Magicien"
+  ],
+  "Téléportation": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Tempête de feu": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur"
+  ],
+  "Temple des dieux": [
+   "Clerc"
+  ],
+  "Tourbillon": [
+   "Druide",
+   "Ensorceleur"
+  ],
+  "Transformation draconique": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Aura sacrée": [
+   "Clerc"
+  ],
+  "Aversion/Attirance": [
+   "Barde",
+   "Druide",
+   "Magicien"
+  ],
+  "Bagou": [
+   "Barde"
+  ],
+  "Champ antimagie": [
+   "Clerc",
+   "Magicien"
+  ],
+  "Clone": [
+   "Magicien"
+  ],
+  "Contrôle du climat": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Dédale": [
+   "Magicien"
+  ],
+  "Demi-plan": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Domination de monstre": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Dragon illusoire": [
+   "Magicien"
+  ],
+  "Éclat du soleil": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Esprit faible": [
+   "Barde",
+   "Druide",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Esprit impénétrable": [
+   "Barde",
+   "Magicien"
+  ],
+  "Flétrissure épouvantable d'Abi-Dalzim": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Formes animales": [
+   "Druide"
+  ],
+  "Forteresse majestueuse": [
+   "Magicien"
+  ],
+  "Mot de pouvoir étourdissant": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Nuage incendiaire": [
+   "Druide",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Télépathie": [
+   "Magicien"
+  ],
+  "Ténèbres oppressantes": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Tremblement de terre": [
+   "Clerc",
+   "Druide",
+   "Ensorceleur"
+  ],
+  "Tsunami": [
+   "Druide"
+  ],
+  "Arrêt du temps": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Changement de forme": [
+   "Druide",
+   "Magicien"
+  ],
+  "Emprisonnement": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Ennemi subconscient": [
+   "Magicien",
+   "Occultiste"
+  ],
+  "Guérison de groupe": [
+   "Clerc"
+  ],
+  "Hurlement psychique": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Invulnérabilité": [
+   "Magicien"
+  ],
+  "Lame du désastre": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Métamorphose de groupe": [
+   "Barde",
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Métamorphose suprême": [
+   "Barde",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Mot de pouvoir guérisseur": [
+   "Barde",
+   "Clerc"
+  ],
+  "Mot de pouvoir mortel": [
+   "Ensorceleur",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Mur prismatique": [
+   "Barde",
+   "Magicien"
+  ],
+  "Nuée de météores": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Portail": [
+   "Clerc",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Prémonition": [
+   "Barde",
+   "Druide",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Projection astrale": [
+   "Clerc",
+   "Magicien",
+   "Occultiste"
+  ],
+  "Résurrection suprême": [
+   "Clerc",
+   "Druide"
+  ],
+  "Souhait": [
+   "Ensorceleur",
+   "Magicien"
+  ],
+  "Tempête vengeresse": [
+   "Druide"
+  ]
+ }
+}

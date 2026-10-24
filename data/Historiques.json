@@ -1,0 +1,731 @@
+[
+  {
+    "historique": "Acolyte",
+    "competence_1": "Perspicacité",
+    "competence_2": "Religion",
+    "langues": "Deux au choix",
+    "outil_maitrise": "-",
+    "inventaire_historique": "Symbole sacré, livre de prières, 5 bâtons d'encens, habit de cérémonie, vêtements ordinaires",
+    "or": 15
+  },
+  {
+    "historique": "Artisan",
+    "competence_1": "Athlétisme",
+    "competence_2": "Perspicacité",
+    "langues": "Commun",
+    "outil_maitrise": "Deux ensembles d'outils d'artisan au choix",
+    "inventaire_historique": "Habits de bonne qualité, insigne, emblème ou lettre de marque prouvant votre appartenance à votre guilde, deux ensembles d'outils d'artisan correspondant à votre métier, sceau de la guilde",
+    "or": 20
+  },
+  {
+    "historique": "Artisan de guilde",
+    "competence_1": "Perspicacité",
+    "competence_2": "Persuasion",
+    "langues": "Une au choix",
+    "outil_maitrise": "Un type d'outil d'artisan",
+    "inventaire_historique": "Ensemble d'outil d'artisan (au choix), une lettre d'introduction émanant de votre guilde, une tenue de voyage",
+    "or": 15
+  },
+  {
+    "historique": "Artisan local",
+    "competence_1": "Athlétisme",
+    "competence_2": "Nature",
+    "langues": "Commun",
+    "outil_maitrise": "Deux ensembles d'outils d'artisan au choix",
+    "inventaire_historique": "Habits courants, deux ensembles d'outils d'artisan que vous maîtrisez",
+    "or": 10
+  },
+  {
+    "historique": "Artiste",
+    "competence_1": "Acrobaties",
+    "competence_2": "Représentation",
+    "langues": "Commun",
+    "outil_maitrise": "Déguisement, un instrument de musique",
+    "inventaire_historique": "Instrument de musique (au choix), la faveur d'un admirateur (lettre d'amour, colifichet, mèche de cheveux), un costume",
+    "or": 15
+  },
+  {
+    "historique": "Assassin",
+    "competence_1": "Discrétion",
+    "competence_2": "Perspicacité",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Matériel d'empoisonneur",
+    "inventaire_historique": "Vêtements discrets, cape ou manteau à capuche, insigne, emblème ou lettre de marque prouvant votre appartenance à votre guilde, matériel d'empoisonneur",
+    "or": 20
+  },
+  {
+    "historique": "Bandit de grand chemin",
+    "competence_1": "Intimidation",
+    "competence_2": "Survie",
+    "langues": "Commun, +1 au choix",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Couverture, vêtements de voyageur, quelques chausse-trappes, boîte à amadou, outre d'eau",
+    "or": 10
+  },
+  {
+    "historique": "Bâtard",
+    "competence_1": "Histoire",
+    "competence_2": "Tromperie",
+    "langues": "",
+    "outil_maitrise": "Véhicules (terrestres), un ensemble d'outils d'artisan au choix.",
+    "inventaire_historique": "Habits de bonne qualité, outils d'artisan, objet ou symbole appartenant à la famille de votre parent noble, bourse contenant 20 po.",
+    "or": null
+  },
+  {
+    "historique": "Brigand",
+    "competence_1": "Discrétion",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un type de jeu au choix",
+    "inventaire_historique": "Couverture, vêtements de voyageur, piège à mâchoires, boîte à amadou, matériel de pêche, outre d'eau",
+    "or": 10
+  },
+  {
+    "historique": "Cambrioleur",
+    "competence_1": "Acrobaties",
+    "competence_2": "Discrétion",
+    "langues": "Commun",
+    "outil_maitrise": "Outils de voleur, accessoires de déguisement",
+    "inventaire_historique": "Vêtements discrets équipés d'une capuche, pied-de-biche, corde en soie (15 m), grappin",
+    "or": 10
+  },
+  {
+    "historique": "Captif",
+    "competence_1": "Nature",
+    "competence_2": "Survie",
+    "langues": "Commun, celle de la tribu de captivité",
+    "outil_maitrise": "Outil d'artisan",
+    "inventaire_historique": "Des vêtements communs, un jeu d'outil d'artisan (ceux que vous aviez pour réaliser votre labeur), une bougie, une gamelle, une couverture",
+    "or": 5
+  },
+  {
+    "historique": "Charlatan",
+    "competence_1": "Escamotage",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Déguisement, matériel de contrefaçon",
+    "inventaire_historique": "Beaux habits, accessoires de déguisements, outils d'escroc de votre choix (dés pipés, cartes truquées, chevalière d'un duc imaginaire)",
+    "or": 15
+  },
+  {
+    "historique": "Chasseur",
+    "competence_1": "Discrétion",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Un type de jeu au choix, véhicules (terrestres)",
+    "inventaire_historique": "Couverture, tenue de voyageur, quelques pièges, peau tannée d'un animal que vous avez tué de vos mains",
+    "or": 10
+  },
+  {
+    "historique": "Chasseur de primes",
+    "competence_1": "Discrétion",
+    "competence_2": "Perspicacité",
+    "langues": "Commun",
+    "outil_maitrise": "Outils de voleur, Type de jeu",
+    "inventaire_historique": "Vêtements sobres",
+    "or": 20
+  },
+  {
+    "historique": "Colporteur",
+    "competence_1": "Persuasion",
+    "competence_2": "Survie",
+    "langues": "Commun, +1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Tenue de voyageur équipés d'une capuche, panier, tente pour une personne et couverture",
+    "or": 10
+  },
+  {
+    "historique": "Commerçant",
+    "competence_1": "Perspicacité",
+    "competence_2": "Persuasion",
+    "langues": "Commun, +2",
+    "outil_maitrise": "",
+    "inventaire_historique": "Habits de bonne qualité, insigne, emblème ou lettre de marque prouvant votre appartenance à votre guilde, sceau de la guilde, balance de marchand, livre de comptes, plume et encre",
+    "or": 20
+  },
+  {
+    "historique": "Crapule",
+    "competence_1": "Escamotage",
+    "competence_2": "Intimidation",
+    "langues": "",
+    "outil_maitrise": "",
+    "inventaire_historique": "",
+    "or": null
+  },
+  {
+    "historique": "Criminel",
+    "competence_1": "Discrétion",
+    "competence_2": "Tromperie",
+    "langues": "-",
+    "outil_maitrise": "Outils de voleur, Type de jeu",
+    "inventaire_historique": "Pied-de-biche, vêtements ordinaires sombres avec capuche",
+    "or": 15
+  },
+  {
+    "historique": "Cuisinier",
+    "competence_1": "Discrétion",
+    "competence_2": "Perspicacité",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Ustensiles de cuisine",
+    "inventaire_historique": "Habits courants, ustensiles de cuisinier, colifichet signe de l'affection que vous portait votre employeur, outre de bon vin",
+    "or": 15
+  },
+  {
+    "historique": "Dévot",
+    "competence_1": "Perspicacité",
+    "competence_2": "Religion",
+    "langues": "Commun,+2",
+    "outil_maitrise": "",
+    "inventaire_historique": "Symbole sacré (qui vous a été remis quand vous êtes entré dans les ordres), livre de prière ou moulin à prière, 5 bâtons d'encens, tenue de cérémonie, habits courants,",
+    "or": 10
+  },
+  {
+    "historique": "Éclaireur",
+    "competence_1": "Discrétion",
+    "competence_2": "Survie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Accessoires de déguisement",
+    "inventaire_historique": "Tenue de voyageur, sac contenant couverture et tente, outre d'eau, accessoires de déguisement",
+    "or": 15
+  },
+  {
+    "historique": "Enfant des rues",
+    "competence_1": "Discrétion",
+    "competence_2": "Escamotage",
+    "langues": "-",
+    "outil_maitrise": "Déguisement, outil de voleur",
+    "inventaire_historique": "Petit couteau, carte de la ville dans laquelle vous avez grandi, une souris domestiquée, un souvenir de vos parents, vêtement ordinaires",
+    "or": 10
+  },
+  {
+    "historique": "Ermite",
+    "competence_1": "Médecine",
+    "competence_2": "Religion",
+    "langues": "Une au choix",
+    "outil_maitrise": "Matériel d'herboriste",
+    "inventaire_historique": "Étui à parchemins remplis de notes sur vos études ou vos prières, une couverture d'hiver, vêtements ordinaires, matériel d'herboriste",
+    "or": 5
+  },
+  {
+    "historique": "Érudit",
+    "competence_1": "Arcanes",
+    "competence_2": "Histoire",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Un au choix parmi : matériel de calligraphie, outils de cartographe ou matériel d'alchimiste",
+    "inventaire_historique": "Habits de bonne qualité, deux bougies, matériel de calligraphie ou outils de cartographe ou matériel d'alchimiste, quelques lettres de correspondance avec un ou plusieurs confrères",
+    "or": 20
+  },
+  {
+    "historique": "Escroc",
+    "competence_1": "Persuasion",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Deux au choix parmi un type de jeu, accessoires de faussaire, accessoires de déguisement",
+    "inventaire_historique": "Accessoires de faussaire ou jeu, deux ensembles d'habits courants",
+    "or": 10
+  },
+  {
+    "historique": "Explorateur",
+    "competence_1": "Athlétisme",
+    "competence_2": "Survie",
+    "langues": "Commun, +1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Tenue de voyageur, sac contenant couverture et tente, outre d'eau, corde en soie (15 m)",
+    "or": 15
+  },
+  {
+    "historique": "Fugitif",
+    "competence_1": "Survie",
+    "competence_2": "Tromperie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Un type de jeu, outil d'artisan au choix",
+    "inventaire_historique": "Sac avec tente et couverture, vêtements de voyageur, outils d'artisan, boîte à amadou, outre d'eau",
+    "or": 10
+  },
+  {
+    "historique": "Garde",
+    "competence_1": "Intimidation",
+    "competence_2": "Perspicacité",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Un type de jeu au choix",
+    "inventaire_historique": "Vêtements courants, paquet de cartes ou dés, insigne ou emblème de votre unité et de votre rang, pierre à affûter, outre de vin",
+    "or": 15
+  },
+  {
+    "historique": "Gardien tribal",
+    "competence_1": "Perspicacité",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un instrument de musique au choix",
+    "inventaire_historique": "Sac contenant une tente et une couverture, bâton de marche, tenue de voyage grossiers, instrument de musique de votre tribu, amulette à l'effigie de votre gardien spirituel",
+    "or": 10
+  },
+  {
+    "historique": "Gens du voyage",
+    "competence_1": "Représentation",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), instrument de musique au choix",
+    "inventaire_historique": "Tenue de voyageur, instrument de musique, chien ou petit animal de compagnie, sac de voyage",
+    "or": 10
+  },
+  {
+    "historique": "Guide",
+    "competence_1": "Athlétisme",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un type de jeu au choix",
+    "inventaire_historique": "Tenue de voyageur, sac contenant tente et couverture, boîte à amadou",
+    "or": 15
+  },
+  {
+    "historique": "Habitant de la forêt",
+    "competence_1": "Nature",
+    "competence_2": "Survie",
+    "langues": "Commun, Sylvain",
+    "outil_maitrise": "Matériel d'herboriste, outils de menuisier",
+    "inventaire_historique": "Des habits courants, un piège à machoires, un bâton en bois, une pierre à affûter, un paquetage d'explorateur",
+    "or": 5
+  },
+  {
+    "historique": "Hanté",
+    "competence_1": "Arcanes",
+    "competence_2": "Survie",
+    "langues": "Deux langues, dont une exotique",
+    "outil_maitrise": "",
+    "inventaire_historique": "un sac de chasseur de monstres, des vêtements communs, une babiole ayant une signification particulière pour vous (choisissez ou tirez au hasard dans la table à la fin de cet historique)",
+    "or": 0
+  },
+  {
+    "historique": "Héros du peuple",
+    "competence_1": "Dressage",
+    "competence_2": "Survie",
+    "langues": "-",
+    "outil_maitrise": "Outils d'artisan, véhicules terrestres",
+    "inventaire_historique": "Outils d'artisan (au choix), une pelle, une marmite, vêtements ordinaires",
+    "or": 10
+  },
+  {
+    "historique": "Homme de Loi",
+    "competence_1": "Investigation",
+    "competence_2": "Perspicacité",
+    "langues": "Commun",
+    "outil_maitrise": "Matériel de calligraphie, véhicules (terrestres)",
+    "inventaire_historique": "Épais journal vierge pour consigner ses investigations, matériel de calligraphie, tenue de voyageur, symbole (sceau ou médaillon) représentant son office",
+    "or": 20
+  },
+  {
+    "historique": "Homme-médecine",
+    "competence_1": "Médecine",
+    "competence_2": "Nature",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Matériel d'herboriste",
+    "inventaire_historique": "Sac contenant une tente et une couverture, bâton de marche, tenue de voyageur, matériel d'herboriste",
+    "or": 10
+  },
+  {
+    "historique": "Idiot du village",
+    "competence_1": "Discrétion",
+    "competence_2": "Représentation",
+    "langues": "Gnéééé",
+    "outil_maitrise": "Le jeu du caillou",
+    "inventaire_historique": "Un bâton, un sifflet, des vêtements communs rapiécés, une bourse contenant de jolis cailloux et un autre objet au choix (d'une valeur maximale de 5 po).",
+    "or": null
+  },
+  {
+    "historique": "Initié",
+    "competence_1": "Investigation",
+    "competence_2": "Religion",
+    "langues": "Commun, +1",
+    "outil_maitrise": "Instrument de musique",
+    "inventaire_historique": "Symbole sacré (qui vous a été remis quand vous êtes entré dans les ordres), instrument de musique ou outils d'artisan, tenue de cérémonie, habits courants",
+    "or": 10
+  },
+  {
+    "historique": "Inquisiteur",
+    "competence_1": "Intimidation",
+    "competence_2": "Religion",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Matériel de calligraphie",
+    "inventaire_historique": "Insigne représentant sa religion et sa fonction, habits de bonne qualité, épais journal vierge pour consigner ses investigations, matériel de calligraphie",
+    "or": 20
+  },
+  {
+    "historique": "Itinérant",
+    "competence_1": "Représentation",
+    "competence_2": "Survie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Tenue de voyageur, costume ou vêtements tape-à-l'œil, tente pour une personne et couverture, sac de voyage",
+    "or": 10
+  },
+  {
+    "historique": "Journalier",
+    "competence_1": "Athlétisme",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un type d'outils",
+    "inventaire_historique": "Habits courants, outre de vin, ensemble d'outils dépendant de son métier, couverture",
+    "or": 10
+  },
+  {
+    "historique": "Juriste",
+    "competence_1": "Histoire",
+    "competence_2": "Persuasion",
+    "langues": "Commun, +2",
+    "outil_maitrise": "-",
+    "inventaire_historique": "Habits de bonne qualité, symbole ou emblème attestant de votre charge ou vos compétences, étui à parchemins avec 10 feuilles, plume et encre",
+    "or": 20
+  },
+  {
+    "historique": "Laboureur",
+    "competence_1": "Athlétisme",
+    "competence_2": "Dressage",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un ensemble d'outils d'artisan au choix",
+    "inventaire_historique": "Ensemble d'outils d'artisan, habits courants, objet hérité de l'un de vos parents dont la valeur est sentimentale, pelle",
+    "or": 10
+  },
+  {
+    "historique": "Limier",
+    "competence_1": "Investigation",
+    "competence_2": "Perspicacité",
+    "langues": "Commun",
+    "outil_maitrise": "Accessoires de déguisement, outils de voleur",
+    "inventaire_historique": "Accessoires de déguisement, outils de voleur, vêtements discrets, insigne officiel",
+    "or": 20
+  },
+  {
+    "historique": "Manouvrier",
+    "competence_1": "Athlétisme",
+    "competence_2": "Escamotage",
+    "langues": "Commun",
+    "outil_maitrise": "Outils de menuisier",
+    "inventaire_historique": "Habits courants, outre de vin, outils de menuisier, pot en fer, lettres de recommandation d'anciens employeurs",
+    "or": 10
+  },
+  {
+    "historique": "Marin",
+    "competence_1": "Athlétisme",
+    "competence_2": "Perception",
+    "langues": "-",
+    "outil_maitrise": "Outils de navigateurs, véhicules aquatiques",
+    "inventaire_historique": "Cabillot (gourdin), 15m de corde de soie, un porte-bonheur, vêtements ordinaires",
+    "or": 10
+  },
+  {
+    "historique": "Matelot",
+    "competence_1": "Acrobaties",
+    "competence_2": "Athlétisme",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (marins), instruments de navigation",
+    "inventaire_historique": "Tenue de voyageur, un ensemble d'outils parmi ceux maîtrisés, bouteille d'alcool fort",
+    "or": 15
+  },
+  {
+    "historique": "Médecin",
+    "competence_1": "Médecine",
+    "competence_2": "Nature",
+    "langues": "Commun",
+    "outil_maitrise": "Matériel d'herboriste, matériel d'empoisonneur",
+    "inventaire_historique": "Habits de bonne qualité, deux bougies, matériel d'herboriste, trousse de soins",
+    "or": 20
+  },
+  {
+    "historique": "Membre de guilde",
+    "competence_1": "Perspicacité",
+    "competence_2": "Persuasion",
+    "langues": "Commun, +1",
+    "outil_maitrise": "Un ensemble d'outils d'artisan au choix",
+    "inventaire_historique": "Habits de bonne qualité, insigne, emblème ou lettre de marque prouvant votre appartenance à votre guilde, outils d'artisan correspondant à votre métier, sceau de la guilde, étui avec quelques cartes terrestres ou maritimes",
+    "or": 20
+  },
+  {
+    "historique": "Mendiant",
+    "competence_1": "Escamotage",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Un instrument de musique, un type de jeu au choix",
+    "inventaire_historique": "Couverture rapiécée, habits courants, instrument de musique parmi ceux maîtrisés",
+    "or": 5
+  },
+  {
+    "historique": "Mercenaire",
+    "competence_1": "Athlétisme",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un type de jeu au choix",
+    "inventaire_historique": "Habits courants, paquet de cartes ou dés, objet de valeur récupéré sur un champ de bataille ou lors d'un siège, pierre à affûter, outre de vin",
+    "or": 15
+  },
+  {
+    "historique": "Militaire",
+    "competence_1": "Athlétisme",
+    "competence_2": "Intimidation",
+    "langues": "-",
+    "outil_maitrise": "Véhicules (terrestres), un type de jeu au choix",
+    "inventaire_historique": "Couverture, habits courants, paquet de cartes ou dés, insigne ou emblème de votre unité et de votre rang, pierre à affûter",
+    "or": 15
+  },
+  {
+    "historique": "Miséreux",
+    "competence_1": "Discrétion",
+    "competence_2": "Escamotage",
+    "langues": "Commun",
+    "outil_maitrise": "Un type de jeu au choix, outils de voleur",
+    "inventaire_historique": "Couverture rapiécée, vêtements courants, paquet de cartes ou dés",
+    "or": 5
+  },
+  {
+    "historique": "Naturaliste",
+    "competence_1": "Nature",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), matériel d'herboriste",
+    "inventaire_historique": "Tenue de voyageur, sac contenant tente et couverture, matériel d'herboriste, boîte à amadou",
+    "or": 20
+  },
+  {
+    "historique": "Noble",
+    "competence_1": "Histoire",
+    "competence_2": "Persuasion",
+    "langues": "Une au choix",
+    "outil_maitrise": "Un type de jeu",
+    "inventaire_historique": "Beaux habits, une chevalière, un arbre généalogique",
+    "or": 25
+  },
+  {
+    "historique": "Noblesse de robe",
+    "competence_1": "Histoire",
+    "competence_2": "Perspicacité",
+    "langues": "Une au choix",
+    "outil_maitrise": "Un instrument de musique au choix, un ensemble d'outils d'artisan au choix",
+    "inventaire_historique": "Habits de bonne qualité, instrument de musique ou ensemble d'outils d'artisan, emblème ou symbole familial",
+    "or": 20
+  },
+  {
+    "historique": "Noblesse d'épée",
+    "competence_1": "Athlétisme",
+    "competence_2": "Histoire",
+    "langues": "Une au choix",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Vêtements de qualité, monture, chevalière portant le sceau familial, pierre à affûter",
+    "or": 20
+  },
+  {
+    "historique": "Officier",
+    "competence_1": "Athlétisme",
+    "competence_2": "Persuasion",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Monture, habits de bonne qualité, insigne ou emblème de votre unité et de votre rang",
+    "or": 15
+  },
+  {
+    "historique": "Orphelin",
+    "competence_1": "Discrétion",
+    "competence_2": "Escamotage",
+    "langues": "Commun",
+    "outil_maitrise": "Un type de jeu au choix, accessoires de déguisement",
+    "inventaire_historique": "Habits courants, paquet de cartes ou dés, quelques chausse-trappes, colifichet vous rappelant votre enfance et – si vous les avez connus – vos parents",
+    "or": 5
+  },
+  {
+    "historique": "Palefrenier",
+    "competence_1": "Dressage",
+    "competence_2": "Perspicacité",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), outils de tanneur",
+    "inventaire_historique": "Habits courants, outils de tanneur, colifichet signe de l'affection que vous portait votre employeur",
+    "or": 15
+  },
+  {
+    "historique": "Patrouilleur",
+    "competence_1": "Perspicacité",
+    "competence_2": "Survie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Monture, tenue de voyageur, tente, boîte à amadou, insigne officiel",
+    "or": 20
+  },
+  {
+    "historique": "Pilleur de ruines",
+    "competence_1": "Histoire",
+    "competence_2": "Investigation",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Outils de voleur",
+    "inventaire_historique": "Tenue de voyageur, outre d'eau, pelle, pied-de-biche",
+    "or": 15
+  },
+  {
+    "historique": "Pirate",
+    "competence_1": "Athlétisme",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Intrument de navigation, véhicules(marin)",
+    "inventaire_historique": "Couverture, vêtements de voyageur, longue-vue, instruments de navigation, matériel de pêche, bouteille d'alcool fort",
+    "or": 10
+  },
+  {
+    "historique": "Précepteur",
+    "competence_1": "Histoire",
+    "competence_2": "Perspicacité",
+    "langues": "Commun,+2",
+    "outil_maitrise": "-",
+    "inventaire_historique": "Habits de bonne qualité, 2 bougies, livre d'histoire ou de langue ancienne, plume et encre, étui avec 10 feuilles de parchemin",
+    "or": 15
+  },
+  {
+    "historique": "Prédicateur",
+    "competence_1": "Religion",
+    "competence_2": "Représentation",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres) ou véhicules (marins)",
+    "inventaire_historique": "Symbole sacré, livre de prière ou moulin à prière, 5 bâtons d'encens, tenue de cérémonie, fiole d'eau bénite, tenue de voyageur",
+    "or": 10
+  },
+  {
+    "historique": "Primitif",
+    "competence_1": "Dressage",
+    "competence_2": "Survie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres) ou un ensemble d'outils d'artisan",
+    "inventaire_historique": "Sac contenant tente et couverture, bâton de marche, tenue de voyageur",
+    "or": 10
+  },
+  {
+    "historique": "Rebouteux",
+    "competence_1": "Médecine",
+    "competence_2": "Nature",
+    "langues": "Commun",
+    "outil_maitrise": "Deux au choix parmi matériel d'herboriste, d'empoisonneur et d'alchimiste",
+    "inventaire_historique": "Habits courants, bâton, des grisgris ou des fioles contenant d'étranges décoctions",
+    "or": 10
+  },
+  {
+    "historique": "Repenti",
+    "competence_1": "Religion",
+    "competence_2": "Tromperie",
+    "langues": "Commun",
+    "outil_maitrise": "Accessoires de déguisement, Véhicules (terrestres)",
+    "inventaire_historique": "Symbole sacré (qui vous a été remis quand vous êtes entré dans les ordres), livre de prière ou moulin à prière, habits courants",
+    "or": 10
+  },
+  {
+    "historique": "Sage",
+    "competence_1": "Arcanes",
+    "competence_2": "Histoire",
+    "langues": "Deux au choix",
+    "outil_maitrise": "-",
+    "inventaire_historique": "Bouteille d'encre, plume, petit couteau, lettre d'un collègue décédé vous posant une question à ce jour non résolue",
+    "or": 10
+  },
+  {
+    "historique": "Saltimbanque",
+    "competence_1": "Représentation",
+    "competence_2": "Dressage",
+    "langues": "Commun, +1",
+    "outil_maitrise": "Un instrument de musique au choix, véhicules (terrestres)",
+    "inventaire_historique": "Tenue de voyageur, costume ou vêtements tape à l'œil, outils nécessaires à votre art (instrument, animal dressé, outils pour vos jongleries, etc.), sac de voyage",
+    "or": 15
+  },
+  {
+    "historique": "Sang bleu",
+    "competence_1": "Histoire",
+    "competence_2": "Persuasion",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Véhicules (terrestres)",
+    "inventaire_historique": "Habits de bonne qualité, monture, chevalière portant le sceau familial",
+    "or": 20
+  },
+  {
+    "historique": "Sauvageon",
+    "competence_1": "Athlétisme",
+    "competence_2": "Survie",
+    "langues": "-",
+    "outil_maitrise": "Un instrument de musique",
+    "inventaire_historique": "Bâton, piège à mâchoires, trophé pris sur un animal que vous avez tué, tenue de voyage",
+    "or": 10
+  },
+  {
+    "historique": "Serveur",
+    "competence_1": "Athlétisme",
+    "competence_2": "Représentation",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Ustensiles de cuisine",
+    "inventaire_historique": "Habits courants, dés ou paquet de cartes ou ustensiles de cuisinier, bouteille d'alcool fort",
+    "or": 10
+  },
+  {
+    "historique": "Serviteur",
+    "competence_1": "Discrétion",
+    "competence_2": "Perspicacité",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Outils de tisserand",
+    "inventaire_historique": "Vêtements de bonne qualité, 2 bougies, morceau de savon, colifichet signe de l'affection que vous portait votre employeur",
+    "or": 15
+  },
+  {
+    "historique": "Soldat",
+    "competence_1": "Athlétisme",
+    "competence_2": "Intimidation",
+    "langues": "-",
+    "outil_maitrise": "Un type de jeu, véhicules terrestres",
+    "inventaire_historique": "Insigne de grade, trophée prélevé sur un ennemi tombé, des dés en os ou jeu de carte, vêtements ordinaires",
+    "or": 10
+  },
+  {
+    "historique": "Solitaire",
+    "competence_1": "Nature",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Deux ensembles d'outils d'artisan au choix",
+    "inventaire_historique": "Tenue de voyageur, couverture, boîte à amadou, bout de bois taillé ou pierre étrange portée comme un talisman, matériel de pêche",
+    "or": null
+  },
+  {
+    "historique": "Trappeur",
+    "competence_1": "Discrétion",
+    "competence_2": "Survie",
+    "langues": "Commun",
+    "outil_maitrise": "Un type de jeu, un ensemble d'outils d'artisans au choix",
+    "inventaire_historique": "Tenue de voyageur, couverture, boîte à amadou, fourrure d'un animal que vous avez tué et qui vous sert de couverture, piège à mâchoires",
+    "or": 10
+  },
+  {
+    "historique": "Vagabond",
+    "competence_1": "Escamotage",
+    "competence_2": "Survie",
+    "langues": "Commun,+1",
+    "outil_maitrise": "Matériel d'herboriste",
+    "inventaire_historique": "Couverture, habits courants, matériel d'herboriste",
+    "or": 5
+  },
+  {
+    "historique": "Villageois",
+    "competence_1": "Dressage",
+    "competence_2": "Nature",
+    "langues": "Commun",
+    "outil_maitrise": "Véhicules (terrestres), un ensemble d'outils d'artisan au choix",
+    "inventaire_historique": "Ensemble d'outils d'artisan, vêtements courants, objet hérité de l'un de vos parents et dont la valeur est sentimentale",
+    "or": 10
+  },
+  {
+    "historique": "Voleur à la tire",
+    "competence_1": "Escamotage",
+    "competence_2": "Tromperie",
+    "langues": "Commun, argot des voleurs",
+    "outil_maitrise": "Accessoires de déguisement",
+    "inventaire_historique": "Vêtements discrets équipés d'une capuche, objet brillant mais de peu de valeur volé il y a longtemps à une personne importante",
+    "or": 10
+  },
+  {
+    "historique": "Voyageur",
+    "competence_1": "Persuasion",
+    "competence_2": "Survie",
+    "langues": "Deux au choix",
+    "outil_maitrise": "",
+    "inventaire_historique": "un bâton de marche, un souvenir venu d’un pays lointain (choisir ou tirer sur la table des babioles), un livre rempli de notes sur vos périples ou de dessins, une bouteille d'encre et une plume, des vêtements de voyage",
+    "or": 10
+  }
+]

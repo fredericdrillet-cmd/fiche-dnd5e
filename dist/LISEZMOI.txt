@@ -1,0 +1,14 @@
+Ce dossier reçoit l'exécutable Windows : Fiche_Personnage_DnD5E.exe
+
+Il n'est pas encore présent dans cette livraison : il se fabrique sous Windows.
+Pour le générer :
+
+  1. Double-cliquez sur  compiler_windows.bat  (dossier parent),
+     ou, dans « Anaconda Prompt » placé dans le dossier du projet :
+         python build_executable.py --installer
+  2. Après 2 à 4 minutes, l'exécutable apparaît ici, avec journal_build.txt
+     (journal de la compilation et de la vérification).
+
+Autre solution : publier le projet sur GitHub ; la compilation se fait alors
+automatiquement à chaque envoi (onglet « Actions », artefact
+« Fiche_Personnage_DnD5E »).

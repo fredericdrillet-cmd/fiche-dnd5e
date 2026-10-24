@@ -1,0 +1,3 @@
+# Application WEB (hébergement : Render, Railway, Hugging Face Spaces…)
+Flask>=3.0,<4
+gunicorn>=22.0

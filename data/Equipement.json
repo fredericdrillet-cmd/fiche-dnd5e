@@ -1,0 +1,496 @@
+{
+  "equipement_aventurier_dnd_5e": [
+    {
+      "nom": "Acide",
+      "poids": "0,5 kg",
+      "prix": "25 po",
+      "description": "Remplace une attaque par le jet d'une fiole d'acide (6 m, JdS Dex DD 8 + Mod Dex + Maîtrise, 2d6 dégâts d'acide)."
+    },
+    {
+      "nom": "Antidote",
+      "poids": "—",
+      "prix": "50 po",
+      "description": "Action bonus pour boire l'antidote et obtenir l'Avantage aux JdS contre l'état Empoisonné pendant 1 heure."
+    },
+    {
+      "nom": "Beaux habits",
+      "poids": "3 kg",
+      "prix": "15 po",
+      "description": "Vêtements coûteux et élaborés requis pour certains événements ou lieux sélectifs."
+    },
+    {
+      "nom": "Bélier portable",
+      "poids": "17,5 kg",
+      "prix": "4 po",
+      "description": "Confère un bonus de +4 aux jets de Force pour enfoncer les portes (Avantage si aidé)."
+    },
+    {
+      "nom": "Billes",
+      "poids": "1 kg",
+      "prix": "1 po",
+      "description": "Couvre une zone de 3x3 m. JdS Dex DD 10 ou tombe à terre."
+    },
+    {
+      "nom": "Boîte à amadou",
+      "poids": "0,5 kg",
+      "prix": "5 pa",
+      "description": "Contient silex et amorce pour allumer des feux rapidement (action bonus pour bougies/torches)."
+    },
+    {
+      "nom": "Bougie",
+      "poids": "—",
+      "prix": "1 pc",
+      "description": "Brille pendant 1 heure (Lumière vive sur 1,50 m, faible sur 1,50 m de plus)."
+    },
+    {
+      "nom": "Bouteille, verre",
+      "poids": "1 kg",
+      "prix": "2 po",
+      "description": "Contient jusqu'à 75 cl de liquide."
+    },
+    {
+      "nom": "Cadenas",
+      "poids": "0,5 kg",
+      "prix": "10 po",
+      "description": "Livré avec une clef. Crochetage possible (Escamotage DD 15)."
+    },
+    {
+      "nom": "Carquois",
+      "poids": "0,5 kg",
+      "prix": "1 po",
+      "description": "Peut contenir jusqu'à 20 flèches."
+    },
+    {
+      "nom": "Carte",
+      "poids": "—",
+      "prix": "1 po",
+      "description": "Octroie un bonus de +5 aux jets de Sagesse (Survie) pour s'orienter."
+    },
+    {
+      "nom": "Chaîne",
+      "poids": "5 kg",
+      "prix": "5 po",
+      "description": "Permet d'enrouler une chaîne autour d'une cible (Force Athlétisme DD 13)."
+    },
+    {
+      "nom": "Chausse-trappes",
+      "poids": "1 kg",
+      "prix": "1 po",
+      "description": "Couvre une zone de 1,5x1,5 m. Inflige 1 dégât perforant et réduit la vitesse à 0."
+    },
+    {
+      "nom": "Cloche",
+      "poids": "—",
+      "prix": "1 po",
+      "description": "Produit un son audible à 18 m."
+    },
+    {
+      "nom": "Coffre",
+      "poids": "12,5 kg",
+      "prix": "5 po",
+      "description": "Contient jusqu'à 0,36 m3."
+    },
+    {
+      "nom": "Corde",
+      "poids": "2,5 kg",
+      "prix": "1 po",
+      "description": "Corde robuste (Escamotage DD 10 pour nouer, Force DD 20 pour rompre)."
+    },
+    {
+      "nom": "Costume",
+      "poids": "2 kg",
+      "prix": "5 po",
+      "description": "Confère l'Avantage aux jets pour se faire passer pour un type de personne."
+    },
+    {
+      "nom": "Couverture",
+      "poids": "1,5 kg",
+      "prix": "5 pa",
+      "description": "Avantage aux JdS contre le froid extrême."
+    },
+    {
+      "nom": "Cruche",
+      "poids": "2 kg",
+      "prix": "2 pc",
+      "description": "Contient jusqu'à 4 litres."
+    },
+    {
+      "nom": "Eau bénite",
+      "poids": "0,5 kg",
+      "prix": "25 po",
+      "description": "Inflige 2d8 dégâts radiants aux Fiélons et Morts-vivants (6 m)."
+    },
+    {
+      "nom": "Échelle",
+      "poids": "12,5 kg",
+      "prix": "1 pa",
+      "description": "Mesure 3 m de haut."
+    },
+    {
+      "nom": "Encre",
+      "poids": "—",
+      "prix": "10 po",
+      "description": "Bouteille de 30 ml (environ 500 pages)."
+    },
+    {
+      "nom": "Étui à cartes ou à parchemins",
+      "poids": "0,5 kg",
+      "prix": "1 po",
+      "description": "Contient 10 feuilles de papier ou 5 de parchemin."
+    },
+    {
+      "nom": "Étui pour carreaux d’arbalète",
+      "poids": "0,5 kg",
+      "prix": "1 po",
+      "description": "Contient 20 carreaux d'arbalète."
+    },
+    {
+      "nom": "Feu grégeois",
+      "poids": "0,5 kg",
+      "prix": "50 po",
+      "description": "Inflige 1d4 dégâts de feu et met le feu à la cible (6 m)."
+    },
+    {
+      "nom": "Ficelle",
+      "poids": "—",
+      "prix": "1 pa",
+      "description": "Mesure 3 m de long."
+    },
+    {
+      "nom": "Filet",
+      "poids": "1,5 kg",
+      "prix": "1 po",
+      "description": "Entrave une cible (4,50 m, JdS Dex DD 8 + Dex + Maîtrise)."
+    },
+    {
+      "nom": "Fiole",
+      "poids": "—",
+      "prix": "1 po",
+      "description": "Contient 120 ml de liquide."
+    },
+    {
+      "nom": "Flasque",
+      "poids": "0,5 kg",
+      "prix": "2 pc",
+      "description": "Contient 0,5 litre de liquide."
+    },
+    {
+      "nom": "Focaliseur arcanique",
+      "poids": "Variable",
+      "prix": "Variable",
+      "description": "Canalise la magie arcanique (Baguette, Bâton, Cristal, Orbe, Sceptre)."
+    },
+    {
+      "nom": "Focaliseur druidique",
+      "poids": "Variable",
+      "prix": "Variable",
+      "description": "Canalise la magie primitive (Baguette d'if, Bâton en bois, Branche de houx)."
+    },
+    {
+      "nom": "Grappin",
+      "poids": "2 kg",
+      "prix": "2 po",
+      "description": "S'accroche jusqu'à 15 m (Acrobaties DD 13)."
+    },
+    {
+      "nom": "Huile",
+      "poids": "0,5 kg",
+      "prix": "1 pa",
+      "description": "Asperge une zone ou une cible (ajoute 5 dégâts de feu si enflammé) ou sert de combustible."
+    },
+    {
+      "nom": "Lampe",
+      "poids": "0,5 kg",
+      "prix": "5 pa",
+      "description": "Éclaire sur 4,50 m (lumière vive) + 9 m (faible) avec de l'huile."
+    },
+    {
+      "nom": "Lanterne à capote",
+      "poids": "1 kg",
+      "prix": "5 po",
+      "description": "Éclaire sur 9 m (vives) + 9 m (faibles), capote abaissable."
+    },
+    {
+      "nom": "Lanterne sourde",
+      "poids": "1 kg",
+      "prix": "10 po",
+      "description": "Produit un cône de 18 m de lumière vive."
+    },
+    {
+      "nom": "Livre",
+      "poids": "2,5 kg",
+      "prix": "25 po",
+      "description": "Bonus de +5 aux jets d'Intelligence sur le sujet traité."
+    },
+    {
+      "nom": "Longue-vue",
+      "poids": "0,5 kg",
+      "prix": "1000 po",
+      "description": "Grossit les objets x2 à distance."
+    },
+    {
+      "nom": "Loupe",
+      "poids": "—",
+      "prix": "10 po",
+      "description": "Avantage pour inspecter les objets détaillés ou allumer un feu au soleil (5 min)."
+    },
+    {
+      "nom": "Matériel d’escalade",
+      "poids": "6 kg",
+      "prix": "25 po",
+      "description": "Empêche de chuter à plus de 7,50 m du point d'ancrage."
+    },
+    {
+      "nom": "Menottes",
+      "poids": "3 kg",
+      "prix": "2 po",
+      "description": "Menotte une cible (Escamotage DD 13 pour poser, DD 20 pour fuir, DD 15 pour crocheter)."
+    },
+    {
+      "nom": "Miroir",
+      "poids": "250 g",
+      "prix": "5 po",
+      "description": "Miroir de poche en acier."
+    },
+    {
+      "nom": "Munitions",
+      "poids": "Variable",
+      "prix": "Variable",
+      "description": "Nécessaires pour les armes à distance (Balles, billes, carreaux, dards, flèches)."
+    },
+    {
+      "nom": "Outre (pleine)",
+      "poids": "2,5 kg",
+      "prix": "2 pa",
+      "description": "Contient 2 litres de liquide."
+    },
+    {
+      "nom": "Palan",
+      "poids": "2,5 kg",
+      "prix": "1 po",
+      "description": "Multiplie par 4 le poids qu'il est possible de soulever."
+    },
+    {
+      "nom": "Panier",
+      "poids": "1 kg",
+      "prix": "4 pa",
+      "description": "Contient jusqu'à 20 kg / 60 litres."
+    },
+    {
+      "nom": "Papier",
+      "poids": "—",
+      "prix": "2 pa",
+      "description": "Une feuille (environ 250 mots)."
+    },
+    {
+      "nom": "Paquetage d’artiste",
+      "poids": "29 kg",
+      "prix": "40 po",
+      "description": "Contient sac à dos, amadou, cloche, 3 costumes, 8 flasques d'huile, 9 jours de rations, lanterne sourde, miroir, outre, sac de couchage."
+    },
+    {
+      "nom": "Paquetage d’ecclésiastique",
+      "poids": "14,5 kg",
+      "prix": "33 po",
+      "description": "Contient sac à dos, amadou, couverture, eau bénite, lampe, 7 jours de rations, robe."
+    },
+    {
+      "nom": "Paquetage d’érudit",
+      "poids": "11 kg",
+      "prix": "40 po",
+      "description": "Contient sac à dos, amadou, encre, lampe, livre, porte-plume, 10 flasques d'huile, 10 feuilles de parchemin."
+    },
+    {
+      "nom": "Paquetage d’explorateur",
+      "poids": "27,5 kg",
+      "prix": "10 po",
+      "description": "Contient sac à dos, sac de couchage, amadou, corde, 2 flasques d'huile, 10 jours de rations, outre, 10 torches."
+    },
+    {
+      "nom": "Paquetage d’exploration souterraine",
+      "poids": "27,5 kg",
+      "prix": "12 po",
+      "description": "Contient sac à dos, amadou, chausse-trappes, corde, 2 flasques d'huile, 10 jours de rations, outre, pied-de-biche, 10 torches."
+    },
+    {
+      "nom": "Paquetage de cambrioleur",
+      "poids": "21 kg",
+      "prix": "16 po",
+      "description": "Contient sac à dos, billes, amadou, 10 bougies, cloche, corde, 7 flasques d'huile, lanterne à capote, outre, pied-de-biche, 5 jours de rations."
+    },
+    {
+      "nom": "Paquetage de diplomate",
+      "poids": "19,5 kg",
+      "prix": "39 po",
+      "description": "Contient beaux habits, amadou, coffre, encre, 2 étuis, 5 feuilles de papier, 5 de parchemin, 4 flasques d'huile, lampe, 5 porte-plume, parfum."
+    },
+    {
+      "nom": "Parchemin",
+      "poids": "—",
+      "prix": "1 pa",
+      "description": "Une feuille de parchemin (environ 250 mots)."
+    },
+    {
+      "nom": "Parchemin de sort (1er niveau)",
+      "poids": "—",
+      "prix": "50 po",
+      "description": "Permet de lancer un sort de niveau 1 (DD sauvegarde 13, bonus attaque +5)."
+    },
+    {
+      "nom": "Parchemin de sort (sort mineur)",
+      "poids": "—",
+      "prix": "30 po",
+      "description": "Permet de lancer un sort mineur."
+    },
+    {
+      "nom": "Parfum",
+      "poids": "—",
+      "prix": "5 po",
+      "description": "Avantage aux jets de Persuasion pendant 1 heure envers un Humanoïde Indifférent."
+    },
+    {
+      "nom": "Pelle",
+      "poids": "2,5 kg",
+      "prix": "2 po",
+      "description": "Creuse un trou de 1,5 m en 1 heure."
+    },
+    {
+      "nom": "Perche",
+      "poids": "3,5 kg",
+      "prix": "5 pc",
+      "description": "Mesure 3 m. Avantage aux sauts si utilisée."
+    },
+    {
+      "nom": "Pied-de-biche",
+      "poids": "2,5 kg",
+      "prix": "2 po",
+      "description": "Avantage aux jets de Force nécessitant un effet de levier."
+    },
+    {
+      "nom": "Piège à mâchoires",
+      "poids": "12,5 kg",
+      "prix": "5 po",
+      "description": "Inflige 1d4 dégâts perforants et réduit la vitesse à 0 (Force Athlétisme DD 13 pour se libérer)."
+    },
+    {
+      "nom": "Pointes en fer",
+      "poids": "2,5 kg",
+      "prix": "1 po",
+      "description": "Par paquet de dix. Bloquent des portes ou servent d'ancrage."
+    },
+    {
+      "nom": "Poison standard",
+      "poids": "—",
+      "prix": "100 po",
+      "description": "Enduit une arme ou 3 munitions, infligeant +1d4 dégâts de poison."
+    },
+    {
+      "nom": "Porte-plume",
+      "poids": "—",
+      "prix": "2 pc",
+      "description": "S'utilise avec de l'encre pour écrire."
+    },
+    {
+      "nom": "Pot en fer",
+      "poids": "5 kg",
+      "prix": "2 po",
+      "description": "Contient jusqu'à 4 litres."
+    },
+    {
+      "nom": "Potion de guérison",
+      "poids": "250 g",
+      "prix": "50 po",
+      "description": "Action bonus pour récupérer 2d4 + 2 points de vie."
+    },
+    {
+      "nom": "Rations",
+      "poids": "1 kg",
+      "prix": "5 pa",
+      "description": "Nourriture de voyage séchée pour une journée."
+    },
+    {
+      "nom": "Robe",
+      "poids": "2 kg",
+      "prix": "1 po",
+      "description": "Signification professionnelle ou cérémonielle."
+    },
+    {
+      "nom": "Sac",
+      "poids": "250 g",
+      "prix": "1 pc",
+      "description": "Contient jusqu'à 15 kg / 0,03 m3."
+    },
+    {
+      "nom": "Sac à dos",
+      "poids": "2,5 kg",
+      "prix": "2 po",
+      "description": "Contient jusqu'à 15 kg / 30 litres."
+    },
+    {
+      "nom": "Sac de couchage",
+      "poids": "3,5 kg",
+      "prix": "1 po",
+      "description": "Permet de dormir confortablement (immunité au froid extrême)."
+    },
+    {
+      "nom": "Sacoche",
+      "poids": "0,5 kg",
+      "prix": "5 pa",
+      "description": "Contient jusqu'à 3 kg / 0,006 m3."
+    },
+    {
+      "nom": "Sacoche à composantes",
+      "poids": "1 kg",
+      "prix": "25 po",
+      "description": "Étanche, contient toutes les composantes matérielles gratuites des sorts."
+    },
+    {
+      "nom": "Seau",
+      "poids": "1 kg",
+      "prix": "5 pc",
+      "description": "Contient 15 litres de liquide."
+    },
+    {
+      "nom": "Sifflet",
+      "poids": "—",
+      "prix": "5 pc",
+      "description": "Produit un son audible à 180 m."
+    },
+    {
+      "nom": "Symbole sacré",
+      "poids": "Variable",
+      "prix": "Variable",
+      "description": "Canalise la magie divine pour Clercs et Paladins (Amulette, Emblème, Reliquaire)."
+    },
+    {
+      "nom": "Tente",
+      "poids": "10 kg",
+      "prix": "2 po",
+      "description": "Abrite jusqu'à deux créatures de taille P ou M."
+    },
+    {
+      "nom": "Tenue de voyage",
+      "poids": "2 kg",
+      "prix": "2 po",
+      "description": "Vêtements résistants pour divers environnements."
+    },
+    {
+      "nom": "Tonneau",
+      "poids": "35 kg",
+      "prix": "2 po",
+      "description": "Contient jusqu'à 140 litres."
+    },
+    {
+      "nom": "Torche",
+      "poids": "0,5 kg",
+      "prix": "1 pc",
+      "description": "Brille 1 heure (6 m vive + 6 m faible). Peut servir d'arme (1 dégât de feu)."
+    },
+    {
+      "nom": "Trousse de soins",
+      "poids": "1,5 kg",
+      "prix": "5 po",
+      "description": "Dispose de 10 charges pour stabiliser une créature à 0 PV sans test de Médecine."
+    }
+  ]
+}

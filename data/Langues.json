@@ -1,0 +1,82 @@
+[
+  {
+    "categorie": "Standard",
+    "langue": "Commun",
+    "locuteurs_typiques": "Humains et tous les peuples civilisés"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Nain",
+    "locuteurs_typiques": "Nains"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Elfique",
+    "locuteurs_typiques": "Elfes"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Geant",
+    "locuteurs_typiques": "Géants, ogres, ettins, trolls"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Gnome",
+    "locuteurs_typiques": "Gnomes"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Gobelours",
+    "locuteurs_typiques": "Gobelins, gobelours, hobgobelins"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Halfelin",
+    "locuteurs_typiques": "Halfelins"
+  },
+  {
+    "categorie": "Standard",
+    "langue": "Orc",
+    "locuteurs_typiques": "Orcs, orques"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Abyssal",
+    "locuteurs_typiques": "Démons, créatures des Abysses"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Celeste",
+    "locuteurs_typiques": "Anges, célestes"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Commun des profondeurs",
+    "locuteurs_typiques": "Créatures de l'Outreterre, drow"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Draconique",
+    "locuteurs_typiques": "Dragons, drakéides, kobolds"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Infernal",
+    "locuteurs_typiques": "Diables, créatures des Neuf Enfers"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Primordial",
+    "locuteurs_typiques": "Élémentaires (comprend les dialectes Aérien, Aquatique, Igné et Terreste)"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Sylvan",
+    "locuteurs_typiques": "Créatures fées, dryades, satyres"
+  },
+  {
+    "categorie": "Exotique",
+    "langue": "Profond",
+    "locuteurs_typiques": "Aberrations, flagelleurs mentaux, beholders"
+  }
+]

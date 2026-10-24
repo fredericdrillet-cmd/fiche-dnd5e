@@ -1,0 +1,432 @@
+{
+  "classe": {
+    "nom": "Artificier",
+    "de_vie": "d8",
+    "carac_principale": "Intelligence",
+    "maitrises": {
+      "competences_choix": [
+        "Arcanes",
+        "Escamotage",
+        "Histoire",
+        "Investigation",
+        "Médecine",
+        "Nature",
+        "Perception"
+      ],
+      "competences_nombre": 2,
+      "armures": [
+        "Armures légères",
+        "Armures intermédiaires",
+        "Boucliers"
+      ],
+      "armes": [
+        "Armes courantes"
+      ],
+      "outils": [
+        "Outils de bricoleur",
+        "Outils de voleur",
+        "Un outil d'artisan au choix"
+      ]
+    },
+    "capacites_classe": [
+      {
+        "niveau": 1,
+        "nom": "Bricolage magique",
+        "description": "Avec des outils de voleur ou un outil d'artisan en main, vous touchez par une action un objet Très petit non magique et lui conférez une propriété magique au choix : il émet une lumière vive dans un rayon de 1,50 m et une lumière faible sur 1,50 m de plus ; il enregistre un message d'au plus 6 secondes, rejoué quand une créature le touche ; il dégage en continu une odeur ou un son non verbal audible jusqu'à 3 m ; ou il affiche un effet visuel fixe sur l'une de ses surfaces (image, jusqu'à 25 mots de texte, motifs). La propriété dure indéfiniment et vous pouvez y mettre fin par une action. Vous pouvez maintenir ainsi un nombre d'objets égal à votre modificateur d'Intelligence (minimum 1) ; au-delà, la propriété la plus ancienne disparaît."
+      },
+      {
+        "niveau": 1,
+        "nom": "Incantation",
+        "description": "Vous lancez des sorts d'artificier grâce à l'Intelligence, votre caractéristique d'incantation. Vous connaissez 2 sorts mineurs au niveau 1 (3 au niveau 10, 4 au niveau 14) et disposez d'emplacements de demi-lanceur arrondis au supérieur (2 emplacements de niveau 1 dès le niveau 1, jusqu'au niveau 5 de sort au niveau 17). Après un repos long, vous préparez un nombre de sorts d'artificier égal à votre modificateur d'Intelligence + la moitié de votre niveau d'artificier (minimum 1). DD de sauvegarde = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence ; bonus d'attaque des sorts = votre bonus de maîtrise + votre modificateur d'Intelligence. Outils requis : vous devez tenir des outils de voleur ou un outil d'artisan (ou un objet infusé) qui sert de focaliseur pour chaque sort. Vous pouvez lancer en rituel un sort préparé qui possède l'étiquette rituel."
+      },
+      {
+        "niveau": 2,
+        "nom": "Infusion d'objets",
+        "description": "À la fin d'un repos long, vous touchez des objets non magiques et leur conférez une infusion d'artificier que vous connaissez (Arme améliorée, Défense améliorée, Focaliseur arcanique amélioré, Bottes du chemin sinueux, Sac nourricier, Bouclier répulsif…). Infusions connues / objets infusés en même temps : 4 / 2 au niveau 2, 6 / 3 au niveau 6, 8 / 4 au niveau 10, 10 / 5 au niveau 14, 12 / 6 au niveau 18. Un objet ne porte qu'une infusion ; si vous dépassez le maximum, l'infusion la plus ancienne prend fin. Une infusion dure jusqu'à votre mort ou jusqu'à ce que vous la retiriez. Chaque fois que vous gagnez un niveau dans cette classe, vous pouvez remplacer une infusion connue par une autre."
+      },
+      {
+        "niveau": 3,
+        "nom": "Artificier spécialisé",
+        "description": "Au niveau 3, vous choisissez une spécialité : Alchimiste, Armurier, Artilleur ou Forgeron de guerre. Elle vous accorde la maîtrise d'un outil d'artisan, une liste de sorts de spécialiste toujours préparés (qui ne comptent pas dans votre nombre de sorts préparés, 2 sorts aux niveaux 3, 5, 9, 13 et 17) et des aptitudes supplémentaires aux niveaux 3, 5, 9 et 15."
+      },
+      {
+        "niveau": 3,
+        "nom": "Le bon outil pour la tâche",
+        "description": "Avec des outils de voleur ou un outil d'artisan en main, vous fabriquez par magie un jeu d'outils d'artisan de votre choix dans un espace inoccupé à 1,50 m ou moins de vous. Il faut 1 heure de travail ininterrompu, qui peut se dérouler pendant un repos court ou long. L'outil est non magique et disparaît si vous utilisez de nouveau cette aptitude."
+      },
+      {
+        "niveau": 4,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 6,
+        "nom": "Expertise de l'outillage",
+        "description": "Votre bonus de maîtrise est doublé pour tout jet de caractéristique qui utilise un outil que vous maîtrisez (outils de voleur, de bricoleur, outils d'artisan, etc.)."
+      },
+      {
+        "niveau": 7,
+        "nom": "Éclair de génie",
+        "description": "Quand vous ou une créature que vous voyez dans un rayon de 9 m effectuez un jet de caractéristique ou un jet de sauvegarde, vous pouvez utiliser votre réaction pour ajouter votre modificateur d'Intelligence au jet. Vous pouvez le faire un nombre de fois égal à votre modificateur d'Intelligence (minimum 1) et récupérez toutes les utilisations à la fin d'un repos long."
+      },
+      {
+        "niveau": 8,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 10,
+        "nom": "Adepte des objets magiques",
+        "description": "Harmonisation avec 4 objets magiques : vous pouvez désormais être harmonisé avec jusqu'à 4 objets magiques à la fois. De plus, quand vous fabriquez un objet magique courant ou peu courant, il ne vous faut que le quart du temps habituel et la moitié du coût en pièces d'or."
+      },
+      {
+        "niveau": 11,
+        "nom": "Objet de stockage de sort",
+        "description": "À la fin d'un repos long, vous touchez une arme courante ou de guerre, ou un objet utilisable comme focaliseur, et y stockez un sort d'artificier de niveau 1 ou 2 dont le temps d'incantation est d'une action (il n'a pas besoin d'être préparé). Une créature qui tient l'objet peut, par une action, en produire l'effet en utilisant votre modificateur de caractéristique d'incantation (DD et attaque), sans emplacement ni composante. Le sort peut être utilisé un nombre de fois égal à 2 × votre modificateur d'Intelligence (minimum 2) ; il disparaît ensuite, ou si vous stockez un autre sort."
+      },
+      {
+        "niveau": 12,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 14,
+        "nom": "Érudit des objets magiques",
+        "description": "Harmonisation avec 5 objets magiques : vous pouvez désormais être harmonisé avec jusqu'à 5 objets magiques à la fois. En outre, vous ignorez toutes les conditions de classe, de race, de sort et de niveau pour vous harmoniser avec un objet magique ou l'utiliser."
+      },
+      {
+        "niveau": 16,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 18,
+        "nom": "Maître des objets magiques",
+        "description": "Harmonisation avec 6 objets magiques : vous pouvez désormais être harmonisé avec jusqu'à 6 objets magiques à la fois."
+      },
+      {
+        "niveau": 19,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 20,
+        "nom": "Âme de l'artifice",
+        "description": "Vous obtenez un bonus de +1 à tous vos jets de sauvegarde pour chaque objet magique auquel vous êtes actuellement harmonisé. De plus, si vous tombez à 0 point de vie sans être tué sur le coup, vous pouvez utiliser votre réaction pour mettre fin à l'une de vos infusions d'artificier : vous tombez alors à 1 point de vie au lieu de 0."
+      }
+    ],
+    "sous_classes": [
+      {
+        "nom": "Alchimiste",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [
+          "Mot de guérison",
+          "Rayon empoisonné",
+          "Flèche acide de Melf",
+          "Sphère de feu",
+          "Forme gazeuse",
+          "Mot de guérison de groupe",
+          "Flétrissement",
+          "Protection contre la mort",
+          "Brume mortelle",
+          "Rappel à la vie"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Maîtrise d'outils & Sorts d'alchimiste",
+            "description": "Vous gagnez la maîtrise des outils d'alchimiste (ou d'un autre outil d'artisan si vous la possédez déjà). Sorts d'alchimiste toujours préparés : niveau 3 Mot de guérison, Rayon empoisonné ; niveau 5 Flèche acide de Melf, Sphère de feu ; niveau 9 Forme gazeuse, Mot de guérison de groupe ; niveau 13 Flétrissement, Protection contre la mort ; niveau 17 Brume mortelle, Rappel à la vie."
+          },
+          {
+            "niveau": 3,
+            "nom": "Élixir expérimental",
+            "description": "À la fin d'un repos long, avec des outils d'alchimiste en main, vous créez gratuitement un élixir dans une fiole vide (2 au niveau 6, 3 au niveau 15) dont l'effet est tiré au hasard sur 1d6 : Guérison (récupère 2d4 + votre modificateur d'Intelligence points de vie), Rapidité (+3 m de vitesse pendant 1 heure), Résistance (+1 à la CA pendant 10 minutes), Audace (+1d4 aux jets d'attaque et de sauvegarde pendant 1 minute), Vol (vitesse de vol de 3 m pendant 10 minutes), Transformation (effet de Modification d'apparence pendant 10 minutes). Boire ou administrer un élixir demande une action ; il perd son effet s'il n'est pas bu avant la fin de votre prochain repos long. Vous pouvez aussi, par une action, dépenser un emplacement de sort de niveau 1 ou plus pour créer un élixir dont vous choisissez l'effet."
+          },
+          {
+            "niveau": 5,
+            "nom": "Érudit alchimique",
+            "description": "Quand vous lancez un sort en utilisant vos outils d'alchimiste comme focaliseur, vous ajoutez votre modificateur d'Intelligence (minimum +1) à un jet du sort qui rend des points de vie ou qui inflige des dégâts d'acide, de feu, nécrotiques ou de poison."
+          },
+          {
+            "niveau": 9,
+            "nom": "Ingrédients revigorants",
+            "description": "Une créature qui boit l'un de vos élixirs expérimentaux gagne aussi 2d6 + votre modificateur d'Intelligence points de vie temporaires (minimum 1). De plus, vous pouvez lancer Restauration partielle sans dépenser d'emplacement ni le préparer, à condition d'utiliser vos outils d'alchimiste comme focaliseur, un nombre de fois égal à votre modificateur d'Intelligence (minimum 1) ; utilisations récupérées après un repos long."
+          },
+          {
+            "niveau": 15,
+            "nom": "Maîtrise chimique",
+            "description": "Vous obtenez la résistance aux dégâts d'acide et de poison et l'immunité contre l'état empoisonné. Vous pouvez en outre lancer Restauration supérieure et Guérison une fois chacun sans emplacement de sort, sans les préparer et sans composante matérielle, à condition d'utiliser vos outils d'alchimiste comme focaliseur ; chaque sort redevient disponible après un repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Armurier",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [
+          "Projectile magique",
+          "Vague tonnante",
+          "Image miroir",
+          "Fracassement",
+          "Motif hypnotique",
+          "Éclair",
+          "Bouclier de feu",
+          "Invisibilité supérieure",
+          "Passe-muraille",
+          "Mur de force"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Techniques du métier & Sorts d'armurier",
+            "description": "Vous gagnez la maîtrise des armures lourdes et des outils de forgeron (ou d'un autre outil d'artisan si vous les maîtrisez déjà), et vous fabriquez une armure, magique ou non, en deux fois moins de temps. Sorts d'armurier toujours préparés : niveau 3 Projectile magique, Vague tonnante ; niveau 5 Image miroir, Fracassement ; niveau 9 Motif hypnotique, Éclair ; niveau 13 Bouclier de feu, Invisibilité supérieure ; niveau 17 Passe-muraille, Mur de force."
+          },
+          {
+            "niveau": 3,
+            "nom": "Armure arcanique",
+            "description": "Par une action, avec des outils de forgeron en main, vous transformez l'armure que vous portez en armure arcanique. Elle n'a plus de prérequis de Force, sert de focaliseur pour vos sorts d'artificier, ne peut pas vous être retirée contre votre volonté, couvre tout votre corps (casque compris) et peut remplacer un membre manquant. Vous pouvez l'enfiler ou l'ôter par une action. L'effet dure jusqu'à ce que vous endossiez une autre armure ou jusqu'à votre mort."
+          },
+          {
+            "niveau": 3,
+            "nom": "Modèle d'armure",
+            "description": "Vous choisissez un modèle pour votre armure arcanique (modifiable à la fin d'un repos court ou long, outils de forgeron en main). Gardien : gantelets tonnants (arme de corps à corps courante, 1d8 dégâts de tonnerre ; une créature touchée a un désavantage aux attaques contre d'autres cibles que vous jusqu'au début de votre prochain tour) et champ défensif (action bonus : vous gagnez des points de vie temporaires égaux à votre niveau d'artificier, un nombre de fois égal à votre bonus de maîtrise par repos long). Infiltrateur : lance-foudre (arme à distance courante, portée 27/90 m, 1d6 dégâts de foudre, plus 1d6 de foudre une fois par tour en cas de coup), pas propulsés (+1,50 m de vitesse au sol) et champ d'atténuation (avantage aux jets de Dextérité (Discrétion), aucun désavantage dû à l'armure). Vous utilisez votre modificateur d'Intelligence pour l'attaque et les dégâts de ces armes."
+          },
+          {
+            "niveau": 5,
+            "nom": "Attaque supplémentaire",
+            "description": "Quand vous effectuez l'action Attaquer lors de votre tour, vous pouvez attaquer deux fois au lieu d'une."
+          },
+          {
+            "niveau": 9,
+            "nom": "Modifications d'armure",
+            "description": "Votre armure arcanique compte comme des objets distincts pour vos infusions : plastron, bottes, casque et arme spéciale (gantelets tonnants ou lance-foudre). Chacune de ces pièces peut recevoir une infusion, et le nombre maximal d'objets que vous pouvez infuser augmente de 2, à condition que ces objets supplémentaires fassent partie de votre armure arcanique."
+          },
+          {
+            "niveau": 15,
+            "nom": "Armure parachevée",
+            "description": "Gardien : quand une créature de taille TG ou inférieure que vous voyez termine son tour à 9 m ou moins de vous, vous pouvez utiliser votre réaction pour lui imposer un jet de sauvegarde de Force (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence) ; en cas d'échec, vous l'attirez de 7,50 m au maximum vers vous et, si elle arrive à 1,50 m, vous pouvez lui porter une attaque d'arme au corps à corps dans la même réaction. Utilisable un nombre de fois égal à votre bonus de maîtrise par repos long. Infiltrateur : une créature touchée par votre lance-foudre luit jusqu'au début de votre prochain tour (lumière faible sur 1,50 m) ; le prochain jet d'attaque d'une autre créature contre elle a l'avantage et inflige 1d6 dégâts de foudre supplémentaires s'il touche."
+          }
+        ]
+      },
+      {
+        "nom": "Artilleur",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [
+          "Bouclier",
+          "Vague tonnante",
+          "Rayon ardent",
+          "Fracassement",
+          "Boule de feu",
+          "Mur de vent",
+          "Tempête de grêle",
+          "Mur de feu",
+          "Cône de froid",
+          "Mur de force"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Maîtrise d'outils & Sorts d'artilleur",
+            "description": "Vous gagnez la maîtrise des outils de menuisier (ou d'un autre outil d'artisan si vous la possédez déjà). Sorts d'artilleur toujours préparés : niveau 3 Bouclier, Vague tonnante ; niveau 5 Rayon ardent, Fracassement ; niveau 9 Boule de feu, Mur de vent ; niveau 13 Tempête de grêle, Mur de feu ; niveau 17 Cône de froid, Mur de force."
+          },
+          {
+            "niveau": 3,
+            "nom": "Canon occulte",
+            "description": "Par une action, avec des outils de menuisier ou de forgeron en main, vous créez un canon occulte de taille P ou TP dans un espace inoccupé à 1,50 m ou moins de vous : une fois gratuitement par repos long, puis en dépensant un emplacement de sort de niveau 1 ou plus. Le canon a CA 18, des points de vie égaux à 5 × votre niveau d'artificier, l'immunité contre le poison et les dégâts psychiques, et dure 1 heure (ou jusqu'à 0 PV ou congédiement par une action). Par une action bonus, s'il est à 18 m ou moins, vous le déplacez de 4,50 m et l'activez : Lance-flammes (cône de 4,50 m, sauvegarde de Dextérité, 2d8 dégâts de feu, moitié en cas de réussite), Baliste de force (attaque de sort à distance, portée 36 m, 2d8 dégâts de force et la cible est repoussée de 1,50 m) ou Protecteur (vous et les créatures de votre choix à 3 m gagnez 1d8 + votre modificateur d'Intelligence points de vie temporaires). DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence. Un seul canon à la fois ; Réparation lui rend 2d6 PV."
+          },
+          {
+            "niveau": 5,
+            "nom": "Arme à feu arcanique",
+            "description": "Après un repos long, avec des outils de menuisier, vous gravez des sigils sur une baguette, un bâton ou un sceptre, qui devient votre arme à feu arcanique jusqu'à ce que vous en graviez une autre. Elle vous sert de focaliseur ; quand vous lancez un sort d'artificier à travers elle, vous lancez 1d8 et ajoutez le résultat à l'un des jets de dégâts du sort."
+          },
+          {
+            "niveau": 9,
+            "nom": "Canon explosif",
+            "description": "Chaque jet de dégâts de votre canon occulte augmente de 1d8. De plus, par une action, vous pouvez faire exploser un canon situé à 18 m ou moins : il est détruit et chaque créature à 6 m ou moins de lui fait un jet de sauvegarde de Dextérité (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence), subissant 3d8 dégâts de force en cas d'échec, moitié en cas de réussite."
+          },
+          {
+            "niveau": 15,
+            "nom": "Position fortifiée",
+            "description": "Vous et vos alliés bénéficiez d'un abri partiel tant que vous êtes à 3 m ou moins d'un de vos canons occultes. Vous pouvez désormais avoir deux canons à la fois, les créer avec la même action (mais pas avec le même emplacement de sort) et les activer tous deux avec la même action bonus."
+          }
+        ]
+      },
+      {
+        "nom": "Forgeur d'armes",
+        "source": "Chaudron des merveilles de Tasha",
+        "sorts_domaine": [
+          "Héroïsme",
+          "Bouclier",
+          "Châtiment révélateur",
+          "Lien de protection",
+          "Aura de vitalité",
+          "Invocation de projectiles",
+          "Aura de pureté",
+          "Bouclier de feu",
+          "Châtiment du ban",
+          "Soins de groupe"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Maîtrise d'outils & Sorts de forgeur",
+            "description": "Vous gagnez la maîtrise des outils de forgeron (ou d'un autre outil d'artisan si vous la possédez déjà). Sorts de forgeron de guerre toujours préparés : niveau 3 Héroïsme, Bouclier ; niveau 5 Châtiment révélateur, Lien de protection ; niveau 9 Aura de vitalité, Invocation de projectiles ; niveau 13 Aura de pureté, Bouclier de feu ; niveau 17 Châtiment du ban, Soins de groupe."
+          },
+          {
+            "niveau": 3,
+            "nom": "Apte au combat",
+            "description": "Vous gagnez la maîtrise des armes de guerre. Quand vous attaquez avec une arme magique, vous pouvez utiliser votre modificateur d'Intelligence au lieu de celui de Force ou de Dextérité pour les jets d'attaque et de dégâts."
+          },
+          {
+            "niveau": 3,
+            "nom": "Défenseur d'acier",
+            "description": "Vous fabriquez un défenseur d'acier, une créature artificielle de taille M qui vous obéit : CA 15, points de vie égaux à 5 × votre niveau d'artificier + 2 + votre modificateur d'Intelligence, vitesse 12 m. Il agit juste après vous ; il se déplace et utilise sa réaction seul, mais ne prend que l'action Esquiver sauf si vous lui ordonnez une autre action par une action bonus. Déchirure de force : attaque de sort au corps à corps, 1d8 + votre bonus de maîtrise dégâts de force. Réparation (3 fois par jour) : rend 2d8 + votre bonus de maîtrise PV à lui-même ou à un objet ou une créature artificielle à 1,50 m. Déviation (réaction) : impose un désavantage à une attaque visant une autre créature à 1,50 m de lui. Le sort Réparation lui rend 2d6 PV. S'il est mort depuis moins d'une heure, une action et un emplacement de sort le ramènent à la vie avec tous ses PV ; un nouveau défenseur peut être fabriqué à la fin d'un repos long."
+          },
+          {
+            "niveau": 5,
+            "nom": "Attaque supplémentaire",
+            "description": "Quand vous effectuez l'action Attaquer lors de votre tour, vous pouvez attaquer deux fois au lieu d'une."
+          },
+          {
+            "niveau": 9,
+            "nom": "Décharge arcanique",
+            "description": "Une fois par tour, quand vous touchez une cible avec une arme magique ou quand votre défenseur d'acier la touche, vous pouvez canaliser une décharge : soit la cible subit 2d6 dégâts de force supplémentaires, soit une créature ou un objet que vous voyez à 9 m ou moins de la cible récupère 2d6 points de vie. Utilisable un nombre de fois égal à votre modificateur d'Intelligence (minimum 1) ; utilisations récupérées après un repos long. Les dés passent à 4d6 au niveau 15."
+          },
+          {
+            "niveau": 15,
+            "nom": "Défenseur amélioré",
+            "description": "Votre Décharge arcanique inflige ou rend désormais 4d6 au lieu de 2d6. Votre défenseur d'acier gagne +2 à la CA, et chaque fois qu'il utilise Déviation, l'attaquant subit 1d4 + votre modificateur d'Intelligence dégâts de force."
+          }
+        ]
+      },
+      {
+        "nom": "Automaturge",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Alarme",
+          "Détection de la magie",
+          "Sens des pièges",
+          "Lévitation",
+          "Clairvoyance",
+          "Serviteur miniature",
+          "Oeil magique",
+          "Façonnage de la pierre",
+          "Création",
+          "Mur de force"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Concepteur de drones",
+            "description": "À la fin d'un repos long, avec des outils de bricoleur en main, vous assemblez un drone : créature artificielle de taille TP, CA 14, points de vie égaux à 2 × votre niveau d'artificier, vitesse 6 m et vol 9 m (vol stationnaire) ou escalade 9 m, vision dans le noir 18 m, immunisé contre le poison. Il agit à votre initiative et ne prend que l'action Esquiver, sauf si vous lui ordonnez par une action bonus de se déplacer et d'utiliser Aider, Chercher, Se cacher ou Utiliser un objet. Par une action bonus, vous percevez par ses sens jusqu'au début de votre prochain tour s'il est à 30 m ou moins. Il peut délivrer un sort d'artificier de portée contact que vous lancez s'il se trouve à 30 m ou moins. Un seul drone à la fois ; détruit, il peut être reconstruit en 1 minute en dépensant un emplacement de sort de niveau 1 ou plus. Réparation lui rend 2d6 PV. Sorts d'automaturge toujours préparés : Alarme, Détection de la magie ; Sens des pièges, Lévitation ; Clairvoyance, Serviteur miniature ; Oeil magique, Façonnage de la pierre ; Création, Mur de force."
+          },
+          {
+            "niveau": 3,
+            "nom": "Protocoles de soutien",
+            "description": "Par une action bonus, vous ordonnez à votre drone l'un de ces protocoles en plus de son déplacement. Stabilisation : il touche une créature à 0 point de vie à 1,50 m, qui devient stable et récupère 1 point de vie (un nombre de fois égal à votre bonus de maîtrise par repos long). Diversion : une créature à 1,50 m du drone fait un jet de sauvegarde de Sagesse (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence) ; en cas d'échec, elle a un désavantage au premier jet d'attaque qu'elle effectue avant le début de votre prochain tour."
+          },
+          {
+            "niveau": 5,
+            "nom": "Surcharges de sous-système",
+            "description": "Par une action, vous surchargez un drone situé à 30 m ou moins. Chaque créature de votre choix à 3 m ou moins de lui fait un jet de sauvegarde de Constitution (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence). Flash : en cas d'échec, la créature est aveuglée jusqu'à la fin de votre prochain tour. Décharge : elle subit 2d8 dégâts de foudre (3d8 au niveau 11) et ne peut pas prendre de réaction jusqu'au début de son prochain tour ; moitié des dégâts seulement en cas de réussite. Le drone ne peut ensuite plus se déplacer jusqu'à la fin de votre prochain tour. Utilisable un nombre de fois égal à votre bonus de maîtrise ; utilisations récupérées après un repos long."
+          },
+          {
+            "niveau": 9,
+            "nom": "Réseau maillé",
+            "description": "Vous pouvez avoir deux drones actifs et une seule action bonus les commande tous les deux. Quand vous êtes la cible d'une attaque ou que vous devez faire un jet de sauvegarde, vous pouvez utiliser votre réaction pour échanger votre position avec celle d'un de vos drones situé à 30 m ou moins (téléportation) avant la résolution ; l'effet s'applique alors à l'emplacement d'arrivée. Utilisable un nombre de fois égal à votre modificateur d'Intelligence (minimum 1) par repos long."
+          },
+          {
+            "niveau": 15,
+            "nom": "Singularité mécanique",
+            "description": "Par une action, un de vos drones déploie un champ d'absorption (sphère de 3 m de rayon centrée sur lui, se déplace avec lui) pendant 1 minute (concentration). Les créatures de votre choix dans le champ ont l'avantage aux jets de sauvegarde contre les sorts et la résistance aux dégâts des sorts. Une fois pendant la durée, vous pouvez lancer Contre-sort au niveau 3 par l'intermédiaire du drone sans dépenser d'emplacement. Une fois par repos long, ou en dépensant un emplacement de sort de niveau 4 ou plus."
+          }
+        ]
+      },
+      {
+        "nom": "Cartomancien",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Murmures dissonants",
+          "Image silencieuse",
+          "Augure",
+          "Localisation d'objet",
+          "Clignotement",
+          "Image majeure",
+          "Oeil magique",
+          "Confusion",
+          "Quête",
+          "Scrutation"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Jeu d'infusions & Cartes tranchantes",
+            "description": "Vous maîtrisez les jeux de cartes et un jeu que vous enchantez pendant un repos long devient votre focaliseur d'artificier. Cartes tranchantes : vous pouvez lancer une carte comme une arme à distance courante magique que vous maîtrisez (portée 18/54 m), en utilisant votre modificateur d'Intelligence pour l'attaque et les dégâts : 1d6 + votre modificateur d'Intelligence dégâts tranchants ou de force (au choix). La carte revient dans le paquet après l'attaque. Sorts de cartomancien toujours préparés : Murmures dissonants, Image silencieuse ; Augure, Localisation d'objet ; Clignotement, Image majeure ; Oeil magique, Confusion ; Quête, Scrutation."
+          },
+          {
+            "niveau": 3,
+            "nom": "Tirage du destin",
+            "description": "Par une action bonus, vous tirez une carte et lancez 1d4 ; l'effet dure 1 minute ou jusqu'au tirage suivant. 1 Carreau : +1 à votre CA. 2 Cœur : vous ou une créature à 9 m gagnez 1d6 + votre modificateur d'Intelligence points de vie temporaires. 3 Pique : une fois par tour, vos Cartes tranchantes ou vos attaques de sort infligent 1d4 dégâts supplémentaires d'un type choisi (feu, froid ou foudre). 4 Trèfle : +1d4 à vos jets de sauvegarde. Utilisable un nombre de fois égal à votre bonus de maîtrise ; utilisations récupérées après un repos long."
+          },
+          {
+            "niveau": 5,
+            "nom": "Quinte de sorts",
+            "description": "Quand vous effectuez l'action Attaquer, vous pouvez attaquer deux fois, et remplacer l'une de ces attaques par un sort mineur d'artificier dont le temps d'incantation est d'une action. De plus, par une action, vous pouvez dépenser un emplacement de sort pour imprégner une carte d'un sort d'artificier de niveau 1 ou plus (temps d'incantation d'une action) et la poser ou la lancer à 9 m ou moins : piège pendant 1 heure, déclenché quand une créature arrive à 1,50 m de la carte ou par votre action bonus ; le sort part de la carte. Une seule carte piégée à la fois."
+          },
+          {
+            "niveau": 9,
+            "nom": "Main d'as",
+            "description": "À la fin d'un repos long, vous pouvez stocker dans 2 cartes (3 au niveau 15) un sort d'artificier préparé de niveau 1 à 3 chacune, en dépensant aussitôt l'emplacement correspondant. Tant que vous tenez votre paquet, vous pouvez libérer une carte par une action bonus pour lancer son sort (votre DD et votre bonus d'attaque, concentration normale ; la règle des sorts lancés en action bonus s'applique). Les cartes non utilisées perdent leur magie au repos long suivant."
+          },
+          {
+            "niveau": 15,
+            "nom": "Quinte flush royale",
+            "description": "Une fois par repos long (ou en dépensant un emplacement de sort de niveau 5), vous jouez la carte ultime : par votre réaction, quand vous ou une créature que vous voyez à 18 m ou moins ratez un jet de sauvegarde, ce jet devient une réussite ; ou, quand vous touchez une créature avec une attaque, ce coup devient un coup critique. Vos Cartes tranchantes infligent désormais 1d6 dégâts de force supplémentaires une fois par tour."
+          }
+        ]
+      },
+      {
+        "nom": "Horloger",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Grande foulée",
+          "Sanctuaire",
+          "Flou",
+          "Apaisement des émotions",
+          "Hâte",
+          "Lenteur",
+          "Liberté de mouvement",
+          "Porte dimensionnelle",
+          "Immobilisation de monstre",
+          "Passe-muraille"
+        ],
+        "capacites": [
+          {
+            "niveau": 3,
+            "nom": "Cadran d'arcanes & Rétrogradation",
+            "description": "Vous maîtrisez les outils de bricoleur avec expertise (bonus de maîtrise doublé) et une montre que vous réglez pendant un repos long devient votre focaliseur. Rétrogradation : par votre réaction, quand une créature que vous voyez à 9 m ou moins touche avec un jet d'attaque, vous l'obligez à relancer le d20 et à garder le nouveau résultat ; ou, quand une créature consentante à 9 m termine son déplacement, vous la ramenez à son point de départ sans provoquer d'attaque d'opportunité. Utilisable un nombre de fois égal à votre bonus de maîtrise ; utilisations récupérées après un repos long. Sorts d'horloger toujours préparés : Grande foulée, Sanctuaire ; Flou, Apaisement des émotions ; Hâte, Lenteur ; Liberté de mouvement, Porte dimensionnelle ; Immobilisation de monstre, Passe-muraille."
+          },
+          {
+            "niveau": 3,
+            "nom": "Rouages d'efficacité",
+            "description": "Par une action bonus, vous fixez un micro-mécanisme sur une créature consentante à 9 m ou moins : pendant 1 minute, sa vitesse augmente de 3 m et elle gagne +1 à la CA. Une seule créature à la fois ; utilisable un nombre de fois égal à votre bonus de maîtrise ; utilisations récupérées après un repos long."
+          },
+          {
+            "niveau": 5,
+            "nom": "Surcharge temporelle",
+            "description": "Par une action bonus, vous dépensez un emplacement de sort de niveau 1 ou plus et choisissez une créature consentante à 9 m ou moins. Avant la fin de votre prochain tour, elle peut utiliser sa réaction pour effectuer une attaque d'arme ; si elle touche, l'attaque inflige 1d6 dégâts de force supplémentaires par niveau de l'emplacement au-dessus du 1er. Une fois par tour."
+          },
+          {
+            "niveau": 9,
+            "nom": "Champ de stase",
+            "description": "Par une action, vous visez une créature à 18 m ou moins : elle fait un jet de sauvegarde de Constitution (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence) ou elle est entravée et ne peut pas prendre de réaction jusqu'à la fin de votre prochain tour. Variante en réaction : quand une attaque à distance vise une créature à 9 m ou moins de vous, le projectile est figé et la cible gagne +5 à la CA contre cette attaque. Utilisable un nombre de fois égal à votre modificateur d'Intelligence (minimum 1) ; utilisations récupérées après un repos long."
+          },
+          {
+            "niveau": 15,
+            "nom": "Grande Horloge",
+            "description": "Par une action, vous créez une sphère de 9 m de rayon centrée sur vous qui vous suit, pendant 1 minute (concentration). Chaque ennemi qui y entre ou y commence son tour fait un jet de sauvegarde de Sagesse (DD = 8 + votre bonus de maîtrise + votre modificateur d'Intelligence) ; en cas d'échec, il subit les effets de Lenteur jusqu'au début de son prochain tour. Vos alliés dans la zone ont leur vitesse doublée, +2 à la CA et l'avantage aux jets de sauvegarde de Dextérité (mais pas l'action supplémentaire de Hâte). Une fois par repos long, ou en dépensant un emplacement de sort de niveau 5."
+          }
+        ]
+      }
+    ]
+  }
+}

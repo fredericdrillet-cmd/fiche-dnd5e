@@ -1,0 +1,472 @@
+{
+  "classe": {
+    "nom": "Druide",
+    "de_vie": "d8",
+    "carac_principale": "Sagesse",
+    "capacites_classe": [
+      {
+        "niveau": 1,
+        "nom": "Druidique",
+        "description": "Vous connaissez le druidique, la langue secrète des druides. Vous pouvez la parler et l'utiliser pour laisser des messages dissimulés. Vous et toute personne connaissant cette langue repérez automatiquement un tel message ; les autres peuvent remarquer sa présence en réussissant un test de Sagesse (Perception) DD 15, mais ne peuvent pas le déchiffrer sans recourir à la magie. Il est interdit d'enseigner cette langue à un non-druide."
+      },
+      {
+        "niveau": 1,
+        "nom": "Incantation",
+        "description": "Vous lancez des sorts de druide en puisant dans l'essence divine de la nature ; votre caractéristique d'incantation est la Sagesse. Vous connaissez 2 sorts mineurs de druide (3 au niveau 4, 4 au niveau 10). Après chaque repos long, vous préparez dans la liste complète des sorts de druide un nombre de sorts égal à votre modificateur de Sagesse + votre niveau de druide (minimum 1), de niveaux pour lesquels vous avez des emplacements ; lancer un sort dépense un emplacement de son niveau ou d'un niveau supérieur. DD de sauvegarde des sorts = 8 + votre bonus de maîtrise + votre modificateur de Sagesse ; modificateur d'attaque des sorts = votre bonus de maîtrise + votre modificateur de Sagesse. Vous pouvez lancer comme rituel un sort préparé possédant l'étiquette rituel, et utiliser un focaliseur druidique (branche de gui, bâton d'if, totem…) à la place des composantes matérielles sans coût indiqué."
+      },
+      {
+        "niveau": 1,
+        "nom": "Sorts de druide supplémentaires (option Tasha)",
+        "description": "Option de classe du Chaudron des merveilles de Tasha. Si votre MJ l'autorise, la liste des sorts de druide s'enrichit des sorts suivants, que vous préparez comme n'importe quel sort de druide. Niveau 2 : Augure, Flamme éternelle, Agrandissement/Rapetissement. Niveau 3 : Aura de vitalité, Arme élémentaire, Retour à la vie. Niveau 4 : Divination, Bouclier de feu. Niveau 5 : Cône de froid. Niveau 6 : Pétrification. Niveau 7 : Symbole. Niveau 9 : Prémonition."
+      },
+      {
+        "niveau": 2,
+        "nom": "Forme sauvage",
+        "description": "Par une action, vous prenez magiquement l'apparence d'une bête que vous avez déjà vue. Vous disposez de 2 utilisations, récupérées à la fin d'un repos court ou long (utilisations illimitées au niveau 20 avec Archidruide). Facteur de puissance (FP) maximal : 1/4 sans vitesse de vol ni de nage au niveau 2, 1/2 sans vitesse de vol au niveau 4, 1 au niveau 8 (Cercle de la Lune : FP 1 dès le niveau 2, puis un FP égal à votre niveau de druide divisé par 3, arrondi à l'inférieur, à partir du niveau 6 ; la transformation se fait alors par une action bonus). Vous restez transformé un nombre d'heures égal à la moitié de votre niveau de druide (arrondi à l'inférieur), jusqu'à ce que vous repreniez votre forme par une action bonus, ou jusqu'à ce que vous tombiez inconscient, à 0 PV ou mouriez. Sous cette forme, les statistiques de la bête remplacent les vôtres, mais vous conservez alignement, personnalité, Intelligence, Sagesse, Charisme, maîtrises de compétences et de jets de sauvegarde (le meilleur bonus s'applique) ; vous ne pouvez pas utiliser d'actions légendaires ni d'antre. Vous prenez les PV et dés de vie de la bête ; en revenant à votre forme normale, vous retrouvez les PV que vous aviez avant la transformation, et si vous retombez ainsi parce que la bête est tombée à 0 PV, les dégâts excédentaires sont reportés sur votre forme normale (pas d'inconscience si le report ne vous amène pas à 0 PV). Vous ne pouvez ni parler ni lancer de sorts (avant le niveau 18), mais la transformation ne rompt pas votre concentration sur un sort déjà lancé. Vous gardez vos aptitudes de classe et de race si la forme le permet physiquement (pas les sens spéciaux comme la vision dans le noir, sauf si la bête les possède). Votre équipement tombe au sol, fusionne avec la nouvelle forme ou est porté si la morphologie et la taille de la bête le permettent (choix du MJ)."
+      },
+      {
+        "niveau": 2,
+        "nom": "Compagnon sauvage (option Tasha)",
+        "description": "Option de classe du Chaudron des merveilles de Tasha. Par une action, vous dépensez une utilisation de Forme sauvage pour lancer le sort Appel de familier sans composantes matérielles. Le familier est une fée (et non une bête) et prend la forme animale de votre choix. Il disparaît au bout d'un nombre d'heures égal à la moitié de votre niveau de druide, lorsqu'il tombe à 0 PV, lorsque vous réutilisez cette aptitude ou lorsque vous mourez. Vous pouvez percevoir par ses sens et lancer vos sorts de contact par son intermédiaire, comme pour le sort."
+      },
+      {
+        "niveau": 2,
+        "nom": "Cercle druidique",
+        "description": "Au niveau 2, vous rejoignez un cercle druidique : Lune, Terre, Rêves, Berger (Xanathar), Étoiles, Spores, Feu sauvage (Tasha) ou un cercle communautaire. Ce choix vous octroie des aptitudes aux niveaux 2, 6, 10 et 14, ainsi que, pour certains cercles, des sorts de cercle toujours préparés qui ne comptent pas dans le nombre de sorts que vous pouvez préparer chaque jour."
+      },
+      {
+        "niveau": 4,
+        "nom": "Forme sauvage améliorée (Nage)",
+        "description": "Au niveau 4, la limite de votre Forme sauvage passe à un FP de 1/2 et vous pouvez adopter la forme de bêtes possédant une vitesse de nage (requins, crocodiles…), mais toujours pas de vitesse de vol. Les utilisations (2 par repos court) et la durée (la moitié de votre niveau de druide en heures) restent inchangées. Le Cercle de la Lune conserve sa propre limite de FP (FP 1 jusqu'au niveau 5)."
+      },
+      {
+        "niveau": 4,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 4,
+        "nom": "Polyvalence des sorts mineurs (option Tasha)",
+        "description": "Option de classe du Chaudron des merveilles de Tasha. Chaque fois que vous atteignez un niveau de druide qui vous octroie une Amélioration de caractéristique (niveaux 4, 8, 12, 16 et 19), vous pouvez remplacer l'un de vos sorts mineurs de druide par un autre sort mineur de la liste des sorts de druide."
+      },
+      {
+        "niveau": 8,
+        "nom": "Forme sauvage améliorée (Vol)",
+        "description": "Au niveau 8, la limite de votre Forme sauvage passe à un FP de 1 et vous pouvez adopter la forme de bêtes possédant une vitesse de vol (aigle géant, vautour géant…), en plus de celles qui nagent. Le Cercle de la Lune utilise à la place un FP maximal égal à votre niveau de druide divisé par 3 (arrondi à l'inférieur), soit FP 2 au niveau 8."
+      },
+      {
+        "niveau": 8,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 12,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 16,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 18,
+        "nom": "Corps intemporel",
+        "description": "À partir du niveau 18, la magie primordiale que vous maniez ralentit votre vieillissement : votre corps ne vieillit que d'un an pour chaque tranche de 10 années écoulées. Vous restez néanmoins vulnérable au vieillissement magique (fantômes, sort Hâte…), et l'aptitude ne prolonge pas votre espérance de vie au-delà de ce ralentissement."
+      },
+      {
+        "niveau": 18,
+        "nom": "Sorts de bête",
+        "description": "À partir du niveau 18, vous pouvez lancer bon nombre de vos sorts de druide sous n'importe quelle forme adoptée grâce à Forme sauvage. Vous pouvez accomplir les composantes verbales et somatiques d'un sort de druide sous forme de bête, mais vous êtes incapable de fournir les composantes matérielles, quelles qu'elles soient (focaliseur compris)."
+      },
+      {
+        "niveau": 19,
+        "nom": "Amélioration de caractéristique ou choix d'un don",
+        "description": "Augmentez une valeur de caractéristique de 2, ou deux valeurs de caractéristique de 1 (aucune ne peut dépasser 20 par ce biais). À la place, si la règle optionnelle des dons est utilisée, vous pouvez choisir un don dont vous remplissez les prérequis (onglet Progression & Dons)."
+      },
+      {
+        "niveau": 20,
+        "nom": "Archidruide",
+        "description": "Au niveau 20, vous pouvez utiliser Forme sauvage un nombre illimité de fois. De plus, vous pouvez ignorer les composantes verbales et somatiques de vos sorts de druide, ainsi que les composantes matérielles qui n'ont pas de coût indiqué et ne sont pas consommées par le sort. Ce bénéfice s'applique sous votre forme normale comme sous une forme de bête."
+      }
+    ],
+    "sous_classes": [
+      {
+        "nom": "Cercle de la Lune",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Forme sauvage de combat & Formes du cercle",
+            "description": "Forme sauvage de combat : vous pouvez utiliser Forme sauvage par une action bonus au lieu d'une action. Tant que vous êtes transformé, vous pouvez par une action bonus dépenser un emplacement de sort pour récupérer 1d8 PV par niveau de l'emplacement dépensé. Formes du cercle : vous pouvez adopter la forme de bêtes de FP 1 dès le niveau 2 (sans vol avant le niveau 8, sans nage avant le niveau 4), puis, à partir du niveau 6, d'un FP maximal égal à votre niveau de druide divisé par 3 (arrondi à l'inférieur). Utilisations (2 par repos court) et durée (la moitié de votre niveau de druide en heures) sont celles de Forme sauvage."
+          },
+          {
+            "niveau": 6,
+            "nom": "Attaques primitives",
+            "description": "À partir du niveau 6, les attaques que vous effectuez sous une forme de bête comptent comme magiques pour ce qui est de surmonter la résistance et l'immunité aux attaques et dégâts non magiques."
+          },
+          {
+            "niveau": 10,
+            "nom": "Forme sauvage élémentaire",
+            "description": "À partir du niveau 10, vous pouvez dépenser simultanément deux utilisations de Forme sauvage pour vous transformer en élémentaire de l'air, de la terre, du feu ou de l'eau (FP 5). Les règles de Forme sauvage s'appliquent (durée, PV, report des dégâts) ; avec Forme sauvage de combat, la transformation se fait par une action bonus."
+          },
+          {
+            "niveau": 14,
+            "nom": "Mille formes",
+            "description": "Au niveau 14, vous pouvez lancer le sort Modification d'apparence à volonté, sans dépenser d'emplacement de sort. Le sort requiert toujours votre concentration (jusqu'à 1 heure) et vous permet d'adapter votre corps (respiration aquatique, armes naturelles, changement d'apparence)."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle de la Terre",
+        "source": "Manuel des Joueurs",
+        "sorts_domaine": [
+          "Peau d'écorce",
+          "Pattes d'araignée",
+          "Appel de la foudre",
+          "Croissance végétale",
+          "Divination",
+          "Liberté de mouvement",
+          "Communion avec la nature",
+          "Passage par les arbres"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Sort mineur de druide supplémentaire & Ressourcement",
+            "description": "Sort mineur supplémentaire : vous apprenez un sort mineur de druide de votre choix en plus de ceux que vous connaissez. Ressourcement : pendant un repos court, vous pouvez récupérer des emplacements de sorts dépensés dont la somme des niveaux est au maximum égale à la moitié de votre niveau de druide (arrondie au supérieur), aucun d'eux ne pouvant être de niveau 6 ou plus (au niveau 6 par exemple : 3 niveaux, soit un emplacement de niveau 3 ou un de niveau 2 et un de niveau 1). Une fois cette aptitude utilisée, vous devez terminer un repos long pour la réutiliser."
+          },
+          {
+            "niveau": 3,
+            "nom": "Sorts de cercle",
+            "description": "Au niveau 2, vous choisissez le terrain où vous êtes devenu druide : Arctique, Côte, Désert, Forêt, Marais, Montagne, Outreterre ou Prairie (sélecteur « Terrain » de l'onglet Classes, visible uniquement pour le Cercle de la Terre). Ce lien mystique vous donne deux sorts de cercle aux niveaux de druide 3, 5, 7 et 9 (sorts de niveau 2, 3, 4 puis 5). Ils sont toujours préparés, ne comptent pas dans le nombre de sorts que vous pouvez préparer chaque jour et sont considérés comme des sorts de druide même s'ils n'appartiennent pas à sa liste. La fiche les ajoute automatiquement à l'onglet Magie selon le terrain choisi (Forêt par défaut)."
+          },
+          {
+            "niveau": 6,
+            "nom": "Foulée tellurique",
+            "description": "À partir du niveau 6, traverser un terrain difficile non magique ne vous coûte aucun déplacement supplémentaire. Vous pouvez aussi traverser la végétation non magique sans être ralenti et sans subir de dégâts de ses épines ou autres dangers. Enfin, vous avez l'avantage aux jets de sauvegarde contre les plantes créées ou manipulées magiquement pour entraver les déplacements (sort Enchevêtrement, par exemple)."
+          },
+          {
+            "niveau": 10,
+            "nom": "Protégé de dame nature",
+            "description": "Au niveau 10, vous ne pouvez plus être charmé ni effrayé par les élémentaires et les fées, et vous êtes immunisé contre le poison (dégâts et état empoisonné) et les maladies."
+          },
+          {
+            "niveau": 14,
+            "nom": "Sanctuaire de dame nature",
+            "description": "Au niveau 14, les créatures du monde naturel sentent votre lien avec la nature et hésitent à vous attaquer. Lorsqu'une bête ou une plante vous attaque, elle doit réussir un jet de sauvegarde de Sagesse contre votre DD de sauvegarde des sorts (8 + votre bonus de maîtrise + votre modificateur de Sagesse). En cas d'échec, elle doit choisir une autre cible, sinon son attaque rate automatiquement ; en cas de réussite, elle est immunisée contre cet effet pendant 24 heures. La créature a conscience de cet effet avant d'attaquer."
+          }
+        ],
+        "terrain_defaut": "Forêt",
+        "terrains": {
+          "Arctique": [
+            "Immobilisation de personne",
+            "Croissance d'épines",
+            "Lenteur",
+            "Tempête de neige",
+            "Liberté de mouvement",
+            "Tempête de grêle",
+            "Communion avec la nature",
+            "Cône de froid"
+          ],
+          "Côte": [
+            "Image miroir",
+            "Foulée brumeuse",
+            "Respiration aquatique",
+            "Marche sur l'eau",
+            "Contrôle de l'eau",
+            "Liberté de mouvement",
+            "Invocation d'élémentaire",
+            "Scrutation"
+          ],
+          "Désert": [
+            "Flou",
+            "Silence",
+            "Création de nourriture et d'eau",
+            "Protection contre une énergie",
+            "Flétrissement",
+            "Terrain hallucinatoire",
+            "Fléau d'insectes",
+            "Mur de pierre"
+          ],
+          "Forêt": [
+            "Peau d'écorce",
+            "Pattes d'araignée",
+            "Appel de la foudre",
+            "Croissance végétale",
+            "Divination",
+            "Liberté de mouvement",
+            "Communion avec la nature",
+            "Passage par les arbres"
+          ],
+          "Marais": [
+            "Ténèbres",
+            "Flèche acide de Melf",
+            "Marche sur l'eau",
+            "Nuage nauséabond",
+            "Liberté de mouvement",
+            "Localisation de créature",
+            "Fléau d'insectes",
+            "Scrutation"
+          ],
+          "Montagne": [
+            "Pattes d'araignée",
+            "Croissance d'épines",
+            "Éclair",
+            "Fusion dans la pierre",
+            "Façonnage de la pierre",
+            "Peau de pierre",
+            "Passe-muraille",
+            "Mur de pierre"
+          ],
+          "Outreterre": [
+            "Pattes d'araignée",
+            "Toile d'araignée",
+            "Forme gazeuse",
+            "Nuage nauséabond",
+            "Invisibilité supérieure",
+            "Façonnage de la pierre",
+            "Brume mortelle",
+            "Fléau d'insectes"
+          ],
+          "Prairie": [
+            "Invisibilité",
+            "Passage sans trace",
+            "Lumière du jour",
+            "Hâte",
+            "Divination",
+            "Liberté de mouvement",
+            "Songe",
+            "Fléau d'insectes"
+          ]
+        }
+      },
+      {
+        "nom": "Cercle des Rêves",
+        "source": "Guide Tout-en-un de Xanathar",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Baume de la cour d'été",
+            "description": "Vous disposez d'une réserve de d6 de guérison féerique dont le nombre est égal à votre niveau de druide ; elle se reconstitue entièrement après un repos long. Par une action bonus, vous choisissez une créature que vous pouvez voir dans un rayon de 36 m et dépensez jusqu'à un nombre de dés égal à la moitié de votre niveau de druide : lancez-les, la cible récupère autant de PV que le total obtenu et gagne en outre 1 PV temporaire par dé dépensé."
+          },
+          {
+            "niveau": 6,
+            "nom": "Foyer de l'ombre et du clair de lune",
+            "description": "À partir du niveau 6, lorsque vous prenez un repos court ou long, vous pouvez toucher un point pour y créer une sphère invisible de 9 m de rayon. Pendant le repos, vous et vos alliés dans la sphère bénéficiez d'un bonus de +5 aux tests de Dextérité (Discrétion) et de Sagesse (Perception), et la lumière des flammes nues (feu de camp, torches…) situées dans la sphère n'est pas visible de l'extérieur. L'effet prend fin à la fin du repos ou si vous quittez la sphère."
+          },
+          {
+            "niveau": 10,
+            "nom": "Chemins secrets",
+            "description": "À partir du niveau 10, vous empruntez les voies cachées du Feywild. Par une action bonus, vous vous téléportez jusqu'à 18 m vers un espace inoccupé que vous pouvez voir. Alternativement, par une action, vous téléportez une créature consentante que vous touchez jusqu'à 9 m vers un espace inoccupé que vous pouvez voir. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 14,
+            "nom": "Arpenteur des rêves",
+            "description": "Au niveau 14, lorsque vous terminez un repos court, vous pouvez lancer l'un des sorts suivants sans dépenser d'emplacement ni de composantes matérielles : Rêve (vous êtes le messager), Scrutation ou Cercle de téléportation. Ce dernier ouvre un portail vers le dernier endroit, sur le même plan, où vous avez terminé un repos long, même sans cercle permanent sur place. Une fois utilisée, l'aptitude se recharge après un repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle du Berger",
+        "source": "Guide Tout-en-un de Xanathar",
+        "sorts_domaine": [],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Langage de la forêt & Totem spirituel",
+            "description": "Langage de la forêt : vous savez parler, lire et écrire le sylvestre ; les bêtes comprennent vos paroles et vous savez interpréter leurs bruits et leurs gestes. Totem spirituel : par une action bonus, vous invoquez un esprit en un point situé à 18 m ou moins ; il crée une aura de 9 m de rayon pendant 1 minute ou jusqu'à ce que vous soyez neutralisé (1 fois par repos court ou long ; une action bonus le déplace de 18 m). Ours : chaque créature de votre choix dans l'aura à son apparition gagne 5 + votre niveau de druide PV temporaires, et elles ont l'avantage aux tests et jets de sauvegarde de Force dans l'aura. Faucon : par une réaction, vous donnez l'avantage à une créature de l'aura qui attaque une cible elle aussi dans l'aura ; vos alliés ont l'avantage aux tests de Sagesse (Perception) dans l'aura. Licorne : vos alliés ont l'avantage aux tests pour détecter des créatures dans l'aura, et lorsque vous lancez un sort de soins avec un emplacement, chaque créature de votre choix dans l'aura récupère en plus un nombre de PV égal à votre niveau de druide."
+          },
+          {
+            "niveau": 6,
+            "nom": "Puissant invocateur",
+            "description": "À partir du niveau 6, les bêtes et les fées que vous invoquez ou créez avec un sort gagnent 2 PV maximum supplémentaires par dé de vie, et les attaques de leurs armes naturelles comptent comme magiques pour surmonter la résistance et l'immunité aux dégâts non magiques."
+          },
+          {
+            "niveau": 10,
+            "nom": "Esprit protecteur",
+            "description": "À partir du niveau 10, votre Totem spirituel protège vos invocations : quel que soit l'esprit (Ours, Faucon ou Licorne), lorsqu'une bête ou une fée invoquée ou créée par l'un de vos sorts termine son tour dans l'aura, elle récupère un nombre de PV égal à la moitié de votre niveau de druide."
+          },
+          {
+            "niveau": 14,
+            "nom": "Invocation loyale",
+            "description": "Au niveau 14, lorsque vous tombez à 0 PV ou êtes neutralisé contre votre volonté, vous bénéficiez immédiatement des effets d'Invocation d'animaux comme si le sort était lancé avec un emplacement de niveau 9 : quatre bêtes de votre choix de FP 2 ou moins apparaissent à 6 m ou moins de vous et vous défendent de leur mieux. L'effet dure 1 heure sans concentration. Une fois utilisée, l'aptitude se recharge après un repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle des Astres",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Éclair traçant"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Carte stellaire & Forme stellaire",
+            "description": "Carte stellaire : vous créez une carte des étoiles (objet Très Petit) qui sert de focaliseur druidique ; tant que vous l'avez, vous connaissez le sort mineur Assistance et Éclair traçant est toujours préparé. Vous pouvez lancer Éclair traçant sans dépenser d'emplacement un nombre de fois égal à votre bonus de maîtrise par repos long. Forme stellaire : par une action bonus, vous dépensez une utilisation de Forme sauvage pour prendre une forme étoilée pendant 10 minutes (lumière vive sur 3 m, faible sur 3 m de plus) et choisissez une constellation. Archer : à l'activation puis par une action bonus à chacun de vos tours, attaque de sort à distance (18 m) infligeant 1d8 + votre modificateur de Sagesse dégâts radiants. Calice : quand vous lancez un sort de soins avec un emplacement, vous ou une créature à 9 m récupérez 1d8 + votre modificateur de Sagesse PV. Dragon : un résultat de 9 ou moins au d20 d'un test d'Intelligence ou de Sagesse, ou d'un jet de sauvegarde de Constitution pour maintenir votre concentration, compte comme un 10."
+          },
+          {
+            "niveau": 6,
+            "nom": "Présage cosmique",
+            "description": "À partir du niveau 6, après chaque repos long, lancez un dé : sur un résultat pair, vous obtenez Bonne fortune ; sur un résultat impair, Mauvais sort. Lorsqu'une créature que vous pouvez voir à 9 m ou moins s'apprête à effectuer un jet d'attaque, un jet de sauvegarde ou un test de caractéristique, vous pouvez utiliser votre réaction pour ajouter (Bonne fortune) ou soustraire (Mauvais sort) 1d6 à son jet. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Constellation scintillante",
+            "description": "À partir du niveau 10, les dégâts de l'Archer et les soins du Calice passent de 1d8 à 2d8. Tant que le Dragon est actif, vous gagnez une vitesse de vol de 6 m et pouvez faire du surplace. De plus, au début de chacun de vos tours sous forme stellaire, vous pouvez changer de constellation."
+          },
+          {
+            "niveau": 14,
+            "nom": "Plénitude stellaire",
+            "description": "Au niveau 14, sous forme stellaire, vous devenez partiellement incorporel : vous avez la résistance aux dégâts contondants, perforants et tranchants."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle des Spores",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Cécité/Surdité",
+          "Préservation des morts",
+          "Animation des morts",
+          "Forme gazeuse",
+          "Flétrissement",
+          "Confusion",
+          "Brume mortelle",
+          "Contagion"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Symbiote & Halo de spores",
+            "description": "Halo de spores : lorsqu'une créature que vous pouvez voir entre dans un espace situé à 3 m ou moins de vous ou y commence son tour, vous pouvez utiliser votre réaction pour lui infliger 1d4 dégâts nécrotiques, sauf si elle réussit un jet de sauvegarde de Constitution contre 8 + votre bonus de maîtrise + votre modificateur de Sagesse (1d6 au niveau 6, 1d8 au niveau 10, 1d10 au niveau 14). Vous connaissez aussi le sort mineur Contact glacial. Symbiote : par une action, vous dépensez une utilisation de Forme sauvage (sans vous transformer) et gagnez 4 × votre niveau de druide PV temporaires. Tant que ces PV temporaires durent, les dés de dégâts du Halo sont doublés et vos attaques d'arme au corps à corps infligent 1d6 dégâts nécrotiques supplémentaires. L'effet dure 10 minutes, jusqu'à la perte de ces PV temporaires ou jusqu'à ce que vous utilisiez de nouveau Forme sauvage."
+          },
+          {
+            "niveau": 6,
+            "nom": "Animation fongique",
+            "description": "À partir du niveau 6, lorsqu'une bête ou un humanoïde de taille P ou M meurt à 3 m ou moins de vous, vous pouvez utiliser votre réaction pour l'animer : il se relève avec 1 PV en tant que zombi (profil de zombi). Il agit juste après vous dans l'ordre d'initiative, obéit à vos ordres mentaux et ne peut effectuer que l'action Attaquer ; il meurt au bout d'1 heure. Utilisations : un nombre de fois égal à votre modificateur de Sagesse (minimum 1), récupérées après un repos long."
+          },
+          {
+            "niveau": 10,
+            "nom": "Domination des spores",
+            "description": "À partir du niveau 10, tant que votre Symbiote est actif, vous pouvez par une action bonus projeter des spores en un point situé à 9 m ou moins, où elles forment un cube de 3 m d'arête pendant 1 minute. Toute créature qui entre dans le cube ou y commence son tour subit les dégâts de votre Halo de spores, sauf si elle réussit son jet de sauvegarde de Constitution (une fois par tour au maximum). Vous ne pouvez pas utiliser la réaction du Halo tant que le cube existe ; il disparaît si vous le congédiez (action bonus), le relancez ou si le Symbiote prend fin."
+          },
+          {
+            "niveau": 14,
+            "nom": "Corps fongique",
+            "description": "Au niveau 14, les spores fongiques qui vous imprègnent vous rendent immunisé contre les états aveuglé, assourdi, effrayé et empoisonné. De plus, tout coup critique contre vous compte comme un coup normal, sauf si vous êtes neutralisé."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle des Fournaises",
+        "source": "Chaudron des Merveilles de Tasha",
+        "sorts_domaine": [
+          "Mains brûlantes",
+          "Soins",
+          "Sphère de feu",
+          "Rayon ardent",
+          "Croissance végétale",
+          "Retour à la vie",
+          "Aura de vie",
+          "Bouclier de feu",
+          "Colonne de flamme",
+          "Soins de groupe"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Convocation des fournaises",
+            "description": "Par une action, vous dépensez une utilisation de Forme sauvage pour invoquer votre esprit du feu sauvage dans un espace inoccupé à 9 m ou moins. Chaque créature (autre que vous) située à 3 m ou moins de l'esprit à son apparition doit réussir un jet de sauvegarde de Dextérité contre 8 + votre bonus de maîtrise + votre modificateur de Sagesse ou subir 2d6 dégâts de feu. L'esprit (élémentaire de taille P, CA 13, PV 5 + 5 × votre niveau de druide, vitesse 9 m et vol 9 m en surplace, immunité au feu) agit juste après vous ; il esquive sauf si vous lui donnez un ordre par une action bonus. Graine de flamme : attaque de sort à distance (18 m), 1d6 + votre bonus de maîtrise dégâts de feu. Téléportation ardente : il se téléporte avec les créatures consentantes à 1,50 m de lui jusqu'à 4,50 m ; les créatures à 1,50 m de son point de départ réussissent un JS de Dextérité ou subissent 1d6 + votre bonus de maîtrise dégâts de feu. Il reste 1 heure, jusqu'à 0 PV, nouvelle invocation ou votre mort."
+          },
+          {
+            "niveau": 6,
+            "nom": "Lien amélioré",
+            "description": "À partir du niveau 6, tant que votre esprit est invoqué, chaque fois que vous lancez un sort qui inflige des dégâts de feu ou rend des PV, lancez un d8 et ajoutez le résultat à un jet de dégâts ou de soins de ce sort. De plus, lorsque vous lancez un sort dont la portée n'est pas personnelle, il peut partir de vous ou de l'esprit."
+          },
+          {
+            "niveau": 10,
+            "nom": "Flammes cautérisantes",
+            "description": "À partir du niveau 10, lorsqu'une créature de taille P ou plus meurt à 9 m ou moins de vous ou de votre esprit, une flamme spectrale inoffensive apparaît dans son espace pendant 1 minute. Quand une créature que vous pouvez voir entre dans cet espace, vous pouvez utiliser votre réaction pour éteindre la flamme et soit soigner la créature, soit lui infliger des dégâts de feu : 2d10 + votre modificateur de Sagesse. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 14,
+            "nom": "Renaissance flamboyante",
+            "description": "Au niveau 14, si votre esprit se trouve à 36 m ou moins de vous lorsque vous tombez à 0 PV et perdez connaissance, vous pouvez le faire tomber à 0 PV : vous récupérez alors la moitié de vos PV maximum et vous vous relevez immédiatement. Une fois utilisée, l'aptitude se recharge après un repos long."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle de la Mutation",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Simulacre de vie",
+          "Modification d'apparence",
+          "Forme gazeuse",
+          "Métamorphose",
+          "Création",
+          "Réincarnation"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Chair adaptable",
+            "description": "Par une action bonus, vous dépensez une utilisation de Forme sauvage pour remodeler une partie de votre corps sans vous transformer, pendant 1 heure ou jusqu'à ce que vous l'annuliez (action bonus) ou utilisiez Forme sauvage. Choisissez une adaptation (modifiable par une action bonus) : vision dans le noir sur 18 m ; vitesse d'escalade et de nage égales à votre vitesse et respiration aquatique ; armes naturelles (griffes, crocs ou cornes) magiques avec lesquelles vous êtes maîtrisé, qui infligent 1d8 + votre modificateur de Sagesse dégâts tranchants, perforants ou contondants et peuvent utiliser votre Sagesse pour l'attaque. Vous pouvez lancer des sorts normalement sous cette forme partielle."
+          },
+          {
+            "niveau": 6,
+            "nom": "Mutations chimériques",
+            "description": "À partir du niveau 6, lorsque vous utilisez Forme sauvage, vous pouvez greffer à votre forme un trait d'une seconde bête que vous avez déjà vue et dont le FP ne dépasse pas votre limite : une vitesse de déplacement (vol seulement à partir du niveau 8), un sens (vision aveugle 3 m, odorat aiguisé…), une attaque naturelle (remplaçant l'une des vôtres) ou un trait passif (amphibie, tactique de groupe, carapace donnant +2 à la CA). De plus, Chair adaptable vous octroie désormais deux adaptations à la fois."
+          },
+          {
+            "niveau": 10,
+            "nom": "Génération alchimique",
+            "description": "À partir du niveau 10, vous avez la résistance aux dégâts d'acide et de poison et l'avantage aux jets de sauvegarde contre l'état empoisonné. Lorsque vous subissez des dégâts d'acide ou de poison, vous pouvez utiliser votre réaction pour récupérer 1d10 + votre niveau de druide PV, un nombre de fois égal à votre bonus de maîtrise par repos long. Enfin, à la fin d'un repos long, un membre ou organe perdu repousse entièrement."
+          },
+          {
+            "niveau": 14,
+            "nom": "Forme monstrueuse",
+            "description": "Au niveau 14, vous pouvez dépenser deux utilisations de Forme sauvage pour adopter la forme d'une aberration ou d'une créature monstrueuse que vous avez déjà vue, de FP maximal égal au tiers de votre niveau de druide (arrondi à l'inférieur : FP 4 au niveau 14, FP 6 au niveau 18). Les règles de Forme sauvage s'appliquent (PV de la créature, report des dégâts, durée), mais vous n'obtenez ni ses sorts, ni ses actions légendaires ou d'antre, ni ses capacités d'incantation innée ; une capacité à recharge ne peut être utilisée qu'une fois par transformation."
+          }
+        ]
+      },
+      {
+        "nom": "Cercle de la Sangsue",
+        "source": "Création de la communauté",
+        "sorts_domaine": [
+          "Frayeur",
+          "Rayon affaiblissant",
+          "Cécité/Surdité",
+          "Toucher du vampire",
+          "Fléau",
+          "Flétrissement"
+        ],
+        "capacites": [
+          {
+            "niveau": 2,
+            "nom": "Lien de fluide vital",
+            "description": "Lorsque vous lancez avec un emplacement un sort de druide qui inflige des dégâts ou rend des PV, vous pouvez sacrifier 3 PV par niveau de l'emplacement (perte non réductible). Ajoutez alors 1d8 par niveau de l'emplacement (5d8 maximum) soit aux soins d'une cible, soit aux dégâts infligés à une cible, ces dégâts supplémentaires étant nécrotiques. Utilisations : un nombre de fois égal à votre bonus de maîtrise, récupérées après un repos long."
+          },
+          {
+            "niveau": 6,
+            "nom": "Forme parasitaire",
+            "description": "À partir du niveau 6, vos attaques sous Forme sauvage comptent comme magiques. Une fois par tour, lorsque vous touchez une créature (ni artificielle ni morte-vivante) avec une attaque au corps à corps sous forme de bête, vous lui infligez 1d6 dégâts nécrotiques supplémentaires (1d8 au niveau 14) et gagnez autant de PV temporaires que les dégâts nécrotiques infligés."
+          },
+          {
+            "niveau": 10,
+            "nom": "Emprise de la lymphe",
+            "description": "À partir du niveau 10, par une action, vous créez un champ de sang (sphère de 4,50 m de rayon) en un point situé à 18 m ou moins, pendant 1 minute (concentration). La zone est un terrain difficile pour vos ennemis. Une créature de votre choix qui commence son tour dans la zone doit réussir un jet de sauvegarde de Constitution contre 8 + votre bonus de maîtrise + votre modificateur de Sagesse ou subir 3d6 dégâts nécrotiques et ne pas pouvoir récupérer de PV jusqu'au début de son prochain tour (moitié des dégâts en cas de réussite). Une fois gratuite par repos long, puis en dépensant une utilisation de Forme sauvage."
+          },
+          {
+            "niveau": 14,
+            "nom": "Sanguisuga suprême",
+            "description": "Au niveau 14, lorsqu'une créature (ni artificielle ni morte-vivante) que vous pouvez voir meurt à 9 m ou moins de vous, vous pouvez utiliser votre réaction pour absorber son fluide vital : vous récupérez une utilisation de Forme sauvage ou un emplacement de sort de niveau 3 ou inférieur, et gagnez un nombre de PV temporaires égal à votre niveau de druide. Une fois utilisée, l'aptitude se recharge après un repos court ou long."
+          }
+        ]
+      }
+    ]
+  }
+}

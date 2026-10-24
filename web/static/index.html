@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Fiche D&amp;D 5e</title>
+  <meta name="description" content="Fiche de personnage et générateur Donjons &amp; Dragons 5e — version mobile.">
+  <meta name="theme-color" content="#181514">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css?v=2">
+</head>
+<body>
+  <header class="topbar" id="topbar">
+    <button class="icon-btn" id="btn-menu" aria-label="Menu">☰</button>
+    <button class="hero" id="btn-hero" aria-label="Personnage">
+      <span class="avatar" id="hero-avatar"></span>
+      <span class="hero-text">
+        <strong id="hero-name">Chargement…</strong>
+        <small id="hero-sub"></small>
+      </span>
+    </button>
+    <button class="hp-pill" id="hero-hp" aria-label="Points de vie">—</button>
+  </header>
+
+  <main id="view" class="view" aria-live="polite"></main>
+
+  <nav class="tabbar" id="tabbar" aria-label="Sections">
+    <button data-tab="perso" class="active"><span class="ti">🛡️</span><span>Perso</span></button>
+    <button data-tab="carac"><span class="ti">🎲</span><span>Carac</span></button>
+    <button data-tab="combat"><span class="ti">⚔️</span><span>Combat</span></button>
+    <button data-tab="magie"><span class="ti">✨</span><span>Magie</span></button>
+    <button data-tab="sac"><span class="ti">🎒</span><span>Sac</span></button>
+    <button data-tab="allies"><span class="ti">🐾</span><span>Alliés</span></button>
+  </nav>
+
+  <!-- Tiroir latéral (personnages, import / export, thème) -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+  <!-- Feuille du bas (sélecteurs, détails) -->
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" hidden>
+    <div class="sheet-grip"></div>
+    <header class="sheet-head"><h2 id="sheet-title"></h2><button class="icon-btn" id="sheet-close" aria-label="Fermer">✕</button></header>
+    <div class="sheet-body" id="sheet-body"></div>
+  </section>
+
+  <div class="dice-overlay" id="dice" hidden></div>
+  <div class="toasts" id="toasts"></div>
+  <div class="busy" id="busy" hidden></div>
+  <input type="file" id="file-import" accept=".json,application/json,.txt" hidden>
+  <input type="file" id="file-portrait" accept="image/*" hidden>
+
+  <script src="/static/app.js?v=2"></script>
+</body>
+</html>

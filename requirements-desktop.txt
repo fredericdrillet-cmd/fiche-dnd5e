@@ -1,0 +1,2 @@
+# Application BUREAU (PyQt6) — python main.py
+PyQt6>=6.5

@@ -1,0 +1,2042 @@
+{
+  "regles_sorts": {
+    "Amis": {
+      "duree": "1 minute"
+    },
+    "Aspersion d'acide": {
+      "duree": "Instantanée"
+    },
+    "Assistance": {
+      "duree": "1 minute"
+    },
+    "Bouffée de poison": {
+      "duree": "Instantanée"
+    },
+    "Contact glacial": {
+      "duree": "1 round"
+    },
+    "Contrôle des flammes": {
+      "duree": "Instantanée ou 1 heure"
+    },
+    "Coup au but": {
+      "duree": "1 round"
+    },
+    "Coup de tonnerre": {
+      "duree": "Instantanée"
+    },
+    "Druidisme": {
+      "duree": "Instantanée"
+    },
+    "Décharge occulte": {
+      "duree": "Instantanée"
+    },
+    "Embrasement": {
+      "duree": "1 minute"
+    },
+    "Façonnage de l'eau": {
+      "duree": "Instantanée ou 1 heure"
+    },
+    "Façonnage de la terre": {
+      "duree": "Instantanée ou 1 heure"
+    },
+    "Ferrage foudroyant": {
+      "duree": "Instantanée"
+    },
+    "Flamme sacrée": {
+      "duree": "Instantanée"
+    },
+    "Flammes": {
+      "duree": "10 minutes"
+    },
+    "Fouet épineux": {
+      "duree": "Instantanée",
+      "test": "AC"
+    },
+    "Gelure": {
+      "duree": "Instantanée"
+    },
+    "Glas": {
+      "duree": "Instantanée",
+      "degats": "1d8",
+      "type_degats": "nécrotique",
+      "test": "Sag"
+    },
+    "Gourdin magique": {
+      "duree": "1 minute",
+      "degats": "1d8",
+      "type_degats": "contondant",
+      "test": "Arme",
+      "mod": true,
+      "echelle": false
+    },
+    "Illusion mineure": {
+      "duree": "1 minute"
+    },
+    "Infestation": {
+      "duree": "Instantanée"
+    },
+    "Lame aux flammes vertes": {
+      "duree": "Instantanée",
+      "degats": "",
+      "type_degats": "feu",
+      "test": "Arme"
+    },
+    "Lame retentissante": {
+      "duree": "1 round",
+      "degats": "1d8",
+      "type_degats": "tonnerre",
+      "test": "Arme"
+    },
+    "Lumière": {
+      "duree": "1 heure"
+    },
+    "Lumières dansantes": {
+      "duree": "1 minute"
+    },
+    "Main de mage": {
+      "duree": "1 minute"
+    },
+    "Message": {
+      "duree": "1 round"
+    },
+    "Moquerie cruelle": {
+      "duree": "Instantanée"
+    },
+    "Mot de radiance": {
+      "duree": "Instantanée"
+    },
+    "Pierre magique": {
+      "duree": "1 minute",
+      "degats": "1d6",
+      "type_degats": "contondant",
+      "test": "A",
+      "mod": true,
+      "echelle": false
+    },
+    "Piqûre mentale": {
+      "duree": "1 round"
+    },
+    "Poigne électrique": {
+      "duree": "Instantanée"
+    },
+    "Prestidigitation": {
+      "duree": "Jusqu'à 1 heure"
+    },
+    "Protection contre les armes": {
+      "duree": "1 round"
+    },
+    "Rayon de givre": {
+      "duree": "Instantanée"
+    },
+    "Réparation": {
+      "duree": "Instantanée"
+    },
+    "Résistance": {
+      "duree": "1 minute"
+    },
+    "Saute de vent": {
+      "duree": "Instantanée"
+    },
+    "Sauvagerie primitive": {
+      "duree": "Instantanée"
+    },
+    "Stabilisation": {
+      "duree": "Instantanée"
+    },
+    "Thaumaturgie": {
+      "duree": "Jusqu'à 1 minute"
+    },
+    "Trait de feu": {
+      "duree": "Instantanée"
+    },
+    "Éruption de lames": {
+      "duree": "Instantanée"
+    },
+    "Absorption des éléments": {
+      "duree": "1 round",
+      "degats": "1d6",
+      "type_degats": "au choix",
+      "sup": "1d6"
+    },
+    "Alarme": {
+      "duree": "8 heures"
+    },
+    "Amitié avec les animaux": {
+      "duree": "24 heures"
+    },
+    "Appel de familier": {
+      "duree": "Instantanée"
+    },
+    "Armure d'Agathys": {
+      "duree": "1 heure",
+      "degats": "5",
+      "type_degats": "froid",
+      "sup": "5",
+      "pv_temp": "5",
+      "sup_pv_temp": "5"
+    },
+    "Armure de mage": {
+      "duree": "8 heures"
+    },
+    "Baies nourricières": {
+      "duree": "Instantanée"
+    },
+    "Barbes argentées": {
+      "duree": "Instantanée"
+    },
+    "Blessure": {
+      "duree": "Instantanée",
+      "degats": "3d10",
+      "type_degats": "nécrotique",
+      "test": "AC",
+      "sup": "1d10"
+    },
+    "Bouclier": {
+      "duree": "1 round"
+    },
+    "Bouclier de la foi": {
+      "duree": "10 minutes"
+    },
+    "Bénédiction": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 1er"
+    },
+    "Catapulte": {
+      "duree": "Instantanée",
+      "degats": "3d8",
+      "type_degats": "contondant",
+      "test": "Dex",
+      "sup": "1d8",
+      "js_succes": "aucun"
+    },
+    "Charme-personne": {
+      "duree": "1 heure",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 1er"
+    },
+    "Châtiment calcinant": {
+      "duree": "1 minute",
+      "degats": "1d6",
+      "type_degats": "feu",
+      "test": "Con",
+      "sup": "1d6",
+      "js_succes": "toujours"
+    },
+    "Châtiment courroucé": {
+      "duree": "1 minute",
+      "degats": "1d6",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "sup": "1d6",
+      "js_succes": "toujours"
+    },
+    "Châtiment tonitruant": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "tonnerre",
+      "test": "For",
+      "js_succes": "toujours"
+    },
+    "Collet": {
+      "duree": "8 heures"
+    },
+    "Communication avec les animaux": {
+      "duree": "10 minutes"
+    },
+    "Compréhension des langues": {
+      "duree": "1 heure"
+    },
+    "Couleurs dansantes": {
+      "duree": "1 round",
+      "sup_texte": "+2d10 points de vie de créatures affectées par niveau au-delà du 1er"
+    },
+    "Couteau de glace": {
+      "duree": "Instantanée",
+      "degats": "1d10",
+      "type_degats": "perforant",
+      "test": "A",
+      "sup_texte": "Explosion : 2d6 froid (JS Dex), +1d6 par niveau au-delà du 1er"
+    },
+    "Création ou destruction d'eau": {
+      "duree": "Instantanée"
+    },
+    "Cérémonie": {
+      "duree": "Instantanée"
+    },
+    "Disque flottant de Tenser": {
+      "duree": "1 heure"
+    },
+    "Duel forcé": {
+      "duree": "1 minute"
+    },
+    "Déguisement": {
+      "duree": "1 heure"
+    },
+    "Détection de la magie": {
+      "duree": "10 minutes"
+    },
+    "Détection du mal et du bien": {
+      "duree": "10 minutes"
+    },
+    "Détection du poison et des maladies": {
+      "duree": "10 minutes"
+    },
+    "Enchevêtrement": {
+      "duree": "1 minute"
+    },
+    "Faveur divine": {
+      "duree": "1 minute",
+      "degats": "1d4",
+      "type_degats": "radiant"
+    },
+    "Feuille morte": {
+      "duree": "1 minute"
+    },
+    "Fléau": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 1er"
+    },
+    "Fou rire de Tasha": {
+      "duree": "1 minute"
+    },
+    "Frappe du zéphyr": {
+      "duree": "1 minute",
+      "degats": "1d8",
+      "type_degats": "force"
+    },
+    "Frappe piégeuse": {
+      "duree": "1 minute",
+      "degats": "1d6",
+      "type_degats": "perforant",
+      "test": "For",
+      "sup": "1d6",
+      "js_succes": "aucun"
+    },
+    "Frayeur": {
+      "duree": "1 minute"
+    },
+    "Graisse": {
+      "duree": "1 minute"
+    },
+    "Grande foulée": {
+      "duree": "1 heure"
+    },
+    "Héroïsme": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 1er"
+    },
+    "Identification": {
+      "duree": "Instantanée"
+    },
+    "Image silencieuse": {
+      "duree": "10 minutes"
+    },
+    "Injonction": {
+      "duree": "1 round",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 1er"
+    },
+    "Lien avec une bête": {
+      "duree": "10 minutes"
+    },
+    "Lueurs féeriques": {
+      "duree": "1 minute"
+    },
+    "Mains brûlantes": {
+      "duree": "Instantanée",
+      "degats": "3d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Maléfice": {
+      "duree": "1 heure",
+      "degats": "1d6",
+      "type_degats": "nécrotique",
+      "sup_texte": "Durée : 8 heures (emplacement de niveau 3 ou 4), 24 heures (niveau 5 ou plus)"
+    },
+    "Marque du chasseur": {
+      "duree": "1 heure",
+      "degats": "1d6",
+      "type_degats": "de l'arme",
+      "sup_texte": "Durée : 8 heures (emplacement de niveau 3 ou 4), 24 heures (niveau 5 ou plus)"
+    },
+    "Mixture caustique de Tasha": {
+      "duree": "1 minute",
+      "degats": "2d4",
+      "type_degats": "acide",
+      "test": "Dex",
+      "sup": "2d4",
+      "js_succes": "aucun"
+    },
+    "Mot de guérison": {
+      "duree": "Instantanée",
+      "soins": "1d4",
+      "soins_mod": true,
+      "sup_soins": "1d4"
+    },
+    "Murmures dissonants": {
+      "duree": "Instantanée",
+      "degats": "3d6",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "sup": "1d6"
+    },
+    "Nappe de brouillard": {
+      "duree": "1 heure"
+    },
+    "Orbe chromatique": {
+      "duree": "Instantanée",
+      "degats": "3d8",
+      "type_degats": "au choix",
+      "test": "A",
+      "sup": "1d8"
+    },
+    "Projectile magique": {
+      "duree": "Instantanée",
+      "degats": "1d4 + 1",
+      "type_degats": "force",
+      "test": "",
+      "projectiles": 3,
+      "sup_projectiles": 1
+    },
+    "Protection contre le mal et le bien": {
+      "duree": "10 minutes"
+    },
+    "Rayon empoisonné": {
+      "duree": "Instantanée",
+      "degats": "2d8",
+      "type_degats": "poison",
+      "test": "A",
+      "sup": "1d8"
+    },
+    "Repli expéditif": {
+      "duree": "10 minutes"
+    },
+    "Représailles infernales": {
+      "duree": "Instantanée",
+      "degats": "2d10",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d10"
+    },
+    "Sanctuaire": {
+      "duree": "1 minute"
+    },
+    "Saut": {
+      "duree": "1 minute"
+    },
+    "Secousse sismique": {
+      "duree": "Instantanée",
+      "degats": "1d6",
+      "type_degats": "contondant",
+      "test": "Dex",
+      "sup": "1d6",
+      "js_succes": "aucun"
+    },
+    "Serviteur invisible": {
+      "duree": "1 heure"
+    },
+    "Simulacre de vie": {
+      "duree": "1 heure",
+      "pv_temp": "1d4 + 4",
+      "sup_pv_temp": "5"
+    },
+    "Soins": {
+      "duree": "Instantanée",
+      "soins": "1d8",
+      "soins_mod": true,
+      "sup_soins": "1d8"
+    },
+    "Sommeil": {
+      "duree": "1 minute",
+      "sup_texte": "+2d8 points de vie de créatures affectées par niveau au-delà du 1er"
+    },
+    "Tentacules de Hadar": {
+      "duree": "Instantanée",
+      "degats": "2d6",
+      "type_degats": "nécrotique",
+      "test": "For",
+      "sup": "1d6"
+    },
+    "Texte illusoire": {
+      "duree": "10 jours"
+    },
+    "Trait ensorcelé": {
+      "duree": "1 minute",
+      "degats": "1d12",
+      "type_degats": "foudre",
+      "test": "A",
+      "sup": "1d12"
+    },
+    "Vague tonnante": {
+      "duree": "Instantanée",
+      "degats": "2d8",
+      "type_degats": "tonnerre",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Éclair de chaos": {
+      "duree": "Instantanée",
+      "degats": "2d8 + 1d6",
+      "type_degats": "variable (d8)",
+      "test": "A",
+      "sup": "1d6"
+    },
+    "Éclair traçant": {
+      "duree": "1 round",
+      "degats": "4d6",
+      "type_degats": "radiant",
+      "test": "A",
+      "sup": "1d6"
+    },
+    "Agrandissement/Rapetissement": {
+      "duree": "1 minute"
+    },
+    "Aide": {
+      "duree": "8 heures",
+      "sup_texte": "+5 points de vie (maximum et actuels) par niveau au-delà du 2e"
+    },
+    "Amélioration de caractéristique": {
+      "duree": "1 heure"
+    },
+    "Apaisement des émotions": {
+      "duree": "1 minute"
+    },
+    "Appel de destrier": {
+      "duree": "Instantanée"
+    },
+    "Arme magique": {
+      "duree": "1 heure",
+      "sup_texte": "Bonus +2 (emplacement de niveau 4 ou 5), +3 (niveau 6 ou plus)"
+    },
+    "Arme spirituelle": {
+      "duree": "1 minute",
+      "degats": "1d8",
+      "type_degats": "force",
+      "test": "AC",
+      "mod": true,
+      "sup": "1d8",
+      "sup_pas": 2
+    },
+    "Attraction terrestre": {
+      "duree": "1 minute"
+    },
+    "Augure": {
+      "duree": "Instantanée"
+    },
+    "Aura magique de Nystul": {
+      "duree": "24 heures"
+    },
+    "Bouche magique": {
+      "duree": "Jusqu'à dissipation ou déclenchement"
+    },
+    "Bourrasque": {
+      "duree": "1 minute"
+    },
+    "Châtiment révélateur": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "radiant",
+      "sup": "1d6"
+    },
+    "Convocation de bête": {
+      "duree": "1 heure"
+    },
+    "Corde enchantée": {
+      "duree": "1 heure"
+    },
+    "Cordon de flèches": {
+      "duree": "8 heures",
+      "degats": "1d6",
+      "type_degats": "perforant",
+      "test": "Dex",
+      "sup_texte": "+2 munitions par niveau au-delà du 2e",
+      "js_succes": "aucun"
+    },
+    "Couronne du dément": {
+      "duree": "1 minute"
+    },
+    "Croissance d'épines": {
+      "duree": "10 minutes",
+      "degats": "2d4",
+      "type_degats": "perforant"
+    },
+    "Cécité/Surdité": {
+      "duree": "1 minute"
+    },
+    "Discours captivant": {
+      "duree": "1 minute"
+    },
+    "Déblocage": {
+      "duree": "Instantanée"
+    },
+    "Détection des pensées": {
+      "duree": "1 minute"
+    },
+    "Espièglerie de Nathair": {
+      "duree": "1 minute"
+    },
+    "Esprit guérisseur": {
+      "duree": "1 minute",
+      "soins": "1d6",
+      "sup_soins": "1d6"
+    },
+    "Flambée d'Aganazzar": {
+      "duree": "Instantanée",
+      "degats": "3d8",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d8"
+    },
+    "Flamme éternelle": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Flou": {
+      "duree": "1 minute"
+    },
+    "Flèche acide de Melf": {
+      "duree": "Instantanée",
+      "degats": "4d4",
+      "type_degats": "acide",
+      "test": "A",
+      "sup": "1d4",
+      "sup_texte": "Dégâts différés : 2d4 (+1d4 par niveau au-delà du 2e)"
+    },
+    "Force fantasmagorique": {
+      "duree": "1 minute"
+    },
+    "Fouet mental de Tasha": {
+      "duree": "1 round",
+      "degats": "3d6",
+      "type_degats": "psychique",
+      "test": "Int",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 2e"
+    },
+    "Foulée brumeuse": {
+      "duree": "Instantanée"
+    },
+    "Fracassement": {
+      "duree": "Instantanée",
+      "degats": "3d8",
+      "type_degats": "tonnerre",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Image miroir": {
+      "duree": "1 minute"
+    },
+    "Immobilisation de personne": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible humanoïde supplémentaire par niveau au-delà du 2e"
+    },
+    "Invisibilité": {
+      "duree": "1 heure",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 2e"
+    },
+    "Lame d'ombres": {
+      "duree": "1 minute",
+      "degats": "2d8",
+      "type_degats": "psychique",
+      "test": "Arme",
+      "sup_table": {
+        "3": "3d8",
+        "5": "4d8",
+        "7": "5d8"
+      }
+    },
+    "Lame de feu": {
+      "duree": "10 minutes",
+      "degats": "3d6",
+      "type_degats": "feu",
+      "test": "AC",
+      "sup": "1d6",
+      "sup_pas": 2
+    },
+    "Libellé aérien": {
+      "duree": "1 heure"
+    },
+    "Lien de protection": {
+      "duree": "1 heure"
+    },
+    "Localisation d'animaux ou de plantes": {
+      "duree": "Instantanée"
+    },
+    "Localisation d'objet": {
+      "duree": "10 minutes"
+    },
+    "Lévitation": {
+      "duree": "10 minutes"
+    },
+    "Messager animal": {
+      "duree": "24 heures"
+    },
+    "Modification d'apparence": {
+      "duree": "1 heure"
+    },
+    "Métal brûlant": {
+      "duree": "1 minute",
+      "degats": "2d8",
+      "type_degats": "feu",
+      "test": "Con",
+      "sup": "1d8",
+      "js_succes": "toujours"
+    },
+    "Nuée de boules de neige de Snilloc": {
+      "duree": "Instantanée",
+      "degats": "3d6",
+      "type_degats": "froid",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Nuée de dagues": {
+      "duree": "1 minute",
+      "degats": "4d4",
+      "type_degats": "tranchant",
+      "test": "",
+      "sup": "2d4"
+    },
+    "Passage sans trace": {
+      "duree": "1 heure"
+    },
+    "Pattes d'araignée": {
+      "duree": "1 heure"
+    },
+    "Peau d'écorce": {
+      "duree": "1 heure"
+    },
+    "Poigne terreuse de Maximilien": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "contondant",
+      "test": "For",
+      "js_succes": "aucun"
+    },
+    "Prière de guérison": {
+      "duree": "Instantanée",
+      "soins": "2d8",
+      "soins_mod": true,
+      "sup_soins": "1d8"
+    },
+    "Protection contre le poison": {
+      "duree": "1 heure"
+    },
+    "Préservation des morts": {
+      "duree": "10 jours"
+    },
+    "Pyrotechnie": {
+      "duree": "Instantanée"
+    },
+    "Rayon affaiblissant": {
+      "duree": "1 minute"
+    },
+    "Rayon ardent": {
+      "duree": "Instantanée",
+      "degats": "2d6",
+      "type_degats": "feu",
+      "test": "A",
+      "projectiles": 3,
+      "sup_projectiles": 1
+    },
+    "Rayon de lune": {
+      "duree": "1 minute",
+      "degats": "2d10",
+      "type_degats": "radiant",
+      "test": "Con",
+      "sup": "1d10"
+    },
+    "Restauration partielle": {
+      "duree": "Instantanée"
+    },
+    "Sens animal": {
+      "duree": "1 heure"
+    },
+    "Sens des pièges": {
+      "duree": "Instantanée"
+    },
+    "Silence": {
+      "duree": "10 minutes"
+    },
+    "Souffle du dragon": {
+      "duree": "1 minute",
+      "degats": "3d6",
+      "type_degats": "au choix",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Sphère de feu": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Suggestion": {
+      "duree": "8 heures"
+    },
+    "Toile d'araignée": {
+      "duree": "1 heure"
+    },
+    "Tourbillon de poussière": {
+      "duree": "1 minute",
+      "degats": "1d8",
+      "type_degats": "contondant",
+      "test": "For",
+      "sup": "1d8"
+    },
+    "Ténèbres": {
+      "duree": "10 minutes"
+    },
+    "Vent protecteur": {
+      "duree": "10 minutes"
+    },
+    "Verrou magique": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Vision dans le noir": {
+      "duree": "8 heures"
+    },
+    "Voir l'invisible": {
+      "duree": "1 heure"
+    },
+    "Zone de vérité": {
+      "duree": "10 minutes"
+    },
+    "Épine mentale": {
+      "duree": "1 heure",
+      "degats": "3d8",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "sup": "1d8"
+    },
+    "Animation des morts": {
+      "duree": "Instantanée",
+      "sup_texte": "Deux morts-vivants supplémentaires par niveau au-delà du 3e"
+    },
+    "Antidétection": {
+      "duree": "8 heures"
+    },
+    "Appel de la foudre": {
+      "duree": "10 minutes",
+      "degats": "3d10",
+      "type_degats": "foudre",
+      "test": "Dex",
+      "sup": "1d10"
+    },
+    "Arme élémentaire": {
+      "duree": "1 heure",
+      "degats": "1d4",
+      "type_degats": "au choix",
+      "sup_table": {
+        "5": "2d4",
+        "7": "3d4"
+      },
+      "sup_texte": "Bonus +2 (emplacement de niveau 5 ou 6), +3 (niveau 7 ou plus)"
+    },
+    "Aura de vitalité": {
+      "duree": "1 minute",
+      "soins": "2d6"
+    },
+    "Aura du croisé": {
+      "duree": "1 minute",
+      "degats": "1d4",
+      "type_degats": "radiant"
+    },
+    "Boule de feu": {
+      "duree": "Instantanée",
+      "degats": "8d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Cercle magique": {
+      "duree": "1 heure"
+    },
+    "Châtiment aveuglant": {
+      "duree": "1 minute",
+      "degats": "3d8",
+      "type_degats": "radiant",
+      "test": "Con",
+      "js_succes": "toujours"
+    },
+    "Clairvoyance": {
+      "duree": "10 minutes"
+    },
+    "Clignotement": {
+      "duree": "1 minute"
+    },
+    "Communication avec les morts": {
+      "duree": "10 minutes"
+    },
+    "Communication avec les plantes": {
+      "duree": "10 minutes"
+    },
+    "Communication à distance": {
+      "duree": "1 round"
+    },
+    "Contresort": {
+      "duree": "Instantanée"
+    },
+    "Convocation de démons mineurs": {
+      "duree": "1 heure"
+    },
+    "Convocation de fée": {
+      "duree": "1 heure"
+    },
+    "Convocation de mort-vivant": {
+      "duree": "1 heure"
+    },
+    "Convocation de rejeton d'ombre": {
+      "duree": "1 heure"
+    },
+    "Croissance végétale": {
+      "duree": "Instantanée"
+    },
+    "Création de nourriture et d'eau": {
+      "duree": "Instantanée"
+    },
+    "Dissipation de la magie": {
+      "duree": "Instantanée"
+    },
+    "Don des langues": {
+      "duree": "1 heure"
+    },
+    "Délivrance des malédictions": {
+      "duree": "Instantanée"
+    },
+    "Ennemis à foison": {
+      "duree": "1 minute"
+    },
+    "Esprits gardiens": {
+      "duree": "10 minutes",
+      "degats": "3d8",
+      "type_degats": "radiant ou nécrotique",
+      "test": "Sag",
+      "sup": "1d8"
+    },
+    "Flèche de foudre": {
+      "duree": "1 minute",
+      "degats": "4d8",
+      "type_degats": "foudre",
+      "test": "Arme",
+      "sup": "1d8",
+      "sup_texte": "Éclaboussure : 2d8 foudre (JS Dex), +1d8 par niveau au-delà du 3e"
+    },
+    "Flèches enflammées": {
+      "duree": "1 heure",
+      "degats": "1d6",
+      "type_degats": "feu",
+      "sup_texte": "+2 munitions par niveau au-delà du 3e"
+    },
+    "Forme gazeuse": {
+      "duree": "1 heure"
+    },
+    "Forteresse d'intellect": {
+      "duree": "1 heure"
+    },
+    "Foulée d'Ashardalon": {
+      "duree": "1 minute",
+      "degats": "1d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d6",
+      "js_succes": "aucun"
+    },
+    "Foulée tonitruante": {
+      "duree": "Instantanée",
+      "degats": "3d10",
+      "type_degats": "tonnerre",
+      "test": "Con",
+      "sup": "1d10"
+    },
+    "Fusion dans la pierre": {
+      "duree": "8 heures"
+    },
+    "Glyphe de protection": {
+      "duree": "Jusqu'à dissipation ou déclenchement",
+      "degats": "5d8",
+      "type_degats": "au choix",
+      "test": "Dex",
+      "sup": "1d8"
+    },
+    "Hâte": {
+      "duree": "1 minute"
+    },
+    "Image majeure": {
+      "duree": "10 minutes"
+    },
+    "Invocation d'animaux": {
+      "duree": "1 heure"
+    },
+    "Invocation de projectiles": {
+      "duree": "Instantanée",
+      "degats": "3d8",
+      "type_degats": "de la munition",
+      "test": "Dex"
+    },
+    "Lenteur": {
+      "duree": "1 minute"
+    },
+    "Lueur d'espoir": {
+      "duree": "1 minute"
+    },
+    "Lumière du jour": {
+      "duree": "1 heure"
+    },
+    "Malédiction": {
+      "duree": "1 minute"
+    },
+    "Marche sur l'eau": {
+      "duree": "1 heure"
+    },
+    "Minuscules météores de Melf": {
+      "duree": "10 minutes",
+      "degats": "2d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "projectiles": 6,
+      "sup_projectiles": 2
+    },
+    "Monture fantôme": {
+      "duree": "1 heure"
+    },
+    "Mort simulée": {
+      "duree": "1 heure"
+    },
+    "Mot de guérison de groupe": {
+      "duree": "Instantanée",
+      "soins": "1d4",
+      "soins_mod": true,
+      "sup_soins": "1d4"
+    },
+    "Motif hypnotique": {
+      "duree": "1 minute"
+    },
+    "Mur d'eau": {
+      "duree": "10 minutes"
+    },
+    "Mur de sable": {
+      "duree": "10 minutes"
+    },
+    "Mur de vent": {
+      "duree": "1 minute"
+    },
+    "Nuage nauséabond": {
+      "duree": "1 minute"
+    },
+    "Petite hutte de Léomund": {
+      "duree": "8 heures"
+    },
+    "Peur": {
+      "duree": "1 minute"
+    },
+    "Protection contre une énergie": {
+      "duree": "1 heure"
+    },
+    "Raz-de-marée": {
+      "duree": "Instantanée",
+      "degats": "4d8",
+      "type_degats": "contondant",
+      "test": "Dex"
+    },
+    "Respiration aquatique": {
+      "duree": "24 heures"
+    },
+    "Retour à la vie": {
+      "duree": "Instantanée"
+    },
+    "Serviteur miniature": {
+      "duree": "8 heures"
+    },
+    "Sieste": {
+      "duree": "10 minutes"
+    },
+    "Tempête de neige": {
+      "duree": "1 minute"
+    },
+    "Toucher du vampire": {
+      "duree": "1 minute",
+      "degats": "3d6",
+      "type_degats": "nécrotique",
+      "test": "AC",
+      "sup": "1d6"
+    },
+    "Transfert de vie": {
+      "duree": "Instantanée",
+      "degats": "4d8",
+      "type_degats": "nécrotique (vous)",
+      "sup": "1d8",
+      "sup_texte": "La cible regagne le double des dégâts nécrotiques que vous subissez"
+    },
+    "Voile spirituel": {
+      "duree": "1 minute",
+      "degats": "1d8",
+      "type_degats": "radiant, nécrotique ou froid",
+      "sup": "1d8",
+      "sup_pas": 2
+    },
+    "Vol": {
+      "duree": "10 minutes",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 3e"
+    },
+    "Voracité de Hadar": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "froid (+2d6 acide, JS Dex)",
+      "js_succes": "toujours"
+    },
+    "Éclair": {
+      "duree": "Instantanée",
+      "degats": "8d6",
+      "type_degats": "foudre",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Éruption de terre": {
+      "duree": "Instantanée",
+      "degats": "3d12",
+      "type_degats": "contondant",
+      "test": "Dex",
+      "sup": "1d12"
+    },
+    "Appel de destrier supérieur": {
+      "duree": "Instantanée"
+    },
+    "Assassin imaginaire": {
+      "duree": "1 minute",
+      "degats": "4d10",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "sup": "1d10",
+      "js_succes": "aucun"
+    },
+    "Aura de pureté": {
+      "duree": "10 minutes"
+    },
+    "Aura de vie": {
+      "duree": "10 minutes"
+    },
+    "Bannissement": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 4e"
+    },
+    "Bouclier de feu": {
+      "duree": "10 minutes",
+      "degats": "2d8",
+      "type_degats": "feu ou froid"
+    },
+    "Charme-monstre": {
+      "duree": "1 heure"
+    },
+    "Chien de garde de Mordenkainen": {
+      "duree": "8 heures",
+      "degats": "4d8",
+      "type_degats": "perforant",
+      "test": "A"
+    },
+    "Châtiment débilitant": {
+      "duree": "1 minute",
+      "degats": "4d6",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "js_succes": "toujours"
+    },
+    "Coffre secret de Léomund": {
+      "duree": "Instantanée"
+    },
+    "Compulsion": {
+      "duree": "1 minute"
+    },
+    "Confusion": {
+      "duree": "1 minute"
+    },
+    "Contrôle de l'eau": {
+      "duree": "10 minutes"
+    },
+    "Convocation d'aberration": {
+      "duree": "1 heure"
+    },
+    "Convocation d'artificiel": {
+      "duree": "1 heure"
+    },
+    "Convocation d'élémentaire": {
+      "duree": "1 heure"
+    },
+    "Convocation de démon majeur": {
+      "duree": "1 heure"
+    },
+    "Divination": {
+      "duree": "Instantanée"
+    },
+    "Domination de bête": {
+      "duree": "1 minute"
+    },
+    "Fabrication": {
+      "duree": "Instantanée"
+    },
+    "Façonnage de la pierre": {
+      "duree": "Instantanée"
+    },
+    "Fléau élémentaire": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "au choix",
+      "test": "Con",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 4e",
+      "js_succes": "toujours"
+    },
+    "Flétrissement": {
+      "duree": "Instantanée",
+      "degats": "8d8",
+      "type_degats": "nécrotique",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Gardien de la foi": {
+      "duree": "8 heures",
+      "degats": "20",
+      "type_degats": "radiant",
+      "test": "Dex"
+    },
+    "Gardien de la nature": {
+      "duree": "1 minute"
+    },
+    "Insecte géant": {
+      "duree": "10 minutes"
+    },
+    "Invisibilité supérieure": {
+      "duree": "1 minute"
+    },
+    "Invocation d'élémentaires mineurs": {
+      "duree": "1 heure"
+    },
+    "Invocation d'êtres sylvestres": {
+      "duree": "1 heure"
+    },
+    "Lance d'arçon psychique de Raulothim": {
+      "duree": "Instantanée",
+      "degats": "7d6",
+      "type_degats": "psychique",
+      "test": "Int",
+      "sup": "1d6"
+    },
+    "Liane avide": {
+      "duree": "1 minute"
+    },
+    "Liberté de mouvement": {
+      "duree": "1 heure"
+    },
+    "Localisation de créature": {
+      "duree": "1 heure"
+    },
+    "Mur de feu": {
+      "duree": "1 minute",
+      "degats": "5d8",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d8"
+    },
+    "Métamorphose": {
+      "duree": "1 heure"
+    },
+    "Oeil magique": {
+      "duree": "1 heure"
+    },
+    "Ombre d'égarement": {
+      "duree": "1 minute",
+      "degats": "2d8",
+      "type_degats": "nécrotique"
+    },
+    "Peau de pierre": {
+      "duree": "1 heure"
+    },
+    "Porte dimensionnelle": {
+      "duree": "Instantanée"
+    },
+    "Protection contre la mort": {
+      "duree": "8 heures"
+    },
+    "Rayonnement écoeurant": {
+      "duree": "10 minutes",
+      "degats": "4d10",
+      "type_degats": "radiant",
+      "test": "Con",
+      "js_succes": "aucun"
+    },
+    "Sanctuaire privé de Mordenkainen": {
+      "duree": "24 heures"
+    },
+    "Sphère aqueuse": {
+      "duree": "1 minute"
+    },
+    "Sphère de tempête": {
+      "duree": "1 minute",
+      "degats": "2d6",
+      "type_degats": "contondant",
+      "test": "For",
+      "sup": "1d6",
+      "sup_texte": "Éclair (attaque de sort) : 4d6 foudre, +1d6 par niveau au-delà du 4e",
+      "js_succes": "aucun"
+    },
+    "Sphère de vitriol": {
+      "duree": "Instantanée",
+      "degats": "10d4",
+      "type_degats": "acide",
+      "test": "Dex",
+      "sup": "2d4"
+    },
+    "Sphère résiliente d'Otiluke": {
+      "duree": "1 minute"
+    },
+    "Tempête de grêle": {
+      "duree": "Instantanée",
+      "degats": "2d8",
+      "type_degats": "contondant (+4d6 froid)",
+      "test": "Dex",
+      "sup": "1d8"
+    },
+    "Tentacules noirs d'Evard": {
+      "duree": "1 minute",
+      "degats": "3d6",
+      "type_degats": "contondant",
+      "test": "Dex",
+      "js_succes": "aucun"
+    },
+    "Terrain hallucinatoire": {
+      "duree": "24 heures"
+    },
+    "Amélioration de compétences": {
+      "duree": "1 heure"
+    },
+    "Animation d'objets": {
+      "duree": "1 minute",
+      "sup_texte": "Deux objets supplémentaires par niveau au-delà du 5e"
+    },
+    "Apparence trompeuse": {
+      "duree": "8 heures"
+    },
+    "Arme sacrée": {
+      "duree": "1 heure",
+      "degats": "2d8",
+      "type_degats": "radiant"
+    },
+    "Assignation infernale": {
+      "duree": "1 heure"
+    },
+    "Aube": {
+      "duree": "1 minute",
+      "degats": "4d10",
+      "type_degats": "radiant",
+      "test": "Con"
+    },
+    "Brume mortelle": {
+      "duree": "10 minutes",
+      "degats": "5d8",
+      "type_degats": "poison",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Carquois magique": {
+      "duree": "1 minute"
+    },
+    "Cercle de pouvoir": {
+      "duree": "10 minutes"
+    },
+    "Cercle de téléportation": {
+      "duree": "1 round"
+    },
+    "Châtiment du ban": {
+      "duree": "1 minute",
+      "degats": "5d10",
+      "type_degats": "force"
+    },
+    "Colonne de flamme": {
+      "duree": "Instantanée",
+      "degats": "4d6",
+      "type_degats": "feu (+4d6 radiant)",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Communion avec la nature": {
+      "duree": "Instantanée"
+    },
+    "Communion": {
+      "duree": "1 minute"
+    },
+    "Contact avec un autre plan": {
+      "duree": "1 minute",
+      "degats": "6d6",
+      "type_degats": "psychique",
+      "test": "Int",
+      "js_succes": "aucun"
+    },
+    "Contagion": {
+      "duree": "7 jours"
+    },
+    "Contrat": {
+      "duree": "24 heures"
+    },
+    "Contrôle des vents": {
+      "duree": "1 heure"
+    },
+    "Convocation d'esprit draconique": {
+      "duree": "1 heure"
+    },
+    "Convocation de céleste": {
+      "duree": "1 heure"
+    },
+    "Coquille antivie": {
+      "duree": "1 heure"
+    },
+    "Création": {
+      "duree": "Spéciale"
+    },
+    "Cône de froid": {
+      "duree": "Instantanée",
+      "degats": "8d8",
+      "type_degats": "froid",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Danse macabre": {
+      "duree": "1 heure",
+      "sup_texte": "Deux morts-vivants supplémentaires par niveau au-delà du 5e"
+    },
+    "Dissipation du mal et du bien": {
+      "duree": "1 minute"
+    },
+    "Domination de personne": {
+      "duree": "1 minute"
+    },
+    "Double illusoire": {
+      "duree": "1 heure"
+    },
+    "Déluge d'énergie négative": {
+      "duree": "Instantanée",
+      "degats": "5d12",
+      "type_degats": "nécrotique",
+      "test": "Con"
+    },
+    "Fléau d'insectes": {
+      "duree": "10 minutes",
+      "degats": "4d10",
+      "type_degats": "perforant",
+      "test": "Con",
+      "sup": "1d10"
+    },
+    "Foulée dimensionnelle": {
+      "duree": "1 minute"
+    },
+    "Frappe du vent d'acier": {
+      "duree": "Instantanée",
+      "degats": "6d10",
+      "type_degats": "force",
+      "test": "AC"
+    },
+    "Fureur de la nature": {
+      "duree": "1 minute"
+    },
+    "Immobilisation de monstre": {
+      "duree": "1 minute",
+      "sup_texte": "Une cible supplémentaire par niveau au-delà du 5e"
+    },
+    "Immolation": {
+      "duree": "1 minute",
+      "degats": "8d6",
+      "type_degats": "feu",
+      "test": "Dex"
+    },
+    "Invocation d'élémentaire": {
+      "duree": "1 heure"
+    },
+    "Invocation de volée": {
+      "duree": "Instantanée",
+      "degats": "8d8",
+      "type_degats": "de la munition",
+      "test": "Dex"
+    },
+    "Lien télépathique de Rary": {
+      "duree": "1 heure"
+    },
+    "Maelström": {
+      "duree": "1 minute",
+      "degats": "6d6",
+      "type_degats": "contondant",
+      "test": "For",
+      "js_succes": "aucun"
+    },
+    "Main de Bigby": {
+      "duree": "1 minute",
+      "degats": "4d8",
+      "type_degats": "force",
+      "test": "AC",
+      "sup": "2d8",
+      "sup_texte": "Main agrippeuse : 2d6 + mod. d'incantation, +2d6 par niveau au-delà du 5e"
+    },
+    "Modification de mémoire": {
+      "duree": "1 minute"
+    },
+    "Mur de force": {
+      "duree": "10 minutes"
+    },
+    "Mur de lumière": {
+      "duree": "10 minutes",
+      "degats": "4d8",
+      "type_degats": "radiant",
+      "test": "Con",
+      "sup": "1d8"
+    },
+    "Mur de pierre": {
+      "duree": "10 minutes"
+    },
+    "Mythes et légendes": {
+      "duree": "Instantanée"
+    },
+    "Passage par les arbres": {
+      "duree": "1 minute"
+    },
+    "Passe-muraille": {
+      "duree": "1 heure"
+    },
+    "Perturbations synaptiques": {
+      "duree": "Instantanée",
+      "degats": "8d6",
+      "type_degats": "psychique",
+      "test": "Int"
+    },
+    "Quête": {
+      "duree": "30 jours",
+      "degats": "5d10",
+      "type_degats": "psychique",
+      "sup_texte": "Durée : 1 an (emplacement de niveau 7 ou 8), permanente (niveau 9)",
+      "js_succes": "aucun"
+    },
+    "Rappel à la vie": {
+      "duree": "Instantanée",
+      "rituel": false
+    },
+    "Restauration supérieure": {
+      "duree": "Instantanée"
+    },
+    "Réincarnation": {
+      "duree": "Instantanée",
+      "rituel": false
+    },
+    "Sanctification": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Scrutation": {
+      "duree": "10 minutes"
+    },
+    "Soins de groupe": {
+      "duree": "Instantanée",
+      "soins": "3d8",
+      "soins_mod": true,
+      "sup_soins": "1d8"
+    },
+    "Songe": {
+      "duree": "8 heures"
+    },
+    "Transmutation de la pierre": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Télékinésie": {
+      "duree": "10 minutes"
+    },
+    "Vague destructrice": {
+      "duree": "Instantanée",
+      "degats": "5d6",
+      "type_degats": "tonnerre (+5d6 radiant ou nécrotique)",
+      "test": "Con"
+    },
+    "Énervation": {
+      "duree": "1 minute",
+      "degats": "4d8",
+      "type_degats": "nécrotique",
+      "test": "Dex",
+      "sup": "1d8",
+      "js_succes": "2d8 nécrotiques, puis le sort prend fin"
+    },
+    "Éveil": {
+      "duree": "Instantanée"
+    },
+    "Allié planaire": {
+      "duree": "Instantanée"
+    },
+    "Barrière de lames": {
+      "duree": "10 minutes",
+      "degats": "6d10",
+      "type_degats": "tranchant",
+      "test": "Dex"
+    },
+    "Bosquet des druides": {
+      "duree": "24 heures"
+    },
+    "Bouclier de platine de Fizban": {
+      "duree": "1 minute"
+    },
+    "Cage des âmes": {
+      "duree": "8 heures"
+    },
+    "Cercle de mort": {
+      "duree": "Instantanée",
+      "degats": "8d6",
+      "type_degats": "nécrotique",
+      "test": "Con",
+      "sup": "2d6"
+    },
+    "Chaîne d'éclairs": {
+      "duree": "Instantanée",
+      "degats": "10d8",
+      "type_degats": "foudre",
+      "test": "Dex",
+      "sup_texte": "Un rebond supplémentaire par niveau au-delà du 6e"
+    },
+    "Contamination": {
+      "duree": "Instantanée",
+      "degats": "14d6",
+      "type_degats": "nécrotique",
+      "test": "Con"
+    },
+    "Convocation de fiélon": {
+      "duree": "1 heure"
+    },
+    "Convocations instantanées de Drawmij": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Costume d'Outremonde de Tasha": {
+      "duree": "1 minute"
+    },
+    "Création d'homoncule": {
+      "duree": "Instantanée"
+    },
+    "Création de mort-vivant": {
+      "duree": "Instantanée"
+    },
+    "Danse irrésistible d'Otto": {
+      "duree": "1 minute"
+    },
+    "Dispersion": {
+      "duree": "Instantanée"
+    },
+    "Désintégration": {
+      "duree": "Instantanée",
+      "degats": "10d6 + 40",
+      "type_degats": "force",
+      "test": "Dex",
+      "sup": "3d6",
+      "js_succes": "aucun"
+    },
+    "Festin des héros": {
+      "duree": "Instantanée"
+    },
+    "Globe d'invulnérabilité": {
+      "duree": "1 minute"
+    },
+    "Guérison": {
+      "duree": "Instantanée",
+      "soins": "70",
+      "sup_soins": "10"
+    },
+    "Illusion programmée": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Interdiction": {
+      "duree": "1 jour"
+    },
+    "Invocation de fée": {
+      "duree": "1 heure"
+    },
+    "Marche sur le vent": {
+      "duree": "8 heures"
+    },
+    "Mauvais oeil": {
+      "duree": "1 minute"
+    },
+    "Mot de retour": {
+      "duree": "Instantanée"
+    },
+    "Mur d'épines": {
+      "duree": "10 minutes",
+      "degats": "7d8",
+      "type_degats": "perforant",
+      "test": "Dex",
+      "sup": "1d8"
+    },
+    "Mur de glace": {
+      "duree": "10 minutes",
+      "degats": "10d6",
+      "type_degats": "froid",
+      "test": "Dex",
+      "sup": "2d6",
+      "sup_texte": "Air glacial : 5d6 froid (JS Con), +1d6 par niveau au-delà du 6e"
+    },
+    "Ossements de la Terre": {
+      "duree": "Instantanée",
+      "degats": "6d6",
+      "type_degats": "contondant",
+      "test": "Dex",
+      "sup_texte": "Deux piliers supplémentaires par niveau au-delà du 6e"
+    },
+    "Portail magique": {
+      "duree": "10 minutes"
+    },
+    "Prison mentale": {
+      "duree": "1 minute",
+      "degats": "5d10",
+      "type_degats": "psychique",
+      "test": "Int",
+      "js_succes": "toujours"
+    },
+    "Protection primordiale": {
+      "duree": "1 minute"
+    },
+    "Protections et sceaux": {
+      "duree": "24 heures"
+    },
+    "Prévoyance": {
+      "duree": "10 jours"
+    },
+    "Pétrification": {
+      "duree": "1 minute"
+    },
+    "Rayon de soleil": {
+      "duree": "1 minute",
+      "degats": "6d8",
+      "type_degats": "radiant",
+      "test": "Con"
+    },
+    "Sacre de la glace": {
+      "duree": "10 minutes",
+      "degats": "4d6",
+      "type_degats": "froid",
+      "test": "Con"
+    },
+    "Sacre de la pierre": {
+      "duree": "10 minutes"
+    },
+    "Sacre des flammes": {
+      "duree": "10 minutes",
+      "degats": "4d8",
+      "type_degats": "feu",
+      "test": "Dex"
+    },
+    "Sacre du vent": {
+      "duree": "10 minutes",
+      "degats": "2d10",
+      "type_degats": "contondant",
+      "test": "Con"
+    },
+    "Sens de l'orientation": {
+      "duree": "1 jour"
+    },
+    "Sphère glaciale d'Otiluke": {
+      "duree": "Instantanée",
+      "degats": "10d6",
+      "type_degats": "froid",
+      "test": "Con",
+      "sup": "1d6"
+    },
+    "Suggestion de groupe": {
+      "duree": "24 heures"
+    },
+    "Terraformage": {
+      "duree": "2 heures"
+    },
+    "Transformation de Tenser": {
+      "duree": "10 minutes"
+    },
+    "Urne magique": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Vision suprême": {
+      "duree": "1 heure"
+    },
+    "Voie végétale": {
+      "duree": "1 round"
+    },
+    "Boule de feu à retardement": {
+      "duree": "1 minute",
+      "degats": "12d6",
+      "type_degats": "feu",
+      "test": "Dex",
+      "sup": "1d6"
+    },
+    "Cage de force": {
+      "duree": "1 heure"
+    },
+    "Changement de plan": {
+      "duree": "Instantanée"
+    },
+    "Couronne d'étoiles": {
+      "duree": "1 heure",
+      "degats": "4d12",
+      "type_degats": "radiant",
+      "test": "A",
+      "projectiles": 7,
+      "sup_projectiles": 2
+    },
+    "Dissimulation": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Doigt de mort": {
+      "duree": "Instantanée",
+      "degats": "7d8 + 30",
+      "type_degats": "nécrotique",
+      "test": "Con"
+    },
+    "Forme éthérée": {
+      "duree": "8 heures"
+    },
+    "Inversion de la gravité": {
+      "duree": "1 minute"
+    },
+    "Invocation de céleste": {
+      "duree": "1 heure"
+    },
+    "Manoir somptueux de Mordenkainen": {
+      "duree": "24 heures"
+    },
+    "Mirage": {
+      "duree": "10 jours"
+    },
+    "Mot de pouvoir douloureux": {
+      "duree": "Instantanée"
+    },
+    "Parole divine": {
+      "duree": "Instantanée"
+    },
+    "Projection d'image": {
+      "duree": "1 jour"
+    },
+    "Rayons prismatiques": {
+      "duree": "Instantanée",
+      "degats": "10d6",
+      "type_degats": "selon la couleur",
+      "test": "Dex"
+    },
+    "Régénération": {
+      "duree": "1 heure",
+      "soins": "4d8 + 15"
+    },
+    "Résurrection": {
+      "duree": "Instantanée"
+    },
+    "Simulacre": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Songe du voile bleu": {
+      "duree": "6 heures"
+    },
+    "Symbole": {
+      "duree": "Jusqu'à dissipation ou déclenchement"
+    },
+    "Temple des dieux": {
+      "duree": "24 heures"
+    },
+    "Tempête de feu": {
+      "duree": "Instantanée",
+      "degats": "7d10",
+      "type_degats": "feu",
+      "test": "Dex"
+    },
+    "Tourbillon": {
+      "duree": "1 minute",
+      "degats": "10d6",
+      "type_degats": "contondant",
+      "test": "Dex"
+    },
+    "Transformation draconique": {
+      "duree": "1 minute",
+      "degats": "6d8",
+      "type_degats": "au choix",
+      "test": "Dex"
+    },
+    "Téléportation": {
+      "duree": "Instantanée"
+    },
+    "Épée de Mordenkainen": {
+      "duree": "1 minute",
+      "degats": "3d10",
+      "type_degats": "force",
+      "test": "AC"
+    },
+    "Aura sacrée": {
+      "duree": "1 minute"
+    },
+    "Aversion/Attirance": {
+      "duree": "10 jours"
+    },
+    "Bagou": {
+      "duree": "1 heure"
+    },
+    "Champ antimagie": {
+      "duree": "1 heure"
+    },
+    "Clone": {
+      "duree": "Instantanée"
+    },
+    "Contrôle du climat": {
+      "duree": "8 heures"
+    },
+    "Demi-plan": {
+      "duree": "1 heure"
+    },
+    "Domination de monstre": {
+      "duree": "1 heure"
+    },
+    "Dragon illusoire": {
+      "duree": "1 minute",
+      "degats": "7d6",
+      "type_degats": "au choix",
+      "test": "Int"
+    },
+    "Dédale": {
+      "duree": "10 minutes"
+    },
+    "Esprit faible": {
+      "duree": "Instantanée",
+      "degats": "4d6",
+      "type_degats": "psychique",
+      "test": "Int",
+      "js_succes": "toujours"
+    },
+    "Esprit impénétrable": {
+      "duree": "24 heures"
+    },
+    "Flétrissure épouvantable d'Abi-Dalzim": {
+      "duree": "Instantanée",
+      "degats": "12d8",
+      "type_degats": "nécrotique",
+      "test": "Con"
+    },
+    "Formes animales": {
+      "duree": "24 heures"
+    },
+    "Forteresse majestueuse": {
+      "duree": "Instantanée"
+    },
+    "Mot de pouvoir étourdissant": {
+      "duree": "Instantanée"
+    },
+    "Nuage incendiaire": {
+      "duree": "1 minute",
+      "degats": "10d8",
+      "type_degats": "feu",
+      "test": "Dex"
+    },
+    "Tremblement de terre": {
+      "duree": "1 minute"
+    },
+    "Tsunami": {
+      "duree": "6 rounds",
+      "degats": "6d10",
+      "type_degats": "contondant",
+      "test": "For"
+    },
+    "Télépathie": {
+      "duree": "24 heures"
+    },
+    "Ténèbres oppressantes": {
+      "duree": "10 minutes",
+      "degats": "8d8",
+      "type_degats": "psychique",
+      "test": "Sag"
+    },
+    "Éclat du soleil": {
+      "duree": "Instantanée",
+      "degats": "12d6",
+      "type_degats": "radiant",
+      "test": "Con"
+    },
+    "Arrêt du temps": {
+      "duree": "Instantanée"
+    },
+    "Changement de forme": {
+      "duree": "1 heure"
+    },
+    "Emprisonnement": {
+      "duree": "Jusqu'à dissipation"
+    },
+    "Ennemi subconscient": {
+      "duree": "1 minute",
+      "degats": "4d10",
+      "type_degats": "psychique",
+      "test": "Sag",
+      "js_succes": "aucun"
+    },
+    "Guérison de groupe": {
+      "duree": "Instantanée"
+    },
+    "Hurlement psychique": {
+      "duree": "Instantanée",
+      "degats": "14d6",
+      "type_degats": "psychique",
+      "test": "Int"
+    },
+    "Invulnérabilité": {
+      "duree": "10 minutes"
+    },
+    "Lame du désastre": {
+      "duree": "1 minute",
+      "degats": "4d12",
+      "type_degats": "force",
+      "test": "A"
+    },
+    "Mot de pouvoir guérisseur": {
+      "duree": "Instantanée"
+    },
+    "Mot de pouvoir mortel": {
+      "duree": "Instantanée"
+    },
+    "Mur prismatique": {
+      "duree": "10 minutes"
+    },
+    "Métamorphose de groupe": {
+      "duree": "1 heure"
+    },
+    "Métamorphose suprême": {
+      "duree": "1 heure"
+    },
+    "Nuée de météores": {
+      "duree": "Instantanée",
+      "degats": "20d6",
+      "type_degats": "feu (+20d6 contondant)",
+      "test": "Dex"
+    },
+    "Portail": {
+      "duree": "1 minute"
+    },
+    "Projection astrale": {
+      "duree": "Spéciale"
+    },
+    "Prémonition": {
+      "duree": "8 heures"
+    },
+    "Résurrection suprême": {
+      "duree": "Instantanée"
+    },
+    "Souhait": {
+      "duree": "Instantanée"
+    },
+    "Tempête vengeresse": {
+      "duree": "1 minute"
+    },
+    "Vents contraires": {
+      "hors_corpus": true
+    },
+    "Projectile élémentaire": {
+      "hors_corpus": true
+    },
+    "Entraves de givre": {
+      "hors_corpus": true
+    },
+    "Sens de la distorsion": {
+      "hors_corpus": true
+    },
+    "Scellé de portail": {
+      "hors_corpus": true
+    },
+    "Invocation d'ombres": {
+      "hors_corpus": true
+    }
+  }
+}
