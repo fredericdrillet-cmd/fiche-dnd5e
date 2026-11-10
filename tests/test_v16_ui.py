@@ -105,6 +105,7 @@ class V16Tests(unittest.TestCase):
             self.assertEqual(panel.sub_note.text(), "")
 
     def test_ability_cards(self):
+        self.win.settings["mode_libre"] = True            # v48 : sélecteurs de caractéristiques en Mode libre
         tab = self.win.abilities_tab
         for ab, w in tab.rows.items():
             self.assertIn("card", w)

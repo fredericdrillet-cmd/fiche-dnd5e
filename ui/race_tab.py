@@ -19,7 +19,7 @@ class RaceTab(BaseTab):
         root = QHBoxLayout(self)
 
         # ---------------- race
-        rbox = QGroupBox("Race")
+        rbox = self.race_box = QGroupBox("Race")
         rl = QVBoxLayout(rbox)
         form = QGridLayout()
         self.race = QComboBox()
@@ -45,7 +45,7 @@ class RaceTab(BaseTab):
         root.addWidget(rbox, 1)
 
         # ---------------- historique
-        bbox = QGroupBox("Historique")
+        bbox = self.bg_box = QGroupBox("Historique")
         bl = QVBoxLayout(bbox)
         self.bg = QComboBox()
         bl.addWidget(self.bg)

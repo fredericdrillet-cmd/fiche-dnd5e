@@ -347,6 +347,74 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
   - Si le style est remplacé, la manœuvre, l'action et le dé disparaissent.
   - Description du style corrigée : il n'y a pas de « DD 14 » fixe, et le dé revient au repos court ou long.
 
+## Nouveautés v51 — multiclassage sans blocage, en-tête épuré, mises en page compactes
+- **Bug corrigé — « Choix du niveau (1) » fantôme** (ex. Occultiste 1 → Paladin 1) :
+  - en Mode guidé, un prérequis de multiclassage non rempli était compté comme un choix du niveau, invisible sur la page, et bloquait « Confirmer » ;
+  - désormais une classe aux prérequis non remplis n'est plus proposée : elle est listée « 🔒 » avec la raison (Mode libre : proposée avec un avertissement) ;
+  - le compteur ne compte que les choix de LA classe montée à ce niveau (sous-classe, amélioration, style, sorts, pacte, manifestations) : 0 choix → « ✔ » et validation immédiate.
+- **En-tête** : « Vitesse » et « Maîtrise » retirées (elles sont dans l'onglet Combat) ; restent PV, CA et Initiative (avec son d20).
+- **Onglet Combat** : les cinq encarts (Initiative, Vitesse, Maîtrise, Perception passive, Vision dans le noir) sont alignés sur une grille, à hauteur fixe identique.
+- **Onglet Caractéristiques & Compétences** :
+  - cartes de caractéristiques moins hautes, tables de compétences et de sauvegardes en lignes compactes, légende raccourcie ;
+  - texte « Valeurs choisies dans l'assistant… » déplacé en infobulle ;
+  - but : tenir sur un écran 1080p sans défilement.
+- Rapport : `RAPPORT_CORRECTIFS_v51.md`.
+
+## Nouveautés v50 — fenêtres maximisables, création incomplète confirmée, en-têtes selon le mode
+- **Fenêtres** :
+  - l'assistant de création et « Niveau supérieur » sont de vraies fenêtres (barre de titre, boutons Réduire / Agrandir / Fermer), redimensionnables ; bouton « ⛶ Plein écran » dans l'assistant ;
+  - toutes les pages défilent, donc rien n'est coupé en fenêtre réduite ;
+  - la fenêtre principale descend jusqu'à 1024 × 640.
+- **Création incomplète** : « ✔ Créer le personnage » ouvre la modale « Création de personnage incomplète » avec la liste des choix manquants.
+  - « Poursuivre la création » ramène à la première étape incomplète ; « Valider malgré tout » crée la fiche.
+- **Cases à cocher** : « Sac sans fond » sur sa propre ligne, page Équipement défilante ; fenêtre Options défilante ; cases dessinées de façon visible quel que soit le thème.
+- **Multiclassage** : l'interrupteur de l'onglet Classes est retiré. « Niveau supérieur » propose toujours les autres classes ; en Mode guidé, les prérequis de caractéristiques officiels bloquent « Confirmer » (Mode libre : accord du MJ).
+- **Mode guidé** : classe, sous-classe et niveau en texte statique stylé (badges) dans l'en-tête de la fiche et dans l'onglet Classes. Le **Mode libre** rétablit les sélecteurs.
+- Rapport : `RAPPORT_CORRECTIFS_v50.md`.
+
+## Nouveautés v49 — aide pédagogique (BG3), recommandations de caractéristiques, inspecteur de sorts
+- **Fiche pédagogique de classe** dans l'assistant de création (étape Classe) et dans « Niveau supérieur » (étape Classe) :
+  - concept, style de jeu, mécaniques clés ;
+  - caractéristiques recommandées, dé de vie, maîtrises ;
+  - liste des sous-classes avec le niveau de déblocage. Un clic déplie la fiche d'une sous-classe : source, orientation (🔮 Magie, ⚔ Offensive, 🛡 Défense…), pouvoirs principaux par niveau, sorts accordés ; un second clic la replie.
+  - Dans « Niveau supérieur », le sélecteur de sous-classe affiche un résumé au survol et la fiche de la sous-classe choisie.
+- **Recommandations de caractéristiques** : badges « ⭐ [Principale] » / « ✦ [Secondaire] » sur les cartes de caractéristiques, avec infobulle expliquant pourquoi.
+  - Ils s'adaptent à la sous-classe : Arnaqueur arcanique et Chevalier occulte → Intelligence ; Bretteur → Charisme ; Lame maudite → Charisme principal…
+  - Dans l'assistant, une « sous-classe visée » peut être indiquée avant son niveau de déblocage.
+- **Identité** (étape 7 de l'assistant) : « [ Importer un portrait ] » (png, jpg, jpeg… réduit au format de la fiche) et zone « Passé du personnage ». Les deux sont repris dans l'onglet « Histoire, Portrait », modifiables à tout moment.
+- **Sélection des sorts** (création et montée de niveau) :
+  - un clic affiche la fiche détaillée : école, incantation, portée, composantes, durée, concentration, rituel, texte complet ;
+  - le double-clic ou le bouton « ✚ Apprendre le sort » / « ✚ Préparer » apprend le sort, dans la limite des quotas.
+- Rapport : `RAPPORT_ARCHITECTURE_v49.md`.
+
+## Nouveautés v48 — création façon Baldur's Gate 3, Mode guidé / Mode libre, sauvegarde automatique
+- **Assistant de création niveau 1** (Fichier > Nouveau personnage, ouvert aussi au premier lancement), sur une copie de la fiche, avec un résumé dynamique à droite :
+  1. Race / Sous-race ;
+  2. Classe — sous-classe de niveau 1, style de combat, compétences et expertises ;
+  3. Historique et langues ;
+  4. Caractéristiques ;
+  5. Sorts et tours de magie, avec la magie raciale ;
+  6. Équipement ;
+  7. Identité — nom, joueur, alignement.
+- **Magie raciale pour toutes les classes** :
+  - encart « ✦ Magie raciale — [Sort Racial] » dans l'onglet Magie (visible aussi pour un Guerrier) ;
+  - sort mineur au choix du Haut-elfe (liste du magicien) ;
+  - tuiles « … [Sort Racial] » dans « Sorts et magie » de l'onglet Combat.
+- **Équipement de départ** :
+  - l'équipement de l'historique est offert ;
+  - ensuite, au choix : le paquetage de classe standard (équipé automatiquement), ou la boutique — budget = or de la classe (moyenne ou jet de dés) + or de l'historique, le reste allant dans la bourse.
+- **En-tête** : champ Alignement retiré (il est désormais dans « Histoire, Portrait » et dans l'assistant) ; le nom du joueur prend la place libérée.
+- **Mode guidé (par défaut)** :
+  - nom du personnage verrouillé ;
+  - niveau global, ajout, retrait et changement de classe uniquement par « ▲ Niveau supérieur » ; onglet Classes en lecture seule ;
+  - onglet Race remplacé par l'encart « Résumé de la race » à côté du portrait ;
+  - caractéristiques brutes remplacées par un résumé.
+  
+  « Activer le Mode libre » (Options) déverrouille tout. Un écran verrouillé réapparaît tant qu'un choix doit y être fait.
+- **Sauvegarde automatique** : copie de sécurité 1,5 s après chaque modification. Au lancement, le dernier personnage est rouvert (modifications non enregistrées comprises).
+- **Menu Fichier** : Nouveau personnage… / Charger… / Sauvegarder / Sauvegarder sous….
+- Rapport : `RAPPORT_ARCHITECTURE_v48.md`.
+
 ## Nouveautés v47 — exécutable Windows autonome
 - **`core/paths.py`** :
   - `get_resource_path()` lit les données dans `sys._MEIPASS` (exécutable PyInstaller), sinon dans le dossier du projet ;

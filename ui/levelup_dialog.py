@@ -33,7 +33,9 @@ from core.rules import ABILITIES
 from . import theme
 from .common import blocked, make_label, rich_tip
 from .dialogs import BlurBackdrop
+from .class_guide_panel import ClassGuidePanel, subclass_html
 from .game_widgets import clear_layout
+from .spell_inspector import make_inspector, spell_card_html
 
 STEPS = ["Classe", "Points de vie", "Aptitudes gagnées", "Choix du niveau", "Nouveaux sorts", "Récapitulatif"]
 SPELL_STEP = 4
@@ -46,12 +48,19 @@ class LevelUpDialog(QDialog):
     def __init__(self, win):
         super().__init__(win)
         self.win, self.engine = win, win.engine
-        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground, True)
+        # v50 : vraie fenêtre (barre de titre, boutons Réduire / Agrandir / Fermer) : maximisable et redimensionnable
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowSystemMenuHint
+                            | Qt.WindowType.WindowMinMaxButtonsHint | Qt.WindowType.WindowCloseButtonHint)
+        self.setWindowTitle("Niveau supérieur")
         self.setModal(True)
         self.setMinimumSize(900, 600)
         self._fit_to_screen()
-        self.options = self.engine.level_up_options()
+        # v51 : en Mode guidé, une classe dont les prérequis de multiclassage ne sont pas remplis n'est pas proposée
+        # (elle est listée « 🔒 » avec la raison) ; elle ne peut donc plus bloquer « Confirmer » en cours de route
+        every = self.engine.level_up_options()
+        guided = not getattr(win, "free_mode", False)
+        self.locked_options = [o for o in every if o["prerequis"]] if guided else []
+        self.options = [o for o in every if not (guided and o["prerequis"])]
         self.sim = None
         self.cls = ""
         self.report: dict = {}
@@ -61,7 +70,7 @@ class LevelUpDialog(QDialog):
         self.swap_widgets: dict = {}
 
         outer = QVBoxLayout(self)
-        outer.setContentsMargins(26, 26, 26, 30)
+        outer.setContentsMargins(8, 8, 8, 8)
         card = QFrame()
         card.setObjectName("dialogCard")
         shadow = QGraphicsDropShadowEffect(card)
@@ -94,8 +103,17 @@ class LevelUpDialog(QDialog):
         l1.addWidget(self.class_combo)
         self.prereq = make_label("", "warn", wrap=True)
         l1.addWidget(self.prereq)
+        self.locked_label = make_label("", "muted", wrap=True)
+        self.locked_label.setText("🔒 Multiclassage indisponible (prérequis officiels de caractéristiques) :<br/>" +
+                                  "<br/>".join("• {} — {}".format(html.escape(o["classe"]), html.escape(o["prerequis"]))
+                                               for o in self.locked_options) +
+                                  "<br/><i>Mode libre (Options) : possible avec l'accord du MJ.</i>"
+                                  if self.locked_options else "")
+        l1.addWidget(self.locked_label)
         self.class_info = make_label("", "muted", wrap=True)
         l1.addWidget(self.class_info)
+        self.guide = ClassGuidePanel()                    # v49 : fiche pédagogique de la classe et des sous-classes
+        l1.addWidget(self.guide)
         l1.addStretch(1)
         self.pages.addWidget(p1)
         # --- page 2 : points de vie
@@ -183,7 +201,7 @@ class LevelUpDialog(QDialog):
         """Choix de l'étape 4 encore à faire (sur la copie)."""
         if self.sim is None:
             return []
-        return self.engine.level_up_report(self.sim, self.cls)["dans_assistant"]
+        return list(self.engine.level_up_report(self.sim, self.cls)["dans_assistant"])
 
     def _rebuild_report(self) -> None:
         self.report = self.engine.level_up_report(self.sim, self.cls) if self.sim is not None else {}
@@ -230,6 +248,8 @@ class LevelUpDialog(QDialog):
         self.title.setText("▲  Niveau supérieur — {} {} → {}".format(self.cls, opt["avant"] or "—", opt["apres"]))
         self.prereq.setText("⚠ Prérequis de multiclassage non remplis : {}. (Possible avec l'accord du MJ.)".format(
             opt["prerequis"]) if opt["prerequis"] else "")
+        entry = self.sim.ch.find_class(self.cls) or {}
+        self.guide.set_class(self.sim, self.cls, entry.get("sous_classe", ""))
         hp = self.sim.level_hp_info(self.cls)
         self.class_info.setText("Dé de vie {} — niveau global {} → {}.".format(
             hp["de"], self.engine.total_level, self.sim.total_level))
@@ -296,10 +316,23 @@ class LevelUpDialog(QDialog):
             if entry.get("sous_classe") in subs:
                 combo.setCurrentIndex(subs.index(entry["sous_classe"]) + 1)
             combo.activated.connect(lambda _=0, c=combo: self._set_sub(c.currentText()))
+            for i, n in enumerate(subs):                 # v49 : résumé de chaque sous-classe au survol
+                summ = self.sim.subclass_summary(self.cls, n) or {}
+                combo.setItemData(i + 1, "<qt><b>{}</b><br/>{}<br/>{}</qt>".format(
+                    html.escape(n), html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
+                        "Niv. {} — {}".format(lvl, html.escape(nm)) for lvl, nm, _ in summ.get("pouvoirs", [])[:5])),
+                    Qt.ItemDataRole.ToolTipRole)
             grid.addWidget(make_label("◆ Sous-classe"), row, 0)
             grid.addWidget(combo, row, 1, 1, 3)
             self.choice_widgets["sous_classe"] = combo
             row += 1
+            if entry.get("sous_classe"):                 # fiche de la sous-classe choisie, sous le sélecteur
+                view = QTextBrowser()
+                view.setMinimumHeight(170)
+                view.setHtml(subclass_html(self.sim, self.cls, entry["sous_classe"]))
+                grid.addWidget(view, row, 0, 1, 4)
+                self.choice_widgets["sous_classe_fiche"] = view
+                row += 1
         # amélioration de caractéristiques ou don : une carte par emplacement (v40, plus de chevauchement)
         for slot in self._new_asi_slots():
             self._asi_card(slot)
@@ -714,6 +747,16 @@ class LevelUpDialog(QDialog):
             l1.addLayout(r1)
             tabs.addTab(t1, "Sorts de niveau 1+")
             bl.addWidget(tabs)
+            # v49 : clic simple = fiche du sort ; bouton « Apprendre le sort » / « Préparer » = double-clic
+            act = QHBoxLayout()
+            verb = "Préparer" if self.engine.prepares_from_list(plan) else "Apprendre le sort"
+            w["learn_btn"] = QPushButton("✚ " + verb)
+            w["learn_btn"].clicked.connect(lambda _=False, c=cls: self._learn_selected(c))
+            act.addWidget(w["learn_btn"])
+            act.addStretch(1)
+            bl.addLayout(act)
+            w["inspector"] = make_inspector(170)
+            bl.addWidget(w["inspector"])
             if self.engine.prepares_from_list(plan):
                 bl.addWidget(make_label("{} prépare ses sorts chaque jour dans toute sa liste : la jauge suit la limite "
                                         "de la classe (niveau + modificateur). Vous pourrez la modifier après chaque "
@@ -725,6 +768,8 @@ class LevelUpDialog(QDialog):
                 w[key].currentIndexChanged.connect(lambda _i=0, c=cls: self._fill_spell_lists(c))
             for key in ("ritual", "conc"):
                 w[key].toggled.connect(lambda _b=False, c=cls: self._fill_spell_lists(c))
+            for key in ("avail0", "avail1", "mine0", "mine1"):
+                w[key].itemClicked.connect(lambda it, c=cls, k=key: self.inspect_spell(c, it.data(Qt.ItemDataRole.UserRole), k))
             for key in ("avail0", "avail1"):
                 w[key].itemDoubleClicked.connect(lambda it, c=cls: self._learn(c, it.data(Qt.ItemDataRole.UserRole)))
             for key in ("mine0", "mine1"):
@@ -948,6 +993,22 @@ class LevelUpDialog(QDialog):
         self._fill_spell_lists(cls)
         self._refresh_recap()
         self._refresh_steps()
+
+    def inspect_spell(self, cls: str, name: str, source: str = "") -> str:
+        """Clic simple : fiche détaillée (école, incantation, portée, composantes, durée, texte complet)."""
+        w = self.spell_widgets.get(cls)
+        if w is None:
+            return ""
+        w["selection"] = (name, source)
+        text = spell_card_html(self.sim.db.find_spell(name) if name else None)
+        w["inspector"].setHtml(text)
+        return text
+
+    def _learn_selected(self, cls: str) -> None:
+        w = self.spell_widgets.get(cls) or {}
+        name, source = w.get("selection", ("", ""))
+        if name and source.startswith("avail"):
+            self._learn(cls, name)
 
     def _learn(self, cls: str, name: str) -> None:
         if name and self.engine.level_learn_spell(self.sim, cls, name):

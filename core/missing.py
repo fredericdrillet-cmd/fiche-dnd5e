@@ -153,6 +153,9 @@ class MissingChoicesMixin:
                                                          ", espèce" if self.race_skill_picks() else ""))
         n = self.expertise_missing()
         add("caracteristiques", "Compétences", n, "{} expertise{} à attribuer".format(n, "s" * (n > 1)))
+        n = self.racial_choices_missing()                # v48 : sort mineur racial au choix (Haut-elfe…)
+        add("magie", "Sorts raciaux", n, "{} sort{} mineur{} racia{} à choisir".format(
+            n, "s" * (n > 1), "s" * (n > 1), "ux" if n > 1 else "l"))
         # classes
         for e in ch.classes:
             need = R.SUBCLASS_LEVEL.get(e["nom"], 3)

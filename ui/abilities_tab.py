@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QGroupBo
 
 from core import rules as R
 from core.rules import ABILITIES, norm
+from . import theme
 from .dice_dialog import d20_button, roll_dice
 from .common import CENTER, BaseTab, blocked, calc_tip, center, fill_combo, hline, make_label, rich_tip
 
@@ -53,8 +54,8 @@ class AbilitiesTab(BaseTab):
             card.setProperty("role", "abcard")
             card.setMinimumWidth(150)
             cl = QVBoxLayout(card)
-            cl.setContentsMargins(10, 8, 10, 10)
-            cl.setSpacing(4)
+            cl.setContentsMargins(8, 4, 8, 6)                # v51 : cartes légèrement moins hautes
+            cl.setSpacing(2)
             # en-tête : abréviation + dé de test (taille fixe, toujours au même endroit)
             top_row = QHBoxLayout()
             top_row.addWidget(make_label(R.ABBR.get(ab, ab[:3].upper()), "abbr"))
@@ -64,6 +65,9 @@ class AbilitiesTab(BaseTab):
             top_row.addWidget(w["d20"])
             cl.addLayout(top_row)
             cl.addWidget(make_label(ab, "muted"))
+            # v49 : badge de recommandation selon la classe / la sous-classe visée (infobulle : pourquoi)
+            w["badge"] = make_label("", "head", align=CENTER)
+            cl.addWidget(w["badge"])
             # valeur finale + modificateur
             cl.addWidget(w["total"])
             mod_row = QHBoxLayout()
@@ -87,7 +91,6 @@ class AbilitiesTab(BaseTab):
             gen = QWidget()
             gen_lay = QVBoxLayout(gen)
             gen_lay.setContentsMargins(0, 0, 0, 0)
-            gen_lay.addWidget(make_label("Valeur de base", "abpart", align=CENTER))
             for key in ("buy", "roll", "manual"):
                 gen_lay.addWidget(w[key])
             gen_lay.addWidget(w["cost"])
@@ -253,9 +256,16 @@ class AbilitiesTab(BaseTab):
         self.rolls_label.setVisible(m == "des")
 
         race, asi = eng.race_bonus(), eng.asi_bonus()
+        recs = eng.ability_recommendations()             # v49 : ⭐ principale / ✦ secondaire
+        cls = ch.classes[0]["nom"] if ch.classes else ""
         roll_items = [NONE_LABEL] + ["{} (tirage {})".format(t["total"], i + 1) for i, t in enumerate(ch.des_tirages)]
         for ab in ABILITIES:
             w, parts = self.rows[ab], eng.score_parts(ab)
+            role, why = recs.get(ab, ("", ""))
+            w["badge"].setText({"principale": "⭐ [Principale]", "secondaire": "✦ [Secondaire]"}.get(role, ""))
+            w["badge"].setToolTip(rich_tip("{} — caractéristique {} ({})".format(ab, role, cls), why) if role else "")
+            w["badge"].setStyleSheet("color: {};".format(theme.current().accent_text if role == "principale" else
+                                                          theme.current().ornament) if role else "")
             score = ch.scores_achat[ab]
             w["value"].setText(str(score))
             w["minus"].setEnabled(score > R.POINT_BUY_MIN)

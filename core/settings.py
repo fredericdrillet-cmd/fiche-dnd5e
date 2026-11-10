@@ -6,7 +6,7 @@ from pathlib import Path
 
 DEFAULT_THEME = "bg3"   # Porte de Baldur (BG3) : thème principal au premier lancement
 DEFAULTS = {"theme": DEFAULT_THEME, "font_px": 14, "last_dir": "", "ordre_onglets": [],
-            "regle_survie": False}   # regle_survie : repos long = 1 ration consommée   # ordre_onglets : clés des onglets
+            "regle_survie": False, "mode_libre": False, "dernier_fichier": "", "assistant_au_demarrage": True}   # regle_survie : repos long = 1 ration consommée   # ordre_onglets : clés des onglets
 
 
 def settings_path() -> Path:

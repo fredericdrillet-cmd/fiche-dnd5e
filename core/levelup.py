@@ -63,13 +63,14 @@ class LevelUpMixin:
         return " ; ".join(problems)
 
     def level_up_options(self) -> list[dict]:
-        """Classes proposées : celles du personnage (+1 niveau) et, si le multiclassage est activé, les autres."""
+        """Classes proposées : celles du personnage (+1 niveau) et les autres classes (v50 : multiclassage toujours
+        proposé par « Niveau supérieur », prérequis de caractéristiques vérifiés)."""
         if self.ch.niveau_total >= R.MAX_LEVEL:
             return []
         out = [{"classe": e["nom"], "avant": e["niveau"], "apres": e["niveau"] + 1, "nouvelle": False,
                 "prerequis": "", "label": "{} — niveau {} → {}".format(e["nom"], e["niveau"], e["niveau"] + 1)}
                for e in self.ch.classes]
-        if self.ch.multiclassage or not self.ch.classes:
+        if True:                                         # v50 : plus d'interrupteur de multiclassage
             owned = {e["nom"] for e in self.ch.classes}
             for name in self.db.class_names():
                 if name in owned:
@@ -129,10 +130,28 @@ class LevelUpMixin:
         inline += manifs
         spells = spells + manifs
         inline += self.level_swap_pending(sim)          # v44 : échange de sort commencé mais incomplet
+        # v51 : seuls les choix de LA classe montée à ce niveau comptent (« Choix du niveau (N) ») ; un message
+        # d'une autre classe dont seul le texte a changé ne bloque plus l'assistant
+        inline = [m for m in inline if self._concerns_class(m, class_name)]
         later = [m for m in new if (m["onglet"], m["encart"]) not in INLINE and m not in
                  [{k: v for k, v in x.items() if k != "kind"} for x in spells]]
         return {"classe": class_name, "niveau": lvl, "aptitudes": gained, "dans_assistant": inline,
                 "ensuite": later, "recap": self.level_up_recap(sim)}
+
+    @staticmethod
+    def _concerns_class(m: dict, class_name: str) -> bool:
+        """Choix de l'assistant lié à la classe montée : préfixe « Classe : » / « Classe — », style « (Classe) »,
+        pacte et manifestations pour l'Occultiste ; les échanges de sorts sont toujours ceux de la classe montée."""
+        kind, msg = m.get("kind", ""), m.get("message", "")
+        if m.get("echange"):
+            return True
+        if kind in ("pacte", "manifestations"):
+            return class_name == "Occultiste" or "Occultiste" not in msg and kind == "manifestations"
+        if kind == "style":
+            return "({})".format(class_name) in msg or "(" not in msg
+        if kind in ("sous_classe", "amelioration", "sorts"):
+            return msg.startswith(class_name) or not any(msg.startswith(c) for c in R.SUBCLASS_LEVEL)
+        return True
 
     def level_up_recap(self, sim) -> list[tuple[str, str, str]]:
         """(libellé, avant, après) — seules les lignes qui changent sont gardées, sauf PV et maîtrise."""

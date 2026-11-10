@@ -44,7 +44,7 @@ class MainWindow(QMainWindow):
         self.path: Path | None = None
         self._dirty = False
         self.resize(1600, 900)                 # format 16/9
-        self.setMinimumSize(1280, 720)
+        self.setMinimumSize(1024, 640)          # v50 : fenêtre réduite possible (onglets défilants), maximisable
 
         central = QWidget()
         self.setCentralWidget(central)
@@ -116,6 +116,12 @@ class MainWindow(QMainWindow):
         self.warn_label.setContentsMargins(0, 0, 28, 0)          # légèrement décalé vers la gauche (équilibre visuel)
         self.statusBar().addPermanentWidget(self.warn_label)
         self._build_menu()
+        # v48 : sauvegarde automatique (1,5 s après la dernière modification), hors du fichier du joueur
+        from PyQt6.QtCore import QTimer
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setSingleShot(True)
+        self._autosave_timer.setInterval(1500)
+        self._autosave_timer.timeout.connect(self.autosave)
         from . import wheel_guard                      # v35 : la molette ne modifie plus aucun contrôle
         wheel_guard.install(QApplication.instance())
         self.refresh_all()
@@ -125,33 +131,65 @@ class MainWindow(QMainWindow):
     def ch(self) -> Character:
         return self.engine.ch
 
+    @property
+    def free_mode(self) -> bool:
+        """v48 — Mode libre (Options) : toute la fiche est modifiable. Mode guidé (par défaut) : la progression
+        passe par « Niveau supérieur », le nom est fixé à la création."""
+        return bool(self.settings.get("mode_libre", False))
+
+    def _apply_mode_locks(self) -> None:
+        free = self.free_mode
+        self.name_edit.setReadOnly(not free)
+        self.name_edit.setToolTip("" if free else rich_tip("Nom du personnage", "Mode guidé : le nom est fixé à la "
+                                                           "création (Fichier > Nouveau personnage). Activez le Mode "
+                                                           "libre dans Options pour le modifier."))
+        self.level.setEnabled(free)
+        self.level.setVisible(free)
+        self.level_label.setVisible(free)
+        self.class_badge.setVisible(not free)
+        if not free:
+            parts = []
+            for e in self.ch.classes:
+                parts.append("<b>{}</b> {}{}".format(html.escape(e["nom"]), e["niveau"], " · <i>{}</i>".format(
+                    html.escape(e["sous_classe"])) if e.get("sous_classe") else ""))
+            self.class_badge.setText("⚔ {} &nbsp;—&nbsp; Niveau {}".format(" / ".join(parts), self.engine.total_level))
+            self.class_badge.setToolTip(rich_tip("Classes et niveau", "Lecture seule en Mode guidé : utilisez "
+                                                 "« ▲ Niveau supérieur » (multiclassage compris). Mode libre "
+                                                 "(Options) : sélecteurs modifiables."))
+        self.level.setToolTip("" if free else rich_tip("Niveau global", "Mode guidé : utilisez « ▲ Niveau "
+                                                       "supérieur » (multiclassage compris). Le Mode libre (Options) "
+                                                       "déverrouille ce compteur."))
+
     # ------------------------------------------------------------------ en-tête
     def _build_header(self) -> QHBoxLayout:
         h = QHBoxLayout()
         self.name_edit, self.player_edit = QLineEdit(), QLineEdit()
         self.name_edit.setPlaceholderText("Nom du personnage")
         self.player_edit.setPlaceholderText("Joueur")
-        self.align = QComboBox()
-        self.align.addItems(R.ALIGNMENTS)
         self.xp = QSpinBox()
         self.xp.setRange(0, 99_999_999)
         self.xp.setSingleStep(100)
         self.level = QSpinBox()
         self.level.setRange(1, R.MAX_LEVEL)
         self.xp_hint = make_label("", "muted")
-        self.badges = {k: make_label("", "badge") for k in ("pv", "ca", "init", "vit", "prof")}
+        # v51 : « Vitesse » et « Maîtrise » retirées de l'en-tête (déjà affichées dans l'onglet Combat)
+        self.badges = {k: make_label("", "badge") for k in ("pv", "ca", "init")}
         self.name_edit.setMinimumWidth(240)
+        self.player_edit.setMinimumWidth(220)            # v48 : la place de l'alignement revient au joueur
         h.addWidget(make_label("⚜ Personnage", "title"))
         h.addWidget(self.name_edit, 2)
         h.addWidget(make_label("Joueur"))
-        h.addWidget(self.player_edit, 1)
-        h.addWidget(make_label("Alignement"))
-        h.addWidget(self.align)
+        h.addWidget(self.player_edit, 2)
         h.addWidget(make_label("XP"))
         h.addWidget(self.xp)
         h.addWidget(self.xp_hint)
-        h.addWidget(make_label("Niveau global"))
+        self.level_label = make_label("Niveau global")
+        h.addWidget(self.level_label)
         h.addWidget(self.level)
+        # v50 : Mode guidé -> classe(s), sous-classe et niveau en texte statique stylé (badges)
+        self.class_badge = make_label("", "badge")
+        self.class_badge.setTextFormat(Qt.TextFormat.RichText)
+        h.addWidget(self.class_badge)
         # v29 : montée de niveau guidée (le compteur reste disponible : mode « MJ », sans assistant)
         self.levelup_btn = QPushButton("▲ Niveau supérieur")
         self.levelup_btn.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -169,7 +207,6 @@ class MainWindow(QMainWindow):
                 h.addWidget(self.init_btn)
         self.name_edit.textEdited.connect(lambda t: self._set_text("nom", t))
         self.player_edit.textEdited.connect(lambda t: self._set_text("joueur", t))
-        self.align.activated.connect(lambda _=0: self._set_text("alignement", self.align.currentText()))
         self.xp.valueChanged.connect(self._on_xp)
         self.level.valueChanged.connect(self._on_level)
         return h
@@ -195,10 +232,11 @@ class MainWindow(QMainWindow):
     def _build_menu(self):
         bar = self.menuBar()
         fm = bar.addMenu("&Fichier")
-        for text, key, slot in (("Nouveau personnage", QKeySequence.StandardKey.New, self.action_new),
-                                ("Ouvrir…", QKeySequence.StandardKey.Open, self.action_open),
-                                ("Enregistrer", QKeySequence.StandardKey.Save, self.action_save),
-                                ("Enregistrer sous…", QKeySequence("Ctrl+Shift+S"), self.action_save_as)):
+        for text, key, slot in (("Nouveau personnage… (assistant de création)", QKeySequence.StandardKey.New,
+                                 self.action_new),
+                                ("Charger…", QKeySequence.StandardKey.Open, self.action_open),
+                                ("Sauvegarder", QKeySequence.StandardKey.Save, self.action_save),
+                                ("Sauvegarder sous…", QKeySequence("Ctrl+Shift+S"), self.action_save_as)):
             act = QAction(text, self)
             act.setShortcut(key)
             act.triggered.connect(slot)
@@ -290,10 +328,17 @@ class MainWindow(QMainWindow):
         return choice == "discard"
 
     def action_new(self):
-        if self._confirm_discard():
-            self.engine = Engine(self.db, Engine.new_character(self.db))
-            self.path, self._dirty = None, False
-            self.refresh_all()
+        """Fichier > Nouveau personnage : assistant de création niveau 1 (inspiré de Baldur's Gate 3)."""
+        if not self._confirm_discard():
+            return False
+        from .creation_wizard import run_creation
+        return run_creation(self)
+
+    def new_blank(self) -> None:
+        """Personnage par défaut (sans assistant) — utilisé si l'assistant est fermé au premier lancement."""
+        self.engine = Engine(self.db, Engine.new_character(self.db))
+        self.path, self._dirty = None, False
+        self.refresh_all()
 
     def action_open(self):
         if not self._confirm_discard():
@@ -307,11 +352,17 @@ class MainWindow(QMainWindow):
         except (OSError, ValueError, KeyError) as exc:
             QMessageBox.critical(self, "Chargement impossible", str(exc))
             return
+        self.load_character(char, Path(path))
+
+    def load_character(self, char: Character, path: Path | None, dirty: bool = False) -> None:
         self.engine = Engine(self.db, char)
         self.engine.normalize()
         if not char.competences_historique:
             self.engine.apply_background()
-        self.path, self._dirty = Path(path), False
+        self.path, self._dirty = path, dirty
+        if path is not None:
+            self.settings["dernier_fichier"] = str(path)
+            save_settings(self.settings)
         self.refresh_all()
 
     def _start_dir(self) -> str:
@@ -339,9 +390,60 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Enregistrement impossible", str(exc))
             return
         self.path, self._dirty = path, False
+        self.settings["dernier_fichier"] = str(path)        # v48 : rouvert au prochain lancement
+        save_settings(self.settings)
         self._update_title()
         note = self.missing_note()
         self.statusBar().showMessage("Personnage enregistré : {}{}".format(path, " — " + note if note else ""), 8000)
+
+    # ------------------------------------------------------------------ v48 : sauvegarde automatique
+    @staticmethod
+    def autosave_path() -> Path:
+        from core.paths import user_data_dir
+        return user_data_dir() / "sauvegarde_auto.json"
+
+    def schedule_autosave(self) -> None:
+        timer = getattr(self, "_autosave_timer", None)
+        if timer is not None:
+            timer.start()
+
+    def autosave(self, path: Path | None = None) -> bool:
+        """Copie de sécurité du personnage en cours (avec le fichier d'origine), relue au prochain lancement."""
+        import json
+        target = path or self.autosave_path()
+        data = self.ch.to_dict()
+        data["_fichier"] = str(self.path) if self.path else ""
+        data["_modifie"] = bool(self._dirty)
+        try:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with open(target, "w", encoding="utf-8") as fh:
+                json.dump(data, fh, ensure_ascii=False)
+        except OSError:
+            return False
+        return True
+
+    def restore_last_session(self, autosave: Path | None = None) -> str:
+        """Au lancement : la sauvegarde automatique si elle contient des modifications non enregistrées (ou un
+        personnage jamais enregistré), sinon le dernier fichier enregistré. Renvoie ce qui a été rouvert."""
+        import json
+        auto = autosave or self.autosave_path()
+        last = Path(self.settings.get("dernier_fichier") or "")
+        try:
+            data = json.loads(auto.read_text(encoding="utf-8")) if auto.exists() else None
+        except (OSError, ValueError):
+            data = None
+        if isinstance(data, dict) and "classes" in data and (data.get("_modifie") or not data.get("_fichier")):
+            src = Path(data["_fichier"]) if data.get("_fichier") else None
+            self.load_character(Character.from_dict(data), src if src and src.exists() else None,
+                                dirty=bool(data.get("_modifie")))
+            return "auto"
+        if str(last) not in ("", ".") and last.is_file():
+            try:
+                self.load_character(Character.load(last), last)
+                return "fichier"
+            except (OSError, ValueError, KeyError):
+                return ""
+        return ""
 
     def action_about(self):
         db = self.db
@@ -355,6 +457,11 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         if self._confirm_discard("Ne pas enregistrer et quitter"):
+            if self._dirty:                              # « Ne pas enregistrer » : la copie de sécurité est oubliée
+                try:
+                    self.autosave_path().unlink()
+                except OSError:
+                    pass
             event.accept()
         else:
             event.ignore()
@@ -368,7 +475,10 @@ class MainWindow(QMainWindow):
     def _visible_keys(self) -> list[str]:
         """Onglets à afficher : « Forme sauvage » seulement si le personnage a des niveaux de Druide."""
         has_druid = any(c["nom"] == "Druide" for c in self.ch.classes)
-        return [k for k, _, _ in self.tab_defs if k != "druide" or has_druid]
+        # v48 : onglet Race (choix de race / historique / langues) remplacé par l'assistant de création et l'encart
+        # « Résumé de la race » ; il reste visible en Mode libre, ou tant qu'un choix de langue y est en attente
+        race_tab = self.free_mode or any(m["onglet"] == "race" for m in self.engine.missing_choices())
+        return [k for k, _, _ in self.tab_defs if (k != "druide" or has_druid) and (k != "race" or race_tab)]
 
     def _full_order(self) -> list[str]:
         """Ordre complet mémorisé (clés inconnues ignorées, nouvelles clés ajoutées à leur place par défaut)."""
@@ -449,6 +559,7 @@ class MainWindow(QMainWindow):
         eng.normalize()
         self._dirty = True
         self.refresh_all()
+        self.schedule_autosave()
 
     def light_changed(self, keep_current: bool = True) -> None:
         """
@@ -464,12 +575,11 @@ class MainWindow(QMainWindow):
         """En-tête + onglet visible (les autres sont marqués et recalculés à leur ouverture)."""
         eng, ch = self.engine, self.ch
         with eng.batch():
-            with blocked(self.name_edit, self.player_edit, self.xp, self.level, self.align):
+            with blocked(self.name_edit, self.player_edit, self.xp, self.level):
                 if self.name_edit.text() != ch.nom:
                     self.name_edit.setText(ch.nom)
                 if self.player_edit.text() != ch.joueur:
                     self.player_edit.setText(ch.joueur)
-                fill_combo(self.align, R.ALIGNMENTS, ch.alignement)
                 self.xp.setValue(ch.experience)
                 self.level.setValue(eng.total_level)
             self.xp_hint.setText("(niveau {} selon l'XP)".format(eng.level_from_xp()))
@@ -483,15 +593,13 @@ class MainWindow(QMainWindow):
                 tip = ""
                 self.badges["pv"].setText("PV {}/{}".format(ch.pv_actuels, eng.hp_max()))
                 self.badges["ca"].setText("CA {}{}".format(eng.armor_class()[0], " ⚠" if eng.unproficient_gear() else ""))
-            for k in ("pv", "ca", "vit"):
+            for k in ("pv", "ca"):
                 self.badges[k].setToolTip(tip)
             if not form:                                 # v36 : calcul détaillé de la CA au survol
                 gear = eng.unproficient_gear()
                 self.badges["ca"].setToolTip(rich_tip("Classe d'armure", eng.ac_breakdown_text() + "".join(
                     "\n⚠ {} ({})".format(g["message"], g["nom"]) for g in gear) + (
                     "\n⚠ Impossible de lancer un sort tout en portant une armure non maîtrisée." if gear else "")))
-            self.badges["vit"].setText(("{} ".format(form["icone"]) if form else "") + "Vitesse {}".format(eng.speed_text()))
-            self.badges["prof"].setText("Maîtrise {}".format(R.fmt_bonus(eng.prof)))
             idet = eng.initiative_detail()               # v45 : initiative + dernier jet
             self.badges["init"].setText("Init {}{}".format(R.fmt_bonus(idet["total"]), " (jet : {})".format(
                 ch.initiative_jet) if ch.initiative_jet else ""))
@@ -501,6 +609,7 @@ class MainWindow(QMainWindow):
                 "\nAvantage : " + ", ".join(idet["avantage"]) if idet["avantage"] else "") +
                 "\nCliquez sur le d20 pour lancer 1d20 + modificateur."))
             self.levelup_btn.setEnabled(eng.total_level < R.MAX_LEVEL)
+            self._apply_mode_locks()
             self._refresh_form_banner()
             self._sync_tabs()
             current = self._key_of.get(id(self.tabs.currentWidget()))
@@ -629,4 +738,8 @@ def run(db: Database, settings: dict | None = None) -> int:
             break
     win = MainWindow(db, settings)
     win.show()
+    # v48 : le dernier personnage est rouvert ; sinon (premier lancement) l'assistant de création s'ouvre
+    if not win.restore_last_session() and settings.get("assistant_au_demarrage", True):
+        from .creation_wizard import run_creation
+        run_creation(win)
     return app.exec()

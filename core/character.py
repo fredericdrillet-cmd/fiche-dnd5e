@@ -119,6 +119,7 @@ class Character:
     # ---- Magie ------------------------------------------------------------------------
     pacte: str = ""                         # Pacte divin de l'Occultiste (lame / chaîne / grimoire / talisman)
     manifestations: list[str] = field(default_factory=list)   # manifestations occultes choisies
+    sorts_raciaux: dict[str, str] = field(default_factory=dict)   # v48 : trait racial -> sort mineur choisi
     rituels_livre: list[str] = field(default_factory=list)    # v37 — Livre des secrets anciens : rituels inscrits
     sorts: dict[str, list[dict]] = field(default_factory=dict)   # classe -> [{"nom", "prepare"}]
     emplacements_utilises: list[int] = field(default_factory=lambda: [0] * 9)
