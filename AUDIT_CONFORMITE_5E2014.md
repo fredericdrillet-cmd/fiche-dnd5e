@@ -87,7 +87,7 @@ Légende : 🟢 conforme · 🟡 acceptable avec réserves · 🔴 à reprendre.
 | Armures | **4** | Cuir de l'Ombre, Cuirasse renforcée de drakéide, Harnois en adamantite noir, Bouclier à pointes |
 | Espèces | **3** | Kitsune et Myconide éveillé (« Favori de la communauté ») ; Conil (voir §6, c'est en réalité l'Harengon officiel) |
 
-Rien de tout cela n'existe dans les livres 2014 ; un personnage « officiel 2014 » peut pourtant le choisir. **À distinguer** : *Domaine de l'Arcane* (Clerc) est **officiel** (SCAG) mais son nom porte le suffixe « (Communauté) » à tort.
+Rien de tout cela n'existe dans les livres 2014 (voir §14 pour savoir ce qui existe en ligne) ; un personnage « officiel 2014 » peut pourtant le choisir. **À distinguer** : *Domaine de l'Arcane* (Clerc) est **officiel** (SCAG) mais son nom porte le suffixe « (Communauté) » à tort.
 
 ### 2.4 Vocabulaire et mécaniques de 2024 🟡
 
@@ -488,6 +488,95 @@ Légende : ✅ ton application suit la règle 2014 · ⚠ écart · ➖ absent d
 
 ### Un réglage global à envisager
 Un réglage « **Référentiel de règles : 2014 strict / 2014 + suppléments récents / tout** » permettrait de garder le contenu non 2014 sans qu'il pollue une table qui joue 2014. Toutes les étiquettes de ce document (🟢 🟠 🔴, « communauté », « 2022 », « 2024 ») peuvent servir de champ `referentiel` dans les données.
+
+---
+
+## 14. Sous-classes « maison » : existence en ligne et propositions
+
+> Complément demandé après la première version de l'audit. **Recherche web uniquement** : seules des recherches ont fonctionné, les pages elles-mêmes n'étaient pas lisibles depuis cette session (sites hors de la liste autorisée). Je ne peux donc ni comparer le texte de l'application à celui d'une source, ni juger l'équilibre ou la complétude niveau par niveau.
+
+### 14.1 Les 27 sous-classes de l'application existent-elles en ligne ?
+
+**Réponse courte** : pour **10 d'entre elles**, une sous-classe de même nom existe en ligne, mais le plus souvent **en plusieurs versions écrites par des auteurs différents**. Pour **4**, il existe une sous-classe proche. Pour **12**, je n'ai rien trouvé. **Aucune** n'est attribuée à un auteur ou à un lien dans l'application, donc je ne peux pas dire d'où vient son texte.
+
+Légende : 🟢 une version de même nom existe · 🟡 sous-classe proche · 🔴 rien trouvé · ⚪ non vérifié. « Rien trouvé » ne prouve pas l'inexistence : le nom français peut traduire un titre anglais différent.
+
+| Classe | Sous-classe (app) | Résultat | Ce que j'ai trouvé |
+|---|---|---|---|
+| Barbare | Voie du Météore | 🟢 | *Path of the Meteor*, au moins deux versions indépendantes sur GM Binder (dont une au format 2024) |
+| Barbare | Voie du Colosse des glaces | 🟡 | rien sous ce nom ; proches : *Path of the Frozen Sea*, *Path of the Frozen Warrior* |
+| Barde | Collège des Commandants | 🟡 | *College of Command* (LaserLlama), pas *Commanders* |
+| Barde | Collège de la Discorde | 🟢 | *College of Discord*, au moins deux versions sur D&D Beyond |
+| Clerc | Domaine du Sang | 🟢 | de nombreuses versions ; une est **publiée** : *Blood Domain* dans *Tal'Dorei Campaign Setting Reborn* (Darrington Press, 2022) |
+| Druide | Cercle de la Mutation | 🟢 | *Circle of Mutation* sur D&D Wiki et dans *Grim Hollow* |
+| Druide | Cercle de la Sangsue | 🔴 | rien ; le plus proche est *Circle of Ichor* (mécanique de « points de sangsue », page inachevée) |
+| Ensorceleur | Lignée du sang | ⚪ | non recherché séparément |
+| Ensorceleur | Magie cosmique | 🟢 | plusieurs « Cosmic Magic / Cosmic Sorcerer » (dont Mage Hand Press, format 2024) |
+| Guerrier | Chevalier de sang | 🟢 | *Blood Knight*, plusieurs versions (D&D Wiki, D&D Beyond, World Anvil) |
+| Guerrier | Pancratiaste | 🔴 | rien ; proche : *Pugilist* (Tome of Heroes) |
+| Magicien | Magicien du sang | 🟡 | pas sous ce nom ; un sous-ensemble « hémocraftie » existe dans *Tal'Dorei Reborn* (nom exact non confirmé) et *Sangromancer* dans *Grim Hollow* |
+| Magicien | Liaison élémentaire | 🔴 | rien |
+| Magicien | Gravure runique | 🔴 | rien ; proches : *Rune Scribe*, *Runic Knight* |
+| Moine | Voie du Sang | 🔴 | rien de convaincant |
+| Moine | Voie de la Tempête | 🔴 | rien |
+| Occultiste | Le Moissonneur | 🟢 | *Reaper: A Warlock Patron* (Zargo Games, itch.io, payant) et d'autres |
+| Occultiste | Le Protecteur astral | 🟢 | *Astral Guardian*, sur D&D Beyond (homebrew) |
+| Paladin | Serment du Sang | 🟢 | *Oath of Blood*, plusieurs versions sur D&D Beyond |
+| Paladin | Serment des Cendres | 🔴 | rien |
+| Rôdeur | Traqueur de sang | 🔴 | rien |
+| Rôdeur | Artisan des pièges | 🔴 | rien ; *Trapper* existe seulement comme guilde du Chasseur de monstres de *Grim Hollow* |
+| Roublard | Lame d'ombre | 🔴 | rien |
+| Roublard | Pistoléro | 🔴 | rien |
+| Artificier | Automaturge | 🟡 | *Automaton Creator*, *Mechanist*, *Animator*… mais pas ce nom |
+| Artificier | Cartomancien | 🔴 | rien |
+| Artificier | Horloger | 🟢 | *Clockmaker* / *Horologist*, plusieurs versions (D&D Beyond, ENWorld) |
+
+**Ce que cela veut dire** : ces noms sont des thèmes très courants (« sang », « horloger », « tempête »). Ils correspondent à des idées répandues plus qu'à des œuvres identifiables. **Le risque** : sans attribution, tu ne peux pas savoir si le texte est une création originale, une traduction de la version d'un auteur, ou un texte tiré d'un livre commercial. Pour un livre publié (Tal'Dorei Reborn, Grim Hollow, Tome of Heroes), recopier le texte dans l'application demande l'accord de l'éditeur. Une étiquette « auteur, source, lien » par sous-classe lèverait le doute.
+
+### 14.2 Propositions : deux sous-classes « communauté » par classe
+
+**Aucun classement de popularité n'existe en ligne** (les recherches ne ramènent que des listes subjectives ou de faible qualité). Je n'ai donc pas pu classer par popularité. J'ai retenu des sous-classes issues de **trois livres édités** par des studios, plus aboutis que des créations isolées, et dont **l'existence et la classe ont été confirmées par recherche** :
+
+| Livre | Éditeur | Édition de règles | Contenu retenu ici |
+|---|---|---|---|
+| *Tal'Dorei Campaign Setting Reborn* (2022) | Darrington Press (Critical Role) | 5e 2014 | 9 sous-classes ; confirmées : Voie du Juggernaut (Barbare), Collège de la Tragédie (Barde), Domaine du Sang et Domaine de la Lune (Clerc), Serment de la Haute Mer (Paladin) |
+| *Grim Hollow Player's Guide* | Ghostfire Gaming | 5e 2014 (2020) ; **réédité aux règles 2024 en 2025** | 2 à 3 sous-classes par classe ; noms confirmés pour 12 classes (ci-dessous) |
+| *Tome of Heroes* (2022) | Kobold Press | 5e 2014 | plus de 70 sous-classes ; confirmées : Cercle des Abeilles, Voie de l'Archer infaillible, Voie de l'Enfer, École de la Poudre noire, Pugilist, Collège des Ombres, Voie du Mouvement concordant |
+
+| Classe | Proposition 1 | Proposition 2 | Remarque |
+|---|---|---|---|
+| **Barbare** | *Path of the Juggernaut* (Tal'Dorei Reborn) 🟢 | *Path of Hellfire* (Tome of Heroes) 🟢 | Alternatives Grim Hollow : voies des Fracturés, de l'Esprit primal, des Morts courroucés |
+| **Barde** | *College of Tragedy* (Tal'Dorei Reborn) 🟢 | *College of Shadows* (Tome of Heroes) 🟢 | Grim Hollow : collèges des Aventuriers, des Fous, des Requiems |
+| **Clerc** | *Blood Domain* (Tal'Dorei Reborn) 🟢 | *Moon Domain* (Tal'Dorei Reborn) 🟢 | L'app a déjà un Domaine du Sang : à remplacer si le texte est celui-ci ; Grim Hollow : domaines Éldritch, Inquisition, Purification |
+| **Druide** | *Circle of Bees* (Tome of Heroes) 🟢 | *Circle of Mutation* (Grim Hollow) 🟢 | L'app a déjà un Cercle de la Mutation ; autres Grim Hollow : cercles du Sang, de l'Entropie |
+| **Ensorceleur** | *Haunted* (Grim Hollow) 🟡 | *Apocalypse* (Grim Hollow) 🟡 | Troisième : *Wretched*. *Runechild* (Tal'Dorei Reborn) non confirmé 🔴 |
+| **Guerrier** | *Pugilist* (Tome of Heroes) 🟢 | *Nightwatcher* ou *Bulwark Warrior* (Grim Hollow) 🟡 | *Living Crucible* : troisième option |
+| **Magicien** | *School of Black Powder* (Tome of Heroes) 🟢 | *Plague Doctor* ou *Sangromancer* (Grim Hollow) 🟡 | *Daemonologist* : troisième option |
+| **Moine** | *Way of the Unerring Arrow* (Tome of Heroes) 🟢 | *Way of Concordant Motion* (Tome of Heroes) 🟢 | *Way of the Cobalt Soul* est un contenu **officiel** de Wildemount (aussi reprise dans Tal'Dorei) : à ajouter côté officiel (§4) |
+| **Occultiste** | *The Coven* ou *The First Vampire* (Grim Hollow) 🟡 | *The Parasite* (Grim Hollow) 🟡 | *Reaper* (Zargo Games, payant) en alternative |
+| **Paladin** | *Oath of the Open Sea* (Tal'Dorei Reborn) 🟢 | *Oath of Zeal* ou *Oath of Pestilence* (Grim Hollow) 🟡 | *Oath of Slaughter* : troisième option |
+| **Rôdeur** | *Primordial Archer* (Grim Hollow) 🟡 | *Vermin Lord* (Grim Hollow) 🟡 | *Green Reaper* : troisième option |
+| **Roublard** | *Highway Rider* (Grim Hollow) 🟡 | *Misfortune Bringer* (Grim Hollow) 🟡 | *Sanguine Thief* : troisième option. Un test ENWorld juge « trop puissantes » les sous-classes de roublard de Tome of Heroes |
+| **Artificier** | *Clockmaker / Horologist* (homebrew D&D Beyond) 🔴 | *Mechanist* ou *Animator* (D&D Wiki) 🔴 | **Aucune source éditée trouvée** pour cette classe : candidats d'auteurs isolés, à lire avant de choisir |
+
+🟢 existence et classe confirmées · 🟡 nom trouvé dans les listes des guides de Grim Hollow (certaines listes sont celles de l'édition 2024) : à confirmer dans la version 2014 · 🔴 source non éditée ou non confirmée.
+
+### 14.3 Réserves à connaître avant de choisir
+
+1. **Pages non lues** : je n'ai vu que des titres et des résumés de recherche. Je n'ai pas pu vérifier la **complétude** (une sous-classe complète doit donner des aptitudes aux niveaux de sa classe : Guerrier 3, 7, 10, 15, 18 ; Magicien 2, 6, 10, 14 ; etc.) ni l'**équilibre**.
+2. **Édition** : *Grim Hollow* existe en deux éditions. Les noms que j'ai pu confirmer viennent surtout de guides de l'édition **2024**. Pour un jeu en 2014, il faut la version de 2020. Certaines sous-classes proposées existent peut-être sous le même nom dans les deux versions avec des règles différentes.
+3. **Droits** : ces trois livres sont des **produits commerciaux**. L'intégration du texte complet dans ton application nécessite l'accord des éditeurs. Le plus sûr est d'y mettre un résumé, le nom et la référence du livre.
+4. **Style** : *Grim Hollow* est un cadre de **fantasy sombre** (vampires, sang, peste) ; *Tome of Heroes* est tourné vers Midgard. Ils ne conviennent pas à toutes les tables.
+5. **Artificier** : c'est la classe où l'offre éditée est la plus mince.
+
+### 14.4 Décisions à prendre (je n'ai rien modifié)
+
+- Veux-tu **garder** les 27 sous-classes actuelles, en y ajoutant une étiquette de provenance, **ou les remplacer** par une sélection éditée ?
+- Pour les propositions ci-dessus : quels livres possèdes-tu, ou peux-tu consulter ? Je ne peux rédiger fidèlement une aptitude que si tu me donnes le texte, ou si je peux le lire.
+
+### 14.5 Sources consultées (résultats de recherche)
+
+[Tal'Dorei Reborn sur D&D Beyond](https://www.dndbeyond.com/sources/tcsr) · [aperçu des 9 sous-classes](https://www.dndbeyond.com/posts/1549-preview-9-mighty-new-subclasses-from-taldorei) · [liste sur ComicBook](https://comicbook.com/gaming/news/critical-role-taldorei-reborn-subclasses-list) · [Grim Hollow Player's Guide](https://www.dndbeyond.com/sources/dnd/ghpg) · [guides Grim Hollow (Dungeonmister)](https://dungeonmister.com/grim-hollow/) · [Tome of Heroes (Kobold Press)](https://koboldpress.com/tome-of-heroes-5th-edition-character-options-for-your-game) · [avis ENWorld sur Tome of Heroes](https://www.enworld.org/threads/a-tome-of-heroes-review.691513/) · [Path of the Meteor](https://www.gmbinder.com/share/-MTDS56FjKw5pmbc2VSH) · [College of Discord](https://www.dndbeyond.com/classes/535090-college-of-discord) · [Blood Domain](https://www.dndbeyond.com/classes/601183-blood-domain) · [Circle of Mutation](https://dandwiki.com/wiki/Circle_of_Mutation_(5e_Subclass)) · [Cosmic Magic](https://magehandpress.com/2025/12/cosmic-magic-5e2024/) · [Blood Knight](https://www.dandwiki.com/wiki/Blood_Knight_(5e_Subclass)) · [Reaper (warlock)](https://zargogames.itch.io/reaper-a-warlock-patron) · [Astral Guardian](https://www.dndbeyond.com/classes/97568-astral-guardian) · [Oath of Blood](https://www.dndbeyond.com/subclasses/2280991-oath-of-blood) · [Clockmaker](https://www.dndbeyond.com/classes/2725879-clockmaker) · [archétypes de roublard (Nerdarchy)](https://nerdarchy.com/top-10-5e-dd-homebrew-roguish-archetypes-by-a-factor-of-three/)
 
 ---
 
