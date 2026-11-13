@@ -14,6 +14,8 @@ ou si sa ressource (emplacement, sphère) est épuisée.
 """
 from __future__ import annotations
 
+from . import house_rules as HR
+
 import re
 from typing import Optional
 
@@ -332,12 +334,22 @@ class TurnMixin:
                  p["description"][:500], ok, why, "{} charge(s)".format(p["cout"]) if p["cout"] else "",
                  ref={"pouvoir": p["id"]})
         # v40 — règle optionnelle : boire soi-même une potion de son inventaire par une action bonus
-        drinks = self.drinkable_potions()
-        tile("potion:boire", "Boire une potion (Action bonus)", "🧪", "Action bonus", "règle optionnelle",
-             "Vous buvez vous-même une potion de votre inventaire ({}). Administrer une potion à un allié reste une "
-             "action (« Utiliser un objet »).".format(", ".join("{} ×{}".format(p["nom"], p["qte"]) for p in drinks)
-                                                       if drinks else "aucune potion"),
-             bool(drinks), "" if drinks else "Aucune potion dans l'inventaire.", "1 potion")
+        drinks = self.drinkable_potions() if self.rule_active("potion_action_bonus") else []
+        if self.rule_active("potion_action_bonus"):
+            tile("potion:boire", "Boire une potion (Action bonus)", "🧪", "Action bonus", "règle optionnelle",
+                 "Vous buvez vous-même une potion de votre inventaire ({}). Administrer une potion à un allié reste "
+                 "une action (« Utiliser un objet »).".format(
+                     ", ".join("{} ×{}".format(p["nom"], p["qte"]) for p in drinks) if drinks else "aucune potion"),
+                 bool(drinks), "" if drinks else "Aucune potion dans l'inventaire.", "1 potion")
+        # v52 — inspiration : règle 2014 ou inspiration héroïque 2024 (règle de la table)
+        heroic = self.rule_active("inspiration_heroique")
+        if self.ch.inspiration:
+            tile("inspiration:utiliser", "Utiliser l'inspiration", "🌟", "Gratuit",
+                 "Inspiration héroïque (2024)" if heroic else "Inspiration (2014)", HR.inspiration_text(heroic))
+        else:
+            tile("inspiration:recevoir", "Recevoir l'inspiration (MJ)", "🌟", "Gratuit",
+                 "Inspiration héroïque (2024)" if heroic else "Inspiration (2014)",
+                 "Le MJ vous accorde l'inspiration. " + HR.inspiration_text(heroic))
         order = {k: i for i, k in enumerate(ECONOMY)}
         actions = {a["id"]: a for a in self.class_actions()}
         for t in out:                                     # v41 : groupe d'affichage de l'onglet Combat
@@ -446,6 +458,9 @@ class TurnMixin:
         elif tile_id.startswith("reaction:"):
             self.ch.reaction_utilisee = ref["reaction"]
             res.update(ok=True, message="{} : réaction du round utilisée.".format(t["nom"].lstrip("★ ")))
+        elif tile_id in ("inspiration:utiliser", "inspiration:recevoir"):
+            self.ch.inspiration = tile_id == "inspiration:recevoir"
+            res.update(ok=True, message="Inspiration {}.".format("reçue" if self.ch.inspiration else "utilisée"))
         elif tile_id == "potion:boire":                    # le choix et l'effet de la potion se font dans l'interface
             self.spend_economy("Action bonus")
             res.update(ok=True, potion=True, message="Boire une potion : action bonus.")

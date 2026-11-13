@@ -430,6 +430,7 @@ class Database:
     def __init__(self, data_dir: Optional[Path | str] = None, use_fallback: bool = True):
         self.data_dir = Path(data_dir) if data_dir else None
         self.warnings: list[str] = []
+        self._editions = None                                       # v52 : catalogue data/editions (à la demande)
         self.skills: list[dict] = []
         self.classes: dict[str, dict] = {}
         self.races: dict[str, dict] = {}
@@ -639,6 +640,14 @@ class Database:
     @property
     def shield(self) -> dict:
         return next(iter(self.shields.values()), {"nom": "Bouclier", "bonus_ca": 2})
+
+    @property
+    def editions(self):
+        """v52 : catalogue des données de référence 2014 / 2024 (`data/editions/`), chargé à la première lecture."""
+        if self._editions is None:
+            from .editions import EditionCatalog
+            self._editions = EditionCatalog((self.data_dir or Path(".")) / "editions")
+        return self._editions
 
     @property
     def skill_names(self) -> list[str]:

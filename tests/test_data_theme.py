@@ -124,6 +124,7 @@ class FeatureTests(unittest.TestCase):
         eng = self._eng()
         eng.ch.classes = [{"nom": "Guerrier", "niveau": 1, "sous_classe": "", "pv_jets": []}]
         eng.ch.scores_manuel["Force"] = 16
+        eng.ch.regles_optionnelles["maitrises_armes_2014"] = True      # v52 : la botte est une règle de la table
         st = eng.weapon_stats({"nom": "Hache d’armes", "bonus": 1, "maitrise": None})
         # v46 : main secondaire libre -> polyvalente tenue à deux mains automatiquement
         self.assertEqual(st["degats"], "1d10+4")

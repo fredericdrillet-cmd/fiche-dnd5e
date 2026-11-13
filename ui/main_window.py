@@ -266,6 +266,9 @@ class MainWindow(QMainWindow):
         prefs.setShortcut(QKeySequence("Ctrl+,"))
         prefs.triggered.connect(self.action_options)
         om.addAction(prefs)
+        rules = QAction("Règles de la table… (édition 2014 / 2024 / libre, règles optionnelles)", self)
+        rules.triggered.connect(self.action_rules)
+        om.addAction(rules)
         om.addSeparator()
         group = QActionGroup(self)
         group.setExclusive(True)
@@ -291,6 +294,11 @@ class MainWindow(QMainWindow):
 
     def action_options(self):
         OptionsDialog(self).exec()
+
+    def action_rules(self):
+        """v52 : Options > Règles de la table (édition du personnage et règles optionnelles)."""
+        from .rules_dialog import RulesDialog
+        RulesDialog(self).exec()
 
     def apply_appearance(self, key: str, font_px: int, save: bool = False) -> None:
         """Change le thème / la taille du texte à chaud (aperçu), et mémorise les préférences si `save`."""
@@ -337,6 +345,8 @@ class MainWindow(QMainWindow):
     def new_blank(self) -> None:
         """Personnage par défaut (sans assistant) — utilisé si l'assistant est fermé au premier lancement."""
         self.engine = Engine(self.db, Engine.new_character(self.db))
+        from .rules_dialog import apply_table_defaults
+        apply_table_defaults(self.engine.ch, self.settings)
         self.path, self._dirty = None, False
         self.refresh_all()
 

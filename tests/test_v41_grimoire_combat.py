@@ -85,6 +85,7 @@ class CombatLayoutTests(unittest.TestCase):
         eng = make("Roublard", 3, spells={})
         eng.ch.armes_cac[0] = {"nom": "Rapière", "bonus": 0, "maitrise": None}
         eng.ch.equipement.append({"nom": "Potion de guérison", "qte": 1})
+        eng.ch.regles_optionnelles["potion_action_bonus"] = True       # v52 : règle de la table
         eng.normalize()
         g = {t["id"]: t["groupe"] for t in eng.turn_actions()}
         self.assertEqual(g["arme:armes_cac:0"], "attaques")

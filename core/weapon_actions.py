@@ -316,18 +316,23 @@ def botte_key(weapon: dict) -> Optional[str]:
     return _BOTTE_KEYS.get(_norm(weapon.get("botte", "")))
 
 
-def actions_for_weapon(weapon: dict) -> list[str]:
-    """Clés d'actions de l'arme, botte d'arme en premier (1 à 4 entrées)."""
+def actions_for_weapon(weapon: dict, botte: bool = True, extras: bool = True) -> list[str]:
+    """
+    Clés d'actions de l'arme, botte d'arme en premier (1 à 4 entrées).
+    v52 : `botte` = maîtrise d'arme 2024 permise (règle de la table + arme maîtrisée), `extras` = actions BG3.
+    Sans botte ni actions BG3, il reste l'action de base (Bousculer).
+    """
     keys: list[str] = []
-    b = botte_key(weapon)
+    b = botte_key(weapon) if botte else None
     if b:
         keys.append(b)
-    extra = _WEAPON_MAP.get(_norm(weapon.get("nom", "")))
-    if extra is None:
-        extra = _fallback_actions(weapon)
-    for k in extra:
-        if k in ACTIONS and k not in keys:
-            keys.append(k)
+    if extras:
+        extra = _WEAPON_MAP.get(_norm(weapon.get("nom", "")))
+        if extra is None:
+            extra = _fallback_actions(weapon)
+        for k in extra:
+            if k in ACTIONS and k not in keys:
+                keys.append(k)
     if not keys:
         keys.append("bousculer")
     return keys[:4]
@@ -337,10 +342,10 @@ def compute_dd(attack_mod: int, prof: int) -> int:
     return 8 + int(prof) + int(attack_mod)
 
 
-def weapon_action_rows(weapon: dict, attack_mod: int, prof: int) -> list[dict]:
+def weapon_action_rows(weapon: dict, attack_mod: int, prof: int, botte: bool = True, extras: bool = True) -> list[dict]:
     """Actions de l'arme enrichies de « cle » et « dd » (int si la règle utilise le DD, sinon None)."""
     rows = []
-    for k in actions_for_weapon(weapon):
+    for k in actions_for_weapon(weapon, botte, extras):
         row = dict(ACTIONS[k])
         row["cle"] = k
         row["dd"] = compute_dd(attack_mod, prof) if row.get("condition_dd") else None

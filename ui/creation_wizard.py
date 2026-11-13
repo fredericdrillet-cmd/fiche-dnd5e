@@ -86,6 +86,8 @@ class CreationWizard(QDialog):
         super().__init__(win)
         self.win = win
         self.engine = Engine(win.db, Engine.new_character(win.db))
+        from .rules_dialog import apply_table_defaults                 # v52 : édition et règles de la table
+        apply_table_defaults(self.engine.ch, getattr(win, "settings", {}) or {})
         self.host = WizardHost(self, win, self.engine)
         self.step = 0
         self.equip_mode = "paquetage"

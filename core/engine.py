@@ -12,6 +12,8 @@ import re
 from contextlib import contextmanager
 from typing import Optional
 
+from . import editions as E
+from . import house_rules as HR
 from . import rules as R
 from .character import Character
 from .data_loader import Database
@@ -129,7 +131,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def new_character(db: Database) -> Character:
         ch = Character()
         first = "Guerrier" if "Guerrier" in db.classes else (db.class_names() or [""])[0]
-        ch.classes = [{"nom": first, "niveau": 1, "sous_classe": "", "pv_jets": []}]
+        ch.classes = [{"nom": first, "niveau": 1, "sous_classe": "", "pv_jets": [], "edition": E.DEFAULT_EDITION}]
         races = db.race_names()
         ch.race = "Humain" if "Humain" in db.races else (races[0] if races else "")
         bgs = db.background_names()
@@ -146,6 +148,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             self._memo.clear()
         ch = self.ch
         ch.pv_mode = "moyenne"
+        ch.edition_mode = E.normalize_mode(ch.edition_mode)            # v52 : éditions
+        for entry in ch.classes:
+            entry["edition"] = E.item_edition(entry)
         if "Halphen" in ch.langues_liste:                 # coquille corrigée (v34) : langue des halfelins
             ch.langues_liste = ["Halfelin" if x == "Halphen" else x for x in ch.langues_liste]
         if ch.race in RACE_RENAMED and ch.race not in self.db.races:      # espèce retirée (doublon) -> remplaçante
@@ -1390,7 +1395,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 "prise": ("à deux mains" if two_handed_grip else "à une main") if w.get("polyvalent") else "",
                 "bonus_degats": list(terms), "calcul": calc, "calcul_1m": calc_1m, "calcul_2m": calc_2m,
                 "proprietes": w.get("proprietes", []), "portee": w.get("portee", ""), "magique": magic,
-                "botte": w.get("botte", ""), "botte_desc": w.get("botte_desc", ""), "origine": w.get("origine", ""),
+                "botte": w.get("botte", "") if self.rule_active("maitrises_armes_2014") else "",
+                "botte_desc": w.get("botte_desc", "") if self.rule_active("maitrises_armes_2014") else "", "origine": w.get("origine", ""),
                 "styles": notes, "munition": ammo, "etat": M.adv_state(fx_atk), "des_attaque": fx_atk["des"],
                 "avantage": fx_atk["avantage"], "desavantage": fx_atk["desavantage"]}
 
@@ -1405,13 +1411,13 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             lvl = e["niveau"]
             sub = self.active_subclass(e)
             cfg = R.CASTERS.get(e["nom"]) or R.SUBCLASS_CASTERS.get((e["nom"], sub))
-            if not cfg or lvl < cfg["min_level"]:
+            if not cfg or lvl < E.min_casting_level(cfg["kind"], cfg["min_level"], self.class_edition(e)):
                 continue
             ab = cfg["ability"]
             m = self.mod(ab)
             spell_list = cfg.get("spell_list", e["nom"])
             d = {"classe": e["nom"], "niveau": lvl, "carac": ab, "mod": m, "kind": cfg["kind"], "mode": cfg["mode"],
-                 "liste": spell_list, "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
+                 "edition": self.class_edition(e), "liste": spell_list, "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
                  "mineurs_max": R.cantrips_known(e["nom"], lvl, cfg["kind"]), "connus_max": None, "prepares_max": None,
                  "niveau_max": R.max_spell_level(cfg["kind"], lvl)}
             if cfg["mode"] == "known":
@@ -1426,7 +1432,38 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     @memo
     def spell_slots(self) -> list[int]:
-        return R.spell_slots([(c["kind"], c["niveau"]) for c in self.casters()])
+        """Emplacements de sorts ; en multiclassage, chaque classe compte selon son édition (core/editions.py)."""
+        return E.spell_slots([(c["kind"], c["niveau"], c.get("edition", E.DEFAULT_EDITION)) for c in self.casters()])
+
+    # ------------------------------------------------------------------ v52 : éditions et règles de la table
+    @property
+    def edition_mode(self) -> str:
+        return E.normalize_mode(self.ch.edition_mode)
+
+    @staticmethod
+    def class_edition(entry: dict) -> int:
+        return E.item_edition(entry)
+
+    def house_rules(self) -> dict[str, bool]:
+        """Règles de la table effectives (choix du personnage, complétés par les défauts du mode)."""
+        return HR.resolve(self.ch.regles_optionnelles, self.edition_mode)
+
+    def rule_active(self, key: str) -> bool:
+        return self.house_rules().get(key, False)
+
+    def set_edition_mode(self, mode: str) -> list[str]:
+        """Change le mode d'édition du personnage ; renvoie les incohérences éventuelles de ses classes."""
+        self.ch.edition_mode = E.normalize_mode(mode)
+        self.normalize()
+        return self.edition_problems()
+
+    def set_house_rule(self, key: str, active: bool) -> None:
+        if key in HR.BY_KEY:
+            self.ch.regles_optionnelles = dict(self.ch.regles_optionnelles or {})
+            self.ch.regles_optionnelles[key] = bool(active)
+
+    def edition_problems(self) -> list[str]:
+        return E.validate_classes(self.ch.classes, self.edition_mode)
 
     def pact(self) -> tuple[int, int]:
         """(nombre d'emplacements, niveau) de Magie des pactes (0, 0 si aucun occultiste)."""
