@@ -159,7 +159,7 @@ class UnofficialSubclassTests(unittest.TestCase):
         self.assertIn("non officielle", summ["source"])
         self.assertFalse(eng.subclass_summary("Barbare", "Voie du Berserker")["non_officielle"])
         # proposées dans tous les modes (aucun filtrage par édition)
-        self.assertEqual(len(DB.subclasses("Barbare")), 13)
+        self.assertGreaterEqual(len(DB.subclasses("Barbare")), 13)
 
 
 class RulesDialogSmoke(unittest.TestCase):

@@ -66,4 +66,8 @@ def find_race_image(race: str, subrace: str = "", folder: Path = DEFAULT_DIR) ->
             return files[c]
     base = key(re.sub(r"\(.*?\)", "", race))
     prefix = [k for k in files if len(k) >= 5 and base.startswith(k)]
-    return files[max(prefix, key=len)] if prefix else None
+    if prefix:
+        return files[max(prefix, key=len)]
+    # v52 : espèce 2024 générique (« Nain », « Gnome ») -> illustration d'une de ses variantes 2014 (« nain-des-collines »)
+    variants = sorted((k for k in files if len(base) >= 3 and k.startswith(base) and k != base), key=len)
+    return files[variants[0]] if variants else None

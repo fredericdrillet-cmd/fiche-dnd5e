@@ -455,7 +455,7 @@ class LevelUpDialog(QDialog):
         others = [ab for ab in ABILITIES if ab != c.get("a1")]
         a2.addItems([NO_CHOICE] + others)
         a2.setCurrentIndex(others.index(c["a2"]) + 1 if c.get("a2") in others else 0)
-        feats = sorted(self.sim.db.feats, key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
+        feats = sorted(self.sim.feat_options(), key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
         feat.addItems([NO_CHOICE] + ["{} {}".format("✔" if self.sim.feat_status(n)[0] == "ok" else "⚠", n)
                                      for n in feats])
         for i, n in enumerate(feats):                       # infobulle au survol de chaque don de la liste

@@ -90,13 +90,32 @@ Exemple testé : Paladin 5 (2024) + Magicien 3 (2014) = niveau d'incantateur 3 +
   En revanche, les **sous-classes 2014** des nouvelles données sont souvent plus nombreuses : elles comblent une partie des manques relevés par l'audit (§4).
 - Les 2024 ont 4 sous-classes par classe (Manuel des joueurs 2024) ; pas d'Artificier 2024.
 
-## 4. Étape 2 — reste à faire
+## 4. Étape 2
 
-1. **Classes 2024 dans le moteur.** Le moteur identifie une classe par son nom (« Paladin ») dans les tables de sorts, ressources, actions de classe et montée de niveau. Pour faire coexister « Paladin 2014 » et « Paladin 2024 », chaque appel doit passer par l'édition de l'entrée de classe. Gros chantier, à faire classe par classe, avec tests (tables 2024 : sorts préparés pour tous les incantateurs, maîtrises d'armes, Second souffle, Rage, etc.).
-2. **Convertisseur `tools/import_editions.py`** : transforme les fiches de `data/editions/` (sous-classes, dons, historiques, races, sorts, armes, armures) dans les formats actuels de l'app, avec le champ `edition` ; l'app peut alors les filtrer dans ses sélecteurs.
-3. **Sélecteurs** (race, classe, sous-classe, don, historique, sort, équipement) : filtrage par `filter_items(…, mode)` et badge `label(…)` en mode libre ; dans « Niveau supérieur », choix de l'édition d'une nouvelle classe en mode libre.
-4. **Historiques 2024** : ils donnent les augmentations de caractéristiques et un don d'origine (les races 2024 n'en donnent plus) ; l'assistant de création doit l'appliquer en mode 2024.
-5. **Version web** : fenêtre « Règles de la table » et opérations `set_edition_mode` / `set_house_rule`.
+### 4.1 Fait : fusion des données et filtrage des choix
+
+`core/edition_import.py` fusionne `data/editions/` dans la base **à chaque chargement** (aucun fichier de `data/` n'est réécrit). Bilan affiché par `stats_text()` :
+
+| Type | Ajouté | Règle |
+|---|---|---|
+| Sorts | 28 sorts 2014 manquants (*Grêle d'épines*, *Purification de nourriture et d'eau*, sorts de Wildemount, d'Acquisitions Inc., de Strixhaven…) + 391 sorts 2024 | 7 sorts 2014 ne sont que d'autres traductions de sorts déjà présents (*Piques argentées* = *Barbes argentées*…) : écartés |
+| Dons | dons 2014 manquants (dons raciaux de Xanathar, Chef inspirant, Sentinelle, Tueur de mages…) + 75 dons 2024 | les dons de Theros (piété, bénédictions), les faveurs épiques et les dons sombres sont écartés ; **13 dons de l'app au texte faux** reçoivent le texte officiel, avec leur nom d'app (audit §8.3) |
+| Historiques | 38 historiques 2014 officiels manquants (SCAG, variantes du PHB, Ravenloft…) + 16 historiques 2024 | 2024 : `caracteristiques_2024` et `don_origine` sont enregistrés |
+| Sous-classes | les **14 sous-classes 2014 officielles manquantes** de l'audit (Parjure, Couronne, Chevalier de l'Écho, Banneret, Graviturgie, Longue Mort, Dragon ascendant, L'Immortel, Le Mort-vivant, Batailleur, Voie du géant, Esprits, Sorcellerie lunaire, Gardien de drake) | les autres sous-classes des nouvelles données sont des traductions de sous-classes déjà présentes |
+| Espèces | 10 espèces 2024 (Aasimar, Drakéide, Nain, Elfe, Gnome, Goliath, Halfelin, Humain, Orc, Tieffelin) | bonus « +2/+1 ou +1/+1/+1 » au choix en attendant que l'historique 2024 les fournisse ; vitesse lue dans les données (Goliath 10,5 m) |
+| Armes | Filet | armes et armures communes aux deux éditions |
+
+**Noms** : un élément 2024 dont le nom existe déjà en 2014 prend le suffixe « (2024) » (*Boule de feu (2024)*, *Elfe (2024)*), car le moteur identifie tout par le nom.
+
+**Filtrage** (`Engine.race_options()`, `background_options()`, `feat_options()`, `available_spells()`) : espèces et historiques (onglet Race), catalogue de dons (onglet Progression), dons de « Niveau supérieur », bibliothèque de sorts. L'espèce et l'historique actuels du personnage restent toujours visibles. En mode libre, une info-bulle discrète indique l'édition et la source (`Engine.edition_tips()`).
+
+### 4.2 Reste à faire
+
+1. **Classes et sous-classes 2024 dans le moteur.** Le moteur identifie une classe par son nom (« Paladin ») dans les tables de sorts, ressources, actions de classe et montée de niveau. Il faut faire passer l'édition de l'entrée de classe partout, classe par classe, avec tests.
+2. **Historique 2024 complet** : appliquer ses augmentations de caractéristiques (limitées à ses trois caractéristiques) et son don d'origine, au lieu des bonus d'espèce.
+3. **Choix de l'édition d'une classe** dans « Niveau supérieur » en mode libre (une fois le point 1 fait).
+4. **Version web** : fenêtre « Règles de la table » et opérations `set_edition_mode` / `set_house_rule`.
+5. Races 2014 des nouvelles données (sous-races incluses) : fusion à étudier, les données actuelles étant déjà auditées.
 
 ## 5. Décisions prises
 

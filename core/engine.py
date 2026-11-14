@@ -1465,6 +1465,27 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def edition_problems(self) -> list[str]:
         return E.validate_classes(self.ch.classes, self.edition_mode)
 
+    def allowed(self, item) -> bool:
+        """L'élément (sort, don, historique, espèce…) est-il proposé dans le mode d'édition du personnage ?"""
+        return E.allowed(item, self.edition_mode)
+
+    def race_options(self) -> list[str]:
+        return [n for n in self.db.race_names() if self.allowed(self.db.races[n]) or n == self.ch.race]
+
+    def background_options(self) -> list[str]:
+        return [n for n in self.db.background_names()
+                if self.allowed(self.db.backgrounds[n]) or n == self.ch.historique]
+
+    def feat_options(self) -> list[str]:
+        return [n for n, f in self.db.feats.items() if self.allowed(f)]
+
+    def edition_tips(self, items: dict) -> dict[str, str]:
+        """Badge discret (info-bulle) « Édition 2014 / 2024 » des éléments en mode libre."""
+        if self.edition_mode != E.MODE_LIBRE:
+            return {}
+        return {n: "Édition {} — {}".format(E.item_edition(it), it.get("source", "")).rstrip(" —")
+                for n, it in items.items()}
+
     def pact(self) -> tuple[int, int]:
         """(nombre d'emplacements, niveau) de Magie des pactes (0, 0 si aucun occultiste)."""
         lvl = self.class_level("Occultiste")
@@ -1535,9 +1556,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if not c:
             return []
         if include_all:
-            return list(self.db.all_spells())
+            return [s for s in self.db.all_spells() if self.allowed(s)]
         pool = self.db.spells_for_class(c["liste"])
-        return [s for s in pool if s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]]
+        return [s for s in pool if (s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]) and self.allowed(s)]
 
     def can_learn(self, class_name: str, spell_name: str) -> bool:
         """Sort apprenable sans intervention du MJ : dans la liste de la classe et au plus du niveau maximal."""

@@ -467,6 +467,13 @@ class Database:
         if use_fallback:
             self._apply_fallback()
         self._build()
+        self.edition_stats: dict = {}
+        if self.data_dir is not None:                              # v52 : données 2014 / 2024 de data/editions
+            from .edition_import import merge
+            try:
+                self.edition_stats = merge(self)
+            except (KeyError, TypeError, ValueError, AttributeError) as exc:      # données abîmées : app utilisable
+                self.warnings.append("data/editions non fusionné : {}".format(exc))
 
     # ------------------------------------------------------------------ lecture des fichiers
     def _scan(self) -> None:
