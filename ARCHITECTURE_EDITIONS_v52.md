@@ -109,19 +109,29 @@ Exemple testé : Paladin 5 (2024) + Magicien 3 (2014) = niveau d'incantateur 3 +
 
 **Filtrage** (`Engine.race_options()`, `background_options()`, `feat_options()`, `available_spells()`) : espèces et historiques (onglet Race), catalogue de dons (onglet Progression), dons de « Niveau supérieur », bibliothèque de sorts. L'espèce et l'historique actuels du personnage restent toujours visibles. En mode libre, une info-bulle discrète indique l'édition et la source (`Engine.edition_tips()`).
 
-### 4.2 Reste à faire
+### 4.2 Fait : classes et sous-classes 2024 (une édition par fiche)
 
-1. **Classes et sous-classes 2024 dans le moteur.** Le moteur identifie une classe par son nom (« Paladin ») dans les tables de sorts, ressources, actions de classe et montée de niveau. Il faut faire passer l'édition de l'entrée de classe partout, classe par classe, avec tests.
-2. **Historique 2024 complet** : appliquer ses augmentations de caractéristiques (limitées à ses trois caractéristiques) et son don d'origine, au lieu des bonus d'espèce.
-3. **Choix de l'édition d'une classe** dans « Niveau supérieur » en mode libre (une fois le point 1 fait).
-4. **Version web** : fenêtre « Règles de la table » et opérations `set_edition_mode` / `set_house_rule`.
-5. Races 2014 des nouvelles données (sous-races incluses) : fusion à étudier, les données actuelles étant déjà auditées.
+Décision : **l'édition se choisit à la création du personnage** (fenêtre « Édition 2014 / Édition 2024 » avant l'assistant) et **toute la fiche reste dans cette édition**. Le mode libre existe toujours dans le moteur, mais il n'est plus proposé dans l'interface.
+
+- `edition_import.build_classes_2024()` construit les 12 classes 2024 au format du moteur : dé de vie, jets de sauvegarde, compétences au choix, armures, armes (Moine et Roublard : seulement les armes de guerre Légère / Finesse), aptitudes **niveau par niveau** d'après la table (améliorations répétées, « Faveur épique » au niveau 19 traitée comme une amélioration ou un don), 4 sous-classes par classe, table de progression.
+- `EditionView` : une fiche 2024 voit cette base (`Engine.db` est une propriété qui choisit la vue selon l'édition). Tout le code qui lit `self.db.classes`, `subclasses()`, `start_info()` obtient donc les classes 2024 sans autre changement.
+- Règles 2024 lues dans la table : **sorts préparés et sorts mineurs** pour tous les incantateurs (`casters()`), demi-incantateurs dès le niveau 1, **sous-classe au niveau 3** pour toutes les classes (`Engine.subclass_level()`), **dé d'arts martiaux** d6 → d12 (`Engine.martial_arts_die()`), **ressources** affichées (rages, Second souffle, points de concentration, Conduit divin, Formes sauvages, bottes maîtrisées…).
+- PV au niveau 1 : maximum du dé de vie. Pas d'Artificier en 2024.
+
+### 4.3 Reste à faire
+
+1. **Compteurs à sphères 2024** (Conduit divin 2/3/4, Formes sauvages 2/3/4, Second souffle 2→4, Ennemi juré…) : les sphères suivent encore les nombres de 2014 ; la table est affichée dans les ressources.
+2. **Historique 2024 complet** : augmentations de caractéristiques limitées à ses trois caractéristiques et don d'origine (aujourd'hui : bonus au choix sur l'espèce).
+3. **Styles de combat 2024** (dons de la catégorie « Style de combat ») et **nombre de bottes** maîtrisées à choisir ; **Armes de l'Occultiste 2024** (manifestations dès le niveau 1, Arcanum).
+4. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
+5. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 
 ## 5. Décisions prises
 
 1. **Données 2014** : on garde les données actuelles, les plus complètes (classes 2014 et leurs aptitudes). Les nouvelles données ne servent qu'à **compléter** : sous-classes, dons, historiques, sorts et objets 2014 manquants, et tout le contenu 2024.
 2. **Contenu « communauté »** : les 27 sous-classes restent proposées **dans tous les modes**, avec une mention discrète « non officielle » (info-bulle des menus de sous-classe, info-bulle de « Niveau supérieur », source affichée dans la fiche pédagogique de classe). Fonctions : `Database.is_unofficial()`, `Database.subclass_tips()`.
 3. **Règles de la table** : seule l'inspiration héroïque est retenue pour la troisième règle (pas de règle de « jets de sauvegarde universels »).
-4. **Versions** : la v51 est conservée telle quelle sur la branche `version-51` (pull request #3 vers `main`) ; la v52 vit sur sa propre branche (pull request #2, construite au-dessus de `version-51`). Chaque branche a son propre exécutable Windows (CI à chaque envoi).
+4. **Une édition par fiche** : l'édition se choisit à la création ; le mode libre est masqué.
+5. **Versions** : la v51 est conservée telle quelle sur la branche `version-51` (pull request #3 vers `main`) ; la v52 vit sur sa propre branche (pull request #2, construite au-dessus de `version-51`). Chaque branche a son propre exécutable Windows (CI à chaque envoi).
 
 Point encore à vérifier dans le livre : le texte exact du Manuel 2024 sur l'administration d'une potion à un allié (la règle de la table suit ta définition : soi-même = action bonus, allié = action).

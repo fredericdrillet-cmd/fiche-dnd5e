@@ -301,7 +301,7 @@ class LevelUpMixin:
         name = entry["nom"]
         feats = self.features(entry)
         cls = self.db.classes.get(name, {})
-        sub_need = R.SUBCLASS_LEVEL.get(name, 3)
+        sub_need = self.subclass_level(name)
         cfg = R.CASTERS.get(name) or R.SUBCLASS_CASTERS.get((name, self.active_subclass(entry)))
         out = []
         for lvl in range(1, R.MAX_LEVEL + 1):

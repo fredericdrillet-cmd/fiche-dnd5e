@@ -15,6 +15,7 @@ Les fichiers de `data/*.json` ne sont jamais modifiés : la fusion est refaite �
 """
 from __future__ import annotations
 
+import difflib
 import re
 from typing import Optional
 
@@ -286,3 +287,138 @@ def stats_text(stats: Optional[dict]) -> str:
     return ("Données 2014 / 2024 ajoutées : {sorts} sorts, {dons} dons ({dons_corriges} textes corrigés), "
             "{historiques} historiques, {sous_classes} sous-classes, {especes} espèces 2024, {armes} arme(s).").format(
         **stats)
+
+
+# ----------------------------------------------------------------------------------------------- classes 2024
+SAVE_SPLIT = re.compile(r",| et ")
+ARMOR_WORDS = (("legere", "Armures légères"), ("intermediaire", "Armures intermédiaires"),
+               ("lourde", "Armures lourdes"), ("bouclier", "Boucliers"))
+
+
+def _parse_skill_choice(text: str, db) -> tuple[list[str], int]:
+    """« Choisissez-en 2 : A, B ou C » -> ([A, B, C], 2) ; « Choisissez 3 compétences au choix » -> (toutes, 3)."""
+    t = str(text or "")
+    m = re.search(r"(\d+)", t)
+    count = int(m.group(1)) if m else 2
+    if ":" not in t and "au choix" in norm(t):
+        return list(db.skill_names), count
+    body = t.split(":", 1)[1] if ":" in t else t
+    body = re.sub(r"\bparmi\b", "", body)
+    parts = [p.strip(" .") for p in re.split(r",| ou | et ", body) if p.strip(" .")]
+    skills = []
+    for p in parts:
+        cs = db.canonical_skill(p)
+        if cs in db.skill_names and cs not in skills:
+            skills.append(cs)
+    return skills, count
+
+
+def _parse_weapons(text: str, db) -> list[str]:
+    t = norm(text)
+    out = ["Armes courantes"] if ("courante" in t or "simple" in t) else []
+    if "guerre" in t:
+        restrict = [p for p in ("legere", "finesse") if p in t.split("guerre", 1)[1]]
+        if restrict:                                  # Moine, Roublard 2024 : armes de guerre Légère / Finesse
+            out += sorted(n for n, w in db.weapons.items() if w.get("categorie") == "guerre"
+                          and any(r in norm(" ".join(w.get("proprietes", []))) for r in restrict))
+        else:
+            out.append("Armes de guerre")
+    return out
+
+
+def _expand_features(c: dict) -> list[dict]:
+    """Aptitudes niveau par niveau d'après la colonne « capacites » de la table (améliorations répétées comprises)."""
+    feats = c.get("capacites") or []
+    by_name = {norm(f.get("nom", "")): f for f in feats}
+    out = []
+    for row in c.get("table_progression") or []:
+        lvl = int(row.get("niveau") or 0)
+        names = [n.strip() for n in re.split(r",(?![^()]*\))", str(row.get("capacites") or "")) if n.strip()]
+        for n in names:
+            base = re.sub(r"\s*\(.*?\)\s*$", "", n)
+            f = by_name.get(norm(base)) or next((v for k, v in by_name.items() if k and norm(base).startswith(k)), None)
+            if f is None:                             # nom de la table différent de celui de l'aptitude
+                same = [x for x in feats if int(x.get("niveau") or 0) == lvl]
+                scored = [(difflib.SequenceMatcher(None, norm(base), norm(x.get("nom", ""))).ratio(), x) for x in same]
+                best = max(scored, key=lambda t: t[0], default=(0, None))
+                f = best[1] if best[0] >= 0.4 else None
+            if norm(base).startswith(("faveur epique", "don epique")):
+                n = "Amélioration de caractéristique ou Faveur épique"      # niveau 19 : don de faveur épique
+            out.append({"niveau": lvl, "nom": n, "description": (f or {}).get("description", ""),
+                        "edition": 2024})
+    if not out:                                       # table sans colonne d'aptitudes : liste brute
+        out = [{"niveau": int(f.get("niveau") or 0), "nom": f.get("nom", ""),
+                "description": f.get("description", ""), "edition": 2024} for f in feats]
+    return out
+
+
+def build_classes_2024(db) -> dict[str, dict]:
+    """Classes 2024 au format du moteur (`Database.classes`), avec leurs sous-classes 2024 et leur table."""
+    cat = db.editions
+    out: dict[str, dict] = {}
+    if not cat.available():
+        return out
+    for c in cat.list("classes", "2024"):
+        b = c.get("caracteristiques_de_base") or {}
+        die = re.search(r"d(\d+)", norm(b.get("de_vie", "")))
+        skills, n_skills = _parse_skill_choice(b.get("competences", ""), db)
+        saves = [s.strip() for s in SAVE_SPLIT.split(str(b.get("jets_de_sauvegarde") or "")) if s.strip()]
+        armors_t = norm(b.get("armures", ""))
+        armors = [label for key, label in ARMOR_WORDS if key in armors_t]
+        subs = []
+        for s in cat.list("sous_classes", "2024", classe=c["nom"]):
+            subs.append({"nom": s["nom"], "source": _source(s), "edition": 2024, "id": s.get("id", ""),
+                         "description": s.get("introduction", ""),
+                         "capacites": [{"niveau": int(f.get("niveau") or 0), "nom": f.get("nom", ""),
+                                        "description": f.get("description", "")} for f in s.get("capacites", [])]})
+        out[c["nom"]] = {
+            "nom": c["nom"], "edition": 2024, "id": c.get("id", ""), "source": _source(c),
+            "de_vie": "d{}".format(die.group(1)) if die else "d8",
+            "carac_principale": b.get("caracteristique_principale", ""),
+            "maitriser_sauvegardes": saves,
+            "maitrises": {"competences_choix": skills, "competences_nombre": n_skills, "armures": armors,
+                          "armes": _parse_weapons(b.get("armes", ""), db)},
+            "outils_texte": b.get("outils") or "", "equipement_depart": b.get("equipement_de_depart", ""),
+            "capacites_classe": _expand_features(c), "sous_classes": subs,
+            "table_2024": {int(r.get("niveau") or 0): r for r in c.get("table_progression") or []}}
+    return out
+
+
+class EditionView:
+    """
+    Base de données vue par une fiche 2024 : mêmes données que la base, sauf les classes (versions 2024).
+    Les méthodes de classe de `Database` sont réutilisées telles quelles sur cette vue.
+    """
+
+    def __init__(self, base, classes: dict[str, dict]):
+        object.__setattr__(self, "_base", base)
+        object.__setattr__(self, "classes", classes)
+        object.__setattr__(self, "edition", 2024)
+
+    def __getattr__(self, name):
+        return getattr(self._base, name)
+
+    def __setattr__(self, name, value):
+        setattr(self._base, name, value)
+
+    def class_names(self) -> list[str]:
+        return sorted(self.classes)
+
+    def subclasses(self, class_name: str) -> list[dict]:
+        return self.classes.get(class_name, {}).get("sous_classes", [])
+
+    def subclass(self, class_name: str, sub_name: str):
+        return next((s for s in self.subclasses(class_name) if s["nom"] == sub_name), None)
+
+    def subclass_tips(self, class_name: str) -> dict[str, str]:
+        return {}
+
+    def start_info(self, class_name: str) -> dict:
+        from .data_loader import Database
+        info = Database.start_info(self, class_name)
+        cls = self.classes.get(class_name, {})
+        info["pv_initiaux"] = int(cls.get("de_vie", "d8")[1:] or 8)      # 2024 : maximum du dé de vie
+        return info
+
+    def table_row(self, class_name: str, level: int) -> dict:
+        return (self.classes.get(class_name, {}).get("table_2024") or {}).get(int(level), {})

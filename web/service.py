@@ -900,7 +900,7 @@ def build_sheet(eng: Engine) -> dict:
                 "index": idx, "nom": entry["nom"], "niveau": entry["niveau"],
                 "sous_classe": entry.get("sous_classe", ""), "de_vie": db.start_info(entry["nom"]).get("de_vie", ""),
                 "sous_classes": [s["nom"] for s in db.subclasses(entry["nom"])],
-                "niveau_sous_classe": R.SUBCLASS_LEVEL.get(entry["nom"], 3),
+                "niveau_sous_classe": eng.subclass_level(entry["nom"]),
                 "aptitudes": [{"nom": f["nom"], "niveau": f["niveau"], "description": f["description"],
                                "source": f["source"], "debloque": f["debloque"]} for f in feats],
                 "ressources": [list(r) for r in eng.resources(entry)],

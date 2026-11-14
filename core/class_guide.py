@@ -188,8 +188,8 @@ class ClassGuideMixin:
         info = self.db.start_info(class_name) if class_name in self.db.classes else {}
         g.update(nom=class_name, de_vie=info.get("de_vie", ""), sauvegardes=info.get("sauvegardes", []),
                  armures=info.get("armures", []), armes=info.get("armes", []),
-                 niveau_sous_classe=subclass_level(class_name),
-                 sous_classes=[{"nom": s["nom"], "source": self._source_label(s), "niveau": subclass_level(class_name),
+                 niveau_sous_classe=self.subclass_level(class_name),
+                 sous_classes=[{"nom": s["nom"], "source": self._source_label(s), "niveau": self.subclass_level(class_name),
                                 "non_officielle": self.db.is_unofficial(s)}
                                for s in self.db.subclasses(class_name)])
         return g
@@ -213,7 +213,7 @@ class ClassGuideMixin:
             short = desc if len(desc) <= 220 else desc[:217].rsplit(" ", 1)[0] + "…"
             powers.append((int(f.get("niveau") or 0), f.get("nom", ""), short))
         spells = [x for x in (sub.get("sorts_domaine") or []) if isinstance(x, str) and not x.isdigit()]
-        return {"nom": sub["nom"], "source": self._source_label(sub), "niveau": subclass_level(class_name),
+        return {"nom": sub["nom"], "source": self._source_label(sub), "niveau": self.subclass_level(class_name),
                 "non_officielle": self.db.is_unofficial(sub),
                 "orientation": tags, "pouvoirs": powers, "sorts": spells[:10]}
 

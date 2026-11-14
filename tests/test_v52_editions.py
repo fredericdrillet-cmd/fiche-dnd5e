@@ -88,9 +88,13 @@ class MulticlassTests(unittest.TestCase):
         self.assertTrue(make([("Paladin", 1, 2024)], mode="libre").spell_slots()[0] == 2)
 
     def test_validation_messages(self):
+        # une fiche 2014 ou 2024 aligne toutes ses classes sur son édition ; seul le mode libre (masqué) les mélange
         eng = make([("Guerrier", 3, 2024), ("Roublard", 2, 2014)], mode="2014")
-        self.assertEqual(len(eng.edition_problems()), 1)
-        self.assertEqual(eng.set_edition_mode("libre"), [])
+        self.assertEqual([c["edition"] for c in eng.ch.classes], [2014, 2014])
+        self.assertEqual(eng.edition_problems(), [])
+        mixed = [{"nom": "Guerrier", "edition": 2024}, {"nom": "Roublard", "edition": 2014}]
+        self.assertEqual(len(E.validate_classes(mixed, "2014")), 1)
+        self.assertEqual(E.validate_classes(mixed, "libre"), [])
         both = E.validate_classes([{"nom": "Guerrier", "edition": 2014}, {"nom": "Guerrier", "edition": 2024}], "libre")
         self.assertEqual(len(both), 1)
 

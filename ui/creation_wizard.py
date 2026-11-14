@@ -82,12 +82,14 @@ class WizardHost:
 
 
 class CreationWizard(QDialog):
-    def __init__(self, win):
+    def __init__(self, win, edition: str = ""):
         super().__init__(win)
         self.win = win
         self.engine = Engine(win.db, Engine.new_character(win.db))
         from .rules_dialog import apply_table_defaults                 # v52 : édition et règles de la table
         apply_table_defaults(self.engine.ch, getattr(win, "settings", {}) or {})
+        if edition:                                                    # édition choisie à la création (une par fiche)
+            self.engine.set_edition_mode(edition)
         self.host = WizardHost(self, win, self.engine)
         self.step = 0
         self.equip_mode = "paquetage"
@@ -450,7 +452,7 @@ class CreationWizard(QDialog):
         self.guide.set_class(eng, cls, entry.get("sous_classe") or self.engine.__dict__.get("_sous_classe_visee", ""))
         clear_layout(self.choice_grid)
         row = 0
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
+        if self.engine.subclass_level(cls) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
             fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE, tips=db.subclass_tips(cls))
@@ -468,7 +470,7 @@ class CreationWizard(QDialog):
             self.choice_grid.addWidget(make_label("⚔ Style de combat", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
-        if R.SUBCLASS_LEVEL.get(cls, 3) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
+        if self.engine.subclass_level(cls) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
             target = self.engine.__dict__.get("_sous_classe_visee", "")
@@ -476,7 +478,7 @@ class CreationWizard(QDialog):
                        "— aucune pour l'instant —")
             combo.activated.connect(lambda _=0, c=combo: self.set_target_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◇ Sous-classe visée (niveau {}) — adapte les recommandations de "
-                                                  "caractéristiques".format(R.SUBCLASS_LEVEL.get(cls, 3)), "muted"),
+                                                  "caractéristiques".format(self.engine.subclass_level(cls)), "muted"),
                                        row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
@@ -489,7 +491,7 @@ class CreationWizard(QDialog):
         subs = [s["nom"] for s in self.engine.db.subclasses(cls)]
         if name and name == self.engine.__dict__.get("_sous_classe_visee") and not self.guide.sub:
             name = ""                                     # second clic : fiche repliée, sous-classe visée effacée
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and name in subs:
+        if self.engine.subclass_level(cls) <= 1 and name in subs:
             self.ch.classes[0]["sous_classe"] = name       # niveau 1 : c'est le vrai choix
         self.engine.__dict__["_sous_classe_visee"] = name if name in subs else ""
         self.host.changed()
@@ -817,8 +819,12 @@ class CreationWizard(QDialog):
 
 def run_creation(win) -> bool:
     """Ouvre l'assistant ; « Créer le personnage » remplace la fiche (non enregistrée : à sauvegarder)."""
+    from .rules_dialog import ask_edition
+    edition = ask_edition(win)                                         # v52 : 2014 ou 2024
+    if edition is None:
+        return False
     backdrop = BlurBackdrop(win)
-    dialog = CreationWizard(win)
+    dialog = CreationWizard(win, edition)
     try:
         ok = dialog.exec() == 1
     finally:

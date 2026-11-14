@@ -651,6 +651,13 @@ class Database:
     def shield(self) -> dict:
         return next(iter(self.shields.values()), {"nom": "Bouclier", "bonus_ca": 2})
 
+    def view_2024(self):
+        """v52 : base vue par une fiche 2024 (classes et sous-classes 2024), construite une seule fois."""
+        if getattr(self, "_view_2024", None) is None:
+            from .edition_import import EditionView, build_classes_2024
+            self._view_2024 = EditionView(self, build_classes_2024(self) if self.data_dir is not None else {})
+        return self._view_2024
+
     @property
     def editions(self):
         """v52 : catalogue des données de référence 2014 / 2024 (`data/editions/`), chargé à la première lecture."""

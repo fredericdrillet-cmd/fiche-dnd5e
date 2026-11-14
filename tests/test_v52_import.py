@@ -90,3 +90,50 @@ class FilterTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Classes2024Tests(unittest.TestCase):
+    def sheet(self, name, level, sub=""):
+        ch = Engine.new_character(DB)
+        ch.edition_mode = "2024"
+        ch.classes = [{"nom": name, "niveau": level, "sous_classe": sub, "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        return eng
+
+    def test_view_and_classes(self):
+        eng = self.sheet("Guerrier", 5)
+        self.assertEqual(eng.sheet_edition, 2024)
+        self.assertEqual(eng.ch.classes[0]["edition"], 2024)
+        self.assertNotIn("Artificier", eng.db.class_names())             # pas d'Artificier en 2024
+        self.assertEqual([s["nom"] for s in eng.db.subclasses("Guerrier")],
+                         ["Maître de guerre", "Champion", "Chevalier occulte", "Soldat psi"])
+        self.assertEqual(DB.subclasses("Guerrier")[0]["edition"], 2014)  # la base reste en 2014
+        info = eng.db.start_info("Guerrier")
+        self.assertIn("Armures lourdes", info["armures"])
+        self.assertEqual(info["nb_competences"], 2)
+
+    def test_2024_rules(self):
+        pal = self.sheet("Paladin", 5)
+        self.assertEqual(pal.spell_slots()[:2], [4, 2])
+        c = pal.casters()[0]
+        self.assertEqual((c["mode"], c["prepares_max"]), ("prepared", 6))
+        self.assertEqual(self.sheet("Paladin", 1).spell_slots()[0], 2)    # sorts dès le niveau 1
+        self.assertEqual(pal.subclass_level("Clerc"), 3)                 # sous-classe au niveau 3 partout
+        wiz = self.sheet("Magicien", 1)
+        self.assertEqual((wiz.casters()[0]["prepares_max"], wiz.casters()[0]["mineurs_max"]), (4, 3))
+        monk = self.sheet("Moine", 5)
+        self.assertEqual(monk.martial_arts_die(5), 8)                    # 2014 : d6
+        res = dict(monk.resources(monk.ch.classes[0]))
+        self.assertEqual(res["Points de concentration"], "5")
+
+    def test_asi_and_epic_boon(self):
+        eng = self.sheet("Guerrier", 20)
+        levels = sorted(s["niveau"] for s in eng.asi_slots())
+        self.assertEqual(levels, [4, 6, 8, 12, 14, 16, 19])
+
+    def test_switching_edition(self):
+        eng = self.sheet("Guerrier", 3)
+        eng.set_edition_mode("2014")
+        self.assertEqual((eng.sheet_edition, eng.ch.classes[0]["edition"]), (2014, 2014))
+        self.assertIn("Maître de guerre", [s["nom"] for s in eng.db.subclasses("Guerrier")])

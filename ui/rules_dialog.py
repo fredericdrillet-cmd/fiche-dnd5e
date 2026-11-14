@@ -39,13 +39,17 @@ class RulesDialog(QDialog):
         bl = QVBoxLayout(box)
         self.mode_combo = QComboBox()
         for key, text in E.MODES.items():
-            self.mode_combo.addItem(text, key)
+            if key != E.MODE_LIBRE or self._mode == E.MODE_LIBRE:      # une seule édition par fiche (mode libre masqué)
+                self.mode_combo.addItem(text, key)
         self.mode_combo.setCurrentIndex(max(0, self.mode_combo.findData(self._mode)))
         self.mode_combo.currentIndexChanged.connect(self._on_mode)
         bl.addWidget(self.mode_combo)
         self.mode_help = make_label("", "muted", wrap=True)
         bl.addWidget(self.mode_help)
         self.problems = make_label("", "warning", wrap=True)
+        bl.addWidget(make_label("Changer d'édition remplace les classes et sous-classes de la fiche par leur version "
+                                "de l'autre édition (niveaux conservés). Les sous-classes absentes de l'autre "
+                                "édition sont à choisir de nouveau.", "muted", wrap=True))
         bl.addWidget(self.problems)
         lay.addWidget(box)
 
@@ -121,3 +125,24 @@ def apply_table_defaults(ch, settings: dict) -> None:
     """Nouveau personnage : édition et règles de la table par défaut (préférences)."""
     ch.edition_mode = E.normalize_mode(settings.get("edition_defaut"))
     ch.regles_optionnelles = HR.clean(settings.get("regles_defaut"))
+
+
+def ask_edition(win):
+    """Nouveau personnage : édition 2014 ou 2024 (None = annulé). Valeur proposée : préférence de la table."""
+    from PyQt6.QtWidgets import QMessageBox
+    box = QMessageBox(win)
+    box.setWindowTitle("Nouveau personnage")
+    box.setText("Quelle édition des règles pour ce personnage ?")
+    box.setInformativeText("{}\n{}\n\nL'édition s'applique à toute la fiche (classes, sous-classes, espèces, "
+                           "historiques, dons et sorts proposés).".format(E.MODE_HELP[E.MODE_2014],
+                                                                          E.MODE_HELP[E.MODE_2024]))
+    b14 = box.addButton("Édition 2014", QMessageBox.ButtonRole.AcceptRole)
+    b24 = box.addButton("Édition 2024", QMessageBox.ButtonRole.AcceptRole)
+    cancel = box.addButton("Annuler", QMessageBox.ButtonRole.RejectRole)
+    default = E.normalize_mode((getattr(win, "settings", {}) or {}).get("edition_defaut"))
+    box.setDefaultButton(b24 if default == E.MODE_2024 else b14)
+    box.exec()
+    clicked = box.clickedButton()
+    if clicked is cancel:
+        return None
+    return E.MODE_2024 if clicked is b24 else (E.MODE_2014 if clicked is b14 else default)

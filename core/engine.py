@@ -34,6 +34,21 @@ RACE_RENAMED = {"Elfe sylvestre": ("Elfe", "Elfe des bois"), "Harengon": ("Conil
                 "Enfant de la lune": ("Féral", "")}
 
 
+RESOURCE_LABELS_2024 = {
+    "rages": "Rages / repos long", "degats_de_rage": "Dégâts de rage", "maitrise_des_armes": "Bottes d'arme maîtrisées",
+    "second_souffle": "Second souffle (utilisations)", "arts_martiaux": "Dé d'arts martiaux",
+    "points_de_concentration": "Points de concentration", "deplacement_sans_armure": "Déplacement sans armure",
+    "conduit_divin": "Conduit divin (utilisations)", "formes_sauvages": "Formes sauvages (utilisations)",
+    "points_de_sorcellerie": "Points de sorcellerie", "invocations": "Manifestations occultes",
+    "emplacements_de_pacte": "Emplacements de pacte", "niveau_emplacements": "Niveau des emplacements de pacte",
+    "attaque_sournoise": "Attaque sournoise", "de_d_inspiration": "Dé d'inspiration bardique",
+    "ennemi_favori": "Ennemi juré (utilisations de Marque du chasseur)"}
+
+
+def _fmt_cell(value) -> str:
+    return str(value)
+
+
 def memo(fn):
     """
     Mémorise le résultat d'une méthode pendant un lot de rafraîchissement (`Engine.batch()`).
@@ -105,8 +120,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin):
     def __init__(self, db: Database, char: Character):
-        self.db = db
         self.ch = char
+        self.db = db
         self._memo: Optional[dict] = None
 
     @contextmanager
@@ -149,8 +164,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         ch = self.ch
         ch.pv_mode = "moyenne"
         ch.edition_mode = E.normalize_mode(ch.edition_mode)            # v52 : éditions
+        sheet = {E.MODE_2024: 2024, E.MODE_2014: 2014}.get(ch.edition_mode)   # une édition par fiche (hors libre)
         for entry in ch.classes:
-            entry["edition"] = E.item_edition(entry)
+            entry["edition"] = sheet or E.item_edition(entry)
         if "Halphen" in ch.langues_liste:                 # coquille corrigée (v34) : langue des halfelins
             ch.langues_liste = ["Halfelin" if x == "Halphen" else x for x in ch.langues_liste]
         if ch.race in RACE_RENAMED and ch.race not in self.db.races:      # espèce retirée (doublon) -> remplaçante
@@ -279,7 +295,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     def active_subclass(self, entry: dict) -> str:
         """Sous-classe effective (vide si le niveau requis n'est pas atteint)."""
-        need = R.SUBCLASS_LEVEL.get(entry["nom"], 3)
+        need = self.subclass_level(entry["nom"])
         return entry.get("sous_classe", "") if entry["niveau"] >= need else ""
 
     # ---- commandes -------------------------------------------------------------------
@@ -719,6 +735,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return any(frag in n for n in self.unlocked_feature_names())
 
     def resources(self, entry: dict) -> list[tuple[str, str]]:
+        row = self.table_row(entry["nom"], entry["niveau"])
+        if row:                                              # 2024 : ressources lues dans la table de progression
+            return [(RESOURCE_LABELS_2024.get(k, k.replace("_", " ").capitalize()), _fmt_cell(v))
+                    for k, v in row.items() if k not in ("niveau", "bonus_de_maitrise", "capacites", "emplacements",
+                                                         "sorts_prepares", "tours_de_magie") and v not in (None, "", "—", 0)]
         return R.class_resources(entry["nom"], entry["niveau"], self.mods(), self.prof)
 
     def first_class(self) -> str:
@@ -1270,7 +1291,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         best, notes = 0, []
         monk = self.class_level("Moine")
         if monk:
-            best = R.martial_arts_die(monk)
+            best = self.martial_arts_die(monk)
             notes.append(f"Arts martiaux : d{best}")
         for e in self.ch.classes:
             if e["nom"] == "Guerrier" and "pancratiaste" in norm(self.active_subclass(e)):
@@ -1420,7 +1441,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                  "edition": self.class_edition(e), "liste": spell_list, "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
                  "mineurs_max": R.cantrips_known(e["nom"], lvl, cfg["kind"]), "connus_max": None, "prepares_max": None,
                  "niveau_max": R.max_spell_level(cfg["kind"], lvl)}
-            if cfg["mode"] == "known":
+            row = self.table_row(e["nom"], lvl)
+            if row.get("sorts_prepares") is not None:         # 2024 : sorts préparés et mineurs lus dans la table
+                d.update(mode="prepared", connus_max=None, prepares_max=int(row["sorts_prepares"]),
+                         mineurs_max=int(row.get("tours_de_magie") or 0))
+            elif cfg["mode"] == "known":
                 d["connus_max"] = R.spells_known(e["nom"], lvl, cfg["kind"])
             else:
                 d["prepares_max"] = R.spells_prepared(e["nom"], lvl, m)
@@ -1436,6 +1461,38 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return E.spell_slots([(c["kind"], c["niveau"], c.get("edition", E.DEFAULT_EDITION)) for c in self.casters()])
 
     # ------------------------------------------------------------------ v52 : éditions et règles de la table
+    @property
+    def db(self):
+        """Base de règles ; une fiche 2024 voit les classes et sous-classes 2024 (core/edition_import.EditionView)."""
+        base = self._db
+        if E.normalize_mode(self.ch.edition_mode) == E.MODE_2024 and hasattr(base, "view_2024"):
+            view = base.view_2024()
+            if view.classes:
+                return view
+        return base
+
+    @db.setter
+    def db(self, value) -> None:
+        self._db = getattr(value, "_base", value)
+
+    @property
+    def sheet_edition(self) -> int:
+        """Édition des classes de la fiche (une seule par fiche)."""
+        return 2024 if getattr(self.db, "edition", 2014) == 2024 else 2014
+
+    def table_row(self, class_name: str, level: int) -> dict:
+        """Ligne de la table de progression 2024 d'une classe (vide en 2014)."""
+        return self.db.table_row(class_name, level) if self.sheet_edition == 2024 else {}
+
+    def subclass_level(self, class_name: str) -> int:
+        """Niveau du choix de sous-classe : 3 pour toutes les classes en 2024."""
+        return 3 if self.sheet_edition == 2024 else R.SUBCLASS_LEVEL.get(class_name, 3)
+
+    def martial_arts_die(self, monk_level: int) -> int:
+        row = self.table_row("Moine", monk_level)
+        m = re.match(r"d(\d+)", str(row.get("arts_martiaux", "")))
+        return int(m.group(1)) if m else R.martial_arts_die(monk_level)
+
     @property
     def edition_mode(self) -> str:
         return E.normalize_mode(self.ch.edition_mode)

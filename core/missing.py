@@ -158,7 +158,7 @@ class MissingChoicesMixin:
             n, "s" * (n > 1), "s" * (n > 1), "ux" if n > 1 else "l"))
         # classes
         for e in ch.classes:
-            need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
+            need = self.subclass_level(e["nom"])
             if e["niveau"] >= need and not e.get("sous_classe") and self.db.subclasses(e["nom"]):
                 add("classes", "Sous-classe", 1, "{} : sous-classe à choisir (niveau {} atteint)".format(e["nom"], need))
         # race, historique, langues

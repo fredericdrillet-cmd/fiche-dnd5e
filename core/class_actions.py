@@ -380,7 +380,7 @@ class ClassActionsMixin:
         _, sup = superiority(self.class_level("Guerrier"))
         level = slot_level or (self.smite_levels() or [1])[0]
         values = {
-            "ARTS_MARTIAUX": "1d{}".format(R.martial_arts_die(monk)),
+            "ARTS_MARTIAUX": "1d{}".format(self.martial_arts_die(monk)),
             "MOD_FINESSE": "{:+d}".format(max(self.mod("Force"), self.mod("Dextérité"))),
             "SUPERIORITE": "1d{}".format(sup),
             "SOURNOISE": "{}d6".format(max(1, math.ceil(rogue / 2))),
