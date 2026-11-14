@@ -175,6 +175,15 @@ class CombatTab(BaseTab):
         self.style_empty = make_label("", "muted", wrap=True)
         right_col = QVBoxLayout()
         right_col.addWidget(self.style_box, 1)
+        # v52 : bottes d'arme (maîtrise d'arme 2024) — nombre limité sur une fiche 2024
+        self.mastery_box = QGroupBox("Bottes d'arme")
+        mb = QHBoxLayout(self.mastery_box)
+        self.mastery_label = make_label("", "muted", wrap=True)
+        self.mastery_btn = QPushButton("Choisir les bottes…")
+        self.mastery_btn.clicked.connect(self._choose_masteries)
+        mb.addWidget(self.mastery_label, 1)
+        mb.addWidget(self.mastery_btn)
+        right_col.addWidget(self.mastery_box)
         # v36 : options de sous-classe (runes du Chevalier runique, options de Tir arcanique)
         self.options_box = QGroupBox("Options de sous-classe")
         self.options_layout = QGridLayout(self.options_box)
@@ -1595,9 +1604,26 @@ class CombatTab(BaseTab):
             self.ch.styles_combat[slot_id] = text
         self.changed()
 
+    def _refresh_masteries(self):
+        """Encart « Bottes d'arme » : visible si la fiche a des bottes (aptitude 2024 ou règle de la table)."""
+        eng = self.engine
+        count = eng.mastery_count()
+        self.mastery_box.setVisible(count is None or count > 0)
+        self.mastery_btn.setVisible(count is not None and count > 0)
+        if count is None:
+            self.mastery_label.setText("Règle de la table : la botte de chaque arme maîtrisée s'applique.")
+        elif count:
+            chosen = eng.mastery_weapons() or []
+            self.mastery_label.setText("{} / {} : {}".format(len(chosen), count, ", ".join(chosen) or "aucune "
+                                                             "(les armes équipées sont proposées par défaut)"))
+
+    def _choose_masteries(self):
+        from .mastery_dialog import MasteryDialog
+        MasteryDialog(self.win).exec()
+
     def _refresh_styles(self):
         """Sélecteurs : actifs uniquement si le niveau de classe requis est atteint (règles 5e)."""
-        eng, db = self.engine, self.db
+        eng, db = self.engine, self.engine.db          # v52 : styles de l'édition de la fiche
         slots = eng.fighting_style_slots()
         key = tuple((s["id"], s["debloque"]) for s in slots)
         if key != self._style_key:
@@ -1730,6 +1756,7 @@ class CombatTab(BaseTab):
                                                    if ac_info["note"] else ""))
         self.ac_detail.setText("= " + ac_info["chiffres"] if " + " in ac_info["formule"] else "")
         self._refresh_styles()
+        self._refresh_masteries()
         self._refresh_class_options()
         self._refresh_resources()
         self._refresh_saves()

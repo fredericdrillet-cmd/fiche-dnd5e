@@ -384,6 +384,10 @@ def build_classes_2024(db) -> dict[str, dict]:
     return out
 
 
+# noms 2024 -> noms de l'app (les effets calculés sont rattachés au nom)
+STYLE_ALIASES_2024 = {"Arme à deux mains": "Armes à deux mains"}
+
+
 class EditionView:
     """
     Base de données vue par une fiche 2024 : mêmes données que la base, sauf les classes (versions 2024).
@@ -422,3 +426,26 @@ class EditionView:
 
     def table_row(self, class_name: str, level: int) -> dict:
         return (self.classes.get(class_name, {}).get("table_2024") or {}).get(int(level), {})
+
+    @property
+    def styles_by_class(self) -> dict[str, dict[str, str]]:
+        """2024 : les styles de combat sont les dons « Style de combat » (+ options propres au Paladin et au Rôdeur)."""
+        cached = self.__dict__.get("_styles")
+        if cached is not None:
+            return cached
+        base = self._base.styles_by_class
+        feats = {STYLE_ALIASES_2024.get(n, n): f.get("description", "") for n, f in self._base.feats.items()
+                 if f.get("edition") == 2024 and "style" in norm(str(f.get("categorie", "")))}
+        out = {k: dict(v) for k, v in base.items()}
+        for cls, extra in (("Guerrier", ()), ("Paladin", ("Combattant béni",)), ("Rôdeur", ("Combattant druidique",))):
+            styles = dict(sorted(feats.items()))
+            for name in extra:                           # Guerrier béni / Guerrier druidique (option de classe)
+                if name in base.get(cls, {}):
+                    styles[name] = base[cls][name]
+            out[cls] = styles
+        object.__setattr__(self, "_styles", out)
+        return out
+
+    def style_description(self, class_name: str, style: str) -> str:
+        from .data_loader import Database
+        return Database.style_description(self, class_name, style)

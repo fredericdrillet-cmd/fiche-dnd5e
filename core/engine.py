@@ -1422,8 +1422,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 "prise": ("à deux mains" if two_handed_grip else "à une main") if w.get("polyvalent") else "",
                 "bonus_degats": list(terms), "calcul": calc, "calcul_1m": calc_1m, "calcul_2m": calc_2m,
                 "proprietes": w.get("proprietes", []), "portee": w.get("portee", ""), "magique": magic,
-                "botte": w.get("botte", "") if self.rule_active("maitrises_armes_2014") else "",
-                "botte_desc": w.get("botte_desc", "") if self.rule_active("maitrises_armes_2014") else "", "origine": w.get("origine", ""),
+                "botte": w.get("botte", "") if self.botte_allowed(w["nom"], bool(prof)) else "",
+                "botte_desc": w.get("botte_desc", "") if self.botte_allowed(w["nom"], bool(prof)) else "", "origine": w.get("origine", ""),
                 "styles": notes, "munition": ammo, "etat": M.adv_state(fx_atk), "des_attaque": fx_atk["des"],
                 "avantage": fx_atk["avantage"], "desavantage": fx_atk["desavantage"]}
 
@@ -1566,6 +1566,61 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             if f.get("edition") == 2024 and norm(re.sub(r"\s*\(2024\)$", "", name)) == base:
                 return name
         return ""
+
+    # ---- v52 : bottes d'arme (maîtrise des armes 2024) ----------------------------------------
+    MASTERY_FEATURES = ("bottes d'arme", "maitrise des armes")
+
+    def mastery_count(self) -> Optional[int]:
+        """
+        Nombre de bottes d'arme maîtrisées. Fiche 2024 : table de la classe (Barbare, Guerrier), sinon 2 pour les
+        classes qui ont l'aptitude (Paladin, Rôdeur, Roublard) ; 0 sans l'aptitude. Fiche 2014 : None (illimité,
+        règle de la table « Maîtrises d'armes sur l'arsenal 2014 ») ou 0 si la règle est inactive.
+        """
+        if self.sheet_edition != 2024:
+            return None if self.rule_active("maitrises_armes_2014") else 0
+        best = 0
+        for e in self.ch.classes:
+            if not any(norm(f["nom"]).startswith(self.MASTERY_FEATURES) and f["debloque"] for f in self.features(e)):
+                continue
+            best = max(best, int(self.table_row(e["nom"], e["niveau"]).get("maitrise_des_armes") or 2))
+        return best
+
+    def mastery_candidates(self) -> list[str]:
+        """Armes maîtrisées qui ont une botte (choix proposés)."""
+        profs = self.weapon_proficiencies()
+        return sorted(n for n, w in self.db.weapons.items()
+                      if w.get("botte") and R.weapon_proficient(n, w.get("categorie", ""), profs))
+
+    def mastery_weapons(self) -> Optional[list[str]]:
+        """Armes dont la botte s'applique (None = toutes les armes maîtrisées). Sans choix : armes équipées."""
+        count = self.mastery_count()
+        if count is None:
+            return None
+        cands = set(self.mastery_candidates())
+        chosen = [n for n in self.ch.bottes_choisies if n in cands]
+        if not chosen:
+            equipped = [s.get("nom", "") for s in list(self.ch.armes_cac) + list(self.ch.armes_distance)]
+            chosen = list(dict.fromkeys(n for n in equipped if n in cands))
+        return chosen[:count]
+
+    def set_mastery(self, weapon: str, on: bool) -> bool:
+        """Coche / décoche une botte (2024 : dans la limite du nombre maîtrisé ; modifiable au repos long)."""
+        count = self.mastery_count()
+        current = list(self.mastery_weapons() or [])
+        if on and weapon not in current:
+            if count is not None and len(current) >= count:
+                return False
+            current.append(weapon)
+        elif not on:
+            current = [n for n in current if n != weapon]
+        self.ch.bottes_choisies = current
+        return True
+
+    def botte_allowed(self, weapon_name: str, proficient: bool) -> bool:
+        if not proficient:
+            return False
+        allowed = self.mastery_weapons()
+        return allowed is None or weapon_name in allowed
 
     def allowed(self, item) -> bool:
         """L'élément (sort, don, historique, espèce…) est-il proposé dans le mode d'édition du personnage ?"""

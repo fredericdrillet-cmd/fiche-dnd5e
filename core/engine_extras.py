@@ -443,7 +443,7 @@ class ExtrasMixin:
         if not w or not st:
             return []
         # v52 : la botte (maîtrise d'arme 2024) exige la règle de la table ET la maîtrise de l'arme
-        botte = self.rule_active("maitrises_armes_2014") and bool(st.get("maitrise", True))
+        botte = self.botte_allowed(w["nom"], bool(st.get("maitrise", True)))
         return WA.weapon_action_rows(w, self.mod(st["carac"]), self.prof, botte=botte,
                                      extras=self.rule_active("actions_arme_bg3"))
 

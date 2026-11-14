@@ -124,10 +124,15 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Historique 2024** : les augmentations de caractéristiques (+2/+1 ou +1/+1/+1) se font **parmi les trois caractéristiques de l'historique** (`background_abilities()`, `race_rule()["choix"]`), et le **don d'origine** est accordé d'office (`origin_feat()`, compté dans `chosen_feats()`).
 - **Passage en 2024** (`set_edition_mode`) : l'espèce et l'historique passent à leur équivalent (« Humain » → « Humain (2024) », « Acolyte » → « Acolyte (2024) »), et inversement.
 
-### 4.4 Reste à faire
+### 4.4 Fait : styles de combat et bottes d'arme 2024
+
+- **Styles de combat** : sur une fiche 2024, le sélecteur de l'onglet Combat propose les 10 dons « Style de combat » 2024 (`EditionView.styles_by_class`), plus *Combattant béni* (Paladin) et *Combattant druidique* (Rôdeur). Les styles de même nom gardent leurs effets (Défense, Archerie, Duel, Armes à deux mains…). *Technique supérieure* (Tasha) reste réservée au 2014.
+- **Bottes d'arme** : `mastery_count()` (table : Guerrier 3 → 6, Barbare 2 → 4 ; 2 pour Paladin, Rôdeur, Roublard ; 0 sans l'aptitude), `mastery_weapons()` (choix du joueur, ou armes équipées par défaut), `set_mastery()`, `botte_allowed()`. Encart « Bottes d'arme » et fenêtre de choix (`ui/mastery_dialog.py`) dans l'onglet Combat. Fiche 2014 : toutes les armes maîtrisées si la règle de la table est active (décision Q4).
+
+### 4.5 Reste à faire
 
 1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
-2. **Styles de combat 2024** (dons de la catégorie « Style de combat ») et **nombre de bottes** maîtrisées à choisir ; **Occultiste 2024** (manifestations dès le niveau 1, Arcanum mystique).
+2. **Occultiste 2024** (manifestations dès le niveau 1, Arcanum mystique).
 3. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
 4. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 

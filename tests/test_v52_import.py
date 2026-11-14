@@ -179,3 +179,63 @@ class Sheet2024Tests(unittest.TestCase):
         rgr = {t["key"]: t for t in self.new2024("Rôdeur", 5).resource_trackers()}
         self.assertEqual(rgr["ennemi_favori"]["total"], 3)
         self.assertNotIn("cap:ennemi_jure", rgr)
+
+
+class StylesAndMasteryTests(unittest.TestCase):
+    def sheet(self, cls, level, edition="2024"):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": level, "sous_classe": "", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_edition_mode(edition)
+        return eng
+
+    def test_fighting_style_feats_2024(self):
+        eng = self.sheet("Guerrier", 1)
+        options = eng.style_options("Guerrier|1")
+        self.assertEqual(len(options), 10)
+        self.assertIn("Armes à deux mains", options)                    # nom 2024 « Arme à deux mains »
+        self.assertNotIn("Technique supérieure", options)                # option de Tasha (2014)
+        eng.ch.styles_combat["Guerrier|1"] = "Défense"
+        eng.normalize()
+        self.assertTrue(eng.style_active("Défense"))
+        self.assertIn("Combattant béni", self.sheet("Paladin", 2).style_options("Paladin|1"))
+        self.assertIn("Technique supérieure", self.sheet("Guerrier", 1, "2014").style_options("Guerrier|1"))
+
+    def test_weapon_mastery_counts(self):
+        self.assertEqual(self.sheet("Guerrier", 1).mastery_count(), 3)
+        self.assertEqual(self.sheet("Barbare", 4).mastery_count(), 3)
+        self.assertEqual(self.sheet("Roublard", 1).mastery_count(), 2)
+        self.assertEqual(self.sheet("Magicien", 3).mastery_count(), 0)
+        self.assertEqual(self.sheet("Magicien", 3, "2014").mastery_count(), 0)    # règle de la table inactive
+
+    def test_weapon_mastery_choice(self):
+        eng = self.sheet("Guerrier", 1)
+        sword = {"nom": "Épée longue", "bonus": 0, "maitrise": None}
+        eng.ch.armes_cac[0] = sword
+        self.assertEqual(eng.mastery_weapons(), ["Épée longue"])          # arme équipée proposée par défaut
+        self.assertEqual(eng.weapon_stats(sword)["botte"], "Sape")
+        for w in ("Hache d’armes", "Arc long", "Rapière"):
+            eng.set_mastery(w, True)
+        self.assertFalse(eng.set_mastery("Fouet", True))                  # limite de 3 atteinte
+        self.assertEqual(len(eng.mastery_weapons()), 3)
+        eng.set_mastery("Épée longue", False)
+        self.assertEqual(eng.weapon_stats(sword)["botte"], "")
+        old = self.sheet("Guerrier", 1, "2014")
+        old.set_house_rule("maitrises_armes_2014", True)
+        self.assertIsNone(old.mastery_count())                            # 2014 + règle : toutes les armes
+        old.ch.armes_cac[0] = sword
+        self.assertEqual(old.weapon_stats(sword)["botte"], "Sape")
+
+    def test_mastery_dialog_smoke(self):
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.mastery_dialog import MasteryDialog
+        win = MainWindow(DB)
+        win.engine = self.sheet("Guerrier", 1)
+        dlg = MasteryDialog(win)
+        dlg.checks["Arc long"].setChecked(True)
+        dlg.accept()
+        self.assertIn("Arc long", win.engine.ch.bottes_choisies)
