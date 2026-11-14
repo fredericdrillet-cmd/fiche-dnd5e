@@ -192,7 +192,7 @@ class LevelUpMixin:
         return [r for r in rows if r[0] in keep or r[1] != r[2]]
 
     def pact_options(self) -> list[str]:
-        return list(PACTS)
+        return list(PACTS) if self.sheet_edition != 2024 else []      # 2024 : le pacte est une manifestation
 
     # ------------------------------------------------------------------ v40 : nouveaux sorts du niveau
     def level_invocation_options(self, sim) -> list[dict]:

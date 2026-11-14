@@ -194,7 +194,7 @@ class MissingChoicesMixin:
                 n = min(c["prepares_max"], cnt["sorts"] if c["classe"] == "Magicien" else c["prepares_max"]) \
                     - cnt["prepares"]
                 add("magie", "Sorts", n, "{} : {} sort{} à préparer".format(c["classe"], n, "s" * (n > 1)))
-        if self.class_level("Occultiste") >= 3 and not ch.pacte:
+        if self.class_level("Occultiste") >= 3 and not ch.pacte and self.pact_available():
             add("magie", "Pacte", 1, "Occultiste : faveur de pacte à choisir")
         slots_m = self.manifestation_slots()
         n = slots_m["total"] - len(ch.manifestations)

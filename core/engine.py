@@ -164,6 +164,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         ch = self.ch
         ch.pv_mode = "moyenne"
         ch.edition_mode = E.normalize_mode(ch.edition_mode)            # v52 : éditions
+        if ch.edition_mode == E.MODE_2024 and self.class_level("Occultiste"):   # 2024 : pacte = manifestation choisie
+            from .data_loader import PACTS
+            ch.pacte = next((n for n in ch.manifestations if n in PACTS), "")
         sheet = {E.MODE_2024: 2024, E.MODE_2014: 2014}.get(ch.edition_mode)   # une édition par fiche (hors libre)
         for entry in ch.classes:
             entry["edition"] = sheet or E.item_edition(entry)
@@ -1234,12 +1237,15 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         Nombre de manifestations connues : celles de l'Occultiste (niveau de classe) + une par don du type
         « Initié aux arcanes occultes ». Retourne {'classe': n, 'dons': m, 'sources_dons': [...], 'total': n+m}.
         """
-        from_class = R.invocations_known(self.class_level("Occultiste"))
+        occ = self.class_level("Occultiste")
+        row = self.table_row("Occultiste", occ) if occ else {}
+        from_class = int(row["invocations"]) if row.get("invocations") is not None else R.invocations_known(occ)
         feats = [f for f in self.chosen_feats() if "arcanes occultes" in norm(f)]
         return {"classe": from_class, "dons": len(feats), "sources_dons": feats, "total": from_class + len(feats)}
 
     def pact_available(self) -> bool:
-        return self.class_level("Occultiste") >= 3
+        """Choix séparé du pacte (2014, niveau 3). En 2024, le pacte est une manifestation : pas de choix séparé."""
+        return self.sheet_edition != 2024 and self.class_level("Occultiste") >= 3
 
     def manifestation_status(self, name: str) -> tuple[str, str]:
         """(« ok » | « ko », raison) : pacte et niveau d'Occultiste requis par la manifestation."""
@@ -1247,7 +1253,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if not m:
             return "ko", "manifestation inconnue"
         occ = self.class_level("Occultiste")
-        if m["pacte"] and (not self.pact_available() or self.ch.pacte != m["pacte"]):
+        pact_ok = self.ch.pacte == m["pacte"] and (self.sheet_edition == 2024 or self.pact_available())
+        if m["pacte"] and not pact_ok:
             return "ko", f"requiert le {m['pacte']}"
         if m["niveau"] and occ < m["niveau"]:
             return "ko", f"Occultiste niveau {m['niveau']} requis"

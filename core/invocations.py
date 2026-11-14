@@ -54,6 +54,9 @@ class InvocationsMixin:
             return "requiert le sort mineur {}".format(m["sort_requis"])
         if m.get("special") and "malefice" in norm(m["special"]) and not self.has_curse_feature():
             return "requiert le sort Maléfice ou une aptitude de malédiction"
+        req = re.search(r"la manifestation (.+?)(?: ;|$)", m.get("special") or "")      # v52 : prérequis 2024
+        if req and req.group(1).strip() not in self.ch.manifestations:
+            return "requiert la manifestation {}".format(req.group(1).strip())
         return ""
 
     def migrate_manifestations(self) -> None:

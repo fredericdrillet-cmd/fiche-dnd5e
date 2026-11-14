@@ -384,6 +384,38 @@ def build_classes_2024(db) -> dict[str, dict]:
     return out
 
 
+PACT_ALIASES_2024 = {"pacte du tome": "Pacte du grimoire"}
+
+
+def build_manifestations_2024(db) -> dict[str, dict]:
+    """Manifestations 2024 au format de l'app (prérequis de niveau, de pacte et d'autre manifestation analysés)."""
+    from .data_loader import PACTS, normalize_manifestation
+    cls = db.editions.find("classes", "Occultiste", 2024) or {}
+    out = {}
+    for o in cls.get("options") or []:
+        if "manifestation" not in norm(o.get("categorie", "")):
+            continue
+        pre = o.get("prerequis") or ""
+        lvl = re.search(r"niveau (\d+)", norm(pre))
+        pact = ""
+        req = re.search(r"manifestation (.+?)(?:,|$)", pre)
+        special = ""
+        if req:
+            target = req.group(1).strip()
+            pact = PACT_ALIASES_2024.get(norm(target), target if target in PACTS else "")
+            if not pact:
+                special = "la manifestation {}".format(target)
+        if "tour de magie" in norm(pre):
+            special = (special + " ; " if special else "") + "un tour de magie d'occultiste qui inflige des dégâts"
+        m = normalize_manifestation({"nom": o["nom"], "categorie": "Niveau {}".format(lvl.group(1)) if lvl else "Communes",
+                                     "description": o.get("description", ""), "source": "Manuel des joueurs 2024",
+                                     "prerequis": {"niveau": int(lvl.group(1)) if lvl else 0, "pacte": pact,
+                                                   "sort": "", "special": special}})
+        m.update(edition=2024, prerequis_texte=pre)
+        out[o["nom"]] = m
+    return out
+
+
 # noms 2024 -> noms de l'app (les effets calculés sont rattachés au nom)
 STYLE_ALIASES_2024 = {"Arme à deux mains": "Armes à deux mains"}
 
@@ -445,6 +477,30 @@ class EditionView:
             out[cls] = styles
         object.__setattr__(self, "_styles", out)
         return out
+
+    @property
+    def manifestations(self) -> dict[str, dict]:
+        """2024 : manifestations occultes de l'Occultiste 2024 (les pactes en font partie)."""
+        cached = self.__dict__.get("_manifestations")
+        if cached is None:
+            cached = build_manifestations_2024(self._base)
+            object.__setattr__(self, "_manifestations", cached)
+        return cached
+
+    def metamagic_2024(self) -> dict[str, tuple[int, str]]:
+        """2024 : options de Métamagie {nom: (coût en points de sorcellerie, description)}."""
+        cached = self.__dict__.get("_metamagic")
+        if cached is None:
+            cls = self._base.editions.find("classes", "Ensorceleur", 2024) or {}
+            cached = {}
+            for o in cls.get("options") or []:
+                if "metamag" not in norm(o.get("categorie", "")):
+                    continue
+                desc = o.get("description", "")
+                m = re.search(r"(\d+)\s+points?\s+de\s+sorcellerie", norm(desc))
+                cached[o["nom"]] = (int(m.group(1)) if m else 1, desc)
+            object.__setattr__(self, "_metamagic", cached)
+        return cached
 
     def style_description(self, class_name: str, style: str) -> str:
         from .data_loader import Database

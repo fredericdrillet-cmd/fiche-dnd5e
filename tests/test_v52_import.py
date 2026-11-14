@@ -239,3 +239,70 @@ class StylesAndMasteryTests(unittest.TestCase):
         dlg.checks["Arc long"].setChecked(True)
         dlg.accept()
         self.assertIn("Arc long", win.engine.ch.bottes_choisies)
+
+
+class Warlock2024Tests(unittest.TestCase):
+    def sheet(self, cls, level, edition="2024"):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": level, "sous_classe": "", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_edition_mode(edition)
+        return eng
+
+    def test_invocations_from_level_1_and_pact_as_invocation(self):
+        eng = self.sheet("Occultiste", 1)
+        self.assertEqual(len(eng.db.manifestations), 28)
+        self.assertEqual(eng.manifestation_slots()["classe"], 1)          # 2014 : 0 au niveau 1
+        self.assertFalse(eng.pact_available())
+        self.assertEqual(eng.pact_options(), [])
+        eng.ch.manifestations = ["Pacte de la lame"]
+        eng.normalize()
+        self.assertEqual(eng.ch.pacte, "Pacte de la lame")
+        self.assertEqual(eng.manifestation_status("Pacte de la lame"), ("ok", ""))
+        self.assertFalse([m for m in self.sheet("Occultiste", 3).missing_choices() if "pacte" in m["message"].lower()])
+
+    def test_invocation_prerequisites(self):
+        eng = self.sheet("Occultiste", 12)
+        self.assertEqual(eng.manifestation_status("Châtiment occulte")[0], "ko")          # sans Pacte de la lame
+        eng.ch.manifestations = ["Pacte de la lame", "Châtiment occulte", "Lame dévorante"]
+        eng.normalize()
+        self.assertEqual(eng.manifestation_status("Châtiment occulte"), ("ok", ""))
+        self.assertIn("Lame assoiffée", eng.manifestation_status("Lame dévorante")[1])
+        eng.ch.manifestations.append("Lame assoiffée")
+        self.assertEqual(eng.manifestation_status("Lame dévorante"), ("ok", ""))
+        self.assertEqual(self.sheet("Occultiste", 3, "2014").manifestation_slots()["classe"], 2)
+
+    def test_metamagic_2024(self):
+        eng = self.sheet("Ensorceleur", 2)
+        opts = eng.metamagic_option_set()
+        self.assertEqual((opts["total"], len(opts["options"])), (2, 10))
+        self.assertIn("Sort ample", opts["options"])                                   # nom 2024
+        self.assertEqual(self.sheet("Ensorceleur", 10).metamagic_option_set()["total"], 4)
+        self.assertIsNone(self.sheet("Ensorceleur", 2, "2014").metamagic_option_set())  # 2014 : niveau 3
+        eng.ch.options_classe = {"metamagie": ["Sort ample", "Sort jumeau"]}
+        self.assertEqual(eng.chosen_metamagic(), ["Sort ample", "Sort jumeau"])
+
+
+class UiSheet2024Smoke(unittest.TestCase):
+    def test_every_tab_with_2024_sheets(self):
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        for cls, level, invocations in (("Occultiste", 5, ["Pacte de la lame", "Châtiment occulte"]),
+                                        ("Ensorceleur", 4, []), ("Guerrier", 3, []), ("Paladin", 6, [])):
+            ch = Engine.new_character(DB)
+            ch.classes = [{"nom": cls, "niveau": level, "sous_classe": "", "pv_jets": []}]
+            eng = Engine(DB, ch)
+            eng.normalize()
+            eng.set_edition_mode("2024")
+            ch.manifestations = list(invocations)
+            eng.normalize()
+            win.engine = eng
+            win.refresh_all()
+            for i in range(win.tabs.count()):
+                win.tabs.setCurrentIndex(i)
+            win.refresh_all()
+            self.assertIs(win.combat_tab.db, eng.db)                     # les onglets lisent la base de la fiche

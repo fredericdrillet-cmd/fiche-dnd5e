@@ -283,7 +283,9 @@ class BaseTab(QWidget):
 
     @property
     def db(self):
-        return self.win.db
+        """Base de règles de la fiche ouverte (v52 : vue 2024 pour une fiche 2024, voir Engine.db)."""
+        eng = getattr(self.win, "engine", None)
+        return eng.db if eng is not None else self.win.db
 
     def changed(self) -> None:
         self.win.changed()

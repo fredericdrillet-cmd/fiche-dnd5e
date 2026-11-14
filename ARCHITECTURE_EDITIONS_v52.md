@@ -129,12 +129,17 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Styles de combat** : sur une fiche 2024, le sélecteur de l'onglet Combat propose les 10 dons « Style de combat » 2024 (`EditionView.styles_by_class`), plus *Combattant béni* (Paladin) et *Combattant druidique* (Rôdeur). Les styles de même nom gardent leurs effets (Défense, Archerie, Duel, Armes à deux mains…). *Technique supérieure* (Tasha) reste réservée au 2014.
 - **Bottes d'arme** : `mastery_count()` (table : Guerrier 3 → 6, Barbare 2 → 4 ; 2 pour Paladin, Rôdeur, Roublard ; 0 sans l'aptitude), `mastery_weapons()` (choix du joueur, ou armes équipées par défaut), `set_mastery()`, `botte_allowed()`. Encart « Bottes d'arme » et fenêtre de choix (`ui/mastery_dialog.py`) dans l'onglet Combat. Fiche 2014 : toutes les armes maîtrisées si la règle de la table est active (décision Q4).
 
-### 4.5 Reste à faire
+### 4.5 Fait : Occultiste et Métamagie 2024
+
+- **Manifestations 2024** (`EditionView.manifestations`, `build_manifestations_2024`) : les 28 manifestations du Manuel 2024, prérequis analysés (niveau, pacte, autre manifestation, tour de magie) ; nombre lu dans la table (1 au niveau 1 → 10 au niveau 20).
+- **Pacte** : en 2024, Pacte de la lame / de la chaîne / du grimoire sont des manifestations ; `ch.pacte` est déduit de la manifestation choisie, et il n'y a plus de choix séparé au niveau 3 (`pact_available()`, `pact_options()`, choix manquants).
+- **Métamagie 2024** (`metamagic_table()`, `metamagic_known_count()`) : les 10 options 2024 avec leur coût, 2 options au niveau 2, 4 au niveau 10, 6 au niveau 17.
+
+### 4.6 Reste à faire
 
 1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
-2. **Occultiste 2024** (manifestations dès le niveau 1, Arcanum mystique).
-3. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
-4. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
+2. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
+3. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 
 ## 5. Décisions prises
 
