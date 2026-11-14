@@ -250,8 +250,9 @@ class TurnMixin:
             elif limit_key and not self.granted_limit_left(limit_key):
                 ok, why = False, "Déjà utilisé — récupéré au repos long."
             eff = self.default_slot_level(spell["nom"]) if lvl and needs_slot else lvl
-            origin = "sort mineur" if lvl == 0 else "sort niv. {}".format(lvl) + (
-                " ⇒ {}".format(eff) if eff > lvl else "") + (" (race)" if racial else " (accordé)" if granted else "")
+            origin = ("sort mineur" if lvl == 0 else "sort niv. {}".format(lvl) + (
+                " ⇒ {}".format(eff) if eff > lvl else "")) + (" [Sort Racial]" if racial and not known_normally
+                                                             else " (accordé)" if granted else "")
             desc = (spell.get("description") or "")[:400]
             if lvl:                                       # niveau effectif : surclassement d'office (pacte)
                 vals = self.spell_values(spell["nom"], eff) or {}

@@ -222,9 +222,13 @@ class MagicTab(BaseTab):
         mine.addWidget(chosen)
 
         # sorts raciaux : toujours visibles, même pour une classe qui ne lance pas de sorts
-        self.racial_box = QGroupBox("Sorts raciaux")
+        self.racial_box = QGroupBox("✦ Magie raciale — [Sort Racial] (toutes classes, même non lanceuses de sorts)")
         rl = QVBoxLayout(self.racial_box)
         self.racial_info = make_label("", "muted", wrap=True)
+        # v48 : sort mineur racial au choix (Haut-elfe : liste du magicien)
+        self.racial_choice_row = QHBoxLayout()
+        rl.addLayout(self.racial_choice_row)
+        self.racial_choice_widgets: dict = {}
         self.racial = self._table(["Sort", "Niv.", "Disponible", "Utilisation", "Jet", "Trait racial"])
         self.racial.setMinimumHeight(90)
         rl.addWidget(self.racial_info)
@@ -1087,9 +1091,14 @@ class MagicTab(BaseTab):
         """Encart des sorts raciaux (Races.json) : niveau requis, utilisation, DD / attaque avec la carac. raciale."""
         eng, t = self.engine, theme.current()
         spells = eng.racial_spells()
+        slots = eng.racial_choice_slots()
+        self._refresh_racial_choices(slots)
         self._racial_rows = [{"nom": r["nom"], "sort": r["sort"]} for r in spells]
-        self.racial_box.setVisible(bool(spells))
+        self.racial_box.setVisible(bool(spells) or bool(slots))
+        self.mark_box(self.racial_box, "✦ Magie raciale — [Sort Racial] (toutes classes, même non lanceuses de sorts)",
+                      "magie", "Sorts raciaux")
         if not spells:
+            self.racial.setRowCount(0)
             return
         ab, choice = eng.racial_spell_ability()
         mod = eng.mod(ab)
@@ -1105,7 +1114,7 @@ class MagicTab(BaseTab):
             test = sp.get("test", "")
             jet = ("Attaque {}".format(R.fmt_bonus(r["attaque"])) if test in ("A", "AC") else
                    "JS {} DD {}".format(test, r["dc"]) if test and test != "Arme" else "—")
-            self.racial.setItem(i, 0, cell(("🧠 " if r["nom"] == self.ch.concentration else "✦ " if r["debloque"] else "🔒 ") + r["nom"] + (" (au choix)" if r["au_choix"] else ""),
+            self.racial.setItem(i, 0, cell(("🧠 " if r["nom"] == self.ch.concentration else "✦ " if r["debloque"] else "🔒 ") + r["nom"] + " [Sort Racial]" + (" (au choix)" if r["au_choix"] else ""),
                                            "left", tip, color or t.accent_text, bold=r["debloque"]))
             self.racial.setItem(i, 1, cell("0" if r["niveau"] == 0 else str(r["niveau"]), "center", tip, color))
             self.racial.setItem(i, 2, cell("oui" if r["debloque"] else "niveau {}".format(r["niveau_requis"]), "center",
@@ -1113,6 +1122,30 @@ class MagicTab(BaseTab):
             self.racial.setItem(i, 3, cell(r["usage"], "center", tip, color))
             self.racial.setItem(i, 4, cell(jet, "center", tip, color))
             self.racial.setItem(i, 5, cell(r["source"], "left", tip, color))
+
+    def _refresh_racial_choices(self, slots: list[dict]) -> None:
+        """v48 : un sélecteur par trait « sort mineur de votre choix » (Haut-elfe…)."""
+        key = tuple((s["cle"], s["choix"]) for s in slots)
+        if key == getattr(self, "_racial_choice_key", None):
+            return
+        self._racial_choice_key = key
+        from .game_widgets import clear_layout
+        clear_layout(self.racial_choice_row)
+        self.racial_choice_widgets = {}
+        for s in slots:
+            combo = QComboBox()
+            opts = self.engine.racial_choice_options(s["cle"])
+            tips = {o["nom"]: rich_tip(o["nom"], o.get("description", "")) for o in opts}
+            fill_combo(combo, ["— à choisir —"] + [o["nom"] for o in opts], s["choix"] or "— à choisir —", tips)
+            combo.activated.connect(lambda _=0, c=combo, k=s["cle"]: self._on_racial_choice(k, c.currentText()))
+            self.racial_choice_row.addWidget(make_label("{} — sort mineur ({}) :".format(s["source"], s["liste"]),
+                                                        "head"))
+            self.racial_choice_row.addWidget(combo, 1)
+            self.racial_choice_widgets[s["cle"]] = combo
+
+    def _on_racial_choice(self, key: str, name: str) -> None:
+        self.engine.set_racial_choice(key, "" if name.startswith("—") else name)
+        self.changed()
 
     def _on_sorcery(self, used: int):
         self.engine.set_resource_used("sorcellerie", used)

@@ -80,6 +80,8 @@ from .proficiencies import ProficiencyMixin  # noqa: E402
 from .spell_swap import SpellSwapMixin  # noqa: E402
 from .magic_gear import MagicGearMixin  # noqa: E402
 from .initiative import InitiativeMixin  # noqa: E402
+from .creation import CreationMixin  # noqa: E402
+from .class_guide import ClassGuideMixin  # noqa: E402
 
 
 def pretty_formula(formula: str) -> str:
@@ -99,7 +101,7 @@ def damage_calc(die: str, terms: list, result: str) -> str:
 class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, MissingChoicesMixin,
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
-             MagicGearMixin, InitiativeMixin):
+             MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin):
     def __init__(self, db: Database, char: Character):
         self.db = db
         self.ch = char
@@ -1649,6 +1651,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                             "debloque": self.total_level >= req, "usage": usage, "carac": ab, "carac_choix": ab_choice,
                             "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
                             "source": cap.get("nom", ""), "au_choix": choice})
+        for r in self.chosen_racial_spells():            # v48 : sort mineur racial choisi (Haut-elfe…)
+            if r["nom"] not in seen:
+                seen.add(r["nom"])
+                out.append(r)
         return out
 
     # ==================================================================================

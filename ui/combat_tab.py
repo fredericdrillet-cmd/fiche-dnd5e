@@ -206,15 +206,18 @@ class CombatTab(BaseTab):
 
         # ================= 2. Statistiques de base
         # cinq encarts de même largeur (stretch 1, largeur minimale libre) : aucun dépassement de la ligne
-        stats = QHBoxLayout()
-        stats.setSpacing(8)
+        # v51 : grille unique, hauteur FIXE identique pour les cinq encarts, contenu centré verticalement
+        stats = QGridLayout()
+        stats.setHorizontalSpacing(8)
         self.stat_boxes = {}
-        for key, title in (("init", "Initiative"), ("vit", "Vitesse"), ("prof", "Maîtrise"),
-                           ("perc", "Perception passive"), ("vision", "Vision dans le noir")):
+        for col, (key, title) in enumerate((("init", "Initiative"), ("vit", "Vitesse"), ("prof", "Maîtrise"),
+                                            ("perc", "Perception passive"), ("vision", "Vision dans le noir"))):
             box = QGroupBox(title)
-            box.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Maximum)
+            box.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             box.setMinimumWidth(0)
+            box.setFixedHeight(self.STAT_BOX_HEIGHT)
             lay = QVBoxLayout(box)
+            lay.setAlignment(Qt.AlignmentFlag.AlignVCenter)
             lab = center("", "stat")
             lab.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             lab.setWordWrap(True)                        # vitesses multiples : retour à la ligne plutôt que rognage
@@ -231,7 +234,8 @@ class CombatTab(BaseTab):
                 lay.addWidget(lab)
             self.stat_labels[key] = lab
             self.stat_boxes[key] = box
-            stats.addWidget(box, 1)
+            stats.addWidget(box, 0, col)
+            stats.setColumnStretch(col, 1)
         root.addLayout(stats)
 
         # ================= 2 bis. Ce tour-ci (v30, barre d'action façon BG3) : tout ce qui est jouable, filtré par coût
@@ -366,6 +370,8 @@ class CombatTab(BaseTab):
         self.armor.activated.connect(self._on_armor)
         self.armor_magic.activated.connect(self._on_armor)
         self.shield.activated.connect(lambda _=0: self._on_armor())
+
+    STAT_BOX_HEIGHT = 104                                # v51 : hauteur commune des encarts de statistiques
 
     # ------------------------------------------------------------------ barre du tour (v30)
     TURN_FILTERS = ["Tout", "Action", "Action bonus", "Réaction", "Gratuit"]

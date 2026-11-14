@@ -78,7 +78,9 @@ class ClassPanel(QWidget):
         lay = QVBoxLayout(self)
 
         # --- ligne de contrôle : classe / niveau / sous-classe / retrait
-        ctl = QHBoxLayout()
+        self.edit_row = QWidget()                        # v50 : sélecteurs (Mode libre) …
+        ctl = QHBoxLayout(self.edit_row)
+        ctl.setContentsMargins(0, 0, 0, 0)
         self.class_combo = QComboBox()
         self.level_spin = QSpinBox()
         self.level_spin.setRange(1, R.MAX_LEVEL)
@@ -98,7 +100,10 @@ class ClassPanel(QWidget):
         ctl.addWidget(self.sub_note)
         ctl.addStretch(1)
         ctl.addWidget(self.remove_btn)
-        lay.addLayout(ctl)
+        lay.addWidget(self.edit_row)
+        self.static_head = make_label("", "", wrap=True)   # … ou en-tête statique stylé (Mode guidé)
+        self.static_head.setTextFormat(Qt.TextFormat.RichText)
+        lay.addWidget(self.static_head)
 
         # --- frise de progression 1 → 20 (v29)
         self.roadmap = RoadmapStrip()
@@ -297,6 +302,30 @@ class ClassPanel(QWidget):
         self._refresh_terrain()
         self.roadmap.set_roadmap(eng.class_roadmap(e))
         self.remove_btn.setEnabled(len(self.tab.ch.classes) > 1)
+        # v48 — Mode guidé : résumé consultatif ; niveaux et classes changent par « ▲ Niveau supérieur »
+        free = getattr(self.tab.win, "free_mode", True)
+        locked_tip = rich_tip("Mode guidé", "Les niveaux et les classes se modifient avec « ▲ Niveau supérieur » "
+                              "(multiclassage compris). Mode libre (Options) : édition directe.")
+        for w in (self.class_combo, self.level_spin, self.remove_btn):
+            w.setEnabled(free and w.isEnabled() if w is self.remove_btn else free)
+            w.setToolTip("" if free else locked_tip)
+        if not free:                                     # sous-classe : seulement si elle reste à choisir
+            self.sub_combo.setEnabled(bool(todo))
+        # v50 : Mode guidé -> texte statique (classe, niveau, sous-classe en badges) ; Mode libre -> sélecteurs
+        self.edit_row.setVisible(free or bool(todo))
+        self.static_head.setVisible(not free and not todo)
+        if not free:
+            t = theme.current()
+            badge = ("<span style='background:{bg}; color:{fg}; border:1px solid {b}; border-radius:6px; "
+                     "padding:3px 10px; font-weight:bold'>&nbsp;{txt}&nbsp;</span>")
+            parts = [badge.format(bg=t.panel2, fg=t.accent_text, b=t.ornament, txt=html.escape(e["nom"])),
+                     badge.format(bg=t.panel2, fg=t.text, b=t.border, txt="Niveau {}".format(e["niveau"]))]
+            parts.append(badge.format(bg=t.panel2, fg=t.text, b=t.border, txt=html.escape(e["sous_classe"]))
+                         if e.get("sous_classe") else
+                         "<i style='color:{}'>sous-classe au niveau {}</i>".format(t.muted, need))
+            self.static_head.setText("<span style='font-size:15px'>{}</span>&nbsp;&nbsp;<i style='color:{}'>"
+                                     "Lecture seule — « ▲ Niveau supérieur » pour progresser</i>".format(
+                                         " &nbsp;".join(parts), t.muted))
 
         self._refresh_profs()
         # PV
@@ -388,7 +417,8 @@ class ClassesTab(BaseTab):
                                            "prérequis de caractéristiques vérifiés)."))
         top.addWidget(make_label("Classes du personnage", "title"))
         top.addStretch(1)
-        top.addWidget(self.multi_chk)
+        # v50 : interrupteur « Multiclassage » retiré — le multiclassage est proposé par « Niveau supérieur »
+        self.multi_chk.setVisible(False)
         top.addWidget(self.add_combo)
         top.addWidget(self.add_btn)
         lay.addLayout(top)
@@ -455,11 +485,17 @@ class ClassesTab(BaseTab):
             self.multi_chk.setChecked(self.ch.multiclassage)
         self.multi_chk.setText("⚔ Multiclassage : activé" if self.ch.multiclassage else
                                "⚔ Multiclassage : désactivé")
-        can_add = bool(free) and self.ch.niveau_total < R.MAX_LEVEL and self.ch.multiclassage
+        can_add = bool(free) and self.ch.niveau_total < R.MAX_LEVEL
+        guided = not getattr(self.win, "free_mode", True)
+        if guided:                                       # v48 : ajout de classe via « Niveau supérieur »
+            can_add = False
         self.add_btn.setEnabled(can_add)
         self.add_combo.setEnabled(can_add)
-        self.add_btn.setToolTip("" if self.ch.multiclassage else "Activez l'option « Multiclassage » pour ajouter "
-                                "une classe.")
-        self.info.setText("Niveau global : {} — bonus de maîtrise {}. Chaque onglet détaille une classe ; "
-                          "le niveau global de l'en-tête agit sur l'onglet de classe affiché.".format(
-                              self.engine.total_level, R.fmt_bonus(self.engine.prof)))
+        self.add_btn.setVisible(not guided)
+        self.add_combo.setVisible(not guided)
+        self.add_btn.setToolTip("Mode libre : ajout direct d'une classe (multiclassage).")
+        self.info.setText(("Niveau global : {} — bonus de maîtrise {}. " + (
+            "Mode guidé : résumé consultatif — utilisez « ▲ Niveau supérieur » pour gagner un niveau ou une nouvelle "
+            "classe (multiclassage, prérequis de caractéristiques vérifiés)." if guided else
+            "Chaque onglet détaille une classe ; le niveau global de l'en-tête agit sur l'onglet de classe affiché."))
+            .format(self.engine.total_level, R.fmt_bonus(self.engine.prof)))

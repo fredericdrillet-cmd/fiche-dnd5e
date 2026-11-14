@@ -37,7 +37,7 @@ class SkillsTab(BaseTab):
         self.table.setHorizontalHeaderLabels(["Maîtrise", "Expertise", "Compétence", "Carac.", "Bonus", "Source",
                                               "Av. / Désav.", "Jet"])
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        style_table(self.table, stretch_col=2)
+        style_table(self.table, stretch_col=2, row_h=26 if compact else 32)     # v51 : lignes compactes
         self.table.setCursor(Qt.CursorShape.PointingHandCursor)
         self.table.cellClicked.connect(self._on_skill_click)      # clic n'importe où sur la ligne
         ll.addWidget(self.table)
@@ -49,7 +49,7 @@ class SkillsTab(BaseTab):
         self.saves = QTableWidget(6, 5)
         self.saves.setHorizontalHeaderLabels(["Maîtrise", "Caractéristique", "Bonus", "Av. / Désav.", "Jet"])
         self.saves.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
-        style_table(self.saves, stretch_col=1)
+        style_table(self.saves, stretch_col=1, row_h=26 if compact else 32)
         self.saves.setCursor(Qt.CursorShape.PointingHandCursor)
         self.saves.cellClicked.connect(self._on_save_click)
         sl.addWidget(self.saves)
@@ -64,6 +64,8 @@ class SkillsTab(BaseTab):
             "surlignées sont celles proposées par votre classe de départ.", "muted", wrap=True)
         pl.addWidget(self.passive)
         pl.addWidget(self.legend)
+        if compact:                                       # v51 : légende réduite à l'essentiel (gain de hauteur)
+            self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise · « Jet » : d20.")
         right.addWidget(pbox, 2)
         root.addLayout(right, 2)
 

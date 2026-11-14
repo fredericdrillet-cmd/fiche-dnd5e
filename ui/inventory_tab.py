@@ -12,7 +12,7 @@ from . import theme
 from core import weapon_actions as WA
 from .game_widgets import ActionChip, clear_layout, use_consumable
 from .magic_items_panel import MagicItemsPanel
-from .common import CENTER, BaseTab, blocked, cell, fill_combo, make_label, rich_tip, style_table
+from .common import CENTER, BaseTab, blocked, cell, fill_combo, indicator_qss, make_label, rich_tip, style_table
 
 ALL_CATEGORIES = "Toutes catégories"
 CATEGORIES = [ALL_CATEGORIES, "Équipement", "Paquetage", "Arme", "Armure", "Bouclier", "Outil"]
@@ -32,7 +32,14 @@ class InventoryTab(BaseTab):
         self.paperdoll = PaperdollPanel(win)
         root.addWidget(self.paperdoll, 2)
         self.magic_items = MagicItemsPanel(win)
-        self.sub.addTab(page, "🎒 Équipement")
+        # v50 : page défilante — rien n'est masqué en fenêtre réduite (case « Sac sans fond » comprise)
+        from PyQt6.QtWidgets import QFrame, QScrollArea
+        page_scroll = QScrollArea()
+        page_scroll.setWidgetResizable(True)
+        page_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        page.setMinimumSize(1000, 620)
+        page_scroll.setWidget(page)
+        self.sub.addTab(page_scroll, "🎒 Équipement")
         self.sub.addTab(self.magic_items, "✦ Équipement, objets magiques")
 
         # =============================== colonne gauche : inventaire
@@ -65,12 +72,13 @@ class InventoryTab(BaseTab):
         inv = QGroupBox("Équipement porté")
         il = QVBoxLayout(inv)
         # ---- encombrement : jauge, seuils, alerte et « Sac sans fond »
-        enc_row = QHBoxLayout()
-        self.weight = make_label("", "head")
-        self.bag = QCheckBox("Possède un Sac sans fond")
+        enc_row = QVBoxLayout()                          # v50 : charge et « Sac sans fond » sur deux lignes
+        self.weight = make_label("", "head", wrap=True)
+        self.bag = QCheckBox("🎒 Possède un Sac sans fond")
+        self.bag.setMinimumHeight(30)
         self.bag.setToolTip(rich_tip("Sac sans fond", "Cochée, la limite de charge est ignorée : aucune alerte de "
                                      "surcharge n'est affichée."))
-        enc_row.addWidget(self.weight, 1)
+        enc_row.addWidget(self.weight)
         enc_row.addWidget(self.bag)
         il.addLayout(enc_row)
         self.weight_bar = QProgressBar()
@@ -246,6 +254,7 @@ class InventoryTab(BaseTab):
         enc = eng.encumbrance()
         with blocked(self.bag):
             self.bag.setChecked(enc["sac"])
+        self.bag.setStyleSheet(indicator_qss(t))         # v50 : case bien visible quel que soit le thème
         load, cap = enc["poids"], enc["capacite"]
         colors = {"ok": t.good, "encombre": t.accent_text, "lourd": t.warn, "surcharge": t.warn, "sac": t.good}
         color = colors[enc["etat"]]
