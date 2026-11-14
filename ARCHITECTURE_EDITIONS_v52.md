@@ -98,9 +98,11 @@ Exemple testé : Paladin 5 (2024) + Magicien 3 (2014) = niveau d'incantateur 3 +
 4. **Historiques 2024** : ils donnent les augmentations de caractéristiques et un don d'origine (les races 2024 n'en donnent plus) ; l'assistant de création doit l'appliquer en mode 2024.
 5. **Version web** : fenêtre « Règles de la table » et opérations `set_edition_mode` / `set_house_rule`.
 
-## 5. Décisions à prendre
+## 5. Décisions prises
 
-1. **Données 2014** : garder les données actuelles (auditées, plus détaillées) et n'importer que les **sous-classes, dons, historiques, sorts et objets** 2014 manquants, ou remplacer tout le 2014 par les nouvelles données ? Recommandation : **garder** les classes 2014 actuelles et importer le reste, car les aptitudes de classe 2014 des nouvelles données sont moins complètes.
-2. **Contenu « communauté »** de l'app (27 sous-classes, etc.) : visible dans tous les modes, ou seulement en mode libre ?
-3. **« Jets de sauvegarde universels »** : le titre de ta troisième règle les mentionne, mais la description ne parle que de l'inspiration. Quelle règle de 2024 vises-tu ? Je n'ai implémenté que l'inspiration héroïque.
-4. **Potion en 2024** : j'ai suivi ta définition (soi-même = action bonus ; allié = action). Je ne suis pas certain du texte exact du Manuel 2024 sur l'administration à un allié ; à vérifier dans le livre (`regles` de `equipement_fr.json`).
+1. **Données 2014** : on garde les données actuelles, les plus complètes (classes 2014 et leurs aptitudes). Les nouvelles données ne servent qu'à **compléter** : sous-classes, dons, historiques, sorts et objets 2014 manquants, et tout le contenu 2024.
+2. **Contenu « communauté »** : les 27 sous-classes restent proposées **dans tous les modes**, avec une mention discrète « non officielle » (info-bulle des menus de sous-classe, info-bulle de « Niveau supérieur », source affichée dans la fiche pédagogique de classe). Fonctions : `Database.is_unofficial()`, `Database.subclass_tips()`.
+3. **Règles de la table** : seule l'inspiration héroïque est retenue pour la troisième règle (pas de règle de « jets de sauvegarde universels »).
+4. **Versions** : la v51 est conservée telle quelle sur la branche `version-51` (pull request #3 vers `main`) ; la v52 vit sur sa propre branche (pull request #2, construite au-dessus de `version-51`). Chaque branche a son propre exécutable Windows (CI à chaque envoi).
+
+Point encore à vérifier dans le livre : le texte exact du Manuel 2024 sur l'administration d'une potion à un allié (la règle de la table suit ta définition : soi-même = action bonus, allié = action).

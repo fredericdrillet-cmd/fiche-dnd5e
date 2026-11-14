@@ -148,6 +148,20 @@ class HouseRuleTests(unittest.TestCase):
         self.assertFalse(any(r["cle"].startswith("botte_") for r in wiz.weapon_actions(slot)))
 
 
+class UnofficialSubclassTests(unittest.TestCase):
+    def test_community_subclasses_marked_discreetly(self):
+        tips = DB.subclass_tips("Barbare")
+        self.assertIn("Voie du Météore", tips)
+        self.assertNotIn("Voie du Berserker", tips)
+        eng = make([("Barbare", 3, 2014)])
+        summ = eng.subclass_summary("Barbare", "Voie du Météore")
+        self.assertTrue(summ["non_officielle"])
+        self.assertIn("non officielle", summ["source"])
+        self.assertFalse(eng.subclass_summary("Barbare", "Voie du Berserker")["non_officielle"])
+        # proposées dans tous les modes (aucun filtrage par édition)
+        self.assertEqual(len(DB.subclasses("Barbare")), 13)
+
+
 class RulesDialogSmoke(unittest.TestCase):
     def test_dialog_applies_mode_and_rules(self):
         sys.path.insert(0, str(ROOT / "tests"))

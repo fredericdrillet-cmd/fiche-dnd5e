@@ -293,7 +293,7 @@ class ClassPanel(QWidget):
         # sous-classe
         need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
         subs = ["— aucune —"] + [s["nom"] for s in db.subclasses(e["nom"])]
-        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0])
+        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0], tips=db.subclass_tips(e["nom"]))
         unlocked = e["niveau"] >= need
         self.sub_combo.setEnabled(unlocked)
         todo = unlocked and not e.get("sous_classe") and len(subs) > 1

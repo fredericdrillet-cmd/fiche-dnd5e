@@ -424,6 +424,9 @@ def normalize_spell(s: dict, classes: dict[str, list[str]]) -> dict:
     return out
 
 
+UNOFFICIAL_NOTE = "Sous-classe non officielle (création de la communauté)."
+
+
 class Database:
     """Base de données de règles construite à partir des fichiers JSON du dossier `data_dir`."""
 
@@ -711,6 +714,15 @@ class Database:
 
     def subclasses(self, class_name: str) -> list[dict]:
         return self.classes.get(class_name, {}).get("sous_classes", [])
+
+    @staticmethod
+    def is_unofficial(sub: dict) -> bool:
+        """v52 : sous-classe non officielle (source « Création de la communauté ») — proposée dans tous les modes."""
+        return "communaut" in norm(str(sub.get("source", "")))
+
+    def subclass_tips(self, class_name: str) -> dict[str, str]:
+        """Info-bulles discrètes des sous-classes non officielles (menus déroulants)."""
+        return {s["nom"]: UNOFFICIAL_NOTE for s in self.subclasses(class_name) if self.is_unofficial(s)}
 
     def subclass(self, class_name: str, sub_name: str) -> Optional[dict]:
         return next((s for s in self.subclasses(class_name) if s["nom"] == sub_name), None)

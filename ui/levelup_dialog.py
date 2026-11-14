@@ -318,8 +318,10 @@ class LevelUpDialog(QDialog):
             combo.activated.connect(lambda _=0, c=combo: self._set_sub(c.currentText()))
             for i, n in enumerate(subs):                 # v49 : résumé de chaque sous-classe au survol
                 summ = self.sim.subclass_summary(self.cls, n) or {}
-                combo.setItemData(i + 1, "<qt><b>{}</b><br/>{}<br/>{}</qt>".format(
-                    html.escape(n), html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
+                unofficial = self.sim.db.subclass_tips(self.cls).get(n, "")
+                combo.setItemData(i + 1, "<qt><b>{}</b>{}<br/>{}<br/>{}</qt>".format(
+                    html.escape(n), "<br/><i>{}</i>".format(html.escape(unofficial)) if unofficial else "",
+                    html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
                         "Niv. {} — {}".format(lvl, html.escape(nm)) for lvl, nm, _ in summ.get("pouvoirs", [])[:5])),
                     Qt.ItemDataRole.ToolTipRole)
             grid.addWidget(make_label("◆ Sous-classe"), row, 0)

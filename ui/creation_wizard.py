@@ -453,7 +453,7 @@ class CreationWizard(QDialog):
         if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
-            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE)
+            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE, tips=db.subclass_tips(cls))
             combo.activated.connect(lambda _=0, c=combo: self.set_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◆ Sous-classe (niveau 1)", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
