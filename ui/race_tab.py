@@ -184,7 +184,8 @@ class RaceTab(BaseTab):
                                      "QListWidget::item {{ padding: 4px 2px; }}"
                                      "QListWidget::item:hover {{ background: {}; }}".format(t.select_bg))
         eng, db, ch, t = self.engine, self.db, self.ch, theme.current()
-        fill_combo(self.race, db.race_names(), ch.race)
+        races = eng.race_options()                                   # v52 : filtrées selon l'édition
+        fill_combo(self.race, races, ch.race, tips=eng.edition_tips({n: db.races[n] for n in races}))
         subs = db.subraces_of(ch.race)
         self.sub.setVisible(bool(subs))
         self.sub_label.setVisible(bool(subs))
@@ -213,7 +214,8 @@ class RaceTab(BaseTab):
                 self.traits.setCurrentRow(min(max(row, 0), len(self._traits) - 1))
         self._on_trait(self.traits.currentRow())
 
-        fill_combo(self.bg, db.background_names(), ch.historique)
+        bgs = eng.background_options()
+        fill_combo(self.bg, bgs, ch.historique, tips=eng.edition_tips({n: db.backgrounds[n] for n in bgs}))
         bg = db.backgrounds.get(ch.historique)
         if bg:
             skills = ", ".join(ch.competences_historique) or "—"

@@ -35,7 +35,8 @@ from .class_guide_panel import ClassGuidePanel
 from .game_widgets import clear_layout
 from .spell_inspector import make_inspector, spell_card_html
 
-STEPS = ["Race / Sous-race", "Classe", "Historique", "Caractéristiques", "Sorts et tours de magie", "Équipement",
+# v52 : l'historique se choisit avant la classe, pour connaître ses compétences avant celles de la classe
+STEPS = ["Race / Sous-race", "Historique", "Classe", "Caractéristiques", "Sorts et tours de magie", "Équipement",
          "Identité"]
 NO_CHOICE = "— à choisir —"
 ALL_CATS = "Toutes catégories"
@@ -82,10 +83,14 @@ class WizardHost:
 
 
 class CreationWizard(QDialog):
-    def __init__(self, win):
+    def __init__(self, win, edition: str = ""):
         super().__init__(win)
         self.win = win
         self.engine = Engine(win.db, Engine.new_character(win.db))
+        from .rules_dialog import apply_table_defaults                 # v52 : édition et règles de la table
+        apply_table_defaults(self.engine.ch, getattr(win, "settings", {}) or {})
+        if edition:                                                    # édition choisie à la création (une par fiche)
+            self.engine.set_edition_mode(edition)
         self.host = WizardHost(self, win, self.engine)
         self.step = 0
         self.equip_mode = "paquetage"
@@ -208,7 +213,12 @@ class CreationWizard(QDialog):
         self.race_panel.bg_box.setVisible(False)
         self.race_panel.lang_box.setVisible(False)
         self.pages.addWidget(self._scroll(self.race_panel))      # v50 : défilement en fenêtre réduite
-        # 2. classe
+        # 2. historique
+        self.bg_panel = RaceTab(self.host)
+        self.bg_panel.race_box.setVisible(False)
+        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
+        self.pages.addWidget(self._scroll(self.bg_panel))
+        # 3. classe (après l'historique)
         w, lay = self._page()
         row = QHBoxLayout()
         row.addWidget(make_label("Classe", "head"))
@@ -227,11 +237,6 @@ class CreationWizard(QDialog):
         lay.addWidget(self.skills_panel)
         lay.addStretch(1)
         self.pages.addWidget(self._scroll(w))
-        # 3. historique
-        self.bg_panel = RaceTab(self.host)
-        self.bg_panel.race_box.setVisible(False)
-        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
-        self.pages.addWidget(self._scroll(self.bg_panel))
         # 4. caractéristiques
         self.abilities_panel = AbilitiesTab(self.host)
         self.pages.addWidget(self._scroll(self.abilities_panel))
@@ -366,7 +371,7 @@ class CreationWizard(QDialog):
         class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("caracteristiques", "Compétences"),
                                                                  ("combat", "Style de combat"),
                                                                  ("classes", "Sous-classe")))
-        return [bool(self.ch.race), class_ok, none(lambda m: m["onglet"] == "race"),
+        return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok,
                 none(lambda m: m["onglet"] == "caracteristiques" and m["encart"] != "Compétences"),
                 none(lambda m: m["onglet"] == "magie"),
                 self.equip_mode == "paquetage" or self.engine.cart_total(self.cart) <= self.budget(),
@@ -374,7 +379,7 @@ class CreationWizard(QDialog):
 
     def refresh(self) -> None:
         """Rafraîchit la page visible, les pastilles et le résumé."""
-        refreshers = [self.race_panel.refresh, self._refresh_class, self.bg_panel.refresh,
+        refreshers = [self.race_panel.refresh, self.bg_panel.refresh, self._refresh_class,
                       self.abilities_panel.refresh, self._build_spells, self._refresh_equipment,
                       self._refresh_identity]
         refreshers[self.step]()
@@ -424,7 +429,7 @@ class CreationWizard(QDialog):
     def refresh_summary(self) -> None:
         self.summary.setHtml(self.summary_html())
 
-    # ------------------------------------------------------------------ étape 2 : classe
+    # ------------------------------------------------------------------ étape 3 : classe (v52 : après l'historique)
     def _on_class(self, name: str) -> None:
         if name and self.ch.classes and name != self.ch.classes[0]["nom"]:
             self.engine.change_class(0, name)
@@ -448,10 +453,10 @@ class CreationWizard(QDialog):
         self.guide.set_class(eng, cls, entry.get("sous_classe") or self.engine.__dict__.get("_sous_classe_visee", ""))
         clear_layout(self.choice_grid)
         row = 0
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
+        if self.engine.subclass_level(cls) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
-            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE)
+            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE, tips=db.subclass_tips(cls))
             combo.activated.connect(lambda _=0, c=combo: self.set_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◆ Sous-classe (niveau 1)", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
@@ -466,7 +471,7 @@ class CreationWizard(QDialog):
             self.choice_grid.addWidget(make_label("⚔ Style de combat", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
-        if R.SUBCLASS_LEVEL.get(cls, 3) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
+        if self.engine.subclass_level(cls) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
             target = self.engine.__dict__.get("_sous_classe_visee", "")
@@ -474,7 +479,7 @@ class CreationWizard(QDialog):
                        "— aucune pour l'instant —")
             combo.activated.connect(lambda _=0, c=combo: self.set_target_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◇ Sous-classe visée (niveau {}) — adapte les recommandations de "
-                                                  "caractéristiques".format(R.SUBCLASS_LEVEL.get(cls, 3)), "muted"),
+                                                  "caractéristiques".format(self.engine.subclass_level(cls)), "muted"),
                                        row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
@@ -487,7 +492,7 @@ class CreationWizard(QDialog):
         subs = [s["nom"] for s in self.engine.db.subclasses(cls)]
         if name and name == self.engine.__dict__.get("_sous_classe_visee") and not self.guide.sub:
             name = ""                                     # second clic : fiche repliée, sous-classe visée effacée
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and name in subs:
+        if self.engine.subclass_level(cls) <= 1 and name in subs:
             self.ch.classes[0]["sous_classe"] = name       # niveau 1 : c'est le vrai choix
         self.engine.__dict__["_sous_classe_visee"] = name if name in subs else ""
         self.host.changed()
@@ -815,8 +820,12 @@ class CreationWizard(QDialog):
 
 def run_creation(win) -> bool:
     """Ouvre l'assistant ; « Créer le personnage » remplace la fiche (non enregistrée : à sauvegarder)."""
+    from .rules_dialog import ask_edition
+    edition = ask_edition(win)                                         # v52 : 2014 ou 2024
+    if edition is None:
+        return False
     backdrop = BlurBackdrop(win)
-    dialog = CreationWizard(win)
+    dialog = CreationWizard(win, edition)
     try:
         ok = dialog.exec() == 1
     finally:

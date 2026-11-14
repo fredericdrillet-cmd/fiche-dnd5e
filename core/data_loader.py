@@ -424,12 +424,16 @@ def normalize_spell(s: dict, classes: dict[str, list[str]]) -> dict:
     return out
 
 
+UNOFFICIAL_NOTE = "Sous-classe non officielle (création de la communauté)."
+
+
 class Database:
     """Base de données de règles construite à partir des fichiers JSON du dossier `data_dir`."""
 
     def __init__(self, data_dir: Optional[Path | str] = None, use_fallback: bool = True):
         self.data_dir = Path(data_dir) if data_dir else None
         self.warnings: list[str] = []
+        self._editions = None                                       # v52 : catalogue data/editions (à la demande)
         self.skills: list[dict] = []
         self.classes: dict[str, dict] = {}
         self.races: dict[str, dict] = {}
@@ -463,6 +467,13 @@ class Database:
         if use_fallback:
             self._apply_fallback()
         self._build()
+        self.edition_stats: dict = {}
+        if self.data_dir is not None:                              # v52 : données 2014 / 2024 de data/editions
+            from .edition_import import merge
+            try:
+                self.edition_stats = merge(self)
+            except (KeyError, TypeError, ValueError, AttributeError) as exc:      # données abîmées : app utilisable
+                self.warnings.append("data/editions non fusionné : {}".format(exc))
 
     # ------------------------------------------------------------------ lecture des fichiers
     def _scan(self) -> None:
@@ -640,6 +651,21 @@ class Database:
     def shield(self) -> dict:
         return next(iter(self.shields.values()), {"nom": "Bouclier", "bonus_ca": 2})
 
+    def view_2024(self):
+        """v52 : base vue par une fiche 2024 (classes et sous-classes 2024), construite une seule fois."""
+        if getattr(self, "_view_2024", None) is None:
+            from .edition_import import EditionView, build_classes_2024
+            self._view_2024 = EditionView(self, build_classes_2024(self) if self.data_dir is not None else {})
+        return self._view_2024
+
+    @property
+    def editions(self):
+        """v52 : catalogue des données de référence 2014 / 2024 (`data/editions/`), chargé à la première lecture."""
+        if self._editions is None:
+            from .editions import EditionCatalog
+            self._editions = EditionCatalog((self.data_dir or Path(".")) / "editions")
+        return self._editions
+
     @property
     def skill_names(self) -> list[str]:
         return [s["nom"] for s in self.skills]
@@ -702,6 +728,15 @@ class Database:
 
     def subclasses(self, class_name: str) -> list[dict]:
         return self.classes.get(class_name, {}).get("sous_classes", [])
+
+    @staticmethod
+    def is_unofficial(sub: dict) -> bool:
+        """v52 : sous-classe non officielle (source « Création de la communauté ») — proposée dans tous les modes."""
+        return "communaut" in norm(str(sub.get("source", "")))
+
+    def subclass_tips(self, class_name: str) -> dict[str, str]:
+        """Info-bulles discrètes des sous-classes non officielles (menus déroulants)."""
+        return {s["nom"]: UNOFFICIAL_NOTE for s in self.subclasses(class_name) if self.is_unofficial(s)}
 
     def subclass(self, class_name: str, sub_name: str) -> Optional[dict]:
         return next((s for s in self.subclasses(class_name) if s["nom"] == sub_name), None)

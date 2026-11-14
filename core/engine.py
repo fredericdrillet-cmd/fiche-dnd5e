@@ -12,6 +12,8 @@ import re
 from contextlib import contextmanager
 from typing import Optional
 
+from . import editions as E
+from . import house_rules as HR
 from . import rules as R
 from .character import Character
 from .data_loader import Database
@@ -30,6 +32,21 @@ NAME_MIGRATIONS = {
 # espèces retirées du référentiel (doublons) : anciennes sauvegardes converties au chargement
 RACE_RENAMED = {"Elfe sylvestre": ("Elfe", "Elfe des bois"), "Harengon": ("Conil", ""), "Mort-vivant": ("Revenant", ""),
                 "Enfant de la lune": ("Féral", "")}
+
+
+RESOURCE_LABELS_2024 = {
+    "rages": "Rages / repos long", "degats_de_rage": "Dégâts de rage", "maitrise_des_armes": "Bottes d'arme maîtrisées",
+    "second_souffle": "Second souffle (utilisations)", "arts_martiaux": "Dé d'arts martiaux",
+    "points_de_concentration": "Points de concentration", "deplacement_sans_armure": "Déplacement sans armure",
+    "conduit_divin": "Conduit divin (utilisations)", "formes_sauvages": "Formes sauvages (utilisations)",
+    "points_de_sorcellerie": "Points de sorcellerie", "invocations": "Manifestations occultes",
+    "emplacements_de_pacte": "Emplacements de pacte", "niveau_emplacements": "Niveau des emplacements de pacte",
+    "attaque_sournoise": "Attaque sournoise", "de_d_inspiration": "Dé d'inspiration bardique",
+    "ennemi_favori": "Ennemi juré (utilisations de Marque du chasseur)"}
+
+
+def _fmt_cell(value) -> str:
+    return str(value)
 
 
 def memo(fn):
@@ -103,8 +120,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin):
     def __init__(self, db: Database, char: Character):
-        self.db = db
         self.ch = char
+        self.db = db
         self._memo: Optional[dict] = None
 
     @contextmanager
@@ -129,7 +146,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def new_character(db: Database) -> Character:
         ch = Character()
         first = "Guerrier" if "Guerrier" in db.classes else (db.class_names() or [""])[0]
-        ch.classes = [{"nom": first, "niveau": 1, "sous_classe": "", "pv_jets": []}]
+        ch.classes = [{"nom": first, "niveau": 1, "sous_classe": "", "pv_jets": [], "edition": E.DEFAULT_EDITION}]
         races = db.race_names()
         ch.race = "Humain" if "Humain" in db.races else (races[0] if races else "")
         bgs = db.background_names()
@@ -146,6 +163,13 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             self._memo.clear()
         ch = self.ch
         ch.pv_mode = "moyenne"
+        ch.edition_mode = E.normalize_mode(ch.edition_mode)            # v52 : éditions
+        if ch.edition_mode == E.MODE_2024 and self.class_level("Occultiste"):   # 2024 : pacte = manifestation choisie
+            from .data_loader import PACTS
+            ch.pacte = next((n for n in ch.manifestations if n in PACTS), "")
+        sheet = {E.MODE_2024: 2024, E.MODE_2014: 2014}.get(ch.edition_mode)   # une édition par fiche (hors libre)
+        for entry in ch.classes:
+            entry["edition"] = sheet or E.item_edition(entry)
         if "Halphen" in ch.langues_liste:                 # coquille corrigée (v34) : langue des halfelins
             ch.langues_liste = ["Halfelin" if x == "Halphen" else x for x in ch.langues_liste]
         if ch.race in RACE_RENAMED and ch.race not in self.db.races:      # espèce retirée (doublon) -> remplaçante
@@ -274,7 +298,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     def active_subclass(self, entry: dict) -> str:
         """Sous-classe effective (vide si le niveau requis n'est pas atteint)."""
-        need = R.SUBCLASS_LEVEL.get(entry["nom"], 3)
+        need = self.subclass_level(entry["nom"])
         return entry.get("sous_classe", "") if entry["niveau"] >= need else ""
 
     # ---- commandes -------------------------------------------------------------------
@@ -420,6 +444,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         {'fixe': {carac: bonus}, 'libres': [bonus...], 'alternative': [..] ou [], 'libre_regle': bool}.
         """
         ch = self.ch
+        bg_abilities = self.background_abilities()
+        if bg_abilities:                                  # 2024 : bonus de l'historique, sur ses 3 caractéristiques
+            return {"fixe": {}, "libres": [1, 1, 1] if ch.bonus_alt else [2, 1], "alternative": [1, 1, 1],
+                    "libre_regle": True, "choix": bg_abilities, "origine": "historique"}
         info = self.db.race_ability_rule(ch.race)
         if ch.regle_libre or not info:
             return {"fixe": {}, "libres": [1, 1, 1] if ch.bonus_alt else [2, 1], "alternative": [1, 1, 1],
@@ -515,9 +543,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 if ab in out:
                     out[ab] += v
         used = set()
+        allowed = set(rule.get("choix") or ABILITIES)
         for i, v in enumerate(rule["libres"]):          # bonus libres : caractéristiques toutes différentes
             pick = self.ch.bonus_libres[i] if i < len(self.ch.bonus_libres) else ""
-            if pick in out and pick not in used:
+            if pick in out and pick not in used and pick in allowed:
                 out[pick] += v
                 used.add(pick)
         return out
@@ -561,7 +590,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     @memo
     def chosen_feats(self) -> list[str]:
         ids = {s["id"] for s in self.asi_slots()}
-        out = []
+        origin = self.origin_feat()
+        out = [origin] if origin else []                  # 2024 : don d'origine accordé par l'historique
         for sid, choice in self.ch.ameliorations.items():
             if sid in ids and choice.get("mode") == "don" and choice.get("don") in self.db.feats:
                 out.append(choice["don"])
@@ -714,6 +744,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return any(frag in n for n in self.unlocked_feature_names())
 
     def resources(self, entry: dict) -> list[tuple[str, str]]:
+        row = self.table_row(entry["nom"], entry["niveau"])
+        if row:                                              # 2024 : ressources lues dans la table de progression
+            return [(RESOURCE_LABELS_2024.get(k, k.replace("_", " ").capitalize()), _fmt_cell(v))
+                    for k, v in row.items() if k not in ("niveau", "bonus_de_maitrise", "capacites", "emplacements",
+                                                         "sorts_prepares", "tours_de_magie") and v not in (None, "", "—", 0)]
         return R.class_resources(entry["nom"], entry["niveau"], self.mods(), self.prof)
 
     def first_class(self) -> str:
@@ -1202,12 +1237,15 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         Nombre de manifestations connues : celles de l'Occultiste (niveau de classe) + une par don du type
         « Initié aux arcanes occultes ». Retourne {'classe': n, 'dons': m, 'sources_dons': [...], 'total': n+m}.
         """
-        from_class = R.invocations_known(self.class_level("Occultiste"))
+        occ = self.class_level("Occultiste")
+        row = self.table_row("Occultiste", occ) if occ else {}
+        from_class = int(row["invocations"]) if row.get("invocations") is not None else R.invocations_known(occ)
         feats = [f for f in self.chosen_feats() if "arcanes occultes" in norm(f)]
         return {"classe": from_class, "dons": len(feats), "sources_dons": feats, "total": from_class + len(feats)}
 
     def pact_available(self) -> bool:
-        return self.class_level("Occultiste") >= 3
+        """Choix séparé du pacte (2014, niveau 3). En 2024, le pacte est une manifestation : pas de choix séparé."""
+        return self.sheet_edition != 2024 and self.class_level("Occultiste") >= 3
 
     def manifestation_status(self, name: str) -> tuple[str, str]:
         """(« ok » | « ko », raison) : pacte et niveau d'Occultiste requis par la manifestation."""
@@ -1215,7 +1253,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if not m:
             return "ko", "manifestation inconnue"
         occ = self.class_level("Occultiste")
-        if m["pacte"] and (not self.pact_available() or self.ch.pacte != m["pacte"]):
+        pact_ok = self.ch.pacte == m["pacte"] and (self.sheet_edition == 2024 or self.pact_available())
+        if m["pacte"] and not pact_ok:
             return "ko", f"requiert le {m['pacte']}"
         if m["niveau"] and occ < m["niveau"]:
             return "ko", f"Occultiste niveau {m['niveau']} requis"
@@ -1265,7 +1304,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         best, notes = 0, []
         monk = self.class_level("Moine")
         if monk:
-            best = R.martial_arts_die(monk)
+            best = self.martial_arts_die(monk)
             notes.append(f"Arts martiaux : d{best}")
         for e in self.ch.classes:
             if e["nom"] == "Guerrier" and "pancratiaste" in norm(self.active_subclass(e)):
@@ -1390,7 +1429,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 "prise": ("à deux mains" if two_handed_grip else "à une main") if w.get("polyvalent") else "",
                 "bonus_degats": list(terms), "calcul": calc, "calcul_1m": calc_1m, "calcul_2m": calc_2m,
                 "proprietes": w.get("proprietes", []), "portee": w.get("portee", ""), "magique": magic,
-                "botte": w.get("botte", ""), "botte_desc": w.get("botte_desc", ""), "origine": w.get("origine", ""),
+                "botte": w.get("botte", "") if self.botte_allowed(w["nom"], bool(prof)) else "",
+                "botte_desc": w.get("botte_desc", "") if self.botte_allowed(w["nom"], bool(prof)) else "", "origine": w.get("origine", ""),
                 "styles": notes, "munition": ammo, "etat": M.adv_state(fx_atk), "des_attaque": fx_atk["des"],
                 "avantage": fx_atk["avantage"], "desavantage": fx_atk["desavantage"]}
 
@@ -1405,16 +1445,20 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             lvl = e["niveau"]
             sub = self.active_subclass(e)
             cfg = R.CASTERS.get(e["nom"]) or R.SUBCLASS_CASTERS.get((e["nom"], sub))
-            if not cfg or lvl < cfg["min_level"]:
+            if not cfg or lvl < E.min_casting_level(cfg["kind"], cfg["min_level"], self.class_edition(e)):
                 continue
             ab = cfg["ability"]
             m = self.mod(ab)
             spell_list = cfg.get("spell_list", e["nom"])
             d = {"classe": e["nom"], "niveau": lvl, "carac": ab, "mod": m, "kind": cfg["kind"], "mode": cfg["mode"],
-                 "liste": spell_list, "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
+                 "edition": self.class_edition(e), "liste": spell_list, "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
                  "mineurs_max": R.cantrips_known(e["nom"], lvl, cfg["kind"]), "connus_max": None, "prepares_max": None,
                  "niveau_max": R.max_spell_level(cfg["kind"], lvl)}
-            if cfg["mode"] == "known":
+            row = self.table_row(e["nom"], lvl)
+            if row.get("sorts_prepares") is not None:         # 2024 : sorts préparés et mineurs lus dans la table
+                d.update(mode="prepared", connus_max=None, prepares_max=int(row["sorts_prepares"]),
+                         mineurs_max=int(row.get("tours_de_magie") or 0))
+            elif cfg["mode"] == "known":
                 d["connus_max"] = R.spells_known(e["nom"], lvl, cfg["kind"])
             else:
                 d["prepares_max"] = R.spells_prepared(e["nom"], lvl, m)
@@ -1426,7 +1470,185 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     @memo
     def spell_slots(self) -> list[int]:
-        return R.spell_slots([(c["kind"], c["niveau"]) for c in self.casters()])
+        """Emplacements de sorts ; en multiclassage, chaque classe compte selon son édition (core/editions.py)."""
+        return E.spell_slots([(c["kind"], c["niveau"], c.get("edition", E.DEFAULT_EDITION)) for c in self.casters()])
+
+    # ------------------------------------------------------------------ v52 : éditions et règles de la table
+    @property
+    def db(self):
+        """Base de règles ; une fiche 2024 voit les classes et sous-classes 2024 (core/edition_import.EditionView)."""
+        base = self._db
+        if E.normalize_mode(self.ch.edition_mode) == E.MODE_2024 and hasattr(base, "view_2024"):
+            view = base.view_2024()
+            if view.classes:
+                return view
+        return base
+
+    @db.setter
+    def db(self, value) -> None:
+        self._db = getattr(value, "_base", value)
+
+    @property
+    def sheet_edition(self) -> int:
+        """Édition des classes de la fiche (une seule par fiche)."""
+        return 2024 if getattr(self.db, "edition", 2014) == 2024 else 2014
+
+    def table_row(self, class_name: str, level: int) -> dict:
+        """Ligne de la table de progression 2024 d'une classe (vide en 2014)."""
+        return self.db.table_row(class_name, level) if self.sheet_edition == 2024 else {}
+
+    def subclass_level(self, class_name: str) -> int:
+        """Niveau du choix de sous-classe : 3 pour toutes les classes en 2024."""
+        return 3 if self.sheet_edition == 2024 else R.SUBCLASS_LEVEL.get(class_name, 3)
+
+    def martial_arts_die(self, monk_level: int) -> int:
+        row = self.table_row("Moine", monk_level)
+        m = re.match(r"d(\d+)", str(row.get("arts_martiaux", "")))
+        return int(m.group(1)) if m else R.martial_arts_die(monk_level)
+
+    @property
+    def edition_mode(self) -> str:
+        return E.normalize_mode(self.ch.edition_mode)
+
+    @staticmethod
+    def class_edition(entry: dict) -> int:
+        return E.item_edition(entry)
+
+    def house_rules(self) -> dict[str, bool]:
+        """Règles de la table effectives (choix du personnage, complétés par les défauts du mode)."""
+        return HR.resolve(self.ch.regles_optionnelles, self.edition_mode)
+
+    def rule_active(self, key: str) -> bool:
+        return self.house_rules().get(key, False)
+
+    def set_edition_mode(self, mode: str) -> list[str]:
+        """
+        Change l'édition de la fiche ; l'espèce et l'historique passent à leur équivalent de l'autre édition
+        quand il existe (« Humain » <-> « Humain (2024) »). Renvoie les incohérences éventuelles des classes.
+        """
+        self.ch.edition_mode = E.normalize_mode(mode)
+        self.normalize()
+        for table, attr in ((self.db.races, "race"), (self.db.backgrounds, "historique")):
+            current = getattr(self.ch, attr)
+            if current in table and self.allowed(table[current]):
+                continue
+            base = re.sub(r"\s*\(2024\)$", "", current)
+            target = next((n for n in (current + " (2024)", base) if n in table and self.allowed(table[n])), "")
+            if not target:
+                continue
+            if attr == "race":
+                self.change_race(target)
+            else:
+                self.ch.historique = target
+                self.apply_background()
+        self.ch.bonus_libres = [a for a in self.ch.bonus_libres if not self.background_abilities()
+                                or a in self.background_abilities()]
+        self.normalize()
+        return self.edition_problems()
+
+    def set_house_rule(self, key: str, active: bool) -> None:
+        if key in HR.BY_KEY:
+            self.ch.regles_optionnelles = dict(self.ch.regles_optionnelles or {})
+            self.ch.regles_optionnelles[key] = bool(active)
+
+    def edition_problems(self) -> list[str]:
+        return E.validate_classes(self.ch.classes, self.edition_mode)
+
+    def background_abilities(self) -> list[str]:
+        """2024 : les trois caractéristiques que l'historique propose aux augmentations (+2/+1 ou +1/+1/+1)."""
+        if self.sheet_edition != 2024:
+            return []
+        bg = self.db.backgrounds.get(self.ch.historique) or {}
+        return [a for a in bg.get("caracteristiques_2024") or [] if a in ABILITIES]
+
+    def origin_feat(self) -> str:
+        """2024 : don d'origine de l'historique (nom du don dans la base), ou ""."""
+        if self.sheet_edition != 2024:
+            return ""
+        text = (self.db.backgrounds.get(self.ch.historique) or {}).get("don_origine", "")
+        base = norm(re.split(r"\(", text, maxsplit=1)[0]) if text else ""
+        if not base:
+            return ""
+        for name, f in self.db.feats.items():
+            if f.get("edition") == 2024 and norm(re.sub(r"\s*\(2024\)$", "", name)) == base:
+                return name
+        return ""
+
+    # ---- v52 : bottes d'arme (maîtrise des armes 2024) ----------------------------------------
+    MASTERY_FEATURES = ("bottes d'arme", "maitrise des armes")
+
+    def mastery_count(self) -> Optional[int]:
+        """
+        Nombre de bottes d'arme maîtrisées. Fiche 2024 : table de la classe (Barbare, Guerrier), sinon 2 pour les
+        classes qui ont l'aptitude (Paladin, Rôdeur, Roublard) ; 0 sans l'aptitude. Fiche 2014 : None (illimité,
+        règle de la table « Maîtrises d'armes sur l'arsenal 2014 ») ou 0 si la règle est inactive.
+        """
+        if self.sheet_edition != 2024:
+            return None if self.rule_active("maitrises_armes_2014") else 0
+        best = 0
+        for e in self.ch.classes:
+            if not any(norm(f["nom"]).startswith(self.MASTERY_FEATURES) and f["debloque"] for f in self.features(e)):
+                continue
+            best = max(best, int(self.table_row(e["nom"], e["niveau"]).get("maitrise_des_armes") or 2))
+        return best
+
+    def mastery_candidates(self) -> list[str]:
+        """Armes maîtrisées qui ont une botte (choix proposés)."""
+        profs = self.weapon_proficiencies()
+        return sorted(n for n, w in self.db.weapons.items()
+                      if w.get("botte") and R.weapon_proficient(n, w.get("categorie", ""), profs))
+
+    def mastery_weapons(self) -> Optional[list[str]]:
+        """Armes dont la botte s'applique (None = toutes les armes maîtrisées). Sans choix : armes équipées."""
+        count = self.mastery_count()
+        if count is None:
+            return None
+        cands = set(self.mastery_candidates())
+        chosen = [n for n in self.ch.bottes_choisies if n in cands]
+        if not chosen:
+            equipped = [s.get("nom", "") for s in list(self.ch.armes_cac) + list(self.ch.armes_distance)]
+            chosen = list(dict.fromkeys(n for n in equipped if n in cands))
+        return chosen[:count]
+
+    def set_mastery(self, weapon: str, on: bool) -> bool:
+        """Coche / décoche une botte (2024 : dans la limite du nombre maîtrisé ; modifiable au repos long)."""
+        count = self.mastery_count()
+        current = list(self.mastery_weapons() or [])
+        if on and weapon not in current:
+            if count is not None and len(current) >= count:
+                return False
+            current.append(weapon)
+        elif not on:
+            current = [n for n in current if n != weapon]
+        self.ch.bottes_choisies = current
+        return True
+
+    def botte_allowed(self, weapon_name: str, proficient: bool) -> bool:
+        if not proficient:
+            return False
+        allowed = self.mastery_weapons()
+        return allowed is None or weapon_name in allowed
+
+    def allowed(self, item) -> bool:
+        """L'élément (sort, don, historique, espèce…) est-il proposé dans le mode d'édition du personnage ?"""
+        return E.allowed(item, self.edition_mode)
+
+    def race_options(self) -> list[str]:
+        return [n for n in self.db.race_names() if self.allowed(self.db.races[n]) or n == self.ch.race]
+
+    def background_options(self) -> list[str]:
+        return [n for n in self.db.background_names()
+                if self.allowed(self.db.backgrounds[n]) or n == self.ch.historique]
+
+    def feat_options(self) -> list[str]:
+        return [n for n, f in self.db.feats.items() if self.allowed(f)]
+
+    def edition_tips(self, items: dict) -> dict[str, str]:
+        """Badge discret (info-bulle) « Édition 2014 / 2024 » des éléments en mode libre."""
+        if self.edition_mode != E.MODE_LIBRE:
+            return {}
+        return {n: "Édition {} — {}".format(E.item_edition(it), it.get("source", "")).rstrip(" —")
+                for n, it in items.items()}
 
     def pact(self) -> tuple[int, int]:
         """(nombre d'emplacements, niveau) de Magie des pactes (0, 0 si aucun occultiste)."""
@@ -1498,9 +1720,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if not c:
             return []
         if include_all:
-            return list(self.db.all_spells())
+            return [s for s in self.db.all_spells() if self.allowed(s)]
         pool = self.db.spells_for_class(c["liste"])
-        return [s for s in pool if s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]]
+        return [s for s in pool if (s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]) and self.allowed(s)]
 
     def can_learn(self, class_name: str, spell_name: str) -> bool:
         """Sort apprenable sans intervention du MJ : dans la liste de la classe et au plus du niveau maximal."""
@@ -1766,7 +1988,53 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                         "recover": "repos long", "info": " ; ".join(src) + " — récupérés au repos long", "where": "magie"})
         out += self.class_action_trackers()          # supériorité, second souffle, sursaut, conduit, inspiration...
         out += self.race_action_trackers()           # capacités de race limitées (Fureur des petits, souffle…)
+        if self.sheet_edition == 2024:
+            out = self._trackers_2024(out)
         return [t for t in out if not where or t["where"] == where]
+
+    def _trackers_2024(self, out: list[dict]) -> list[dict]:
+        """v52 : nombres des compteurs à sphères d'une fiche 2024, lus dans les tables de progression 2024."""
+        def cell(cls: str, col: str):
+            lvl = self.class_level(cls)
+            return self.table_row(cls, lvl).get(col) if lvl else None
+
+        result = []
+        for t in out:
+            t = dict(t)
+            key = t["key"]
+            if key in ("sens_divin", "cap:ennemi_jure"):   # 2024 : Sens divin = option de Conduit divin ;
+                continue                                  # Ennemi juré = compteur « Marque du chasseur » ci-dessous
+            if key == "rage" and cell("Barbare", "rages"):
+                t["total"] = int(cell("Barbare", "rages"))
+            elif key == "ki":
+                t["label"] = "Points de concentration"
+                t["info"] = t["info"].replace("DD de ki", "DD de concentration")
+                if cell("Moine", "points_de_concentration"):
+                    t["total"] = int(cell("Moine", "points_de_concentration"))
+            elif key == "forme" and cell("Druide", "formes_sauvages"):
+                t["total"] = int(cell("Druide", "formes_sauvages"))
+                t["info"] += " — 2024 : 1 utilisation au repos court, toutes au repos long"
+            elif key == "second_souffle" and cell("Guerrier", "second_souffle"):
+                t["total"] = int(cell("Guerrier", "second_souffle"))
+                t["info"] += " — 2024 : 1 utilisation au repos court, toutes au repos long"
+            elif key == "conduit":
+                n = max(int(cell("Clerc", "conduit_divin") or 0), int(cell("Paladin", "conduit_divin") or 0))
+                if n:
+                    t["total"] = n
+                    t["info"] = "Utilisations de Conduit divin — 1 au repos court, toutes au repos long (2024)"
+            elif key == "inspiration" and cell("Barde", "de_d_inspiration"):
+                t["de"] = str(cell("Barde", "de_d_inspiration"))
+            result.append(t)
+        if self.class_level("Paladin") >= 2:              # Châtiment de paladin : 1 lancer gratuit par repos long
+            result.append({"key": "chatiment_gratuit", "label": "Châtiment divin gratuit", "total": 1,
+                           "kind": "conduit", "recover": "repos long", "where": "combat", "de": "",
+                           "info": "Lancer Châtiment divin sans emplacement — repos long"})
+        marks = cell("Rôdeur", "ennemi_favori")
+        if marks:                                         # 2024 : Marque du chasseur sans emplacement
+            result.append({"key": "ennemi_favori", "label": "Ennemi juré (Marque du chasseur)", "total": int(marks),
+                           "kind": "conduit", "recover": "repos long", "where": "combat",
+                           "info": "Lancer Marque du chasseur sans dépenser d'emplacement — repos long", "de": ""})
+        return result
 
     def resource_used(self, key: str) -> int:
         return int(self.ch.ressources_utilisees.get(key, 0))

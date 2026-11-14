@@ -262,7 +262,9 @@ class ManifestationsPanel(BaseTab):
         self.pact.setEnabled(avail)
         self.pact_label.setEnabled(avail)
         fill_combo(self.pact, [NO_PACT] + PACTS, ch.pacte if ch.pacte in PACTS and avail else NO_PACT)
-        self.pact.setToolTip(rich_tip("Pacte divin", "Se choisit au niveau 3 de l'Occultiste : débloque les "
+        self.pact.setToolTip(rich_tip("Pacte divin", "2024 : le pacte est une manifestation (Pacte de la lame, de la "
+                                      "chaîne, du grimoire) à choisir dans la liste." if eng.sheet_edition == 2024 else
+                                      "Se choisit au niveau 3 de l'Occultiste : débloque les "
                                       "manifestations propres à chaque pacte." if not avail else
                                       "Détermine les manifestations de pacte disponibles."))
         groups = [ALL, "Communes"] + PACTS + sorted({group_of(m) for m in db.manifestations.values()

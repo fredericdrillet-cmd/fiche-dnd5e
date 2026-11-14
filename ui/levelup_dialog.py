@@ -318,8 +318,10 @@ class LevelUpDialog(QDialog):
             combo.activated.connect(lambda _=0, c=combo: self._set_sub(c.currentText()))
             for i, n in enumerate(subs):                 # v49 : résumé de chaque sous-classe au survol
                 summ = self.sim.subclass_summary(self.cls, n) or {}
-                combo.setItemData(i + 1, "<qt><b>{}</b><br/>{}<br/>{}</qt>".format(
-                    html.escape(n), html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
+                unofficial = self.sim.db.subclass_tips(self.cls).get(n, "")
+                combo.setItemData(i + 1, "<qt><b>{}</b>{}<br/>{}<br/>{}</qt>".format(
+                    html.escape(n), "<br/><i>{}</i>".format(html.escape(unofficial)) if unofficial else "",
+                    html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
                         "Niv. {} — {}".format(lvl, html.escape(nm)) for lvl, nm, _ in summ.get("pouvoirs", [])[:5])),
                     Qt.ItemDataRole.ToolTipRole)
             grid.addWidget(make_label("◆ Sous-classe"), row, 0)
@@ -453,7 +455,7 @@ class LevelUpDialog(QDialog):
         others = [ab for ab in ABILITIES if ab != c.get("a1")]
         a2.addItems([NO_CHOICE] + others)
         a2.setCurrentIndex(others.index(c["a2"]) + 1 if c.get("a2") in others else 0)
-        feats = sorted(self.sim.db.feats, key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
+        feats = sorted(self.sim.feat_options(), key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
         feat.addItems([NO_CHOICE] + ["{} {}".format("✔" if self.sim.feat_status(n)[0] == "ok" else "⚠", n)
                                      for n in feats])
         for i, n in enumerate(feats):                       # infobulle au survol de chaque don de la liste

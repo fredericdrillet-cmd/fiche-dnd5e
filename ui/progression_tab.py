@@ -127,8 +127,10 @@ class ProgressionTab(BaseTab):
     # ------------------------------------------------------------------ catalogue
     def feat_names(self) -> list[str]:
         """Dons triés par ordre alphabétique strict (accents ignorés), calculé une seule fois."""
-        if len(self._sorted) != len(self.db.feats):
-            self._sorted = sorted(self.db.feats, key=lambda n: (norm(n), n))
+        key = (len(self.db.feats), self.engine.edition_mode)          # v52 : dons de l'édition du personnage
+        if getattr(self, "_sorted_key", None) != key:
+            self._sorted = sorted(self.engine.feat_options(), key=lambda n: (norm(n), n))
+            self._sorted_key = key
         return self._sorted
 
     def _ctx_key(self) -> tuple:

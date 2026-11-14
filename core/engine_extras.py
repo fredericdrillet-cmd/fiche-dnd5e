@@ -442,7 +442,10 @@ class ExtrasMixin:
         st = self.weapon_stats(slot)
         if not w or not st:
             return []
-        return WA.weapon_action_rows(w, self.mod(st["carac"]), self.prof)
+        # v52 : la botte (maîtrise d'arme 2024) exige la règle de la table ET la maîtrise de l'arme
+        botte = self.botte_allowed(w["nom"], bool(st.get("maitrise", True)))
+        return WA.weapon_action_rows(w, self.mod(st["carac"]), self.prof, botte=botte,
+                                     extras=self.rule_active("actions_arme_bg3"))
 
     # ==================================================================================
     # Munitions

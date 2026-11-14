@@ -496,23 +496,35 @@ class ClassTilesMixin:
         return out
 
     # ------------------------------------------------------------------ Métamagie
+    def metamagic_table(self) -> dict:
+        """Options de Métamagie de l'édition de la fiche {nom: (coût, description)}."""
+        view = getattr(self.db, "metamagic_2024", None)
+        table = view() if (view and self.sheet_edition == 2024) else None
+        return table or METAMAGIC
+
+    def metamagic_known_count(self, lvl: int) -> int:
+        if self.sheet_edition == 2024:                   # 2024 : 2 au niveau 2, 4 au niveau 10, 6 au niveau 17
+            return 0 if lvl < 2 else 2 if lvl < 10 else 4 if lvl < 17 else 6
+        return metamagic_known(lvl)
+
     def metamagic_option_set(self) -> Optional[dict]:
         lvl = self.class_level("Ensorceleur")
-        if lvl < 3:
+        if self.metamagic_known_count(lvl) == 0:
             return None
-        return {"key": "metamagie", "label": "Options de métamagie (Ensorceleur)", "total": metamagic_known(lvl),
+        return {"key": "metamagie", "label": "Options de métamagie (Ensorceleur)", "total": self.metamagic_known_count(lvl),
                 "options": {n: "{} point{} de sorcellerie — {}".format(c, "s" * (c > 1), d)
-                            for n, (c, d) in METAMAGIC.items()},
+                            for n, (c, d) in self.metamagic_table().items()},
                 "chosen": list((self.ch.options_classe or {}).get("metamagie", []))}
 
     def chosen_metamagic(self) -> list[str]:
-        return [n for n in (self.ch.options_classe or {}).get("metamagie", []) if n in METAMAGIC] \
-            if self.class_level("Ensorceleur") >= 3 else []
+        table = self.metamagic_table()
+        return [n for n in (self.ch.options_classe or {}).get("metamagie", []) if n in table] \
+            if self.metamagic_known_count(self.class_level("Ensorceleur")) else []
 
     def metamagic_actions(self) -> list[dict]:
         out = []
         for name in self.chosen_metamagic():
-            cost, desc = METAMAGIC[name]
+            cost, desc = self.metamagic_table()[name]
             out.append({"id": "meta:" + norm(name).replace(" ", "_"), "nom": "Métamagie : " + name, "icone": "🔮",
                         "classe": "Ensorceleur", "sous_classe": "", "niveau": 3, "type": "Spécial",
                         "cout": {"ressource": "sorcellerie", "n": cost}, "jet": "aucun", "degats": "",

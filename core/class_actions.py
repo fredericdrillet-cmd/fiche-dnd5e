@@ -214,7 +214,97 @@ class ClassActionsMixin:
             out.append(dict(a, **self.class_action_state(a)))
         for a in self.class_tile_actions():              # v39 : aptitudes actives des classes et sous-classes
             out.append(dict(a, **self.class_action_state(a)))
+        if getattr(self, "sheet_edition", 2014) == 2024:
+            out = [dict(a, **self.class_action_state(a)) for a in self._actions_2024(out)]
         return out
+
+    # ------------------------------------------------------------------ v52 : mécanismes 2024
+    def _actions_2024(self, actions: list[dict]) -> list[dict]:
+        """
+        Fiche 2024 : version 2024 des actions de classe les plus jouées (Châtiment, Second souffle, Fougue, Rage,
+        Points de concentration, Frappe malicieuse) ; les autres gardent leur mécanisme, avec leur nom actuel.
+        """
+        fighter, monk, rogue = self.class_level("Guerrier"), self.class_level("Moine"), self.class_level("Roublard")
+        out = []
+        for a in actions:
+            aid = a.get("id", "")
+            a = {k: v for k, v in a.items() if k not in ("disponible", "raison", "cout_txt", "formule")}
+            if aid == "sens_divin":                       # 2024 : option de Conduit divin
+                continue
+            if aid == "chatiment":
+                a.update(nom="Châtiment divin (sort)", type="Action bonus", par_tour=True,
+                         description="Sort Châtiment divin, toujours préparé : juste après avoir touché avec une arme "
+                                     "de corps à corps ou une attaque à mains nues, par une action bonus, 2d8 dégâts "
+                                     "radiants (+1d8 par niveau d'emplacement au-delà du 1er ; +1d8 contre les "
+                                     "fiélons et les morts-vivants). Une fois par tour.")
+                out.append(a)
+                out.append(dict(a, id="chatiment_gratuit", nom="Châtiment divin (gratuit)",
+                                cout={"ressource": "chatiment_gratuit", "n": 1}, degats="2d8", type_degats="radiants",
+                                description="Châtiment de paladin : une fois par repos long, lancez Châtiment divin "
+                                            "(niveau 1, 2d8 radiants) sans dépenser d'emplacement."))
+                continue
+            if aid == "second_souffle":
+                extra = " Déplacement tactique : vous pouvez aussi vous déplacer de la moitié de votre vitesse sans " \
+                        "provoquer d'attaque d'opportunité." if fighter >= 5 else ""
+                a["description"] = ("Par une action bonus, vous regagnez 1d10 + votre niveau de guerrier points de vie. "
+                                    "Utilisations : table du Guerrier ; 1 récupérée au repos court, toutes au repos "
+                                    "long." + extra)
+            elif aid == "sursaut":
+                a["description"] = "Une action supplémentaire pendant votre tour, sauf l'action Magie (2024)."
+            elif aid == "rage":
+                a["description"] = (a.get("description", "") + " 2024 : la rage dure jusqu'à la fin de votre prochain "
+                                    "tour ; elle se prolonge si vous attaquez, forcez un jet de sauvegarde ou dépensez "
+                                    "une action bonus (10 minutes au plus).")
+            elif aid == "frappe_martiale":
+                a["description"] = ("Par une action bonus, une frappe à mains nues (dé d'arts martiaux, Dextérité "
+                                    "possible) — 2024 : sans condition d'action Attaquer.")
+            elif aid == "deluge_coups":
+                n = 3 if monk >= 10 else 2
+                a.update(nom="Déluge de coups", description="1 point de concentration : {} frappes à mains nues par "
+                                                            "une action bonus.".format(n))
+            elif aid == "defense_patiente":
+                out.append(dict(a, id="defense_patiente_libre", nom="Défense patiente (gratuite)", cout=None,
+                                description="Action Se désengager par une action bonus, sans dépenser de point."))
+                a.update(description="1 point de concentration : actions Se désengager et Esquiver par une action "
+                                     "bonus.")
+            elif aid == "pas_du_vent":
+                out.append(dict(a, id="pas_du_vent_libre", nom="Pas du vent (gratuit)", cout=None,
+                                description="Action Foncer par une action bonus, sans dépenser de point."))
+                a.update(description="1 point de concentration : actions Se désengager et Foncer par une action bonus ; "
+                                     "votre distance de saut est doublée pendant ce tour.")
+            elif aid == "cap:parade_projectiles":         # 2024 : Déviation d'assaut (toute attaque, pas seulement à distance)
+                a.update(nom="Déviation d'assaut", description="Réaction quand une attaque vous touche (dégâts "
+                         "contondants, perforants ou tranchants) : réduisez les dégâts de 1d10 + mod. de Dextérité + "
+                         "niveau de moine. S'ils tombent à 0, dépensez 1 point de concentration pour renvoyer l'attaque "
+                         "(2 dés d'arts martiaux + Dextérité, JS de Dextérité).")
+            elif aid == "coup_etourdissant":
+                a["description"] = ("1 point de concentration, une fois par tour, quand vous touchez : JS de "
+                                    "Constitution, sinon la cible est étourdie jusqu'au début de votre prochain tour ; "
+                                    "réussite : sa vitesse est réduite de moitié et la prochaine attaque contre elle a "
+                                    "l'avantage.")
+            out.append(a)
+        if rogue >= 5:
+            out += self.cunning_strike_actions(rogue)
+        return out
+
+    def cunning_strike_actions(self, rogue: int) -> list[dict]:
+        """Roublard 2024 : Frappe malicieuse (niveau 5) et Coups vicieux (niveau 14), payés en dés d'Attaque sournoise."""
+        dc = 8 + self.prof + self.mod("Dextérité")
+        options = [("Poison", 1, "JS de Constitution, sinon empoisonnée pendant 1 minute (nouveau JS à chaque tour)."),
+                   ("Croc-en-jambe", 1, "Créature de taille Grande ou moins : JS de Dextérité, sinon à terre."),
+                   ("Repli", 1, "Juste après l'attaque, vous vous déplacez de la moitié de votre vitesse sans provoquer "
+                                "d'attaque d'opportunité.")]
+        if rogue >= 14:
+            options += [("Hébétement", 2, "JS de Constitution, sinon au prochain tour une seule action, une action "
+                                          "bonus ou un déplacement."),
+                        ("Assommer", 6, "JS de Constitution, sinon inconsciente 1 minute (ou jusqu'à des dégâts)."),
+                        ("Aveugler", 3, "JS de Dextérité, sinon aveuglée jusqu'à la fin de votre prochain tour.")]
+        both = " Au niveau 11, deux effets par Attaque sournoise." if rogue >= 11 else ""
+        return [{"id": "frappe_malicieuse_" + norm(n).replace(" ", "_").replace("-", "_"),
+                 "nom": "Frappe malicieuse : {}".format(n), "icone": "🗡", "classe": "Roublard", "sous_classe": "",
+                 "niveau": 5, "type": "Spécial", "cout": None, "jet": "aucun", "degats": "", "type_degats": "",
+                 "description": "En infligeant l'Attaque sournoise, retirez {}d6 de ses dégâts : {} DD {}.{}".format(
+                     d, effect, dc, both), "effet": ""} for n, d, effect in options]
 
     def _tracker_by_key(self) -> dict:
         return {t["key"]: t for t in self.resource_trackers()}
@@ -380,7 +470,7 @@ class ClassActionsMixin:
         _, sup = superiority(self.class_level("Guerrier"))
         level = slot_level or (self.smite_levels() or [1])[0]
         values = {
-            "ARTS_MARTIAUX": "1d{}".format(R.martial_arts_die(monk)),
+            "ARTS_MARTIAUX": "1d{}".format(self.martial_arts_die(monk)),
             "MOD_FINESSE": "{:+d}".format(max(self.mod("Force"), self.mod("Dextérité"))),
             "SUPERIORITE": "1d{}".format(sup),
             "SOURNOISE": "{}d6".format(max(1, math.ceil(rogue / 2))),

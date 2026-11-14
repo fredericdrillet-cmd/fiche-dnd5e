@@ -192,7 +192,7 @@ class LevelUpMixin:
         return [r for r in rows if r[0] in keep or r[1] != r[2]]
 
     def pact_options(self) -> list[str]:
-        return list(PACTS)
+        return list(PACTS) if self.sheet_edition != 2024 else []      # 2024 : le pacte est une manifestation
 
     # ------------------------------------------------------------------ v40 : nouveaux sorts du niveau
     def level_invocation_options(self, sim) -> list[dict]:
@@ -301,7 +301,7 @@ class LevelUpMixin:
         name = entry["nom"]
         feats = self.features(entry)
         cls = self.db.classes.get(name, {})
-        sub_need = R.SUBCLASS_LEVEL.get(name, 3)
+        sub_need = self.subclass_level(name)
         cfg = R.CASTERS.get(name) or R.SUBCLASS_CASTERS.get((name, self.active_subclass(entry)))
         out = []
         for lvl in range(1, R.MAX_LEVEL + 1):

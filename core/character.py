@@ -115,6 +115,12 @@ class Character:
     temps_minutes: int = 0                  # temps de jeu écoulé depuis le jour 1, 8 h 00
     dernier_repos_long: int = -1            # instant (minutes) du dernier repos long, -1 = jamais
     initiative_jet: int = 0                 # v45 : dernier jet d'initiative (0 = aucun)
+    inspiration: bool = False               # v52 : inspiration (règle 2014 ou inspiration héroïque 2024)
+    bottes_choisies: list[str] = field(default_factory=list)   # v52 : armes dont la botte est maîtrisée (2024)
+
+    # ---- Éditions et règles de la table (v52, core/editions.py et core/house_rules.py) -----------
+    edition_mode: str = "2014"              # "2014" | "2024" | "libre"
+    regles_optionnelles: dict[str, bool] = field(default_factory=dict)   # clé de règle -> active
 
     # ---- Magie ------------------------------------------------------------------------
     pacte: str = ""                         # Pacte divin de l'Occultiste (lame / chaîne / grimoire / talisman)
@@ -165,6 +171,15 @@ class Character:
                 setattr(char, key, value)
         if "multiclassage" not in data:                 # anciennes sauvegardes : déjà multiclassé = option active
             char.multiclassage = len(char.classes) > 1
+        # v52 : éditions et règles de la table. Une ancienne sauvegarde reste en 2014 et garde les règles
+        # qui étaient toujours actives (potion en action bonus, bottes et actions d'arme).
+        from . import editions as E, house_rules as HR
+        char.edition_mode = E.normalize_mode(data.get("edition_mode", E.DEFAULT_MODE))
+        char.regles_optionnelles = (HR.clean(data["regles_optionnelles"]) if "regles_optionnelles" in data
+                                    else dict(HR.LEGACY))
+        for entry in char.classes:
+            if isinstance(entry, dict):
+                entry["edition"] = E.item_edition(entry)
         # Garanties de structure
         while len(char.armes_cac) < 4:
             char.armes_cac.append(_empty_weapon())

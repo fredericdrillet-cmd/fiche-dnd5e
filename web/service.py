@@ -18,7 +18,9 @@ from typing import Any, Callable
 
 from core import companions as C
 from core import dice as D
+from core import editions as E
 from core import effects as FX
+from core import house_rules as HR
 from core import rules as R
 from core.character import Character
 from core.data_loader import Database
@@ -98,6 +100,26 @@ class Controller:
         if field == "pv_actuels":
             value = max(0, min(self.eng.hp_max(), value))
         setattr(self.ch, field, value)
+
+    # ---------- v52 : édition de la fiche et règles de la table
+    def op_set_edition(self, mode: str) -> None:
+        mode = E.normalize_mode(mode)
+        if mode == E.MODE_LIBRE:
+            raise ActionError("Le mode libre n'est pas proposé : une fiche suit une seule édition.")
+        self.eng.set_edition_mode(mode)
+        self.msg("Fiche en édition {}.".format(mode))
+
+    def op_set_house_rule(self, key: str, active: Any) -> None:
+        if key not in HR.BY_KEY:
+            raise ActionError("Règle inconnue.")
+        self.eng.set_house_rule(key, bool(active))
+
+    def op_set_masteries(self, weapons: Any) -> None:
+        names = [str(n) for n in (weapons or []) if isinstance(n, str)]
+        count = self.eng.mastery_count()
+        if count is not None and len(names) > count:
+            raise ActionError("{} botte(s) d'arme au maximum.".format(count))
+        self.ch.bottes_choisies = names
 
     def op_setin(self, field: str, key: str, value: Any) -> None:
         if field not in DICT_FIELDS:
@@ -900,7 +922,7 @@ def build_sheet(eng: Engine) -> dict:
                 "index": idx, "nom": entry["nom"], "niveau": entry["niveau"],
                 "sous_classe": entry.get("sous_classe", ""), "de_vie": db.start_info(entry["nom"]).get("de_vie", ""),
                 "sous_classes": [s["nom"] for s in db.subclasses(entry["nom"])],
-                "niveau_sous_classe": R.SUBCLASS_LEVEL.get(entry["nom"], 3),
+                "niveau_sous_classe": eng.subclass_level(entry["nom"]),
                 "aptitudes": [{"nom": f["nom"], "niveau": f["niveau"], "description": f["description"],
                                "source": f["source"], "debloque": f["debloque"]} for f in feats],
                 "ressources": [list(r) for r in eng.resources(entry)],
@@ -979,6 +1001,12 @@ def build_sheet(eng: Engine) -> dict:
                             "categorie": fx.get("categorie", ""), "description": fx.get("description", ""),
                             "inne": bool(eng.innate_source(key)) if hasattr(eng, "innate_source") else False})
         sheet = {
+            "edition": {"mode": eng.edition_mode, "classes": db.class_names(),
+                        "modes": {k: v for k, v in E.MODES.items() if k != E.MODE_LIBRE},
+                        "regles": [{"cle": r.cle, "nom": r.nom, "description": r.description, "origine": r.origine,
+                                    "actif": eng.rule_active(r.cle)} for r in HR.RULES],
+                        "bottes": {"nombre": eng.mastery_count(), "choisies": eng.mastery_weapons(),
+                                   "candidates": eng.mastery_candidates() if eng.mastery_count() else []}},
             "resume": {"nom": ch.nom or "Sans nom", "niveau": eng.total_level, "maitrise": eng.prof,
                        "niveau_xp": eng.level_from_xp(), "xp_seuils": R.XP_THRESHOLDS,
                        "classes_txt": " / ".join(f"{c['nom']} {c['niveau']}" for c in ch.classes),
@@ -1051,6 +1079,9 @@ def catalog() -> dict:
                   for k, t in THEMES.items()}
         _CATALOG = {
             "classes": db.class_names(), "races": db.race_names(), "historiques": db.background_names(),
+            # v52 : édition de chaque espèce / historique (les fiches 2014 et 2024 filtrent leurs listes)
+            "editions": {"races": {n: r.get("edition", 2014) for n, r in db.races.items()},
+                         "historiques": {n: b.get("edition", 2014) for n, b in db.backgrounds.items()}},
             "alignements": R.ALIGNMENTS, "caracteristiques": ABILITIES, "abbr": R.ABBR,
             "langues": [{"nom": x["nom"], "categorie": x.get("categorie", "")} for x in db.languages],
             "armures": [{"nom": n, "categorie": a.get("categorie", ""), "ca": a.get("ca_base", "")}
@@ -1064,10 +1095,11 @@ def catalog() -> dict:
             "paquetages": [n for n in db.equipment if "paquetage" in norm(n)],
             "objets_magiques": [{"nom": m["nom"], "rarete": m.get("rarete", ""), "type": m.get("type", ""),
                                  "lien": bool(m.get("lien"))} for m in db.magic_items.values()],
-            "dons": [{"nom": f["nom"], "prerequis": f.get("prerequis", ""), "asi": f.get("asi_texte", ""),
+            "dons": [{"nom": f["nom"], "edition": f.get("edition", 2014), "prerequis": f.get("prerequis", ""),
+                      "asi": f.get("asi_texte", ""),
                       "carac_choix": f.get("carac_choix", []), "description": f.get("description", "")}
                      for f in sorted(db.feats.values(), key=lambda f: norm(f["nom"]))],
-            "sorts": [{"nom": s["nom"], "niveau": s["niveau"], "ecole": s.get("ecole", ""),
+            "sorts": [{"nom": s["nom"], "edition": s.get("edition", 2014), "niveau": s["niveau"], "ecole": s.get("ecole", ""),
                        "classes": s.get("classes", []), "concentration": s.get("concentration", False),
                        "rituel": s.get("rituel", False)} for s in db.spells.values()],
             "effets": [{"key": k, "nom": v["nom"], "icone": v.get("icone", ""), "categorie": v.get("categorie", "")}

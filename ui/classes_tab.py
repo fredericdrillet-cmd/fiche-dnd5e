@@ -283,7 +283,7 @@ class ClassPanel(QWidget):
 
     # ------------------------------------------------------------------ rafraîchissement
     def refresh(self):
-        eng, db, e = self.tab.engine, self.tab.db, self.entry
+        eng, db, e = self.tab.engine, self.tab.engine.db, self.entry      # v52 : classes de l'édition de la fiche
         owned = {c["nom"] for i, c in enumerate(self.tab.ch.classes) if i != self.index}
         fill_combo(self.class_combo, [n for n in db.class_names() if n not in owned], e["nom"])
         others = self.tab.ch.niveau_total - e["niveau"]
@@ -291,9 +291,9 @@ class ClassPanel(QWidget):
             self.level_spin.setRange(1, max(1, R.MAX_LEVEL - others))
             self.level_spin.setValue(e["niveau"])
         # sous-classe
-        need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
+        need = eng.subclass_level(e["nom"])
         subs = ["— aucune —"] + [s["nom"] for s in db.subclasses(e["nom"])]
-        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0])
+        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0], tips=db.subclass_tips(e["nom"]))
         unlocked = e["niveau"] >= need
         self.sub_combo.setEnabled(unlocked)
         todo = unlocked and not e.get("sous_classe") and len(subs) > 1
