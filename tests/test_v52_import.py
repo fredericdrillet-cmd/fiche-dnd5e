@@ -306,3 +306,48 @@ class UiSheet2024Smoke(unittest.TestCase):
                 win.tabs.setCurrentIndex(i)
             win.refresh_all()
             self.assertIs(win.combat_tab.db, eng.db)                     # les onglets lisent la base de la fiche
+
+
+class Actions2024Tests(unittest.TestCase):
+    def sheet(self, cls, level, edition="2024"):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": level, "sous_classe": "", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_edition_mode(edition)
+        return eng
+
+    def ids(self, eng):
+        return {a["id"]: a for a in eng.class_actions()}
+
+    def test_smite_2024(self):
+        pal = self.ids(self.sheet("Paladin", 3))
+        self.assertEqual(pal["chatiment"]["type"], "Action bonus")
+        self.assertIn("chatiment_gratuit", pal)
+        self.assertNotIn("sens_divin", pal)
+        old = self.ids(self.sheet("Paladin", 3, "2014"))
+        self.assertEqual(old["chatiment"]["type"], "Spécial")
+        self.assertNotIn("chatiment_gratuit", old)
+        eng = self.sheet("Paladin", 3)
+        self.assertTrue(eng.use_class_action("chatiment_gratuit")["ok"])
+        self.assertFalse(self.ids(eng)["chatiment_gratuit"]["disponible"])     # 1 / repos long
+
+    def test_monk_focus_2024(self):
+        acts = self.ids(self.sheet("Moine", 10))
+        self.assertIsNone(acts["defense_patiente_libre"].get("cout"))
+        self.assertEqual(acts["defense_patiente"]["cout"]["ressource"], "ki")
+        self.assertIn("3 frappes", acts["deluge_coups"]["description"])
+        self.assertEqual(acts["cap:parade_projectiles"]["nom"], "Déviation d'assaut")
+
+    def test_cunning_strike(self):
+        r5 = [a for a in self.ids(self.sheet("Roublard", 5)) if a.startswith("frappe_malicieuse")]
+        self.assertEqual(len(r5), 3)
+        r14 = [a for a in self.ids(self.sheet("Roublard", 14)) if a.startswith("frappe_malicieuse")]
+        self.assertEqual(len(r14), 6)
+        self.assertFalse([a for a in self.ids(self.sheet("Roublard", 14, "2014")) if a.startswith("frappe_malicieuse")])
+        poison = self.ids(self.sheet("Roublard", 5))["frappe_malicieuse_poison"]
+        self.assertIn("DD", poison["description"])
+
+    def test_second_wind_tactical_shift(self):
+        self.assertIn("Déplacement tactique", self.ids(self.sheet("Guerrier", 5))["second_souffle"]["description"])
+        self.assertNotIn("Déplacement tactique", self.ids(self.sheet("Guerrier", 4))["second_souffle"]["description"])

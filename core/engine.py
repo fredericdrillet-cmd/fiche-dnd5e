@@ -2025,6 +2025,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             elif key == "inspiration" and cell("Barde", "de_d_inspiration"):
                 t["de"] = str(cell("Barde", "de_d_inspiration"))
             result.append(t)
+        if self.class_level("Paladin") >= 2:              # Châtiment de paladin : 1 lancer gratuit par repos long
+            result.append({"key": "chatiment_gratuit", "label": "Châtiment divin gratuit", "total": 1,
+                           "kind": "conduit", "recover": "repos long", "where": "combat", "de": "",
+                           "info": "Lancer Châtiment divin sans emplacement — repos long"})
         marks = cell("Rôdeur", "ennemi_favori")
         if marks:                                         # 2024 : Marque du chasseur sans emplacement
             result.append({"key": "ennemi_favori", "label": "Ennemi juré (Marque du chasseur)", "total": int(marks),

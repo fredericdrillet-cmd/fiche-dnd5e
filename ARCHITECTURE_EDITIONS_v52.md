@@ -135,10 +135,19 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Pacte** : en 2024, Pacte de la lame / de la chaîne / du grimoire sont des manifestations ; `ch.pacte` est déduit de la manifestation choisie, et il n'y a plus de choix séparé au niveau 3 (`pact_available()`, `pact_options()`, choix manquants).
 - **Métamagie 2024** (`metamagic_table()`, `metamagic_known_count()`) : les 10 options 2024 avec leur coût, 2 options au niveau 2, 4 au niveau 10, 6 au niveau 17.
 
-### 4.6 Reste à faire
+### 4.6 Fait : actions de classe 2024 (onglet Combat)
+
+`ClassActionsMixin._actions_2024()` transforme les tuiles d'une fiche 2024 (décision Q7) :
+- **Châtiment divin** : sort en action bonus juste après avoir touché, une fois par tour, + une tuile « Châtiment divin (gratuit) » (1 par repos long, compteur `chatiment_gratuit`) ; *Sens divin* retiré.
+- **Second souffle** (utilisations de la table, Déplacement tactique au niveau 5) ; **Fougue** (sauf l'action Magie) ; **Rage** (durée et prolongation 2024).
+- **Points de concentration** : Déluge de coups (3 frappes au niveau 10), Défense patiente et Pas du vent en version **gratuite** et à 1 point, Coup étourdissant (effet en cas de réussite), frappe à mains nues en action bonus sans condition, *Parade de projectiles* → **Déviation d'assaut**.
+- **Frappe malicieuse** (Roublard 5 : Poison, Croc-en-jambe, Repli ; niveau 14 : Hébétement, Assommer, Aveugler ; 2 effets au niveau 11), avec le DD.
+- Les autres aptitudes gardent leur mécanisme et leur nom actuels.
+
+### 4.7 Reste à faire
 
 1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
-2. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
+2. Autres aptitudes 2024 au mécanisme nouveau (Sorcellerie innée, Ordre divin, Fin explorateur, Faveurs épiques…) : texte affiché, effets non calculés.
 3. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 
 ## 5. Décisions prises
