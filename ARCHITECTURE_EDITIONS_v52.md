@@ -144,11 +144,15 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Frappe malicieuse** (Roublard 5 : Poison, Croc-en-jambe, Repli ; niveau 14 : Hébétement, Assommer, Aveugler ; 2 effets au niveau 11), avec le DD.
 - Les autres aptitudes gardent leur mécanisme et leur nom actuels.
 
-### 4.7 Reste à faire
+### 4.7 Fait : version web
+
+- **Serveur** (`web/service.py`) : opérations `set_edition` (2014 / 2024 ; le mode libre est refusé), `set_house_rule`, `set_masteries` ; la fiche renvoie `edition` (mode, classes de l'édition, règles de la table avec leur état, bottes d'arme) ; le catalogue indique l'édition des espèces, historiques, dons et sorts.
+- **Interface** (`web/static/app.js`) : *Nouveau personnage* demande « Édition 2014 / 2024 » (aussi au premier lancement) ; listes d'espèces, d'historiques, de classes, de dons et de sorts (mode MJ) filtrées selon l'édition de la fiche ; menu ☰ → **⚖ Règles de la table** : changer d'édition, cocher / décocher les 4 règles, choisir les bottes d'arme.
+
+### 4.8 Reste à faire
 
 1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
 2. Autres aptitudes 2024 au mécanisme nouveau (Sorcellerie innée, Ordre divin, Fin explorateur, Faveurs épiques…) : texte affiché, effets non calculés.
-3. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 
 ## 5. Décisions prises
 

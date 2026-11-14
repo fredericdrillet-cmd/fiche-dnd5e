@@ -154,3 +154,36 @@ class RouteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EditionWebTests(unittest.TestCase):
+    """v52 : édition de la fiche et règles de la table depuis la version web."""
+
+    def test_new_2024_character(self):
+        r = S.apply(None, [{"op": "set_edition", "mode": "2024"}])
+        self.assertEqual(r["errors"], [])
+        self.assertEqual(r["sheet"]["edition"]["mode"], "2024")
+        self.assertEqual((r["character"]["race"], r["character"]["historique"]), ("Humain (2024)", "Acolyte (2024)"))
+        self.assertNotIn("Artificier", r["sheet"]["edition"]["classes"])
+        self.assertEqual(S.apply(None, [{"op": "set_edition", "mode": "libre"}])["errors"][0][:20],
+                         "Le mode libre n'est ")
+
+    def test_house_rules_and_masteries(self):
+        ch = S.apply(None, [{"op": "set_edition", "mode": "2024"}])["character"]
+        r = S.apply(ch, [{"op": "set_house_rule", "key": "potion_action_bonus", "active": False}])
+        rules = {x["cle"]: x["actif"] for x in r["sheet"]["edition"]["regles"]}
+        self.assertFalse(rules["potion_action_bonus"])
+        self.assertEqual(r["sheet"]["edition"]["bottes"]["nombre"], 3)            # Guerrier 2024 niveau 1
+        r = S.apply(r["character"], [{"op": "set_masteries", "weapons": ["Arc long", "Rapière"]}])
+        self.assertEqual(r["sheet"]["edition"]["bottes"]["choisies"], ["Arc long", "Rapière"])
+        bad = S.apply(r["character"], [{"op": "set_masteries", "weapons": ["Arc long", "Rapière", "Fouet", "Dague"]}])
+        self.assertTrue(bad["errors"])
+        self.assertEqual(S.apply(None, [{"op": "set_house_rule", "key": "inconnue", "active": True}])["errors"],
+                         ["Règle inconnue."])
+
+    def test_catalog_editions(self):
+        cat = S.catalog()
+        self.assertEqual(cat["editions"]["races"]["Elfe (2024)"], 2024)
+        self.assertEqual(cat["editions"]["historiques"]["Acolyte"], 2014)
+        self.assertTrue(all("edition" in d for d in cat["dons"][:5]))
+        self.assertTrue(all("edition" in s for s in cat["sorts"][:5]))
