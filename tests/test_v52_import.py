@@ -137,3 +137,45 @@ class Classes2024Tests(unittest.TestCase):
         eng.set_edition_mode("2014")
         self.assertEqual((eng.sheet_edition, eng.ch.classes[0]["edition"]), (2014, 2014))
         self.assertIn("Maître de guerre", [s["nom"] for s in eng.db.subclasses("Guerrier")])
+
+
+class Sheet2024Tests(unittest.TestCase):
+    def new2024(self, cls="Guerrier", level=4):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": level, "sous_classe": "", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_edition_mode("2024")
+        return eng
+
+    def test_race_and_background_switch(self):
+        eng = self.new2024()
+        self.assertEqual((eng.ch.race, eng.ch.historique), ("Humain (2024)", "Acolyte (2024)"))
+        eng.set_edition_mode("2014")
+        self.assertEqual((eng.ch.race, eng.ch.historique), ("Humain", "Acolyte"))
+
+    def test_background_abilities_and_origin_feat(self):
+        eng = self.new2024()
+        self.assertEqual(eng.background_abilities(), ["Intelligence", "Sagesse", "Charisme"])
+        rule = eng.race_rule()
+        self.assertEqual((rule["origine"], rule["libres"]), ("historique", [2, 1]))
+        eng.ch.bonus_libres = ["Force", "Sagesse"]                      # Force : hors de l'historique
+        bonus = eng.race_bonus()
+        self.assertEqual((bonus["Force"], bonus["Sagesse"]), (0, 1))
+        origin = eng.origin_feat()
+        self.assertEqual(DB.feats[origin]["edition"], 2024)
+        self.assertIn(origin, eng.chosen_feats())
+
+    def test_trackers_follow_2024_tables(self):
+        eng = self.new2024("Clerc", 6)
+        tr = {t["key"]: t for t in eng.resource_trackers()}
+        self.assertEqual(tr["conduit"]["total"], 3)                    # 2014 : 2
+        ftr = {t["key"]: t for t in self.new2024("Guerrier", 4).resource_trackers()}
+        self.assertEqual(ftr["second_souffle"]["total"], 3)
+        pal = {t["key"] for t in self.new2024("Paladin", 3).resource_trackers()}
+        self.assertNotIn("sens_divin", pal)
+        monk = {t["key"]: t for t in self.new2024("Moine", 5).resource_trackers()}
+        self.assertEqual(monk["ki"]["label"], "Points de concentration")
+        rgr = {t["key"]: t for t in self.new2024("Rôdeur", 5).resource_trackers()}
+        self.assertEqual(rgr["ennemi_favori"]["total"], 3)
+        self.assertNotIn("cap:ennemi_jure", rgr)

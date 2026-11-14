@@ -441,6 +441,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         {'fixe': {carac: bonus}, 'libres': [bonus...], 'alternative': [..] ou [], 'libre_regle': bool}.
         """
         ch = self.ch
+        bg_abilities = self.background_abilities()
+        if bg_abilities:                                  # 2024 : bonus de l'historique, sur ses 3 caractéristiques
+            return {"fixe": {}, "libres": [1, 1, 1] if ch.bonus_alt else [2, 1], "alternative": [1, 1, 1],
+                    "libre_regle": True, "choix": bg_abilities, "origine": "historique"}
         info = self.db.race_ability_rule(ch.race)
         if ch.regle_libre or not info:
             return {"fixe": {}, "libres": [1, 1, 1] if ch.bonus_alt else [2, 1], "alternative": [1, 1, 1],
@@ -536,9 +540,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 if ab in out:
                     out[ab] += v
         used = set()
+        allowed = set(rule.get("choix") or ABILITIES)
         for i, v in enumerate(rule["libres"]):          # bonus libres : caractéristiques toutes différentes
             pick = self.ch.bonus_libres[i] if i < len(self.ch.bonus_libres) else ""
-            if pick in out and pick not in used:
+            if pick in out and pick not in used and pick in allowed:
                 out[pick] += v
                 used.add(pick)
         return out
@@ -582,7 +587,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     @memo
     def chosen_feats(self) -> list[str]:
         ids = {s["id"] for s in self.asi_slots()}
-        out = []
+        origin = self.origin_feat()
+        out = [origin] if origin else []                  # 2024 : don d'origine accordé par l'historique
         for sid, choice in self.ch.ameliorations.items():
             if sid in ids and choice.get("mode") == "don" and choice.get("don") in self.db.feats:
                 out.append(choice["don"])
@@ -1509,8 +1515,27 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return self.house_rules().get(key, False)
 
     def set_edition_mode(self, mode: str) -> list[str]:
-        """Change le mode d'édition du personnage ; renvoie les incohérences éventuelles de ses classes."""
+        """
+        Change l'édition de la fiche ; l'espèce et l'historique passent à leur équivalent de l'autre édition
+        quand il existe (« Humain » <-> « Humain (2024) »). Renvoie les incohérences éventuelles des classes.
+        """
         self.ch.edition_mode = E.normalize_mode(mode)
+        self.normalize()
+        for table, attr in ((self.db.races, "race"), (self.db.backgrounds, "historique")):
+            current = getattr(self.ch, attr)
+            if current in table and self.allowed(table[current]):
+                continue
+            base = re.sub(r"\s*\(2024\)$", "", current)
+            target = next((n for n in (current + " (2024)", base) if n in table and self.allowed(table[n])), "")
+            if not target:
+                continue
+            if attr == "race":
+                self.change_race(target)
+            else:
+                self.ch.historique = target
+                self.apply_background()
+        self.ch.bonus_libres = [a for a in self.ch.bonus_libres if not self.background_abilities()
+                                or a in self.background_abilities()]
         self.normalize()
         return self.edition_problems()
 
@@ -1521,6 +1546,26 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     def edition_problems(self) -> list[str]:
         return E.validate_classes(self.ch.classes, self.edition_mode)
+
+    def background_abilities(self) -> list[str]:
+        """2024 : les trois caractéristiques que l'historique propose aux augmentations (+2/+1 ou +1/+1/+1)."""
+        if self.sheet_edition != 2024:
+            return []
+        bg = self.db.backgrounds.get(self.ch.historique) or {}
+        return [a for a in bg.get("caracteristiques_2024") or [] if a in ABILITIES]
+
+    def origin_feat(self) -> str:
+        """2024 : don d'origine de l'historique (nom du don dans la base), ou ""."""
+        if self.sheet_edition != 2024:
+            return ""
+        text = (self.db.backgrounds.get(self.ch.historique) or {}).get("don_origine", "")
+        base = norm(re.split(r"\(", text, maxsplit=1)[0]) if text else ""
+        if not base:
+            return ""
+        for name, f in self.db.feats.items():
+            if f.get("edition") == 2024 and norm(re.sub(r"\s*\(2024\)$", "", name)) == base:
+                return name
+        return ""
 
     def allowed(self, item) -> bool:
         """L'élément (sort, don, historique, espèce…) est-il proposé dans le mode d'édition du personnage ?"""
@@ -1881,7 +1926,49 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                         "recover": "repos long", "info": " ; ".join(src) + " — récupérés au repos long", "where": "magie"})
         out += self.class_action_trackers()          # supériorité, second souffle, sursaut, conduit, inspiration...
         out += self.race_action_trackers()           # capacités de race limitées (Fureur des petits, souffle…)
+        if self.sheet_edition == 2024:
+            out = self._trackers_2024(out)
         return [t for t in out if not where or t["where"] == where]
+
+    def _trackers_2024(self, out: list[dict]) -> list[dict]:
+        """v52 : nombres des compteurs à sphères d'une fiche 2024, lus dans les tables de progression 2024."""
+        def cell(cls: str, col: str):
+            lvl = self.class_level(cls)
+            return self.table_row(cls, lvl).get(col) if lvl else None
+
+        result = []
+        for t in out:
+            t = dict(t)
+            key = t["key"]
+            if key in ("sens_divin", "cap:ennemi_jure"):   # 2024 : Sens divin = option de Conduit divin ;
+                continue                                  # Ennemi juré = compteur « Marque du chasseur » ci-dessous
+            if key == "rage" and cell("Barbare", "rages"):
+                t["total"] = int(cell("Barbare", "rages"))
+            elif key == "ki":
+                t["label"] = "Points de concentration"
+                t["info"] = t["info"].replace("DD de ki", "DD de concentration")
+                if cell("Moine", "points_de_concentration"):
+                    t["total"] = int(cell("Moine", "points_de_concentration"))
+            elif key == "forme" and cell("Druide", "formes_sauvages"):
+                t["total"] = int(cell("Druide", "formes_sauvages"))
+                t["info"] += " — 2024 : 1 utilisation au repos court, toutes au repos long"
+            elif key == "second_souffle" and cell("Guerrier", "second_souffle"):
+                t["total"] = int(cell("Guerrier", "second_souffle"))
+                t["info"] += " — 2024 : 1 utilisation au repos court, toutes au repos long"
+            elif key == "conduit":
+                n = max(int(cell("Clerc", "conduit_divin") or 0), int(cell("Paladin", "conduit_divin") or 0))
+                if n:
+                    t["total"] = n
+                    t["info"] = "Utilisations de Conduit divin — 1 au repos court, toutes au repos long (2024)"
+            elif key == "inspiration" and cell("Barde", "de_d_inspiration"):
+                t["de"] = str(cell("Barde", "de_d_inspiration"))
+            result.append(t)
+        marks = cell("Rôdeur", "ennemi_favori")
+        if marks:                                         # 2024 : Marque du chasseur sans emplacement
+            result.append({"key": "ennemi_favori", "label": "Ennemi juré (Marque du chasseur)", "total": int(marks),
+                           "kind": "conduit", "recover": "repos long", "where": "combat",
+                           "info": "Lancer Marque du chasseur sans dépenser d'emplacement — repos long", "de": ""})
+        return result
 
     def resource_used(self, key: str) -> int:
         return int(self.ch.ressources_utilisees.get(key, 0))

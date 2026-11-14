@@ -118,13 +118,18 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - Règles 2024 lues dans la table : **sorts préparés et sorts mineurs** pour tous les incantateurs (`casters()`), demi-incantateurs dès le niveau 1, **sous-classe au niveau 3** pour toutes les classes (`Engine.subclass_level()`), **dé d'arts martiaux** d6 → d12 (`Engine.martial_arts_die()`), **ressources** affichées (rages, Second souffle, points de concentration, Conduit divin, Formes sauvages, bottes maîtrisées…).
 - PV au niveau 1 : maximum du dé de vie. Pas d'Artificier en 2024.
 
-### 4.3 Reste à faire
+### 4.3 Fait : compteurs et historique 2024
 
-1. **Compteurs à sphères 2024** (Conduit divin 2/3/4, Formes sauvages 2/3/4, Second souffle 2→4, Ennemi juré…) : les sphères suivent encore les nombres de 2014 ; la table est affichée dans les ressources.
-2. **Historique 2024 complet** : augmentations de caractéristiques limitées à ses trois caractéristiques et don d'origine (aujourd'hui : bonus au choix sur l'espèce).
-3. **Styles de combat 2024** (dons de la catégorie « Style de combat ») et **nombre de bottes** maîtrisées à choisir ; **Armes de l'Occultiste 2024** (manifestations dès le niveau 1, Arcanum).
-4. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
-5. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
+- **Compteurs à sphères** d'une fiche 2024 (`Engine._trackers_2024`) : rages, points de concentration (ex-ki), Formes sauvages, Second souffle, Conduit divin (Clerc et Paladin) et dé d'inspiration bardique lus dans les tables ; Sens divin retiré (c'est une option de Conduit divin en 2024) ; nouveau compteur « Ennemi juré (Marque du chasseur) » du Rôdeur.
+- **Historique 2024** : les augmentations de caractéristiques (+2/+1 ou +1/+1/+1) se font **parmi les trois caractéristiques de l'historique** (`background_abilities()`, `race_rule()["choix"]`), et le **don d'origine** est accordé d'office (`origin_feat()`, compté dans `chosen_feats()`).
+- **Passage en 2024** (`set_edition_mode`) : l'espèce et l'historique passent à leur équivalent (« Humain » → « Humain (2024) », « Acolyte » → « Acolyte (2024) »), et inversement.
+
+### 4.4 Reste à faire
+
+1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
+2. **Styles de combat 2024** (dons de la catégorie « Style de combat ») et **nombre de bottes** maîtrisées à choisir ; **Occultiste 2024** (manifestations dès le niveau 1, Arcanum mystique).
+3. **Mécaniques nommées** : certaines aptitudes 2024 portent un nouveau nom (« Châtiment de paladin », « Frappe malicieuse », « Points de concentration ») ; les tuiles d'action spécialisées de l'onglet Combat les reconnaissent encore mal.
+4. **Version web** : choix de l'édition à la création et fenêtre « Règles de la table ».
 
 ## 5. Décisions prises
 
