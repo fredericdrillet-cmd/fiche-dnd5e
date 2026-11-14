@@ -77,7 +77,7 @@ class CreationWizardTests(unittest.TestCase):
     def test_target_subclass_changes_badges(self):
         w = self.wizard()
         w._on_class("Roublard")
-        w.go(1)
+        w.go(2)                                           # v52 : la classe est la 3e étape
         w.set_target_subclass("Arnaqueur arcanique")
         self.assertEqual(w.engine.ability_recommendations()["Intelligence"][0], "secondaire")
         w.go(3)

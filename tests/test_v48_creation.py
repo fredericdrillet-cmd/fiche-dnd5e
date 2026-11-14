@@ -102,7 +102,7 @@ class WizardTests(unittest.TestCase):
         from ui.creation_wizard import STEPS, CreationWizard, apply_creation
         win = window(make("Guerrier", 3))
         w = CreationWizard(win)
-        self.assertEqual(STEPS, ["Race / Sous-race", "Classe", "Historique", "Caractéristiques",
+        self.assertEqual(STEPS, ["Race / Sous-race", "Historique", "Classe", "Caractéristiques",
                                  "Sorts et tours de magie", "Équipement", "Identité"])
         for i in range(len(STEPS)):
             w.go(i)

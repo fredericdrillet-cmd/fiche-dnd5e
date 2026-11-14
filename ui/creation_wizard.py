@@ -35,7 +35,8 @@ from .class_guide_panel import ClassGuidePanel
 from .game_widgets import clear_layout
 from .spell_inspector import make_inspector, spell_card_html
 
-STEPS = ["Race / Sous-race", "Classe", "Historique", "Caractéristiques", "Sorts et tours de magie", "Équipement",
+# v52 : l'historique se choisit avant la classe, pour connaître ses compétences avant celles de la classe
+STEPS = ["Race / Sous-race", "Historique", "Classe", "Caractéristiques", "Sorts et tours de magie", "Équipement",
          "Identité"]
 NO_CHOICE = "— à choisir —"
 ALL_CATS = "Toutes catégories"
@@ -212,7 +213,12 @@ class CreationWizard(QDialog):
         self.race_panel.bg_box.setVisible(False)
         self.race_panel.lang_box.setVisible(False)
         self.pages.addWidget(self._scroll(self.race_panel))      # v50 : défilement en fenêtre réduite
-        # 2. classe
+        # 2. historique
+        self.bg_panel = RaceTab(self.host)
+        self.bg_panel.race_box.setVisible(False)
+        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
+        self.pages.addWidget(self._scroll(self.bg_panel))
+        # 3. classe (après l'historique)
         w, lay = self._page()
         row = QHBoxLayout()
         row.addWidget(make_label("Classe", "head"))
@@ -231,11 +237,6 @@ class CreationWizard(QDialog):
         lay.addWidget(self.skills_panel)
         lay.addStretch(1)
         self.pages.addWidget(self._scroll(w))
-        # 3. historique
-        self.bg_panel = RaceTab(self.host)
-        self.bg_panel.race_box.setVisible(False)
-        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
-        self.pages.addWidget(self._scroll(self.bg_panel))
         # 4. caractéristiques
         self.abilities_panel = AbilitiesTab(self.host)
         self.pages.addWidget(self._scroll(self.abilities_panel))
@@ -370,7 +371,7 @@ class CreationWizard(QDialog):
         class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("caracteristiques", "Compétences"),
                                                                  ("combat", "Style de combat"),
                                                                  ("classes", "Sous-classe")))
-        return [bool(self.ch.race), class_ok, none(lambda m: m["onglet"] == "race"),
+        return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok,
                 none(lambda m: m["onglet"] == "caracteristiques" and m["encart"] != "Compétences"),
                 none(lambda m: m["onglet"] == "magie"),
                 self.equip_mode == "paquetage" or self.engine.cart_total(self.cart) <= self.budget(),
@@ -378,7 +379,7 @@ class CreationWizard(QDialog):
 
     def refresh(self) -> None:
         """Rafraîchit la page visible, les pastilles et le résumé."""
-        refreshers = [self.race_panel.refresh, self._refresh_class, self.bg_panel.refresh,
+        refreshers = [self.race_panel.refresh, self.bg_panel.refresh, self._refresh_class,
                       self.abilities_panel.refresh, self._build_spells, self._refresh_equipment,
                       self._refresh_identity]
         refreshers[self.step]()
@@ -428,7 +429,7 @@ class CreationWizard(QDialog):
     def refresh_summary(self) -> None:
         self.summary.setHtml(self.summary_html())
 
-    # ------------------------------------------------------------------ étape 2 : classe
+    # ------------------------------------------------------------------ étape 3 : classe (v52 : après l'historique)
     def _on_class(self, name: str) -> None:
         if name and self.ch.classes and name != self.ch.classes[0]["nom"]:
             self.engine.change_class(0, name)
