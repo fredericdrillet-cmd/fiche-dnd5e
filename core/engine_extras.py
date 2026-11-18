@@ -1036,6 +1036,62 @@ class ExtrasMixin:
         return D.spec_from_detail("{} — {}".format(self.ch.forme_active, attack["nom"]), "attaque",
                                   detail + fx["detail"], fx["avantage"], fx["desavantage"], fx["echec"], note)
 
+    # ---- v52 : saisie rapide des PV (bureau et web) -------------------------------------------
+    def take_damage(self, amount: int) -> str:
+        """Dégâts subis : forme sauvage d'abord, puis PV temporaires, puis PV ; rappel de concentration, 0 PV."""
+        amount = max(0, int(amount))
+        if self.ch.forme_active:
+            return self.damage_form(amount)
+        ch = self.ch
+        absorbed = min(ch.pv_temporaires, amount)
+        ch.pv_temporaires -= absorbed
+        ch.pv_actuels = max(0, (ch.pv_actuels if ch.pv_actuels >= 0 else self.hp_max()) - (amount - absorbed))
+        text = "{} dégât(s) subi(s)".format(amount) + (
+            " dont {} absorbé(s) par les PV temporaires".format(absorbed) if absorbed else "")
+        if ch.concentration and amount > 0:
+            text += ". JS de Constitution DD {} pour maintenir {}".format(max(10, amount // 2), ch.concentration)
+        if ch.pv_actuels == 0:
+            if "inconscient" in FX.EFFECTS:
+                self.add_effect("inconscient")
+            text += ". Vous tombez à 0 PV : jets contre la mort"
+        return text + "."
+
+    def receive_healing(self, amount: int) -> str:
+        """Soins reçus (forme sauvage d'abord) ; sortir de 0 PV remet les jets contre la mort à zéro."""
+        amount = max(0, int(amount))
+        if self.ch.forme_active:
+            self.heal_form(amount)
+            return "La bête récupère {} PV.".format(amount)
+        gained = self.heal(amount)
+        if gained and self.ch.pv_actuels > 0:
+            self.ch.mort_reussites = self.ch.mort_echecs = 0
+            if "inconscient" in self.ch.effets_actifs:
+                self.remove_effect("inconscient")
+        return "{} PV récupéré(s).".format(gained)
+
+    def apply_hp_input(self, text: str, kind: str = "") -> str:
+        """
+        Saisie rapide : « 7 » ou « -7 » = dégâts, « +5 » = soins ; `kind` (« degats » | « soins ») force le sens.
+        Renvoie le message affiché, ou "" si la saisie n'est pas un nombre.
+        """
+        m = re.fullmatch(r"\s*([+-]?)\s*(\d+)\s*", text or "")
+        if not m:
+            return ""
+        amount = int(m.group(2))
+        heal = kind == "soins" or (not kind and m.group(1) == "+")
+        return self.receive_healing(amount) if heal else self.take_damage(amount)
+
+    MAX_ROLL_HISTORY = 50
+
+    def record_roll(self, title: str, kind: str, total: int, detail: str = "", mode: str = "",
+                    dice: Optional[list] = None) -> None:
+        """Historique des lancers (le plus récent en tête), gardé dans la sauvegarde ; format prévu pour un futur
+        journal de table partagé : {heure, titre, type, total, detail, mode, des}."""
+        import datetime as _dt
+        entry = {"heure": _dt.datetime.now().strftime("%d/%m %H:%M"), "titre": title, "type": kind,
+                 "total": int(total), "detail": detail, "mode": mode, "des": list(dice or [])}
+        self.ch.historique_jets = ([entry] + list(self.ch.historique_jets or []))[:self.MAX_ROLL_HISTORY]
+
     def damage_form(self, amount: int) -> str:
         """Dégâts subis sous forme sauvage : d'abord les PV de la bête ; à 0, la forme prend fin et l'excédent
         est retiré des PV normaux du druide."""

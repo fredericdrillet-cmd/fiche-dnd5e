@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
                          ("caracteristiques", self.stats_tab, "✦ Caractéristiques, Compétences"),
                          ("race", self.race_tab, "☗ Race, Historique, Langues"),
                          ("rp", self.rp_tab, "✎ Histoire, Portrait (RP)"),
-                         ("combat", self.combat_tab, "🛡 Combat"),
+                         ("combat", self.combat_tab, "🎲 En partie"),
                          ("magie", self.magic_tab, "✧ Magie"),
                          ("druide", self.druid_tab, "🐾 Forme sauvage"),
                          ("menagerie", self.companions_tab, "🐴 Ménagerie && Montures"),
@@ -269,6 +269,14 @@ class MainWindow(QMainWindow):
         rules = QAction("Règles de la table… (édition 2014 / 2024 / libre, règles optionnelles)", self)
         rules.triggered.connect(self.action_rules)
         om.addAction(rules)
+        history = QAction("Historique des lancers…", self)              # v52 : discret, Ctrl+H
+        history.setShortcut(QKeySequence("Ctrl+H"))
+        history.triggered.connect(self.action_history)
+        om.addAction(history)
+        hp_entry = QAction("Saisir des dégâts ou des soins", self)       # v52 : Ctrl+D -> onglet En partie
+        hp_entry.setShortcut(QKeySequence("Ctrl+D"))
+        hp_entry.triggered.connect(self.action_hp_entry)
+        om.addAction(hp_entry)
         om.addSeparator()
         group = QActionGroup(self)
         group.setExclusive(True)
@@ -294,6 +302,15 @@ class MainWindow(QMainWindow):
 
     def action_options(self):
         OptionsDialog(self).exec()
+
+    def action_history(self):
+        from .history_dialog import HistoryDialog
+        HistoryDialog(self).exec()
+
+    def action_hp_entry(self):
+        """Ctrl+D : onglet En partie, curseur dans la saisie rapide des PV."""
+        self.tabs.setCurrentWidget(self.combat_tab)
+        self.combat_tab.focus_hp_entry()
 
     def action_rules(self):
         """v52 : Options > Règles de la table (édition du personnage et règles optionnelles)."""

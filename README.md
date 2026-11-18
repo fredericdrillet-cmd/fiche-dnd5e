@@ -347,6 +347,14 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
   - Si le style est remplacé, la manœuvre, l'action et le dé disparaissent.
   - Description du style corrigée : il n'y a pas de « DD 14 » fixe, et le dé revient au repos court ou long.
 
+## Nouveautés v52 — éditions 2014 / 2024, règles de la table, ergonomie de table
+- **Édition choisie à la création** (2014 ou 2024), une par fiche : classes, sous-classes, espèces, historiques, dons et sorts de l'édition ; classes 2024 jouables (tables, compteurs, sous-classe au niveau 3, historique 2024 avec bonus et don d'origine, styles de combat en dons, bottes d'arme, Occultiste et Métamagie 2024, actions de combat 2024). Détails : `ARCHITECTURE_EDITIONS_v52.md`.
+- **Données complétées** (`data/editions/`) : sous-classes, dons, historiques et sorts officiels qui manquaient ; corrections de l'audit 2014 (compétences de classe, Druide, Demi-orque, armes). Audit : `AUDIT_CONFORMITE_5E2014.md`.
+- **Règles de la table** (Options) : potion en action bonus, bottes d'arme sur l'arsenal 2014, inspiration héroïque, actions d'arme BG3.
+- **Onglet « 🎲 En partie »** (ex-Combat) : bande d'emplacements de sorts et de pacte cliquable ; **saisie rapide des PV** (« 7 » ou « -7 » = dégâts, « +5 » = soins, boutons 💥 Dégâts / 💚 Soins, **Ctrl+D**).
+- **Lancers** : le jet part dans le mode de l'état du personnage ; boutons *Normal / Avantage / Désavantage* pour relancer si le MJ en décide autrement ; **historique des 50 derniers lancers** (Options > Historique des lancers, **Ctrl+H**).
+- Assistant de création : la race, puis **l'historique avant la classe**.
+
 ## Nouveautés v51 — multiclassage sans blocage, en-tête épuré, mises en page compactes
 - **Bug corrigé — « Choix du niveau (1) » fantôme** (ex. Occultiste 1 → Paladin 1) :
   - en Mode guidé, un prérequis de multiclassage non rempli était compté comme un choix du niveau, invisible sur la page, et bloquait « Confirmer » ;

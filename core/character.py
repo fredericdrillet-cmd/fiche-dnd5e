@@ -117,6 +117,7 @@ class Character:
     initiative_jet: int = 0                 # v45 : dernier jet d'initiative (0 = aucun)
     inspiration: bool = False               # v52 : inspiration (règle 2014 ou inspiration héroïque 2024)
     bottes_choisies: list[str] = field(default_factory=list)   # v52 : armes dont la botte est maîtrisée (2024)
+    historique_jets: list[dict] = field(default_factory=list)  # v52 : 50 derniers lancers (Ctrl+H)
 
     # ---- Éditions et règles de la table (v52, core/editions.py et core/house_rules.py) -----------
     edition_mode: str = "2014"              # "2014" | "2024" | "libre"

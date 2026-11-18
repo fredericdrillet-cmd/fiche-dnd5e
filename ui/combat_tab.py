@@ -114,6 +114,24 @@ class CombatTab(BaseTab):
         self.hp_tmp.setRange(0, 999)
         self.hp_misc.setRange(-999, 999)
         self.hit_dice = make_label("", "muted", wrap=True)
+        # v52 : saisie rapide des PV — « 7 » ou « -7 » = dégâts, « +5 » = soins, puis Entrée (Ctrl+D)
+        quick = QHBoxLayout()
+        self.hp_entry = QLineEdit()
+        self.hp_entry.setPlaceholderText("-7 dégâts, +5 soins (Ctrl+D)")
+        self.hp_entry.setToolTip(rich_tip("Saisie rapide des PV", "Tapez un nombre puis Entrée : « 7 » ou « -7 » "
+                                          "pour des dégâts, « +5 » pour des soins. Les PV temporaires sont consommés "
+                                          "en premier, et le jet de concentration est rappelé."))
+        self.hp_entry.returnPressed.connect(lambda: self._quick_hp(""))
+        self.dmg_btn = QPushButton("💥 Dégâts")
+        self.dmg_btn.setToolTip("Retirer la valeur saisie des PV (PV temporaires d'abord).")
+        self.dmg_btn.clicked.connect(lambda: self._quick_hp("degats"))
+        self.heal_btn = QPushButton("💚 Soins")
+        self.heal_btn.setToolTip("Ajouter la valeur saisie aux PV (sans dépasser le maximum).")
+        self.heal_btn.clicked.connect(lambda: self._quick_hp("soins"))
+        quick.addWidget(self.hp_entry, 1)
+        quick.addWidget(self.dmg_btn)
+        quick.addWidget(self.heal_btn)
+        g.addLayout(quick, 8, 0, 1, 2)
         g.addWidget(make_label("PV max"), 0, 0)
         g.addWidget(self.hp_max, 0, 1)
         g.addWidget(make_label("PV actuels"), 1, 0)
@@ -174,6 +192,22 @@ class CombatTab(BaseTab):
         self._style_key = None          # None : première construction forcée (même sans aucun emplacement)
         self.style_empty = make_label("", "muted", wrap=True)
         right_col = QVBoxLayout()
+        # v52 : emplacements de sorts dans l'onglet En partie (mêmes compteurs que l'onglet Magie)
+        self.slots_box = QGroupBox("✨ Emplacements de sorts")
+        sg = QGridLayout(self.slots_box)
+        self.slot_strip = []
+        for lvl in range(9):
+            lab = make_label("Niv. {}".format(lvl + 1), "head")
+            orbs = OrbBar("emplacement", orb=18, gap=4, per_row=5)
+            orbs.changed.connect(lambda used, n=lvl: self._on_slot_used(n, used))
+            sg.addWidget(lab, lvl // 3, (lvl % 3) * 2)
+            sg.addWidget(orbs, lvl // 3, (lvl % 3) * 2 + 1)
+            self.slot_strip.append((lab, orbs))
+        self.pact_strip = (make_label("Pacte", "warn"), OrbBar("pacte", orb=18, gap=4, per_row=5))
+        self.pact_strip[1].changed.connect(self._on_pact_used)
+        sg.addWidget(self.pact_strip[0], 3, 0)
+        sg.addWidget(self.pact_strip[1], 3, 1, 1, 5)
+        right_col.addWidget(self.slots_box)
         right_col.addWidget(self.style_box, 1)
         # v52 : bottes d'arme (maîtrise d'arme 2024) — nombre limité sur une fiche 2024
         self.mastery_box = QGroupBox("Bottes d'arme")
@@ -1604,6 +1638,45 @@ class CombatTab(BaseTab):
             self.ch.styles_combat[slot_id] = text
         self.changed()
 
+    # ------------------------------------------------------------------ v52 : saisie rapide des PV, emplacements
+    def focus_hp_entry(self) -> None:
+        self.hp_entry.setFocus()
+        self.hp_entry.selectAll()
+
+    def _quick_hp(self, kind: str) -> None:
+        msg = self.engine.apply_hp_input(self.hp_entry.text(), kind)
+        if not msg:
+            self.win.statusBar().showMessage("Saisissez un nombre : « 7 » ou « -7 » pour des dégâts, « +5 » pour des "
+                                             "soins.", 6000)
+            return
+        self.hp_entry.clear()
+        self._message(msg)
+        self.changed()
+
+    def _on_slot_used(self, level_idx: int, used: int) -> None:
+        self.ch.emplacements_utilises[level_idx] = used
+        self.win.light_changed()
+
+    def _on_pact_used(self, used: int) -> None:
+        self.ch.pacte_utilises = used
+        self.win.light_changed()
+
+    def _refresh_slot_strip(self) -> None:
+        eng, ch = self.engine, self.ch
+        slots = eng.spell_slots()
+        n_pact, pact_lvl = eng.pact()
+        self.slots_box.setVisible(any(slots) or n_pact > 0)
+        for i, (lab, orbs) in enumerate(self.slot_strip):
+            lab.setVisible(slots[i] > 0)
+            orbs.setVisible(slots[i] > 0)
+            if slots[i]:
+                orbs.set_state(slots[i], ch.emplacements_utilises[i])
+        for w in self.pact_strip:
+            w.setVisible(n_pact > 0)
+        if n_pact:
+            self.pact_strip[0].setText("Pacte (niv. {})".format(pact_lvl))
+            self.pact_strip[1].set_state(n_pact, ch.pacte_utilises)
+
     def _refresh_masteries(self):
         """Encart « Bottes d'arme » : visible si la fiche a des bottes (aptitude 2024 ou règle de la table)."""
         eng = self.engine
@@ -1757,6 +1830,7 @@ class CombatTab(BaseTab):
         self.ac_detail.setText("= " + ac_info["chiffres"] if " + " in ac_info["formule"] else "")
         self._refresh_styles()
         self._refresh_masteries()
+        self._refresh_slot_strip()
         self._refresh_class_options()
         self._refresh_resources()
         self._refresh_saves()

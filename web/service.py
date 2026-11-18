@@ -342,34 +342,10 @@ class Controller:
         self.ch.styles_combat[slot] = name
 
     def op_damage(self, amount: int) -> None:
-        amount = _int(amount, 0, 10000)
-        if self.ch.forme_active:
-            self.msg(self.eng.damage_form(amount))
-            return
-        ch = self.ch
-        absorbed = min(ch.pv_temporaires, amount)
-        ch.pv_temporaires -= absorbed
-        ch.pv_actuels = max(0, (ch.pv_actuels if ch.pv_actuels >= 0 else self.eng.hp_max()) - (amount - absorbed))
-        text = f"{amount} dégât(s) subi(s)" + (f" dont {absorbed} absorbé(s) par les PV temporaires" if absorbed else "")
-        if ch.concentration and amount > 0:
-            text += f". JS de Constitution DD {max(10, amount // 2)} pour maintenir {ch.concentration}"
-        if ch.pv_actuels == 0:
-            if "inconscient" in FX.EFFECTS:
-                self.eng.add_effect("inconscient")
-            text += ". Vous tombez à 0 PV : jets contre la mort"
-        self.msg(text + ".")
+        self.msg(self.eng.take_damage(_int(amount, 0, 10000)))           # v52 : logique partagée avec le bureau
 
     def op_heal(self, amount: int) -> None:
-        amount = _int(amount, 0, 10000)
-        if self.ch.forme_active:
-            self.eng.heal_form(amount)
-            return
-        gained = self.eng.heal(amount)
-        if gained and self.ch.pv_actuels > 0:
-            self.ch.mort_reussites = self.ch.mort_echecs = 0
-            if "inconscient" in self.ch.effets_actifs:
-                self.eng.remove_effect("inconscient")
-        self.msg(f"{gained} PV récupéré(s).")
+        self.msg(self.eng.receive_healing(_int(amount, 0, 10000)))
 
     def op_hit_die(self, die: str) -> None:
         res = self.eng.spend_hit_die(die)
