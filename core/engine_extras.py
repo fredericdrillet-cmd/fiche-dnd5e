@@ -250,6 +250,7 @@ class ExtrasMixin:
             m = M.mech(k)
             if m:
                 out.append((FX.EFFECTS[k]["nom"], m))
+        out += self.order_modifiers()                    # v52 : Thaumaturge / Magicien (2024)
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = M.item_mech(entry.get("nom", ""))
@@ -883,6 +884,8 @@ class ExtrasMixin:
             ab = racial["carac"] if racial else self.casters()[0]["carac"]
         detail = [(R.mod_label(ab), "{:+d}".format(self.mod(ab))), ("Maîtrise", "{:+d}".format(self.prof))]
         fx = self.attack_mods()
+        if self.innate_sorcery_active() and caster is not None and caster["classe"] == "Ensorceleur":
+            fx = dict(fx, avantage=list(fx["avantage"]) + ["Sorcellerie innée"])      # v52 (2024)
         stats = self.cantrip_stats(spell["nom"]) if spell["niveau"] == 0 else None
         dmg = ((stats or {}).get("degats") or spell.get("degats", "")) if spell["niveau"] == 0 else \
             self.spell_damage_formula(spell["nom"], slot_level, class_name)

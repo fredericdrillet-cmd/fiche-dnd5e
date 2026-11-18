@@ -64,6 +64,7 @@ class ProficiencyMixin:
             if e and e["niveau"] >= lvl and frag in norm(e.get("sous_classe", "")):
                 out.append({"source": "{} — {}".format(cls, e["sous_classe"]), "classe": cls, "armures": list(arm),
                             "armes": list(wpn), "mode": "sous_classe"})
+        out += self.order_proficiency_sources()          # v52 : Ordre divin Protecteur / Ordre primitif Gardien
         for feat in self.chosen_feats():                  # v45 : dons de maîtrise d'armures
             arm, wpn = FEAT_PROFICIENCIES.get(norm(feat), ([], []))
             if arm or wpn:

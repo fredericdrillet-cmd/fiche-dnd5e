@@ -99,6 +99,7 @@ from .magic_gear import MagicGearMixin  # noqa: E402
 from .initiative import InitiativeMixin  # noqa: E402
 from .creation import CreationMixin  # noqa: E402
 from .class_guide import ClassGuideMixin  # noqa: E402
+from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
 def pretty_formula(formula: str) -> str:
@@ -118,7 +119,8 @@ def damage_calc(die: str, terms: list, result: str) -> str:
 class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, MissingChoicesMixin,
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
-             MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin):
+             MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
+             FeatPrereq2024Mixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -650,6 +652,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         n = norm(text)
         if not feat or n in ("", "aucun", "aucune"):
             return "ok", ""
+        if is_prereq_2024(text):                         # v52 : « Niveau 4+, Force 13+ », Faveurs épiques (19+)…
+            return self.feat_status_2024(text)
         ch = self.ch
         if "13 ou plus" in n or re.search(r"de \d+ ou plus", n):
             need = int(re.search(r"(\d+) ou plus", n).group(1))
@@ -1457,11 +1461,13 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             row = self.table_row(e["nom"], lvl)
             if row.get("sorts_prepares") is not None:         # 2024 : sorts préparés et mineurs lus dans la table
                 d.update(mode="prepared", connus_max=None, prepares_max=int(row["sorts_prepares"]),
-                         mineurs_max=int(row.get("tours_de_magie") or 0))
+                         mineurs_max=int(row.get("tours_de_magie") or 0) + self.order_extra_cantrips(e["nom"]))
             elif cfg["mode"] == "known":
                 d["connus_max"] = R.spells_known(e["nom"], lvl, cfg["kind"])
             else:
                 d["prepares_max"] = R.spells_prepared(e["nom"], lvl, m)
+            if e["nom"] == "Ensorceleur" and self.innate_sorcery_active():      # v52 : Sorcellerie innée, DD +1
+                d["dc"] += 1
             out.append(d)
         return out
 
@@ -2025,6 +2031,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             elif key == "inspiration" and cell("Barde", "de_d_inspiration"):
                 t["de"] = str(cell("Barde", "de_d_inspiration"))
             result.append(t)
+        if self.class_level("Ensorceleur") >= 1:          # Sorcellerie innée : 2 utilisations par repos long
+            result.append({"key": "sorcellerie_innee", "label": "Sorcellerie innée", "total": 2, "kind": "sorcellerie",
+                           "recover": "repos long", "where": "combat", "de": "",
+                           "info": "Action bonus, 1 minute : DD des sorts d'ensorceleur +1, avantage aux attaques de "
+                                   "sorts d'ensorceleur — repos long"})
         if self.class_level("Paladin") >= 2:              # Châtiment de paladin : 1 lancer gratuit par repos long
             result.append({"key": "chatiment_gratuit", "label": "Châtiment divin gratuit", "total": 1,
                            "kind": "conduit", "recover": "repos long", "where": "combat", "de": "",

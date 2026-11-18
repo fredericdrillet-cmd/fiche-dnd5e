@@ -564,6 +564,13 @@ def _fmt(value) -> str:
     return str(value)
 
 
+# v52 — Sorcellerie innée (Ensorceleur 2024) : effet d'aptitude (DD +1 et avantage calculés par le moteur)
+_e("sorcellerie_innee", "Sorcellerie innée", "🔮", "Aptitude", "Ensorceleur (Manuel des joueurs 2024)", "1 minute",
+   "La magie de votre âme se libère : le DD de sauvegarde de vos sorts d'ensorceleur augmente de 1 et vous avez "
+   "l'avantage aux jets d'attaque des sorts d'ensorceleur que vous lancez.",
+   notes=["DD des sorts d'ensorceleur +1", "Avantage aux attaques de sorts d'ensorceleur"])
+
+
 def summary_mods(keys: list[str]) -> dict:
     """Agrège les modificateurs des effets actifs (clés inconnues ignorées)."""
     res = {"ca": 0, "vitesse_mult": 1.0, "vitesse_bonus": 0.0,

@@ -149,10 +149,16 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Serveur** (`web/service.py`) : opérations `set_edition` (2014 / 2024 ; le mode libre est refusé), `set_house_rule`, `set_masteries` ; la fiche renvoie `edition` (mode, classes de l'édition, règles de la table avec leur état, bottes d'arme) ; le catalogue indique l'édition des espèces, historiques, dons et sorts.
 - **Interface** (`web/static/app.js`) : *Nouveau personnage* demande « Édition 2014 / 2024 » (aussi au premier lancement) ; listes d'espèces, d'historiques, de classes, de dons et de sorts (mode MJ) filtrées selon l'édition de la fiche ; menu ☰ → **⚖ Règles de la table** : changer d'édition, cocher / décocher les 4 règles, choisir les bottes d'arme.
 
-### 4.8 Reste à faire
+### 4.8 Fait : aptitudes 2024 calculées (`core/features_2024.py`)
+
+- **Sorcellerie innée** (Ensorceleur 1) : compteur de 2 utilisations par repos long et tuile en action bonus qui active l'effet « Sorcellerie innée » (1 minute, bascule) ; tant qu'il dure, DD des sorts d'ensorceleur +1 (`casters()`) et avantage aux attaques de sorts d'ensorceleur (`spell_attack_spec`). Niveau 7 : seconde tuile payée 2 points de sorcellerie (*Sorcellerie incarnée*).
+- **Ordre divin** (Clerc 1 : Protecteur / Thaumaturge) et **Ordre primitif** (Druide 1 : Gardien / Magicien) : ensembles de choix `ordre_divin` / `ordre_primitif` dans `option_sets()` (encart des options de l'onglet « En partie », choix manquant tant qu'il n'est pas fait, web compris). Protecteur / Gardien : maîtrises d'armures (lourdes / intermédiaires) et d'armes de guerre (`proficiency_sources`). Thaumaturge / Magicien : un tour de magie de plus et modificateur de Sagesse (minimum +1) aux tests d'Arcanes et de Religion / de Nature (`modifier_sources`).
+- **Prérequis des dons 2024** (`feat_status_2024`) : « Niveau 4+ », « Force ou Dextérité 13+ », formations aux armures et au bouclier, aptitude Style de combat, Incantation / Magie des pactes. Les **Faveurs épiques** (« Niveau 19+ ») ne sont plus proposées comme valides avant le niveau 19. Les prérequis 2014 gardent leur ancienne lecture.
+
+### 4.9 Reste à faire
 
 1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
-2. Autres aptitudes 2024 au mécanisme nouveau (Sorcellerie innée, Ordre divin, Fin explorateur, Faveurs épiques…) : texte affiché, effets non calculés.
+2. Autres aptitudes 2024 au mécanisme nouveau (Fin explorateur, effets propres de chaque Faveur épique…) : texte affiché, effets non calculés.
 
 ## 5. Décisions prises
 

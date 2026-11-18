@@ -285,6 +285,19 @@ class ClassActionsMixin:
             out.append(a)
         if rogue >= 5:
             out += self.cunning_strike_actions(rogue)
+        sorc = self.class_level("Ensorceleur")
+        if sorc >= 1:                                    # Sorcellerie innée (+ Sorcellerie incarnée au niveau 7)
+            base = {"icone": "🔮", "classe": "Ensorceleur", "sous_classe": "", "niveau": 1, "type": "Action bonus",
+                    "jet": "aucun", "degats": "", "type_degats": "", "effet": "sorcellerie_innee", "bascule": True}
+            desc = ("1 minute : DD de vos sorts d'ensorceleur +1 et avantage aux jets d'attaque de vos sorts "
+                    "d'ensorceleur (calculés sur la fiche).")
+            out.append(dict(base, id="sorcellerie_innee", nom="Sorcellerie innée",
+                            cout={"ressource": "sorcellerie_innee", "n": 1}, description=desc + " 2 par repos long."))
+            if sorc >= 7:
+                out.append(dict(base, id="sorcellerie_incarnee", nom="Sorcellerie innée (2 points de sorcellerie)",
+                                cout={"ressource": "sorcellerie", "n": 2}, niveau=7,
+                                description=desc + " Sorcellerie incarnée : activée avec 2 points de sorcellerie ; "
+                                            "jusqu'à deux options de Métamagie par sort tant qu'elle dure."))
         return out
 
     def cunning_strike_actions(self, rogue: int) -> list[dict]:

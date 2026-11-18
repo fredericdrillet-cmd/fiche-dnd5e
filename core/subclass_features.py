@@ -149,6 +149,7 @@ class SubclassFeaturesMixin:
         meta = self.metamagic_option_set()               # v39 : options de métamagie de l'Ensorceleur
         if meta:
             out.append(meta)
+        out += self.order_option_sets()                  # v52 : Ordre divin / Ordre primitif (2024)
         return out
 
     def sanitize_class_options(self) -> None:
