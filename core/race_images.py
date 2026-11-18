@@ -53,6 +53,10 @@ def index(folder: Path = DEFAULT_DIR, refresh: bool = False) -> dict[str, Path]:
     return _CACHE[cache_key]
 
 
+# noms de fichier qui ne suivent pas exactement le nom de la race (« demi-orc.jpg » pour le Demi-orque)
+IMAGE_ALIASES = {"demiorque": "demiorc"}
+
+
 def find_race_image(race: str, subrace: str = "", folder: Path = DEFAULT_DIR) -> Optional[Path]:
     files = index(folder)
     if not files or not race:
@@ -61,6 +65,7 @@ def find_race_image(race: str, subrace: str = "", folder: Path = DEFAULT_DIR) ->
     if subrace:
         candidates.append(key(subrace))
     candidates += [key(race), key(re.sub(r"\(.*?\)", "", race))]
+    candidates += [IMAGE_ALIASES[c] for c in list(candidates) if c in IMAGE_ALIASES]
     for c in candidates:
         if c and c in files:
             return files[c]

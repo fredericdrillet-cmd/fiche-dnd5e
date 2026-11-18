@@ -6,7 +6,6 @@
     "competences_disponibles": [
       "Athlétisme",
       "Dresseur de bêtes",
-      "Discrétion",
       "Intimidation",
       "Nature",
       "Perception",
@@ -38,7 +37,6 @@
     "pv_initiaux": 8,
     "de_vie": "d8",
     "competences_disponibles": [
-      "Discrétion",
       "Histoire",
       "Médecine",
       "Persuasion",
@@ -73,7 +71,7 @@
       "Cimeterre",
       "Sling (Fronde)",
       "Lance",
-      "Arbalète légère"
+      "Serpe"
     ]
   },
   {
@@ -83,7 +81,6 @@
     "competences_disponibles": [
       "Acrobaties",
       "Athlétisme",
-      "Discrétion",
       "Histoire",
       "Intimidation",
       "Perception",
@@ -105,8 +102,7 @@
       "Athlétisme",
       "Discrétion",
       "Histoire",
-      "Religion",
-      "Discrétion"
+      "Religion"
     ],
     "jets_de_sauvegarde": ["Force", "Dextérité"],
     "armures_maitrisees": ["Aucune"],
@@ -118,7 +114,6 @@
     "de_vie": "d10",
     "competences_disponibles": [
       "Athlétisme",
-      "Discrétion",
       "Intimidation",
       "Médecine",
       "Persuasion",
@@ -176,7 +171,6 @@
     "de_vie": "d6",
     "competences_disponibles": [
       "Arcanes",
-      "Discrétion",
       "Intimidation",
       "Persuasion",
       "Religion"
@@ -218,7 +212,6 @@
     "de_vie": "d8",
     "competences_disponibles": [
       "Arcanes",
-      "Discrétion",
       "Histoire",
       "Investigation",
       "Nature",

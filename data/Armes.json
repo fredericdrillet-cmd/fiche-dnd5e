@@ -48,7 +48,7 @@
       "botte_arme": "Ralentissement",
       "description_botte": "Réduit la vitesse de la cible touchée de 3 mètres jusqu'au début de votre prochain tour.",
       "poids": "1 kg",
-      "prix": "5 po"
+      "prix": "5 pa"
     },
     {
       "nom": "Lance",
@@ -98,7 +98,7 @@
       "botte_arme": "Coup double",
       "description_botte": "Permet de porter l'attaque supplémentaire d'une arme légère dans le cadre de l'action principale sans utiliser l'action bonus.",
       "poids": "1 kg",
-      "prix": "1 pa"
+      "prix": "1 po"
     },
     {
       "nom": "Arbalète légère",
@@ -243,8 +243,8 @@
     {
       "nom": "Lance d’arçon",
       "categorie": "Armes de guerre de corps à corps",
-      "degats": "1d10 perforants",
-      "proprietes": "Allonge, Deux mains (sauf à cheval), Lourde",
+      "degats": "1d12 perforants",
+      "proprietes": "Allonge, Deux mains (sauf à cheval), Spéciale",
       "botte_arme": "Renversement",
       "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
       "poids": "3 kg",
@@ -267,7 +267,7 @@
       "proprietes": "Polyvalente (1d10)",
       "botte_arme": "Poussée",
       "description_botte": "Repousse la cible touchée de 3 mètres en ligne droite si elle est de taille Grande ou inférieure.",
-      "poids": "2,5 kg",
+      "poids": "1 kg",
       "prix": "15 po"
     },
     {
@@ -313,8 +313,8 @@
     {
       "nom": "Trident",
       "categorie": "Armes de guerre de corps à corps",
-      "degats": "1d8 perforants",
-      "proprietes": "Lancer (portée 6/18), Polyvalente (1d10)",
+      "degats": "1d6 perforants",
+      "proprietes": "Lancer (portée 6/18), Polyvalente (1d8)",
       "botte_arme": "Renversement",
       "description_botte": "Force la cible touchée à réussir un JdS de Force sous peine de tomber à terre.",
       "poids": "2 kg",
