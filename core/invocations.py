@@ -110,7 +110,8 @@ class InvocationsMixin:
         return "attaques:2" in self.invocation_effects()
 
     def concentration_advantage(self) -> list[str]:
-        return ["Esprit occulte"] if "concentration_avantage" in self.invocation_effects() else []
+        out = ["Esprit occulte"] if "concentration_avantage" in self.invocation_effects() else []
+        return out + self.feat_flag("concentration")      # v52 : don Mage de guerre
 
     # ------------------------------------------------------------------ sorts accordés : limites d'usage
     @staticmethod
@@ -119,7 +120,7 @@ class InvocationsMixin:
 
     def granted_limit_left(self, key: str) -> Optional[int]:
         """Utilisations restantes d'un sort accordé limité (None = à volonté)."""
-        tr = next((t for t in self.invocation_trackers() if t["key"] == key), None)
+        tr = next((t for t in self.invocation_trackers() + self.feat_trackers() if t["key"] == key), None)
         return None if tr is None else max(0, tr["total"] - self.resource_used(key))
 
     def spend_granted_limit(self, key: str) -> None:
@@ -382,6 +383,8 @@ class InvocationsMixin:
         if lvl == 0 and "Clerc" in spell.get("classes", []) and self.class_level("Clerc") and \
                 any(n.startswith("incantation puissante") for n in names):
             out.append(("Incantation puissante (Sagesse)", self.mod("Sagesse")))
+        elif lvl == 0:
+            out += self.class_cantrip_bonus(spell)      # v52 : Incantation puissante 2024 (Clerc, Druide)
         if norm(spell.get("ecole", "")) == "evocation" and "Magicien" in spell.get("classes", []) and \
                 any(n.startswith("evocation renforcee") for n in names):
             out.append(("Évocation renforcée (Intelligence)", self.mod("Intelligence")))

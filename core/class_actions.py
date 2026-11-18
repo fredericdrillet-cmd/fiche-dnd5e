@@ -142,6 +142,8 @@ class ClassActionsMixin:
                                      "+3 m de vitesse, avantage en Acrobaties — repos long".format(self.prof)))
         out += self.subclass_trackers()                  # runes, Puissance des géants, dés psi, Tir arcanique
         out += self.invocation_trackers()                # manifestations occultes (v37)
+        out += self.feat_trackers()                      # v52 : dons (points de chance, Faveurs épiques…)
+        out += self.class_flag_trackers()                # v52 : Rage persistante, Restauration d'ensorceleur
         out += self.class_tile_trackers()                # v39 : aptitudes limitées des classes et sous-classes
         if self.class_level("Paladin"):
             pool = 5 * self.class_level("Paladin")
@@ -213,6 +215,8 @@ class ClassActionsMixin:
         for a in self.invocation_actions():              # manifestations occultes (Tombe de Levistus…)
             out.append(dict(a, **self.class_action_state(a)))
         for a in self.class_tile_actions():              # v39 : aptitudes actives des classes et sous-classes
+            out.append(dict(a, **self.class_action_state(a)))
+        for a in self.feat_actions():                    # v52 : tuiles des dons
             out.append(dict(a, **self.class_action_state(a)))
         if getattr(self, "sheet_edition", 2014) == 2024:
             out = [dict(a, **self.class_action_state(a)) for a in self._actions_2024(out)]
@@ -326,6 +330,9 @@ class ClassActionsMixin:
         """{disponible, raison, cout_txt, formule} : verrouillage si la ressource nécessaire est épuisée."""
         cost = a.get("cout") or {}
         ok, why, cost_txt = True, "", ""
+        if a.get("des_de_vie") and not self._hit_die_left():
+            return {"disponible": False, "raison": "Plus de dé de vie — récupérés au repos long.", "cout_txt": "1 dé de vie",
+                    "formule": ""}
         free_key = cost.get("gratuit")
         free_left = bool(free_key) and self._free_left(free_key)
         if free_left:
@@ -553,6 +560,11 @@ class ClassActionsMixin:
         elif cost.get("pacte"):
             self.ch.pacte_utilises += 1
             spent = "emplacement de Pacte"
+        if a.get("des_de_vie"):                          # v52 : Récupération rapide (Gaillard) — un dé de vie dépensé
+            die = self._hit_die_left()
+            used = next(p["utilises"] for p in self.hit_dice_pool() if p["de"] == die)
+            self.ch.des_vie_utilises[die] = used + 1
+            spent = "1 dé de vie ({})".format(die)
         if a.get("pv_temp"):                             # Tombe de Levistus : PV temporaires
             self.apply_temp_hp(int(a["pv_temp"]))
         if a.get("rend"):                                # Récupération psionique : un dé revient dans la réserve

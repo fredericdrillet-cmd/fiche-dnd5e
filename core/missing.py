@@ -66,7 +66,7 @@ class MissingChoicesMixin:
             for f in self.features(e):
                 if f["debloque"] and norm(f["nom"]).startswith("expertise"):
                     n += 2
-        return n
+        return n + self.class_extra_expertise()          # v52 : Explorateur habile, Érudit (2024)
 
     def expertise_missing(self) -> int:
         have = sum(1 for s in self.ch.competences.values() if s.get("maitrise") and s.get("expertise"))
@@ -172,9 +172,12 @@ class MissingChoicesMixin:
             if slot["debloque"] and slot["id"] not in ch.styles_combat:
                 what = "Modèle d'armure" if slot["kind"] == "modele" else "Style de combat"
                 add("combat", "Style de combat", 1, "{} à choisir ({})".format(what, slot["classe"]))
-        for st in self.option_sets():                   # runes, options de Tir arcanique
+        for st in self.option_sets():                   # runes, options de Tir arcanique, choix des dons (v52)
             n = st["total"] - len(st["chosen"])
-            add("combat", "Options de sous-classe", n, "{} : {} à choisir".format(st["label"], n))
+            if st["key"].startswith("don:"):
+                add("progression", "Choix des dons", n, "{} : {} à choisir".format(st["label"], n))
+            else:
+                add("combat", "Options de classe", n, "{} : {} à choisir".format(st["label"], n))
         if self.superior_technique() and not ch.technique_manoeuvre:
             add("combat", "Style de combat", 1, "Technique supérieure : manœuvre à choisir")
         # magie

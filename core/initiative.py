@@ -74,9 +74,13 @@ class InitiativeMixin:
         n = natural if natural is not None else random.randint(1, 20)
         total = n + d["total"]
         self.ch.initiative_jet = total
+        self.ch.ressources_utilisees.pop("don_faveur_destin", None)      # Faveur du destin : revient à l'initiative
+        self.initiative_recovery()                       # v52 : Inspiration supérieure, Rage persistante…
         text = "1d20 ({}) {} = {}".format(n, " ".join("{} {}".format(R.fmt_bonus(v), lab) for lab, v in d["termes"]),
                                           total)
         return {"d20": n, "total": total, "texte": text}
 
     def record_initiative(self, total: int) -> None:
         self.ch.initiative_jet = int(total)
+        self.ch.ressources_utilisees.pop("don_faveur_destin", None)
+        self.initiative_recovery()

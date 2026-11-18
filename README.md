@@ -354,6 +354,7 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **Onglet « 🎲 En partie »** (ex-Combat) : bande d'emplacements de sorts et de pacte cliquable ; **saisie rapide des PV** (« 7 » ou « -7 » = dégâts, « +5 » = soins, boutons 💥 Dégâts / 💚 Soins, **Ctrl+D**).
 - **Lancers** : le jet part dans le mode de l'état du personnage ; boutons *Normal / Avantage / Désavantage* pour relancer si le MJ en décide autrement ; **historique des 50 derniers lancers** (Options > Historique des lancers, **Ctrl+H**).
 - Assistant de création : la race, puis **l'historique avant la classe**.
+- **Effets automatiques des dons et aptitudes** : un don choisi ou un niveau atteint applique ses effets (PV, vitesse, CA, compétences, expertise, JS, outils, résistances, sorts accordés avec 1 lancer gratuit, points de chance, Faveurs épiques jusqu'à 30, Dernier rempart à 0 PV, dés ajoutés aux armes, ressources rendues à l'initiative ou au repos court). Les choix (compétences, sorts…) se font dans l'onglet Progression, encart « Choix des dons ».
 - **Aptitudes 2024 calculées** : Sorcellerie innée (DD +1, avantage aux attaques de sorts, 2 par repos long, Sorcellerie incarnée au niveau 7), Ordre divin du Clerc et Ordre primitif du Druide (maîtrises, tour de magie, bonus de Sagesse aux tests), prérequis des dons 2024 (Faveurs épiques au niveau 19).
 
 ## Nouveautés v51 — multiclassage sans blocage, en-tête épuré, mises en page compactes

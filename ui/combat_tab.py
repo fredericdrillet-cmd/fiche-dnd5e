@@ -219,7 +219,7 @@ class CombatTab(BaseTab):
         mb.addWidget(self.mastery_btn)
         right_col.addWidget(self.mastery_box)
         # v36 : options de sous-classe (runes du Chevalier runique, options de Tir arcanique)
-        self.options_box = QGroupBox("Options de sous-classe")
+        self.options_box = QGroupBox("Options de classe")
         self.options_layout = QGridLayout(self.options_box)
         self._options_key = None
         self.options_box.setVisible(False)
@@ -1587,10 +1587,10 @@ class CombatTab(BaseTab):
     def _refresh_class_options(self) -> None:
         """Runes (Chevalier runique) et options de Tir arcanique : une liste par choix, description en infobulle ;
         chaque option déjà prise ailleurs est retirée des autres listes."""
-        sets = self.engine.option_sets()
+        sets = [s for s in self.engine.option_sets() if not s["key"].startswith("don:")]   # dons : onglet Progression
         self.options_box.setVisible(bool(sets))
         n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
-        self.options_box.setTitle("Options de sous-classe" + ("  — ○ {} à choisir".format(n_missing) if n_missing
+        self.options_box.setTitle("Options de classe" + ("  — ○ {} à choisir".format(n_missing) if n_missing
                                                                else ""))
         key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
             (theme.current().key,)

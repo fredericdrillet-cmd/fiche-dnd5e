@@ -15,6 +15,7 @@ from typing import Optional
 
 from . import rules as R
 from .data_loader import FEAT_PROFICIENCIES
+from .feat_effects import feat_base
 from .rules import norm
 
 FEAT_SOURCE = "Accordé par le Don : {}"
@@ -66,10 +67,12 @@ class ProficiencyMixin:
                             "armes": list(wpn), "mode": "sous_classe"})
         out += self.order_proficiency_sources()          # v52 : Ordre divin Protecteur / Ordre primitif Gardien
         for feat in self.chosen_feats():                  # v45 : dons de maîtrise d'armures
-            arm, wpn = FEAT_PROFICIENCIES.get(norm(feat), ([], []))
+            arm, wpn = FEAT_PROFICIENCIES.get(norm(feat)) or FEAT_PROFICIENCIES.get(feat_base(feat), ([], []))
             if arm or wpn:
                 out.append({"source": "Don : {}".format(feat), "classe": "", "don": feat, "armures": list(arm),
                             "armes": list(wpn), "mode": "don"})
+        known = {s["don"] for s in out if s.get("don")}
+        out += [s for s in self.feat_proficiency_sources() if s["don"] not in known]      # v52 : registre
         sub = self.subrace()
         race_arm = ["Armures légères", "Armures intermédiaires"] if sub and "montagnes" in norm(sub["nom"]) else []
         race_wpn = self.racial_weapon_proficiencies()

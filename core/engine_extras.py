@@ -251,6 +251,8 @@ class ExtrasMixin:
             if m:
                 out.append((FX.EFFECTS[k]["nom"], m))
         out += self.order_modifiers()                    # v52 : Thaumaturge / Magicien (2024)
+        out += self.feat_modifiers()                     # v52 : dons (PV max, résistances…)
+        out += self.class_modifiers()                    # v52 : Sens du danger, Pureté du corps
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = M.item_mech(entry.get("nom", ""))
@@ -541,6 +543,11 @@ class ExtrasMixin:
             if c:
                 out.append({"cle": "don:" + feat, "nom": feat, "icone": c[1], "source": "Don",
                             "declencheur": c[2], "effet": c[3]})
+        for feat, spec in self.feat_specs():             # v52 : réactions des dons du registre (Duelliste défensif)
+            if spec.get("reaction") and not any(o["cle"] == "don:" + feat for o in out):
+                icon, trig, eff = spec["reaction"]
+                out.append({"cle": "don:" + feat, "nom": feat, "icone": icon, "source": "Don", "declencheur": trig,
+                            "effet": eff})
         out += self.race_reactions()                     # Endurance de pierre, Esquive hadozi, Gambade heureuse…
         for style, icon, trig, eff in REACTION_STYLES:
             if self.style_active(style):
@@ -767,7 +774,14 @@ class ExtrasMixin:
                 text = "Vous voyez normalement dans les ténèbres, magiques ou non, jusqu'à 36 m."
             else:
                 text += "\nVision du diable : ténèbres magiques comprises jusqu'à 36 m."
-        return {"portee": best, "source": src, "superieure": best >= 36, "detail": text, "magique": magic}
+        for f, spec in self.feat_specs():                # v52 : Faveur de vision véritable, Discret (2024)
+            if spec.get("vision_veritable"):
+                text += "\nVision véritable {} m ({}).".format(spec["vision_veritable"], f)
+            if spec.get("vision_aveugle"):
+                text += "\nVision aveugle {} m ({}).".format(spec["vision_aveugle"], f)
+        for line in self.class_senses():
+            text += "\n" + line + "."
+        return {"portee": best, "source": src, "superieure": best >= 36, "detail": text.strip(), "magique": magic}
 
     def has_trance(self) -> bool:
         """Transe elfique (Elfe et ses sous-espèces, Drow, Eladrin…) : trait racial « Transe »."""
@@ -878,7 +892,8 @@ class ExtrasMixin:
         if caster is not None:
             ab = caster["carac"]
         else:
-            racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None)
+            racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None) or \
+                self.feat_spell(spell["nom"])
             if racial is None and not self.casters():
                 return None
             ab = racial["carac"] if racial else self.casters()[0]["carac"]
@@ -1053,6 +1068,11 @@ class ExtrasMixin:
             " dont {} absorbé(s) par les PV temporaires".format(absorbed) if absorbed else "")
         if ch.concentration and amount > 0:
             text += ". JS de Constitution DD {} pour maintenir {}".format(max(10, amount // 2), ch.concentration)
+        if ch.pv_actuels == 0 and self.feat_flag("dernier_rempart") and not self.resource_used("don_dernier_rempart"):
+            self.set_resource_used("don_dernier_rempart", 1)              # v52 : Faveur de récupération
+            ch.pv_actuels = min(self.hp_max(), 1 + self.hp_max() // 2)
+            return text + ". Dernier rempart (Faveur de récupération) : vous restez debout avec {} PV.".format(
+                ch.pv_actuels)
         if ch.pv_actuels == 0:
             if "inconscient" in FX.EFFECTS:
                 self.add_effect("inconscient")

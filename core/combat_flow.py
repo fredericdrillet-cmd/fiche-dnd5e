@@ -135,6 +135,8 @@ class CombatFlowMixin:
         if not st or not st.get("degats"):
             return None
         always, conditional = self.damage_riders()
+        cls_always, cls_once = self.class_weapon_riders(slot)       # v52 : Frappes radiantes, Frappe divine…
+        always, conditional = always + cls_always, conditional + cls_once
         formula = st["degats"]
         notes = []
         for label, dice in always:
@@ -286,7 +288,8 @@ class CombatFlowMixin:
         caster = self.caster(class_name) if class_name else None
         caster = caster or next((c for c in self.casters() if c["liste"] in spell.get("classes", [])), None) or \
             (self.casters()[0] if self.casters() else None)
-        racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None)
+        racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None) or \
+            self.feat_spell(spell["nom"])                # v52 : sort accordé par un don
         dc = caster["dc"] if caster else (racial["dc"] if racial else None)
         test = spell.get("test", "")
         rays = 0

@@ -150,6 +150,8 @@ class SubclassFeaturesMixin:
         if meta:
             out.append(meta)
         out += self.order_option_sets()                  # v52 : Ordre divin / Ordre primitif (2024)
+        out += self.class_option_sets()                  # v52 : Connaissance primitive, Frappes bénies, Fureur…
+        out += self.feat_option_sets()                   # v52 : choix des dons (compétences, sorts, résistances…)
         return out
 
     def sanitize_class_options(self) -> None:

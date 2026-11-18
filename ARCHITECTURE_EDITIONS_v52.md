@@ -155,10 +155,23 @@ Décision : **l'édition se choisit à la création du personnage** (fenêtre «
 - **Ordre divin** (Clerc 1 : Protecteur / Thaumaturge) et **Ordre primitif** (Druide 1 : Gardien / Magicien) : ensembles de choix `ordre_divin` / `ordre_primitif` dans `option_sets()` (encart des options de l'onglet « En partie », choix manquant tant qu'il n'est pas fait, web compris). Protecteur / Gardien : maîtrises d'armures (lourdes / intermédiaires) et d'armes de guerre (`proficiency_sources`). Thaumaturge / Magicien : un tour de magie de plus et modificateur de Sagesse (minimum +1) aux tests d'Arcanes et de Religion / de Nature (`modifier_sources`).
 - **Prérequis des dons 2024** (`feat_status_2024`) : « Niveau 4+ », « Force ou Dextérité 13+ », formations aux armures et au bouclier, aptitude Style de combat, Incantation / Magie des pactes. Les **Faveurs épiques** (« Niveau 19+ ») ne sont plus proposées comme valides avant le niveau 19. Les prérequis 2014 gardent leur ancienne lecture.
 
-### 4.9 Reste à faire
+### 4.9 Fait : effets appliqués automatiquement (dons et aptitudes de classe)
 
-1. Choix du sort et de la liste d'un don d'origine paramétré (« Initié à la magie (clerc) ») : le don est accordé, la liste de sorts reste à choisir comme pour un don ordinaire.
-2. Autres aptitudes 2024 au mécanisme nouveau (Fin explorateur, effets propres de chaque Faveur épique…) : texte affiché, effets non calculés.
+Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tout ce que la fiche sait chiffrer est appliqué ; les choix du joueur passent par `option_sets()` (choix manquants comptés).
+
+- **`core/feat_effects.py`** (`FeatEffectsMixin`, registre `REG` par nom de base et édition — « Robuste (2024) » → « robuste ») :
+  - passifs : initiative (Vigilant), PV par niveau (Robuste), vitesse (Mobile, Faveur de vitesse), PV max (Faveur de vigueur), Dex max 3 des armures intermédiaires, dé d4 à mains nues (Bagarreur de tavernes), + bonus de maîtrise aux dégâts des armes lourdes (Cogneur lourd), +1 botte d'arme (Maître d'armes), avantage de concentration (Mage de guerre), réaction (Duelliste défensif), vision véritable / aveugle ;
+  - maîtrises : armures et armes (Protection…, Formation aux armes de guerre), JS (Résilient / Résistant, caractéristique choisie), compétences et expertise (Doué, Expert, Observateur, Esprit affûté, Faveur de compétence), outils (Doué, Façonneur, Musicien, Chef cuisinier, Empoisonneur — affichés dans l'onglet Équipement) ;
+  - **sorts accordés** (`granted_spells`, catégorie « Dons ») : Initié à la magie 2014 / 2024 (liste, caractéristique, 2 tours de magie, 1 sort de niveau 1), Affinité féérique, Faveur des ombres, Émissaire des fées, Adepte des ombres, Télékinésiste, Télépathe, Haute magie drow, Téléportation féerique ; lancer gratuit 1 fois par repos (compteur interne), DD et attaque avec la caractéristique du don ;
+  - compteurs et tuiles : points de chance (3 en 2014, bonus de maîtrise en 2024), Faveur du destin (2d4, revient à l'initiative), Faveur de récupération (réserve de 10 d10 ; *Dernier rempart* appliqué tout seul à 0 PV), Performance stimulante (PV temporaires appliqués), Récupération rapide (dé de vie dépensé) ;
+  - Faveurs épiques : +1 jusqu'à 30, prérequis niveau 19, résistances au choix ;
+  - choix affichés dans l'onglet **Progression** (encart « Choix des dons »).
+- **`core/class_auto.py`** (`ClassAutoMixin`, 2014 et 2024 ; les « options Tasha » ne s'appliquent jamais d'office) : maîtrise de tous les JS (Âme diamantée, Survivant discipliné), Esprit fuyant (Sag ; Sag et Cha en 2024), avantage aux JS de Dex (Sens du danger), Nomade (+3 m), Sens bestiaux, Corps et esprit (+4 Dex / Sag, max 25), Champion primitif 2024 (max 25), +1d8 radiants des armes de corps à corps (Châtiment divin amélioré / Frappes radiantes), Frappe divine 2014 (1d8 → 2d8, une fois par tour), Frappes bénies et Fureur élémentaire 2024 (choix : frappe une fois par tour ou Incantation puissante sur les tours de magie), Connaissance primitive (compétence), expertises d'Explorateur habile et d'Érudit, ressources rendues à l'initiative (Inspiration supérieure, Concentration parfaite, Yo perfectionné, Rage persistante) et au repos court (Restauration d'ensorceleur).
+
+### 4.10 Reste à faire
+
+- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Faveur de l'esprit nocturne, Talent fiable, Puissance indomptable…) : texte affiché, rien à chiffrer.
+- Jet contre la mort lancé par l'application (l'avantage de Gaillard en dépend).
 
 ## 5. Décisions prises
 

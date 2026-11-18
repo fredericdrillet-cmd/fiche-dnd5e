@@ -99,6 +99,8 @@ from .magic_gear import MagicGearMixin  # noqa: E402
 from .initiative import InitiativeMixin  # noqa: E402
 from .creation import CreationMixin  # noqa: E402
 from .class_guide import ClassGuideMixin  # noqa: E402
+from .feat_effects import FeatEffectsMixin, feat_base  # noqa: E402
+from .class_auto import ClassAutoMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -120,7 +122,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
-             FeatPrereq2024Mixin):
+             FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -599,17 +601,30 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 out.append(choice["don"])
         return out
 
+    FEAT_KEYS = {"initiative": "init", "vitesse": "vitesse", "pv_par_niveau": "pv_niveau",
+                 "perception_passive": "pp"}
+
     def feat_effect(self, key: str) -> int:
-        return sum(int(self.db.feats[f].get("effets", {}).get(key, 0)) for f in self.chosen_feats())
+        """Bonus d'un don : champ « effets » des données, sinon effet du registre (core/feat_effects.py)."""
+        total = 0
+        specs = dict(self.feat_specs())
+        for f in dict.fromkeys(self.chosen_feats()):
+            v = self.db.feats[f].get("effets", {}).get(key, 0)
+            if not v:
+                v = specs.get(f, {}).get(self.FEAT_KEYS.get(key, key), 0)
+                v = self.prof if v == "prof" else v
+            total += int(v or 0)
+        return total
 
     def feat_choice_ability(self, choice: dict) -> str:
         """Caractéristique augmentée de +1 par un don (choix unique automatique, sinon choix du joueur)."""
         feat = self.db.feats.get(choice.get("don", ""))
-        if not feat or not feat["carac_choix"]:
+        opts = self.feat_ability_options(choice.get("don", "")) if feat else []      # v52 : Résilient (2024)…
+        if not opts:
             return ""
-        if len(feat["carac_choix"]) == 1:
-            return feat["carac_choix"][0]
-        return choice.get("don_carac", "") if choice.get("don_carac") in feat["carac_choix"] else feat["carac_choix"][0]
+        if len(opts) == 1:
+            return opts[0]
+        return choice.get("don_carac", "") if choice.get("don_carac") in opts else opts[0]
 
     @memo
     def asi_bonus(self) -> dict[str, int]:
@@ -633,13 +648,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     def resilient_saves(self) -> set[str]:
         """Maîtrises de jets de sauvegarde accordées par les dons « Résistant / Résilient »."""
-        valid = {s["id"] for s in self.asi_slots()}
-        out = set()
-        for sid, c in self.ch.ameliorations.items():
-            if sid in valid and c.get("mode") == "don" and norm(c.get("don", "")) in ("resistant", "resilient"):
-                ab = self.feat_choice_ability(c)
-                if ab:
-                    out.add(ab)
+        out = self.feat_saves()                           # v52 : registre des dons (2014 et 2024)
         return out
 
     def feat_status(self, name: str) -> tuple[str, str]:
@@ -697,9 +706,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         base = self.base_score(ab)
         race = self.race_bonus()[ab]
         asi = self.asi_bonus()[ab]
-        champion = 4 if ab in ("Force", "Constitution") and self.class_level("Barbare") >= 20 else 0
-        cap = 24 if champion else 20
-        raw = min(base + race + asi + champion, cap)
+        champion, cap = self.class_score_bonus(ab)       # Champion primitif, Corps et esprit (2024)
+        boon = self.epic_boon_bonus()[ab]                 # v52 : Faveur épique, +1 jusqu'à 30
+        raw = min(base + race + asi - boon + champion, cap)
+        if boon:
+            raw = min(raw + boon, 30)
+            cap = max(cap, raw)
         total = raw + ch.bonus_divers.get(ab, 0)
         fx_bonus, fx_floor, fx_src = self.ability_effects(ab)      # potions de force de géant, sorts...
         effective = max(min(total + fx_bonus, max(cap, total)), fx_floor)
@@ -788,7 +800,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def save_rows(self) -> list[dict]:
         rows = []
         aura = max(0, self.mod("Charisme")) if self.class_level("Paladin") >= 6 else 0
-        res = self.resilient_saves()
+        res = self.resilient_saves() | self.auto_save_profs()      # v52 : Âme diamantée, Esprit fuyant…
         items = self.magic_item_bonuses()["js"]
         polymorph = self.ch.forme_type == "metamorphose" and bool(self.ch.forme_active)
         for ab in ABILITIES:
@@ -814,13 +826,14 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         jack = self.has_feature("touche-a-tout")
         remarkable = self.has_feature("athlete remarquable")
         beast_skills = self.beast_skills()
-        granted_skills = self.invocation_skills()
+        feat_prof, feat_exp = self.feat_skill_grants()   # v52 : Doué, Expert, Observateur, Faveur de compétence…
+        granted_skills = self.invocation_skills() | feat_prof | self.class_skill_grants()
         rows = []
         for s in self.db.skills:
             name, ab = s["nom"], s["carac"]
             st = self.ch.competences.get(name, {})
             prof = bool(st.get("maitrise")) or name in granted_skills     # Présence captivante (manifestation)
-            exp = bool(st.get("expertise")) and prof
+            exp = (bool(st.get("expertise")) or name in feat_exp) and prof
             half, up = False, False
             if not prof:
                 if jack:
@@ -949,6 +962,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         heavy = armor.get("categorie") == "lourde"
         if self.class_level("Barbare") >= 5 and not heavy:
             base += 3
+        base += self.class_speed_bonus(armor.get("categorie", "aucune"))      # v52 : Nomade (Rôdeur 2024)
         if norm(self.armor_model()[0]).startswith("infiltre"):
             base += 1.5                                      # armure d'exocombat « Infiltré »
         monk = self.class_level("Moine")
@@ -1084,6 +1098,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if worn:
             base = armor["ca_base"]
             dm = armor.get("dex_max")
+            if dm and armor.get("categorie") == "intermédiaire" and self.feat_flag("dex_inter"):
+                dm = 3                                    # don Maître des armures intermédiaires
             if dm is None:
                 terms = [(str(base), base), ("Dex", dex)]
             elif dm == 0:
@@ -1287,6 +1303,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                             "usage": usage, "source": f"Manifestation : {name}", "sort": spell,
                             "categorie": "Manifestations occultes", "emplacement": bool(g.get("emplacement")),
                             "limite": g.get("limite", ""), "cle": key, "cible": g.get("cible", "")})
+        out += self.feat_spells()                        # v52 : sorts des dons (Initié à la magie, Affinité féérique…)
         out += self.ritual_book_spells()                 # Livre des secrets anciens : rituels inscrits
         for g in self.ch.sorts_mj:                       # sorts accordés par le MJ (roleplay)
             spell = self.db.find_spell(g["nom"])
@@ -1318,6 +1335,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if self.style_active("Combat à mains nues"):
             notes.append("Combat à mains nues : d6 (d8 si aucune arme ni bouclier)")
             best = max(best, 6)
+        for f in self.feat_flag("mains_nues"):            # v52 : Bagarreur de tavernes (2024)
+            notes.append("{} : d4 (relancez les 1)".format(f))
+            best = max(best, 4)
         return best, notes
 
     def _best_physical(self) -> str:
@@ -1387,6 +1407,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             terms.append(("Style de combat : Duel", duel))
             notes.append("Duel : +2 dégâts à une main")
         two_hand = w["type"] == "cac" and bool({"deux mains", "lourde", "polyvalente"} & set(props))
+        if "lourde" in props and self.feat_flag("lourde_maitrise"):
+            flat += self.prof
+            terms.append(("Don : Cogneur lourd", self.prof))
+            notes.append("Cogneur lourd : + bonus de maîtrise aux dégâts (action Attaquer)")
         if two_hand and self.style_active("Armes à deux mains"):
             notes.append("Armes à deux mains : relancez les 1 et 2 aux dés de dégâts")
         if "legere" in props and self.style_active("Combat à deux armes"):
@@ -1596,7 +1620,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             if not any(norm(f["nom"]).startswith(self.MASTERY_FEATURES) and f["debloque"] for f in self.features(e)):
                 continue
             best = max(best, int(self.table_row(e["nom"], e["niveau"]).get("maitrise_des_armes") or 2))
-        return best
+        return best + self.feat_passive("maitrise_armes")      # don Maître d'armes (2024)
 
     def mastery_candidates(self) -> list[str]:
         """Armes maîtrisées qui ont une botte (choix proposés)."""
@@ -2387,6 +2411,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         for key in self.invocation_short_rest_keys():    # Tombe de Levistus, Voile de mouches, Regard fantomatique
             self.ch.ressources_utilisees.pop(key, None)
         for key in self.class_tile_short_rest_keys():    # v39 : aptitudes de classe rechargées au repos court
+            self.ch.ressources_utilisees.pop(key, None)
+        self.short_rest_class_recovery()                 # v52 : Restauration d'ensorceleur (2024)
+        for key in self.feat_short_rest_keys():          # v52 : dons (Faveur du destin, Figure de proue…)
             self.ch.ressources_utilisees.pop(key, None)
         for tr in self.race_action_trackers():           # capacités de race rechargées au repos court
             if tr["recover"] == "repos court":
