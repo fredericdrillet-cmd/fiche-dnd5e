@@ -24,6 +24,7 @@ from typing import Optional
 
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 ELDRITCH_BLAST = "Décharge occulte"
 HEX = "Maléfice"
@@ -46,7 +47,7 @@ class InvocationsMixin:
         if self.knows_spell(HEX):
             return True
         e = self.ch.find_class("Occultiste")
-        return bool(e and "lame maudite" in norm(e.get("sous_classe", "")))
+        return bool(e and "lame maudite" in sub_norm_of(e))
 
     def invocation_prereq_issue(self, m: dict) -> str:
         """Prérequis de sort ou condition spéciale non remplis : raison (vide si tout va bien)."""
@@ -468,6 +469,10 @@ class InvocationsMixin:
                 (self.casters()[0] if self.casters() else None)
             if caster:
                 heal = R.add_flat(heal, caster["mod"])
+        life = self.life_disciple_bonus(spell, sc["niveau"]) if heal else 0
+        if life:                                         # v52 : Disciple de la vie (+2 + niveau du sort)
+            heal = R.add_flat(heal, life)
+            bonus = list(bonus) + [("Disciple de la vie", life)]
         count, plvl = self.pact()
         return {"niveau": sc["niveau"], "base": int(spell["niveau"]), "surclasse": sc["niveau"] > int(spell["niveau"]),
                 "pacte": bool(count) and sc["niveau"] == plvl and default == plvl,

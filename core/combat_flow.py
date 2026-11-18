@@ -24,6 +24,7 @@ from . import dice as D
 from . import effects as FX
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 # manœuvre -> (flux, type d'action) ; flux : « attaque » (attaque d'arme + dé aux dégâts), « precise » (dé ajouté au
 # jet d'attaque), « riposte » (attaque d'arme en réaction + dé), « de » (seul le dé est lancé)
@@ -136,7 +137,7 @@ class CombatFlowMixin:
             return None
         always, conditional = self.damage_riders()
         cls_always, cls_once = self.class_weapon_riders(slot)       # v52 : Frappes radiantes, Frappe divine…
-        always, conditional = always + cls_always, conditional + cls_once
+        always, conditional = always + cls_always, conditional + cls_once + self.subclass_weapon_riders()
         formula = st["degats"]
         notes = []
         for label, dice in always:
@@ -165,7 +166,7 @@ class CombatFlowMixin:
     # ------------------------------------------------------------------ Maître de guerre : manœuvres
     def battle_master_level(self) -> int:
         e = self.ch.find_class("Guerrier")
-        return e["niveau"] if e and e["niveau"] >= 3 and norm(e.get("sous_classe", "")) == "maitre de guerre" else 0
+        return e["niveau"] if e and e["niveau"] >= 3 and sub_norm_of(e) == "maitre de guerre" else 0
 
     def maneuver_option_set(self) -> Optional[dict]:
         lvl = self.battle_master_level()

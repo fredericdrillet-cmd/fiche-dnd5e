@@ -150,6 +150,11 @@ class CombatTab(BaseTab):
         death.addWidget(make_label("échecs"))
         for b in self.ko_boxes:
             death.addWidget(b)
+        self.death_btn = QPushButton("🎲 Jet contre la mort")      # v52 : résultat appliqué automatiquement
+        self.death_btn.setToolTip(rich_tip("Jet contre la mort", "d20 : 10 ou plus = réussite, moins = échec ; "
+                                           "1 naturel = deux échecs ; 20 naturel = vous reprenez 1 PV. Disponible à "
+                                           "0 PV ; les cases se cochent toutes seules."))
+        death.addWidget(self.death_btn)
         g.addLayout(death, 5, 0, 1, 2)
         rest = QHBoxLayout()
         self.short_btn = QPushButton("🔥 Repos court…")
@@ -402,6 +407,7 @@ class CombatTab(BaseTab):
             b.toggled.connect(lambda _=False: self._on_death())
         for b in self.ko_boxes:
             b.toggled.connect(lambda _=False: self._on_death())
+        self.death_btn.clicked.connect(self._on_death_save)
         self.short_btn.clicked.connect(lambda: self._on_rest("short"))
         self.long_btn.clicked.connect(lambda: self._on_rest("long"))
         self.fx_cat.activated.connect(lambda _=0: self._fill_fx_picker())
@@ -776,6 +782,13 @@ class CombatTab(BaseTab):
     # ------------------------------------------------------------------ handlers
     def _set(self, attr: str, value):
         setattr(self.ch, attr, value)
+        self.changed()
+
+    def _on_death_save(self):
+        r = roll_dice(self.win, self.engine.death_save_spec())
+        if r is None:
+            return
+        self.win.statusBar().showMessage(self.engine.apply_death_save(r.natural, r.total), 10000)
         self.changed()
 
     def _on_death(self):
@@ -1808,6 +1821,7 @@ class CombatTab(BaseTab):
                 b.setChecked(i < ch.mort_reussites)
             for i, b in enumerate(self.ko_boxes):
                 b.setChecked(i < ch.mort_echecs)
+        self.death_btn.setEnabled(ch.pv_actuels == 0 and not form)
         self.hit_dice.setText("Dés de vie restants : " + ", ".join(
             "{} / {} {}".format(p["restants"], p["total"], p["de"]) for p in eng.hit_dice_pool())
             + " — dépensez-les lors d'un repos court. PV max calculés avec la valeur moyenne fixe des dés de vie.")

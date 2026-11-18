@@ -252,7 +252,8 @@ class ExtrasMixin:
                 out.append((FX.EFFECTS[k]["nom"], m))
         out += self.order_modifiers()                    # v52 : Thaumaturge / Magicien (2024)
         out += self.feat_modifiers()                     # v52 : dons (PV max, résistances…)
-        out += self.class_modifiers()                    # v52 : Sens du danger, Pureté du corps
+        out += self.class_modifiers()                    # v52 : Sens du danger
+        out += self.subclass_modifiers()                 # v52 : résistances et auras de sous-classe
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = M.item_mech(entry.get("nom", ""))
@@ -764,6 +765,10 @@ class ExtrasMixin:
             dist = float(m.group(1).replace(",", ".")) if m else 18.0
             if dist > best:
                 best, src, text = dist, c["nom"], c.get("description", "")
+        sub_dv = self.subclass_darkvision()              # v52 : Vision ombreuse (Traqueur des ténèbres)
+        if sub_dv:
+            gain = sub_dv if (best == 0 or self._ed24) else 9.0
+            best, src = best + gain if best else sub_dv, "Vision ombreuse (Traqueur des ténèbres)"
         if "vision_noir" in self.ch.effets_actifs and best < 18:
             best, src, text = 18.0, "Sort « Vision dans le noir »", "La cible voit dans les ténèbres jusqu'à 18 m."
         magic = False
@@ -862,8 +867,12 @@ class ExtrasMixin:
         fx = self.attack_mods()
         note = "Dégâts si le coup porte : {} {}{}".format(
             st["degats"], st["type_degats"], " (critique : doublez les dés)" if st["degats"] else "")
-        return D.spec_from_detail("Attaque — " + st.get("affichage", st["nom"]), "attaque", detail + fx["detail"],
+        spec = D.spec_from_detail("Attaque — " + st.get("affichage", st["nom"]), "attaque", detail + fx["detail"],
                                   fx["avantage"], fx["desavantage"], fx["echec"], note)
+        spec.crit_min = self.crit_min()                  # v52 : Champion (19-20, puis 18-20)
+        if spec.crit_min < 20:
+            spec.note += " — critique sur {}-20".format(spec.crit_min)
+        return spec
 
     def weapon_action_spec(self, slot: dict, row: dict) -> Optional["D.RollSpec"]:
         """Jet d'attaque d'une action / botte d'arme : attaque normale de l'arme + rappel de l'effet et du DD."""
@@ -1061,9 +1070,13 @@ class ExtrasMixin:
         if self.ch.forme_active:
             return self.damage_form(amount)
         ch = self.ch
+        if ch.pv_actuels == 0 and amount > 0 and not ch.pv_temporaires:
+            return self.death_damage()
         absorbed = min(ch.pv_temporaires, amount)
         ch.pv_temporaires -= absorbed
-        ch.pv_actuels = max(0, (ch.pv_actuels if ch.pv_actuels >= 0 else self.hp_max()) - (amount - absorbed))
+        before = ch.pv_actuels if ch.pv_actuels >= 0 else self.hp_max()
+        overflow = (amount - absorbed) - before                    # dégâts au-delà de 0 PV
+        ch.pv_actuels = max(0, before - (amount - absorbed))
         text = "{} dégât(s) subi(s)".format(amount) + (
             " dont {} absorbé(s) par les PV temporaires".format(absorbed) if absorbed else "")
         if ch.concentration and amount > 0:
@@ -1076,8 +1089,46 @@ class ExtrasMixin:
         if ch.pv_actuels == 0:
             if "inconscient" in FX.EFFECTS:
                 self.add_effect("inconscient")
-            text += ". Vous tombez à 0 PV : jets contre la mort"
+            text += ". Vous tombez à 0 PV : jets contre la mort" if overflow < self.hp_max() else \
+                ". Mort instantanée : les dégâts restants ({}) atteignent votre maximum de PV".format(overflow)
         return text + "."
+
+    # ---- v52 : jet contre la mort ------------------------------------------------------------
+    def death_save_spec(self) -> "D.RollSpec":
+        """Jet contre la mort : d20 sans modificateur ; avantage avec le don Gaillard (2024)."""
+        fx = self.save_mods("mort") if hasattr(self, "save_mods") else {"avantage": [], "desavantage": []}
+        adv = list(fx.get("avantage", [])) + ["Don : " + f for f in self.feat_flag("mort_avantage")]
+        return D.spec_from_detail("Jet contre la mort", "sauvegarde", [], adv, list(fx.get("desavantage", [])), (),
+                                  "10 ou plus : réussite ; 1 : deux échecs ; 20 : vous reprenez 1 PV.")
+
+    def apply_death_save(self, natural: int, total: Optional[int] = None) -> str:
+        """Applique le résultat d'un jet contre la mort (20 naturel : 1 PV ; 1 naturel : 2 échecs)."""
+        ch = self.ch
+        total = natural if total is None else total
+        if natural == 20:
+            ch.pv_actuels = max(1, ch.pv_actuels)
+            ch.mort_reussites = ch.mort_echecs = 0
+            if "inconscient" in ch.effets_actifs:
+                self.remove_effect("inconscient")
+            return "20 naturel : vous reprenez connaissance avec 1 PV."
+        if natural == 1:
+            ch.mort_echecs = min(3, ch.mort_echecs + 2)
+        elif total >= 10:
+            ch.mort_reussites = min(3, ch.mort_reussites + 1)
+        else:
+            ch.mort_echecs = min(3, ch.mort_echecs + 1)
+        if ch.mort_echecs >= 3:
+            return "Troisième échec : le personnage meurt."
+        if ch.mort_reussites >= 3:
+            ch.mort_reussites = ch.mort_echecs = 0
+            return "Troisième réussite : vous êtes stabilisé (0 PV, inconscient ; 1 PV après 1d4 heures)."
+        return "Jet contre la mort : {} — réussites {} / 3, échecs {} / 3.".format(
+            total, ch.mort_reussites, ch.mort_echecs)
+
+    def death_damage(self) -> str:
+        """Dégâts subis à 0 PV : un échec (deux sur un coup critique, à cocher à la main)."""
+        self.ch.mort_echecs = min(3, self.ch.mort_echecs + 1)
+        return "Dégâts à 0 PV : un échec au jet contre la mort ({} / 3).".format(self.ch.mort_echecs)
 
     def receive_healing(self, amount: int) -> str:
         """Soins reçus (forme sauvage d'abord) ; sortir de 0 PV remet les jets contre la mort à zéro."""

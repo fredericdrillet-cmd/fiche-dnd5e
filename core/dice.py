@@ -37,6 +37,7 @@ class RollSpec:
     desavantage: list[str] = field(default_factory=list)
     echec: list[str] = field(default_factory=list)
     note: str = ""                                       # ex. « Dégâts en cas de réussite : 1d8+3 tranchants »
+    crit_min: int = 20                                   # v52 : critique dès 19 ou 18 (Champion)
 
     @property
     def flat(self) -> int:
@@ -83,7 +84,7 @@ def roll_d20(spec: RollSpec, rng=None) -> RollResult:
     natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
     values = [roll_die_expr(t.dice, rng) if t.dice else t.value for t in spec.terms]
     total = natural + sum(values)
-    crit = "succes" if natural == 20 else "echec" if natural == 1 else ""
+    crit = "succes" if natural >= getattr(spec, "crit_min", 20) else "echec" if natural == 1 else ""
     return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec")
 
 

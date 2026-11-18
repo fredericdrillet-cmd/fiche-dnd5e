@@ -43,7 +43,7 @@ class QuickHpTests(unittest.TestCase):
     def test_zero_hp_and_concentration(self):
         eng = make()
         eng.ch.concentration = "Bénédiction"
-        msg = eng.apply_hp_input("999")
+        msg = eng.apply_hp_input(str(eng.hp_max() + 1))
         self.assertIn("DD", msg)
         self.assertIn("0 PV", msg)
         self.assertIn("inconscient", eng.ch.effets_actifs)

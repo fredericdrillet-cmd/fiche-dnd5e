@@ -185,3 +185,72 @@ class UiSmoke(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DeathSaveTests(unittest.TestCase):
+    def test_death_saves_applied(self):
+        eng = sheet("Guerrier", 3, "2014")
+        eng.ch.pv_actuels = 5
+        eng.take_damage(8)
+        eng.apply_death_save(12)
+        self.assertEqual(eng.ch.mort_reussites, 1)
+        eng.apply_death_save(1)
+        self.assertEqual(eng.ch.mort_echecs, 2)
+        eng.take_damage(3)                                  # dégâts à 0 PV : un échec
+        self.assertEqual(eng.ch.mort_echecs, 3)
+        eng.apply_death_save(20)
+        self.assertEqual((eng.ch.pv_actuels, eng.ch.mort_echecs), (1, 0))
+        eng.ch.pv_actuels = 5
+        self.assertIn("Mort instantanée", eng.take_damage(5 + eng.hp_max()))
+
+    def test_durable_advantage(self):
+        eng = sheet("Guerrier", 4)
+        self.assertEqual(eng.death_save_spec().mode, "")
+        give(eng, "Gaillard", "Constitution")
+        self.assertEqual(eng.death_save_spec().mode, "avantage")
+
+
+class SubclassTests(unittest.TestCase):
+    def test_always_prepared_2024(self):
+        eng = sheet("Clerc", 5)
+        eng.ch.classes[0]["sous_classe"] = "Domaine de la vie"
+        eng.normalize()
+        self.assertIn("Retour à la vie (2024)", eng.domain_spells(eng.ch.classes[0]))
+        land = sheet("Druide", 3)
+        land.ch.classes[0]["sous_classe"] = "Cercle de la terre"
+        land.normalize()
+        self.assertEqual(sorted(land.land_terrains(land.ch.classes[0])), ["Aride", "Polaire", "Tempérée", "Tropicale"])
+        self.assertEqual(len(land.domain_spells(land.ch.classes[0])), 3)
+
+    def test_renamed_subclasses_keep_mechanics(self):
+        rogue = sheet("Roublard", 3)
+        rogue.ch.classes[0]["sous_classe"] = "Âme acérée"
+        rogue.normalize()
+        self.assertIn("psionique", {t["key"] for t in rogue.resource_trackers()})
+
+    def test_champion_crit_and_fiend(self):
+        champ = sheet("Guerrier", 15)
+        champ.ch.classes[0]["sous_classe"] = "Champion"
+        champ.normalize()
+        spec = champ.weapon_attack_spec({"nom": "Épée longue", "bonus": 0, "maitrise": None})
+        self.assertEqual(spec.crit_min, 18)
+        from core import dice as D
+        class Rng:
+            def randint(self, a, b):
+                return 18 if b == 20 else 1
+        self.assertEqual(D.roll_d20(spec, Rng()).critical, "succes")
+        fiend = sheet("Occultiste", 10)
+        fiend.ch.classes[0]["sous_classe"] = "Protecteur Fiélon"
+        fiend.normalize()
+        fiend.ch.options_classe = {"resistance_fielonne": ["feu"]}
+        self.assertIn("feu", [t for t, _ in fiend.defenses()["resistances"]])
+
+    def test_spells_2024_have_rules(self):
+        self.assertEqual((DB.find_spell("Boule de feu (2024)")["test"], DB.find_spell("Boule de feu (2024)")["sup"]),
+                         ("Dex", "1d6"))
+        cure = DB.find_spell("Soins (2024)")
+        self.assertEqual((cure["soins"], cure.get("soins_mod")), ("2d8", True))
+        life = sheet("Clerc", 3)
+        life.ch.classes[0]["sous_classe"] = "Domaine de la vie"
+        life.normalize()
+        self.assertIn("Disciple de la vie", [b[0] for b in life.spell_values("Soins (2024)")["bonus"]])

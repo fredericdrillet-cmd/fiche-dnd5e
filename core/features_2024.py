@@ -11,6 +11,8 @@ Aptitudes 2024 au mécanisme nouveau (v52) — logique pure, mélangée à Engin
 """
 from __future__ import annotations
 
+from .rules import norm as _norm_early
+
 INNATE = "sorcellerie_innee"
 
 # classe -> (clé de l'ensemble de choix, libellé, {option: (description, armures, armes, compétences)})
@@ -26,6 +28,23 @@ ORDERS_2024 = {
         "Magicien": ("Un tour de magie de druide supplémentaire ; bonus égal au modificateur de Sagesse (minimum "
                      "+1) aux tests d'Intelligence (Arcanes ou Nature).", [], [], ("Arcanes", "Nature"))}),
 }
+
+
+# sous-classe 2024 -> sous-classe 2014 équivalente (noms normalisés) : les mécanismes 2014 (tuiles, compteurs,
+# dés psioniques, incantation…) reconnaissent ainsi les sous-classes 2024 renommées
+SUBCLASS_EQUIV_2024 = {
+    "ame aceree": "lame psychique", "escroc arcanique": "arnaqueur arcanique",
+    "abjurateur": "ecole d'abjuration", "devin": "ecole de divination", "evocateur": "ecole d'evocation",
+    "illusionniste": "ecole d'illusion", "domaine de la duperie": "domaine de la ruse",
+    "credo de l'ombre": "voie de l'ombre", "credo de la paume": "voie de la paume",
+    "credo de la misericorde": "voie de la misericorde", "credo des elements": "voie des quatre elements",
+    "vagabond feerique": "vagabond feerique",
+}
+
+
+def sub_norm_of(entry: dict) -> str:
+    n = _norm_early((entry or {}).get("sous_classe", ""))
+    return SUBCLASS_EQUIV_2024.get(n, n)
 
 
 class Features2024Mixin:
@@ -128,3 +147,88 @@ class FeatPrereq2024Mixin:
                 continue
             unknown = True
         return ("?", text) if unknown else ("ok", "")
+
+
+# ---------------------------------------------------------------------- sorts de sous-classe 2024
+SUBCLASS_TIERS_2024 = {"Clerc": [3, 5, 7, 9], "Druide": [3, 5, 7, 9], "Ensorceleur": [3, 5, 7, 9],
+                       "Occultiste": [3, 5, 7, 9], "Paladin": [3, 5, 9, 13, 17], "Rôdeur": [3, 5, 9, 13, 17]}
+_SPELL_INDEX: dict = {}
+# noms des sorts dans les textes 2024 -> nom de la bibliothèque (traductions différentes)
+SPELL_ALIASES_2024 = {
+    "foulee arboricole": "Passage par les arbres", "deplacement par les arbres": "Passage par les arbres",
+    "fontaine de clair de lune": "Fontaine de lune", "rafale de vent": "Bourrasque",
+    "conjuration d'elementaire": "Invocation d'élémentaire", "bras d'hadar": "Tentacules de Hadar",
+    "famine d'hadar": "Voracité de Hadar", "message a distance": "Communication à distance",
+    "protection contre l'energie": "Protection contre une énergie",
+    "convocation de creature artificielle": "Convocation d'artificiel",
+    "changement d'apparence": "Modification d'apparence", "terreur": "Peur",
+    "connaissance des legendes": "Mythes et légendes", "eclair guide": "Éclair traçant",
+    "trait guideur": "Éclair traçant", "revigoration": "Retour à la vie", "contrainte": "Compulsion",
+    "croissance des plantes": "Croissance végétale",
+}
+
+
+def _spell_names(db) -> list[tuple[str, str]]:
+    """[(nom normalisé sans « (2024) », nom de base)] triés du plus long au plus court."""
+    key = id(db)
+    if key not in _SPELL_INDEX:
+        names = {}
+        for n in db.spells:
+            base = _re.sub(r"\s*\(2024\)$", "", n)
+            names[_norm(base).replace("’", "'")] = base
+        names.update({k: v for k, v in SPELL_ALIASES_2024.items() if v in db.spells})
+        _SPELL_INDEX[key] = sorted(names.items(), key=lambda kv: -len(kv[0]))
+    return _SPELL_INDEX[key]
+
+
+def _read_spells(chunk: str, index, db=None) -> list[str]:
+    """Sorts d'une case de table : séparés par des virgules ; le dernier peut être suivi d'un autre texte."""
+    out = []
+    pieces = [p for p in _re.split(r"[,;]", chunk) if p.strip()]
+    for k, piece in enumerate(pieces):
+        text = _norm(piece).replace("’", "'").strip(" ./|:\n\t")
+        hit = next((base for n, base in index if text == n), None)
+        if hit is None:                                   # nom suivi d'autre chose (« Double illusoire Vous… »)
+            hit = next((base for n, base in index if text.startswith(n) and len(n) >= 4 and
+                        (len(text) == len(n) or not text[len(n)].isalnum())), None)
+        if hit is None:
+            if k == 0 or len(text.split()) > 6:
+                break
+            continue                                      # sort absent de la bibliothèque : ignoré
+        out.append(hit)
+    return out
+
+
+def parse_tier_spells(text: str, tiers: list[int], index, db=None) -> list[tuple[int, list[str]]]:
+    """Table « niveau de classe → sorts » d'une aptitude 2024, quel que soit son format."""
+    marks = [(m.start(), m.end(), int(m.group(1))) for m in _re.finditer(r"(?<![\w-])(\d{1,2})\s*[:|]?\s+", text)]
+    out, want = [], 0
+    for i, (s, e, n) in enumerate(marks):
+        if want >= len(tiers) or n != tiers[want]:
+            continue
+        nxt = next((m[0] for m in marks[i + 1:] if want + 1 < len(tiers) and m[2] == tiers[want + 1]), len(text))
+        spells = _read_spells(text[e:nxt], index, db)
+        if spells:
+            out.append((n, spells))
+            want += 1
+    return out
+
+
+def subclass_spells_2024(db, cls: str, sub: dict) -> dict[str, list[tuple[int, list[str]]]]:
+    """{terrain ou "": [(niveau, [sorts])]} des sorts toujours préparés d'une sous-classe 2024."""
+    tiers = SUBCLASS_TIERS_2024.get(cls)
+    if not tiers or not sub:
+        return {}
+    index = _spell_names(db)
+    for f in sub.get("capacites", []):
+        if not _norm(f.get("nom", "")).startswith("sorts") or "psychiques" in _norm(f["nom"]):
+            continue
+        text = f.get("description", "")
+        parts = _re.split(r"\n\s*TERRE ([A-ZÉÈÀÂÎÔÛ]+)\s*\n", text)
+        if len(parts) > 1:                                  # Cercle de la Terre : une table par type de terre
+            return {parts[i].capitalize(): parse_tier_spells(parts[i + 1], tiers, index, db)
+                    for i in range(1, len(parts) - 1, 2)}
+        table = parse_tier_spells(text, tiers, index, db)
+        if table:
+            return {"": table}
+    return {}

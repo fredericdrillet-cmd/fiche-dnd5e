@@ -19,6 +19,7 @@ from typing import Optional
 from . import dice as D
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 # clé de ressource -> (libellé, icône de sphère (OrbBar), récupération)
 CLASS_RESOURCES = {
@@ -102,7 +103,7 @@ class ClassActionsMixin:
         out = []
         ftr = self.class_level("Guerrier")
         entry = self.ch.find_class("Guerrier")
-        if ftr >= 3 and entry and norm(entry.get("sous_classe", "")) == norm("Maître de guerre"):
+        if ftr >= 3 and entry and sub_norm_of(entry) == norm("Maître de guerre"):
             n, sides = superiority(ftr)
             out.append(self._tracker("superiorite", n, "{} dés de supériorité (d{}) — DD des manœuvres {} — "
                                      "récupérés au repos court".format(n, sides, self.maneuver_dc()),
@@ -125,7 +126,7 @@ class ClassActionsMixin:
                 bardic_die(bard), "repos court" if bard >= 5 else "repos long"),
                 recover="repos court" if bard >= 5 else "repos long", de="d{}".format(bardic_die(bard))))
         rogue = self.ch.find_class("Roublard")
-        if rogue and rogue["niveau"] >= 3 and norm(rogue.get("sous_classe", "")).startswith("lame psychique"):
+        if rogue and rogue["niveau"] >= 3 and sub_norm_of(rogue).startswith("lame psychique"):
             sides = psionic_die(rogue["niveau"])
             out.append(self._tracker("psionique", 2 * self.prof, "{} dés d'énergie psionique (d{}) = 2 × bonus de "
                                      "maîtrise — tous récupérés au repos long".format(2 * self.prof, sides),
@@ -137,7 +138,7 @@ class ClassActionsMixin:
             out.append(dict(self._tracker("psi_recup", 1, "Action bonus : récupérer 1 dé (1 / repos court)"),
                             where="interne"))
         wiz = self.ch.find_class("Magicien")
-        if wiz and wiz["niveau"] >= 2 and "chantelame" in norm(wiz.get("sous_classe", "")):
+        if wiz and wiz["niveau"] >= 2 and "chantelame" in sub_norm_of(wiz):
             out.append(self._tracker("chant_lame", self.prof, "Activations : bonus de maîtrise ({}) — CA + mod. d'INT, "
                                      "+3 m de vitesse, avantage en Acrobaties — repos long".format(self.prof)))
         out += self.subclass_trackers()                  # runes, Puissance des géants, dés psi, Tir arcanique
@@ -189,7 +190,7 @@ class ClassActionsMixin:
                 continue
             if a.get("sous_classe"):
                 entry = self.ch.find_class(a["classe"])
-                if not entry or norm(entry.get("sous_classe", "")) != norm(a["sous_classe"]):
+                if not entry or norm(a["sous_classe"]) not in (sub_norm_of(entry), norm(entry.get("sous_classe", ""))):
                     continue
             if a["id"] == "manoeuvre" and maneuvers:
                 for m in maneuvers:

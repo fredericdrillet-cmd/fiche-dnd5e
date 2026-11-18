@@ -21,6 +21,7 @@ import re
 from typing import Optional
 
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 RUNE_DC = "DD des runes : 8 + bonus de maîtrise + modificateur de Constitution"
 RUNES = {
@@ -121,7 +122,7 @@ class SubclassFeaturesMixin:
     def _fighter_sub(self, name: str) -> int:
         """Niveau de Guerrier si la sous-classe `name` est choisie et active (niveau 3+), sinon 0."""
         e = self.ch.find_class("Guerrier")
-        if not e or e["niveau"] < 3 or norm(e.get("sous_classe", "")) != norm(name):
+        if not e or e["niveau"] < 3 or sub_norm_of(e) != norm(name):
             return 0
         return e["niveau"]
 
@@ -151,6 +152,7 @@ class SubclassFeaturesMixin:
             out.append(meta)
         out += self.order_option_sets()                  # v52 : Ordre divin / Ordre primitif (2024)
         out += self.class_option_sets()                  # v52 : Connaissance primitive, Frappes bénies, Fureur…
+        out += self.subclass_option_sets()               # v52 : Résistance fiélonne, Maîtrises supplémentaires
         out += self.feat_option_sets()                   # v52 : choix des dons (compétences, sorts, résistances…)
         return out
 
@@ -232,7 +234,7 @@ class SubclassFeaturesMixin:
         e = self.ch.find_class(class_name)
         if not e or e["niveau"] < 3:
             return None
-        schools = SCHOOL_RULES.get((class_name, norm(e.get("sous_classe", ""))))
+        schools = SCHOOL_RULES.get((class_name, sub_norm_of(e)))
         if not schools:
             return None
         free_max = sum(1 for lvl in FREE_SCHOOL_LEVELS if e["niveau"] >= lvl)
@@ -266,7 +268,7 @@ class SubclassFeaturesMixin:
     def ensure_granted_cantrips(self) -> None:
         """Arnaqueur arcanique : Main de mage connue d'office (retirée si la sous-classe est quittée)."""
         rogue = self.ch.find_class("Roublard")
-        at = bool(rogue and rogue["niveau"] >= 3 and norm(rogue.get("sous_classe", "")) in
+        at = bool(rogue and rogue["niveau"] >= 3 and sub_norm_of(rogue) in
                   ("arnaqueur arcanique", "escroc arcanique"))
         lst = self.ch.sorts.get("Roublard", [])
         if at and self.db.find_spell(MAGE_HAND) and not any(s["nom"] == MAGE_HAND for s in lst):
@@ -351,7 +353,7 @@ class SubclassFeaturesMixin:
                                      "concentrez, une attaque d'arme par une action bonus à chaque tour (gratuit une "
                                      "fois par repos long, sinon 1 dé).", niveau=18, sous_classe=sc))
         rogue = self.ch.find_class("Roublard")
-        if rogue and rogue["niveau"] >= 3 and norm(rogue.get("sous_classe", "")) in ("arnaqueur arcanique",
+        if rogue and rogue["niveau"] >= 3 and sub_norm_of(rogue) in ("arnaqueur arcanique",
                                                                                       "escroc arcanique"):
             out.append(self._act("main_arcanique", "Main de mage arcanique", "🫳", "Action bonus", {},
                                  "Passe-passe à distance : vous contrôlez votre Main de mage par une action bonus. Elle "

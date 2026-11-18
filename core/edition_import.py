@@ -154,10 +154,31 @@ def _merge_spells(db, cat, stats):
                    "classes": list(s.get("classes") or [])}
             sp = normalize_spell(raw, {})
             sp.update(edition=ed, source=_source(s), id=s.get("id", ""))
+            if ed == 2024:                                   # v52 : soins, JS, surclassement des sorts 2024
+                _enrich_2024(sp, db.spells.get(re.sub(r"\s*\(2024\)$", "", sp["nom"])))
             if sp.get("test") and not sp.get("js_succes"):
                 sp["js_succes"] = "aucun" if int(sp.get("niveau") or 0) == 0 else "moitie"
             db.spells[sp["nom"]] = sp
             stats["sorts"] += 1
+
+
+def _enrich_2024(sp: dict, twin: Optional[dict]) -> None:
+    """Complète un sort 2024 : règles lues dans son texte, puis règles auditées du sort 2014 équivalent pour ce que le
+    texte ne donne pas (projectiles, modificateur aux dégâts, échelle des tours de magie…)."""
+    from .rules import SPELL_RULE_KEYS, parse_spell_mechanics_2024
+    parsed = parse_spell_mechanics_2024(sp.get("description", ""))
+    for k, v in parsed.items():
+        if k == "test" and sp.get("test") in ("A", "AC", "Arme"):
+            continue
+        sp[k] = v
+    if twin and str(twin.get("edition", 2014)) != "2024" and int(twin.get("niveau") or 0) == int(sp.get("niveau") or 0):
+        for k in SPELL_RULE_KEYS:
+            if twin.get(k) not in (None, "", False) and sp.get(k) in (None, "", False):
+                sp[k] = twin[k]
+        if sp.get("degats") and str(twin.get("degats", "")).replace(" ", "").startswith(sp["degats"] + "+"):
+            sp["degats"] = twin["degats"]                    # « 1d4 + 1 » (Projectile magique)
+    if sp.get("test") in ("A", "AC", "Arme"):
+        sp["js_succes"] = "aucun"
 
 
 def _merge_feats(db, cat, stats):

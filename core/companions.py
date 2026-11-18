@@ -21,6 +21,7 @@ from typing import Optional
 from . import dice as D
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 TYPE_LABELS = {"familiar": "Familiers", "class_companion": "Compagnons de classe", "summons": "Invocations",
                "mount": "Montures"}
@@ -150,7 +151,7 @@ class CompanionsMixin:
     def auto_entities(self) -> dict[str, bool]:
         """Entités ajoutées d'office : {id: condition remplie}."""
         druid = self.ch.find_class("Druide")
-        wildfire = bool(druid and druid["niveau"] >= 2 and "fournaise" in norm(druid.get("sous_classe", "")))
+        wildfire = bool(druid and druid["niveau"] >= 2 and "fournaise" in sub_norm_of(druid))
         return {"esprit_feu_sauvage": wildfire}
 
     def companion_hints(self) -> list[dict]:
@@ -160,7 +161,7 @@ class CompanionsMixin:
 
         def sub_of(cls: str) -> tuple[int, str]:
             e = self.ch.find_class(cls)
-            return (e["niveau"], norm(e.get("sous_classe", ""))) if e else (0, "")
+            return (e["niveau"], sub_norm_of(e)) if e else (0, "")
 
         rules = []
         lvl, sub = sub_of("Rôdeur")

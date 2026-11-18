@@ -194,3 +194,95 @@ class ClassAutoMixin:
                         "kind": "sursaut", "recover": "repos long", "where": "interne", "de": "",
                         "info": "Points de sorcellerie récupérés au repos court — une fois par repos long"})
         return out
+
+    # ================================================================== sous-classes (2014 et 2024)
+    def _has(self, *frags: str) -> bool:
+        names = [n for n in self.unlocked_feature_names() if "option tasha" not in n]
+        return any(norm(f) in n for f in frags for n in names)
+
+    def crit_min(self) -> int:
+        """Plus petit résultat naturel critique des attaques d'arme (Champion : 19, puis 18)."""
+        if self._has("critique superieur"):
+            return 18
+        if self._has("critique ameliore"):
+            return 19
+        return 20
+
+    def subclass_initiative(self) -> tuple[list[tuple[str, int]], list[str]]:
+        terms, adv = [], []
+        if self._has("embuscade effrayante"):            # 2014 « Embusqué redoutable » : core/initiative.py
+            terms.append(("Embuscade effrayante (Sagesse)", self.mod("Sagesse")))
+        if self._ed24 and self._has("athlete accompli"):
+            adv.append("Athlète accompli")
+        if self._ed24 and self.class_level("Roublard") >= 3 and self._has("assassinat"):
+            adv.append("Assassinat")
+        return terms, adv
+
+    def subclass_save_profs(self) -> set[str]:
+        if self._has("mental d'acier", "esprit de fer"):
+            have = {ab for ab, v in self.ch.sauvegardes.items() if v}
+            return {"Sagesse"} if "Sagesse" not in have else {"Intelligence"}
+        return set()
+
+    FIENDISH_TYPES = ["acide", "contondant", "feu", "foudre", "froid", "nécrotique", "perforant", "poison",
+                      "psychique", "radiant", "tonnerre", "tranchant"]
+
+    def subclass_modifiers(self) -> list[tuple[str, dict]]:
+        out = []
+        if self._has("defenses psychiques", "bouclier mental"):
+            out.append(("Défenses psychiques" if self._has("defenses psychiques") else "Bouclier mental",
+                        {"resistances": ["psychique"]}))
+        if self._has("ame radieuse", "ame rayonnante"):
+            out.append(("Âme radieuse", {"resistances": ["radiant"]}))
+        if self._has("resistance fielonne"):
+            pick = (self.ch.options_classe or {}).get("resistance_fielonne", [])[:1]
+            if pick:
+                out.append(("Résistance fiélonne", {"resistances": pick}))
+        if self._has("aura de celerite", "aura d'alacrite"):
+            out.append(("Aura de célérité", {"vitesse_bonus": 3.0}))
+        return out
+
+    def subclass_option_sets(self) -> list[dict]:
+        out = []
+        if self._has("resistance fielonne"):
+            out.append({"key": "resistance_fielonne", "label": "Résistance fiélonne (type de dégâts, après un repos)",
+                        "total": 1, "options": {t: "" for t in self.FIENDISH_TYPES},
+                        "chosen": list((self.ch.options_classe or {}).get("resistance_fielonne", []))[:1]})
+        bard = self.ch.find_class("Barde")
+        if bard and bard["niveau"] >= 3 and "savoir" in norm(bard.get("sous_classe", "")):
+            out.append({"key": "savoir_competences", "label": "Maîtrises supplémentaires (Collège du savoir)",
+                        "total": 3, "options": {s["nom"]: "" for s in self.db.skills},
+                        "chosen": list((self.ch.options_classe or {}).get("savoir_competences", []))[:3]})
+        return out
+
+    def subclass_skill_grants(self) -> set[str]:
+        out = set((self.ch.options_classe or {}).get("savoir_competences", [])[:3]) if any(
+            s["key"] == "savoir_competences" for s in self.subclass_option_sets()) else set()
+        if self._has("instruments de misericorde", "instrument de charite"):
+            out |= {"Perspicacité", "Médecine"}
+        return out
+
+    def subclass_darkvision(self) -> float:
+        """Vision dans le noir accordée (Vision ombreuse : 18 m, ou +18 m en 2024 / +9 m en 2014 si déjà acquise)."""
+        return 18.0 if self._has("vision ombreuse", "vision des ombres") else 0.0
+
+    def subclass_unarmored(self) -> dict:
+        """Défenses sans armure de sous-classe {libellé: [(terme, valeur)]} (Pirouettes éblouissantes)."""
+        if self._ed24 and self._has("pirouettes eblouissantes") and not self.ch.armure.get("bouclier"):
+            return {"Pirouettes éblouissantes (barde)": [("10", 10), ("Dex", self.mod("Dextérité")),
+                                                         ("Cha", self.mod("Charisme"))]}
+        return {}
+
+    def life_disciple_bonus(self, spell: dict, slot_level: int) -> int:
+        """Disciple de la vie : +2 + niveau du sort aux soins d'un sort de niveau 1+."""
+        if int(spell.get("niveau") or 0) >= 1 and self._has("disciple de la vie"):
+            return 2 + int(slot_level or spell["niveau"])
+        return 0
+
+    def subclass_weapon_riders(self) -> list[tuple[str, str]]:
+        """Dés ajoutés une fois par tour (Fureur divine du Zélote pendant la rage)."""
+        out = []
+        barb = self.class_level("Barbare")
+        if barb >= 3 and self._has("fureur divine") and "rage" in (self.ch.effets_actifs or []):
+            out.append(("Fureur divine (1/tour, radiants ou nécrotiques)", "1d6+{}".format(barb // 2)))
+        return out

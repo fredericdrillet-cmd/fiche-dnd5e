@@ -800,7 +800,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def save_rows(self) -> list[dict]:
         rows = []
         aura = max(0, self.mod("Charisme")) if self.class_level("Paladin") >= 6 else 0
-        res = self.resilient_saves() | self.auto_save_profs()      # v52 : Âme diamantée, Esprit fuyant…
+        res = self.resilient_saves() | self.auto_save_profs() | self.subclass_save_profs()   # v52 : Esprit fuyant…
         items = self.magic_item_bonuses()["js"]
         polymorph = self.ch.forme_type == "metamorphose" and bool(self.ch.forme_active)
         for ab in ABILITIES:
@@ -827,7 +827,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         remarkable = self.has_feature("athlete remarquable")
         beast_skills = self.beast_skills()
         feat_prof, feat_exp = self.feat_skill_grants()   # v52 : Doué, Expert, Observateur, Faveur de compétence…
-        granted_skills = self.invocation_skills() | feat_prof | self.class_skill_grants()
+        granted_skills = self.invocation_skills() | feat_prof | self.class_skill_grants() | self.subclass_skill_grants()
         rows = []
         for s in self.db.skills:
             name, ab = s["nom"], s["carac"]
@@ -1110,6 +1110,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             options = {"": [("10", 10), ("Dex", dex)]}
             if self.class_level("Barbare"):
                 options["Défense sans armure (barbare)"] = [("10", 10), ("Dex", dex), ("Con", self.mod("Constitution"))]
+            options.update(self.subclass_unarmored())    # v52 : Pirouettes éblouissantes (Collège de la Danse)
             if self.class_level("Moine") and not a.get("bouclier"):
                 options["Défense sans armure (moine)"] = [("10", 10), ("Dex", dex), ("Sag", self.mod("Sagesse"))]
             for e in self.ch.classes:
@@ -1700,6 +1701,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         « nom, niveau de sort » (Rôdeur). Les listes de sorts « d'école » ou « étendues » ne sont pas accordées.
         """
         sub = self.db.subclass(entry["nom"], self.active_subclass(entry))
+        if sub and str(sub.get("edition", "")) == "2024":           # v52 : tables des sous-classes 2024
+            tables = self.subclass_spell_tables(entry)
+            table = tables.get(self.land_terrain(entry)) if len(tables) > 1 else tables.get("", [])
+            return [self._edition_spell(n)["nom"] if self._edition_spell(n) else n
+                    for lvl, names in (table or []) if entry["niveau"] >= lvl for n in names]
         raw = list((sub or {}).get("sorts_domaine") or [])
         terrain = self.land_terrain(entry)
         if terrain:                                          # Cercle de la Terre : liste du terrain choisi
@@ -1716,9 +1722,16 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         tiers, per = cfg
         return cantrips + [n for i, n in enumerate(raw) if entry["niveau"] >= tiers[i // per]]
 
+    def subclass_spell_tables(self, entry: dict) -> dict:
+        from .features_2024 import subclass_spells_2024
+        return subclass_spells_2024(self.db, entry["nom"], self.db.subclass(entry["nom"], self.active_subclass(entry)))
+
     def land_terrains(self, entry: dict) -> dict:
         """Terrains proposés par la sous-classe (Cercle de la Terre) : {terrain: [sorts]} ; {} sinon."""
         sub = self.db.subclass(entry["nom"], self.active_subclass(entry))
+        if sub and str(sub.get("edition", "")) == "2024":           # v52 : Cercle de la Terre 2024
+            tables = self.subclass_spell_tables(entry)
+            return {t: [n for _, names in rows for n in names] for t, rows in tables.items()} if len(tables) > 1 else {}
         return dict((sub or {}).get("terrains") or {})
 
     def land_terrain(self, entry: dict) -> str:

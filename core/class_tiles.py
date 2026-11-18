@@ -19,6 +19,7 @@ import re
 from typing import Optional
 
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 LONG, SHORT = "repos long", "repos court"
 
@@ -421,7 +422,7 @@ class ClassTilesMixin:
         e = self.ch.find_class(t["classe"])
         if not e or e["niveau"] < t["niveau"]:
             return 0
-        if t["sc"] and t["sc"] not in norm(e.get("sous_classe", "")):
+        if t["sc"] and t["sc"] not in sub_norm_of(e):
             return 0
         return e["niveau"]
 

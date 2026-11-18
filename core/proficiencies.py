@@ -17,6 +17,7 @@ from . import rules as R
 from .data_loader import FEAT_PROFICIENCIES
 from .feat_effects import feat_base
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 FEAT_SOURCE = "Accordé par le Don : {}"
 
@@ -62,7 +63,7 @@ class ProficiencyMixin:
                             "armes": list(wpn), "mode": "multiclassage"})
         for cls, frag, lvl, arm, wpn in SUBCLASS_PROFS:
             e = self.ch.find_class(cls)
-            if e and e["niveau"] >= lvl and frag in norm(e.get("sous_classe", "")):
+            if e and e["niveau"] >= lvl and frag in sub_norm_of(e):
                 out.append({"source": "{} — {}".format(cls, e["sous_classe"]), "classe": cls, "armures": list(arm),
                             "armes": list(wpn), "mode": "sous_classe"})
         out += self.order_proficiency_sources()          # v52 : Ordre divin Protecteur / Ordre primitif Gardien

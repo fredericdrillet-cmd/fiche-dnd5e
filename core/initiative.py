@@ -47,6 +47,8 @@ class InitiativeMixin:
         for frag, ab, label, minimum in ABILITY_FEATURES:
             if self.has_feature(frag):
                 terms.append(("{} ({})".format(label, ab), max(minimum, self.mod(ab))))
+        sub_terms, sub_adv = self.subclass_initiative()  # v52 : Embusqué redoutable, Athlète accompli, Assassinat
+        terms += sub_terms
         fx = self.check_mods("Dextérité")
         dice = []
         for label, val in fx["detail"]:
@@ -58,7 +60,7 @@ class InitiativeMixin:
                     terms.append((label, int(v)))
                 except ValueError:
                     pass
-        adv = list(fx["avantage"]) + [lab for frag, lab in ADVANTAGE_FEATURES if self.has_feature(frag)]
+        adv = list(fx["avantage"]) + [lab for frag, lab in ADVANTAGE_FEATURES if self.has_feature(frag)] + sub_adv
         return {"termes": terms, "total": sum(v for _, v in terms), "des": dice, "avantage": adv,
                 "desavantage": list(fx["desavantage"])}
 

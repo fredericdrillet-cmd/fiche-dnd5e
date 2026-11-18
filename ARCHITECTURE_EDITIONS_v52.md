@@ -168,10 +168,18 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
   - choix affichés dans l'onglet **Progression** (encart « Choix des dons »).
 - **`core/class_auto.py`** (`ClassAutoMixin`, 2014 et 2024 ; les « options Tasha » ne s'appliquent jamais d'office) : maîtrise de tous les JS (Âme diamantée, Survivant discipliné), Esprit fuyant (Sag ; Sag et Cha en 2024), avantage aux JS de Dex (Sens du danger), Nomade (+3 m), Sens bestiaux, Corps et esprit (+4 Dex / Sag, max 25), Champion primitif 2024 (max 25), +1d8 radiants des armes de corps à corps (Châtiment divin amélioré / Frappes radiantes), Frappe divine 2014 (1d8 → 2d8, une fois par tour), Frappes bénies et Fureur élémentaire 2024 (choix : frappe une fois par tour ou Incantation puissante sur les tours de magie), Connaissance primitive (compétence), expertises d'Explorateur habile et d'Érudit, ressources rendues à l'initiative (Inspiration supérieure, Concentration parfaite, Yo perfectionné, Rage persistante) et au repos court (Restauration d'ensorceleur).
 
-### 4.10 Reste à faire
+### 4.10 Fait : sous-classes 2024, sorts 2024, jet contre la mort
 
-- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Faveur de l'esprit nocturne, Talent fiable, Puissance indomptable…) : texte affiché, rien à chiffrer.
-- Jet contre la mort lancé par l'application (l'avantage de Gaillard en dépend).
+- **Sorts toujours préparés des sous-classes 2024** (domaines, cercles, serments, protecteurs, sorcelleries, Vagabond féerique, Traqueur des ténèbres) : tables lues dans le texte de l'aptitude « Sorts du … » quel que soit leur format (`features_2024.subclass_spells_2024`, table `SPELL_ALIASES_2024` pour les noms traduits autrement) ; Cercle de la Terre 2024 : choix de la terre (aride, polaire, tempérée, tropicale).
+- **Sous-classes renommées** : `SUBCLASS_EQUIV_2024` / `sub_norm_of()` (Âme acérée → Lame psychique, Abjurateur → École d'abjuration, Credo de l'Ombre → Voie de l'ombre…) ; les tuiles, compteurs et dés psioniques 2014 s'appliquent aux sous-classes 2024.
+- **Passifs de sous-classes** (`class_auto.py`, 2014 et 2024) : critique sur 19-20 / 18-20 (Champion, `RollSpec.crit_min`), avantage à l'initiative (Athlète accompli, Assassinat 2024), + Sagesse à l'initiative (Embuscade effrayante), Vision ombreuse, JS de Sagesse (Esprit de fer / Mental d'acier), résistances (Défenses psychiques, Bouclier mental, Âme radieuse, Résistance fiélonne au choix), Aura de célérité (+3 m), Pirouettes éblouissantes (CA 10 + Dex + Cha), Maîtrises supplémentaires du Collège du savoir (3 compétences), Instruments de miséricorde, Disciple de la vie (+2 + niveau du sort aux soins), Fureur divine du Zélote pendant la rage.
+- **Sorts 2024** : soins, jet de sauvegarde, demi-dégâts, surclassement lus dans le texte 2024 (`rules.parse_spell_mechanics_2024`), complétés par les règles auditées du sort 2014 équivalent (projectiles, modificateur…).
+- **Jet contre la mort** (onglet « En partie », bouton 🎲 à 0 PV) : 10+ réussite, 1 = deux échecs, 20 = 1 PV ; avantage avec Gaillard ; dégâts reçus à 0 PV = un échec ; mort instantanée si les dégâts restants atteignent le maximum de PV.
+
+### 4.11 Reste à faire
+
+- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Talent fiable, Puissance indomptable, Aura de dévotion…) : texte affiché, rien à chiffrer.
+- Tuiles des sous-classes 2024 sans équivalent 2014 (Voie de l'Arbre-Monde, Voie du Cœur sauvage, Cercle des Mers, Collège de la Danse hors CA…) : texte affiché.
 
 ## 5. Décisions prises
 
