@@ -433,3 +433,29 @@ class MasteryFlowTests(unittest.TestCase):
         eng = _sheet("Guerrier", 3, "2014")
         eng.set_house_rule("maitrises_armes_2014", False)
         self.assertEqual(eng.mastery_on_hit({"nom": "Épée longue", "bonus": 0, "maitrise": None}), "")
+
+
+class SheetExportTests(unittest.TestCase):
+    def test_html_pages_both_editions(self):
+        from core.sheet_export import sheet_html
+        for ed, cls in (("2014", "Magicien"), ("2024", "Paladin")):
+            eng = _sheet(cls, 5, ed)
+            eng.ch.nom = "Test <b>"
+            html_text = sheet_html(eng)
+            self.assertIn("Test &lt;b&gt;", html_text)                           # texte échappé
+            self.assertIn("Compétences", html_text)
+            self.assertIn("Jets de sauvegarde", html_text)
+            self.assertIn("Aptitudes et traits", html_text)
+            self.assertIn("D&amp;D 5e {}".format(ed), html_text)
+            self.assertIn("Sorts", html_text)                                     # lanceur : page 3
+        fighter = _sheet("Guerrier", 3, "2014")
+        self.assertEqual(sheet_html(fighter).count("page-break"), 1)             # pas de page de sorts
+
+    def test_2024_feature_texts_matched(self):
+        for cls, lvl, name, word in (("Paladin", 1, "Maîtrise des armes", "propriétés"),
+                                     ("Roublard", 7, "Talent fiable", "jet de caractéristique"),
+                                     ("Rôdeur", 6, "Nomade", "Vitesse"),
+                                     ("Moine", 10, "Restauration de soi", "volonté")):
+            eng = _sheet(cls, lvl, "2024")
+            desc = next(f["description"] for f in eng.features(eng.ch.classes[0]) if f["nom"] == name)
+            self.assertIn(word, desc, (cls, name))

@@ -212,7 +212,7 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin.feature_allowed()` : une aptitude « (option Tasha) » compte si elle **s'ajoute** ; celles qui **remplacent** (`TASHA_REPLACING` : Frappes bénies, Ennemi favori, Explorateur expert avec Vagabond et Infatigable, Conscience primordiale, Voile de la nature) ne s'appliquent jamais d'office. Appliquées : Connaissance primitive (1 compétence, 2 au niveau 10), Bond instinctif (message à l'entrée en rage), Arme dédiée (choix d'une arme de moine), sorts supplémentaires des listes (`tasha_extra_spells`, lus dans le texte de l'option), tuiles Guérison accélérée, Visée concentrée, Visée stable, Exploitation / Canalisation du pouvoir divin (emplacement rendu automatiquement), Compagnon sauvage, Guidage magique ; rappels « À ne pas oublier » (Attaque alimentée par le ki, Inspiration magique, Polyvalences, Formules de sorts mineurs, Focaliseur d'incantation).
 
-### 4.15 Chantier suivant (en cours)
+### 4.15 Chantier suivant
 
 1. **Récupérations 2024** : au repos court, Rage, Conduit divin, Forme sauvage et Second souffle ne rendent qu'une utilisation (`SHORT_REST_PARTIAL_2024`) ; le repos long rend tous les dés de vie (moitié en 2014) ; Métabolisme surnaturel du Moine (initiative, une fois par repos long) et Ruse magique de l'Occultiste (moitié des emplacements de pacte) appliqués.
 
@@ -229,6 +229,9 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 7. **Forme sauvage 2024** (`wild_shape_2024`, `known_forms_option_set`) : FP 1/4 → 1/2 → 1 (Lune : niveau ÷ 3, minimum 1), nage dès le niveau 2, vol au niveau 8, formes connues (4, 6 puis 8, choix dans « Options de classe »), action bonus, vos PV conservés + PV temporaires égaux au niveau (×3 pour la Lune), CA du Cercle de la Lune au moins 13 + Sagesse ; à 0 PV, la forme prend fin. La Métamorphose et les fiches 2014 gardent les PV de la bête.
 
 8. **Compagnon primitif 2024** (`primal_option_set`, `primal_companion_2024`, `core/companions.py`) : choix Bête de la terre / de la mer / du ciel ; le compagnon est ajouté d'office à la Ménagerie (et remplacé si le choix change) ; CA 13 + Sagesse, dégâts + Sagesse au lieu du bonus de maîtrise, deux attaques au niveau 11. Tuiles « Ce tour-ci » pour les attaques des compagnons de classe actifs (action bonus), qui passent par le déroulé d'attaque habituel.
+
+9. **Export PDF** (Fichier > Exporter la fiche en PDF, Ctrl+P ; `core/sheet_export.py` produit le HTML, `ui/pdf_export.py` l'imprime en A4 avec `QPdfWriter`) : page 1 organisée comme la fiche classique (identité ; caractéristiques, JS, compétences ; CA, initiative, PV, attaques ; personnalité, maîtrises et langues), page 2 aptitudes, dons, équipement, page 3 sorts en tableau avec cases d'emplacements ; portrait inclus ; noir et blanc.
+10. **Textes des aptitudes 2024** : `FEATURE_ALIASES_2024` (edition_import) relie les noms de la table de progression aux descriptions quand la traduction diffère (Maîtrise des armes → Bottes d'arme, Talent fiable → Savoir-faire, Dérobade → Esquive totale, Indomptable → Inflexible, Nomade → Arpenteur…) : plus de texte vide ou emprunté à une autre aptitude.
 
 ### 4.16 Reste à faire
 

@@ -252,6 +252,10 @@ class MainWindow(QMainWindow):
             act.setShortcut(key)
             act.triggered.connect(slot)
             fm.addAction(act)
+        pdf_act = QAction("Exporter la fiche en PDF…", self)       # v52 : fiche imprimable
+        pdf_act.setShortcut(QKeySequence("Ctrl+P"))
+        pdf_act.triggered.connect(self.action_export_pdf)
+        fm.addAction(pdf_act)
         fm.addSeparator()
         lvl_act = QAction("▲ Niveau supérieur…", self)
         lvl_act.setShortcut(QKeySequence("Ctrl+L"))
@@ -329,6 +333,22 @@ class MainWindow(QMainWindow):
     def action_options(self):
         OptionsDialog(self).exec()
         self.refresh_help_banner()
+
+    def action_export_pdf(self):
+        name = (self.ch.nom or "personnage").strip().replace(" ", "_")
+        path, _ = QFileDialog.getSaveFileName(self, "Exporter la fiche en PDF",
+                                              str(Path(self._start_dir()) / "{}.pdf".format(name)), "PDF (*.pdf)")
+        if not path:
+            return
+        if not path.lower().endswith(".pdf"):
+            path += ".pdf"
+        from .pdf_export import export_pdf
+        try:
+            export_pdf(self.engine, path)
+        except Exception as exc:                          # noqa: BLE001 — message utilisateur
+            QMessageBox.critical(self, "Export impossible", str(exc))
+            return
+        self.statusBar().showMessage("Fiche exportée : {}".format(path), 8000)
 
     def action_glossary(self, initial: str = ""):
         from .glossary_dialog import GlossaryDialog

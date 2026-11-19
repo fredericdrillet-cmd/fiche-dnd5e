@@ -347,10 +347,20 @@ def _parse_weapons(text: str, db) -> list[str]:
     return out
 
 
+
+# nom dans la table de progression 2024 -> nom de l'aptitude dans les descriptions (traductions différentes)
+FEATURE_ALIASES_2024 = {
+    "maitrise des armes": "bottes d'arme", "restauration de soi": "autosubsistance", "indomptable": "inflexible",
+    "derobade": "esquive totale", "talent fiable": "savoir-faire", "frappes retorses": "coups vicieux",
+    "expansion de l'aura": "aura etendue", "nomade": "arpenteur", "connaissance primitive": "savoir primal",
+    "bond instinctif": "bond agressif", "concentration du moine": "credo du moine",
+}
+
 def _expand_features(c: dict) -> list[dict]:
     """Aptitudes niveau par niveau d'après la colonne « capacites » de la table (améliorations répétées comprises)."""
     feats = c.get("capacites") or []
     by_name = {norm(f.get("nom", "")): f for f in feats}
+    by_name.update({k: by_name[v] for k, v in FEATURE_ALIASES_2024.items() if v in by_name and k not in by_name})
     out = []
     for row in c.get("table_progression") or []:
         lvl = int(row.get("niveau") or 0)
