@@ -445,6 +445,19 @@ class CombatTab(BaseTab):
         box = QGroupBox("⚔ Ce tour-ci — cliquez une tuile pour l'utiliser (filtre par coût)")
         lay = QVBoxLayout(box)
         lay.setSpacing(6)
+        # v52 : bandeau de rappels (début / fin de tour, initiative) — se ferme d'un clic, jamais bloquant
+        self.turn_banner = QWidget()
+        tb = QHBoxLayout(self.turn_banner)
+        tb.setContentsMargins(0, 0, 0, 0)
+        self.turn_banner_text = make_label("", "banner", wrap=True)
+        self.turn_banner_close = QPushButton("✕")
+        self.turn_banner_close.setProperty("role", "ghost")
+        self.turn_banner_close.setToolTip("Fermer les rappels")
+        self.turn_banner_close.clicked.connect(lambda: self.show_turn_banner("", []))
+        tb.addWidget(self.turn_banner_text, 1)
+        tb.addWidget(self.turn_banner_close)
+        self.turn_banner.setVisible(False)
+        lay.addWidget(self.turn_banner)
         filt = QHBoxLayout()
         self.turn_filter = "Tout"
         self.turn_filter_btns = {}
@@ -506,12 +519,19 @@ class CombatTab(BaseTab):
         self.turn_auto_btn.setProperty("role", "ghost")
         self.turn_auto_btn.clicked.connect(self._on_auto_reaction)
         foot.addWidget(self.turn_auto_btn)
-        self.turn_round_btn = QPushButton("⟳ Nouveau round")
+        self.turn_round_btn = QPushButton("▶ Début de mon tour")       # v52 : remplace « Nouveau round »
         self.turn_round_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.turn_round_btn.setToolTip(rich_tip("Nouveau round", "Action, action bonus, réaction et déplacement "
-                                                "redeviennent disponibles."))
+        self.turn_round_btn.setToolTip(rich_tip("Début de mon tour", "Action, action bonus, réaction et "
+                                                "déplacement redeviennent disponibles ; les effets de début de tour "
+                                                "s'appliquent et les rappels s'affichent."))
         self.turn_round_btn.clicked.connect(self._on_new_round)
         foot.addWidget(self.turn_round_btn)
+        self.turn_end_btn = QPushButton("⏹ Fin de mon tour")
+        self.turn_end_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.turn_end_btn.setToolTip(rich_tip("Fin de mon tour", "Rappelle ce qui n'a pas servi (action, action "
+                                              "bonus) et ce qui se déclenche à la fin de votre tour."))
+        self.turn_end_btn.clicked.connect(self._on_end_turn)
+        foot.addWidget(self.turn_end_btn)
         lay.addLayout(foot)
         box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         return box
@@ -922,8 +942,25 @@ class CombatTab(BaseTab):
         self.changed()
 
     def _on_new_round(self):
-        self.engine.new_round()
+        res = self.engine.start_turn()                   # v52 : début de tour + rappels
+        lines = ["✔ " + m for m in res["appliques"]] + ["• " + m for m in res["rappels"]]
+        self.show_turn_banner("▶ Début de votre tour", lines or ["Rien de particulier à ce début de tour."])
         self.changed()
+
+    def _on_end_turn(self):
+        lines = ["• " + m for m in self.engine.end_turn()]
+        self.show_turn_banner("⏹ Fin de votre tour", lines or ["Tout a servi : bon tour !"])
+        self.changed()
+
+    def show_turn_banner(self, title: str, lines: list) -> None:
+        """Bandeau de rappels en tête de « Ce tour-ci » (vide = masqué)."""
+        if not title:
+            self.turn_banner_text.setText("")
+            self.turn_banner.setVisible(False)
+            return
+        self.turn_banner_text.setText("<b>{}</b><br/>{}".format(html.escape(title), "<br/>".join(
+            html.escape(x) for x in lines)))
+        self.turn_banner.setVisible(True)
 
     def _on_ammo(self, i: int):
         self.ch.armes_distance[i]["munition"] = self.weapon_rows["armes_distance"][i]["ammo"].currentData() or ""

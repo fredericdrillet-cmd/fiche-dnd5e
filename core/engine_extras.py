@@ -566,14 +566,16 @@ class ExtrasMixin:
         """Clic sur une réaction : la marque utilisée pour ce round (un second clic l'annule)."""
         self.ch.reaction_utilisee = "" if self.ch.reaction_utilisee == key else key
 
-    def new_round(self) -> None:
-        """Nouveau round : réaction, action, action bonus et déplacement de nouveau disponibles (v30)."""
+    def new_round(self) -> list[str]:
+        """Début de votre tour : réaction, action, action bonus et déplacement de nouveau disponibles (v30) ;
+        renvoie les effets appliqués automatiquement (v52)."""
         self.ch.reaction_utilisee = ""
-        self.subclass24_turn_start()                     # v52 : Héros du champ d'honneur, Ralliement héroïque
+        applied = self.subclass24_turn_start()           # v52 : Héros du champ d'honneur, Ralliement héroïque
         self.ch.tour_action = self.ch.tour_bonus = False
         self.ch.tour_attaques = 0
         self.ch.tour_deplacement = 0.0
         self.ch.tour_utilises = []                       # Attaque sournoise… : de nouveau disponibles
+        return applied
 
     # ==================================================================================
     # Concentration et lancement de sorts

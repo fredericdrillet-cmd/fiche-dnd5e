@@ -84,3 +84,77 @@ class UiTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+from core.engine import Engine  # noqa: E402
+
+
+def _sheet(cls, lvl, edition="2014", sub=""):
+    ch = Engine.new_character(DB)
+    ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+    eng = Engine(DB, ch)
+    eng.normalize()
+    if edition == "2024":
+        eng.set_edition_mode("2024")
+        eng.normalize()
+    eng.ch.classes[0]["sous_classe"] = sub
+    eng.normalize()
+    return eng
+
+
+class TurnReminderTests(unittest.TestCase):
+    def test_start_turn_resets_and_reminds(self):
+        for ed in ("2014", "2024"):
+            eng = _sheet("Barbare", 5, ed)
+            eng.use_class_action("rage")
+            eng.ch.tour_action = eng.ch.tour_bonus = True
+            eng.ch.concentration = "Bénédiction"
+            res = eng.start_turn()
+            self.assertFalse(eng.ch.tour_action or eng.ch.tour_bonus)
+            self.assertTrue(any(r.startswith("Rage") for r in res["rappels"]), ed)
+            self.assertTrue(any("Concentration" in r for r in res["rappels"]))
+        dying = _sheet("Guerrier", 3)
+        dying.ch.pv_actuels = 0
+        self.assertTrue(any("jet contre la mort" in r for r in dying.start_turn()["rappels"]))
+
+    def test_text_triggers_both_editions(self):
+        tree = _sheet("Barbare", 3, "2024", "Voie de l'Arbre-Monde")
+        tree.use_class_action("rage")
+        self.assertTrue(any(r.startswith("Vitalité de l'arbre") for r in tree.start_turn()["rappels"]))
+        champ = _sheet("Guerrier", 18, "2024", "Champion")
+        champ.ch.inspiration = False
+        res = champ.start_turn()
+        self.assertIn("Héros du champ d'honneur : Inspiration héroïque", res["appliques"])
+        self.assertFalse(any(r.startswith("Survivant") for r in res["rappels"]))        # déjà appliqué
+        for ed in ("2014", "2024"):
+            barb = _sheet("Barbare", 7, ed)
+            barb.roll_initiative(10)
+            self.assertEqual([r for r in barb.initiative_reminders() if r.startswith("Instinct")], [])   # appliqué
+        dance = _sheet("Barde", 6, "2024", "Collège de la Danse")
+        dance.roll_initiative(10)
+        self.assertTrue(any(r.startswith("Pirouettes coordonnées") for r in dance.initiative_reminders()))
+
+    def test_end_turn_unused(self):
+        for ed in ("2014", "2024"):
+            eng = _sheet("Guerrier", 3, ed)
+            msgs = eng.end_turn()
+            self.assertTrue(any(m.startswith("Action non utilisée") for m in msgs))
+            self.assertTrue(any("Second souffle" in m for m in msgs), ed)
+            eng.ch.tour_action = eng.ch.tour_bonus = True
+            self.assertEqual([m for m in eng.end_turn() if "non utilisée" in m], [])
+        barb = _sheet("Barbare", 5, "2014")
+        barb.use_class_action("rage")
+        self.assertFalse(any("Entrer en rage" in m for m in barb.end_turn()))           # déjà en rage
+
+    def test_ui_buttons(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        tab = win.combat_tab
+        tab._on_new_round()
+        self.assertIn("Début de votre tour", tab.turn_banner_text.text())
+        tab._on_end_turn()
+        self.assertIn("Fin de votre tour", tab.turn_banner_text.text())
+        tab.show_turn_banner("", [])
+        self.assertEqual(tab.turn_banner_text.text(), "")

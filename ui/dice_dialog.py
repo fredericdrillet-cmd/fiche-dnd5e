@@ -752,6 +752,10 @@ def roll_initiative(win) -> "D.RollResult | None":
     eng.record_initiative(r.total)
     detail = " ".join(t.text() for t in spec.terms)
     win.statusBar().showMessage("🎲 Initiative : d20 = {} {} = {}".format(r.natural, detail, r.total), 12000)
+    reminders = eng.initiative_reminders()               # v52 : rappels de l'initiative
+    tab = getattr(win, "combat_tab", None)
+    if reminders and tab is not None and hasattr(tab, "show_turn_banner"):
+        tab.show_turn_banner("🎲 Initiative : {}".format(r.total), ["• " + m for m in reminders])
     if hasattr(win, "changed"):
         win.changed()
     return r

@@ -196,6 +196,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 1. **Lexique** : `data/Lexique.json` (clé `lexique` : `termes` [terme, catégorie, définition, 2014, 2024, variantes, auto], `aides_onglets`, `aides_creation`) chargé dans `Database.glossary` (`core/glossary.py`, repérage par mots entiers, expressions longues d'abord). `ui/common.rich_tip` ajoute les définitions des termes employés (édition de la fiche) ; `ui/glossary_dialog.py` (F1) ; option `aides_debutant` : soulignement dans les étiquettes (`make_label`), bandeau d'aide par onglet (`MainWindow.refresh_help_banner`) et par étape de l'assistant.
 
+2. **Début et fin de tour** (`core/turn_reminders.py`) : « ▶ Début de mon tour » (remplace « Nouveau round » : `start_turn()` remet l'économie d'actions à zéro, applique Héros du champ d'honneur / Ralliement héroïque, rappelle concentration, jet contre la mort, rage à entretenir) et « ⏹ Fin de mon tour » (`end_turn()` : action / action bonus non utilisées, concentration). Les capacités qui se déclenchent « au début / à la fin de votre tour » ou « à l'initiative » sont repérées dans les textes (aptitudes, traits, dons, effets actifs) ; celles déjà appliquées seules (`AUTO_APPLIED`) ne sont pas rappelées. Bandeau fermable en tête de « Ce tour-ci », aussi après le jet d'initiative.
+
 ### 4.14 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

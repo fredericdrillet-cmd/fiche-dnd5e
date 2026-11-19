@@ -102,6 +102,7 @@ from .class_guide import ClassGuideMixin  # noqa: E402
 from .feat_effects import FeatEffectsMixin, feat_base  # noqa: E402
 from .class_auto import ClassAutoMixin  # noqa: E402
 from .subclass_2024 import Subclass2024Mixin  # noqa: E402
+from .turn_reminders import TurnRemindersMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -123,7 +124,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
-             FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin):
+             FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin,
+             TurnRemindersMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
