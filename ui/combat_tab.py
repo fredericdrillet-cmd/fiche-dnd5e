@@ -5,6 +5,7 @@ barre d'états actifs (buffs / débuffs / conditions), concentration, réactions
 from __future__ import annotations
 
 import html
+import re
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
@@ -532,6 +533,13 @@ class CombatTab(BaseTab):
                                               "bonus) et ce qui se déclenche à la fin de votre tour."))
         self.turn_end_btn.clicked.connect(self._on_end_turn)
         foot.addWidget(self.turn_end_btn)
+        self.attacked_btn = QPushButton("🛡 On m'attaque !")         # v52 : jet ennemi, réactions, dégâts
+        self.attacked_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.attacked_btn.setToolTip(rich_tip("On m'attaque !", "Saisissez le jet de l'ennemi : la fiche le compare "
+                                              "à votre CA, propose vos réactions (Bouclier, Esquive instinctive, "
+                                              "Parade…) puis applique les dégâts."))
+        self.attacked_btn.clicked.connect(lambda: self.open_defense("attaque"))
+        foot.addWidget(self.attacked_btn)
         lay.addLayout(foot)
         box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         return box
@@ -1714,9 +1722,25 @@ class CombatTab(BaseTab):
         self.hp_entry.setFocus()
         self.hp_entry.selectAll()
 
+    def open_defense(self, start: str = "attaque", amount: int = 0, dtype: str = "", magical: bool = False) -> bool:
+        from .defense_dialog import DefenseDialog
+        dlg = DefenseDialog(self.win, start, amount, dtype, magical)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            return True
+        self.changed()
+        return False
+
     def _quick_hp(self, kind: str) -> None:
         idx = self.dmg_type.currentIndex()
         dtype = ExtrasMixin.DAMAGE_TYPES[idx - 1] if idx > 0 else ""
+        m = re.fullmatch(r"\s*([+-]?)\s*(\d+)\s*", self.hp_entry.text() or "")
+        is_damage = bool(m) and (kind == "degats" or (not kind and m.group(1) != "+"))
+        if is_damage and self.engine.defense_options("degats"):     # v52 : réactions proposées avant les dégâts
+            self.hp_entry.clear()
+            self.open_defense("degats", int(m.group(2)), dtype, self.dmg_magic.isChecked())
+            return
         msg = self.engine.apply_hp_input(self.hp_entry.text(), kind, dtype, self.dmg_magic.isChecked())
         if not msg:
             self.win.statusBar().showMessage("Saisissez un nombre : « 7 » ou « -7 » pour des dégâts, « +5 » pour des "

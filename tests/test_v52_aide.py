@@ -199,3 +199,56 @@ class OnHitTests(unittest.TestCase):
         self.assertEqual(dlg.chosen(), [])
         dlg.checks["rider:0"].setChecked(True)
         self.assertEqual(dlg.chosen(), ["rider:0"])
+
+
+class _R:
+    def __init__(self, v):
+        self.v = v
+
+    def randint(self, a, b):
+        return min(b, self.v)
+
+
+class DefenseTests(unittest.TestCase):
+    def test_shield_turns_hit_into_miss(self):
+        for ed, spell in (("2014", "Bouclier"), ("2024", "Bouclier (2024)")):
+            wiz = _sheet("Magicien", 3, ed)
+            wiz.ch.sorts["Magicien"] = [{"nom": spell, "prepare": True}]
+            ca = wiz.armor_class()[0]
+            self.assertTrue(wiz.attack_check(ca + 2)["touche"])
+            opt = next(o for o in wiz.defense_options("attaque") if o["key"] == "bouclier")
+            self.assertTrue(wiz.use_defense(opt)["ok"])
+            self.assertFalse(wiz.attack_check(ca + 2)["touche"], ed)            # +5 CA
+            self.assertEqual(wiz.ch.emplacements_utilises[0], 1)
+            self.assertEqual(wiz.defense_options("attaque"), [])                # réaction utilisée
+            self.assertIn("Fin de : Bouclier (sort)", wiz.start_turn()["appliques"])
+
+    def test_damage_reactions(self):
+        for ed in ("2014", "2024"):
+            rogue = _sheet("Roublard", 5, ed)
+            opt = rogue.defense_options("degats")[0]
+            res = rogue.use_defense(opt)
+            self.assertEqual(rogue.damage_after_reactions(13, [res]), 6)
+        monk14, monk24 = _sheet("Moine", 3, "2014"), _sheet("Moine", 3, "2024")
+        self.assertEqual(monk14.defense_options("degats", melee=True), [])        # 2014 : distance seulement
+        self.assertTrue(monk14.defense_options("degats", melee=False))
+        opt = monk24.defense_options("degats", melee=True)[0]                     # 2024 : toute attaque
+        res = monk24.use_defense(opt, _R(4))
+        self.assertEqual(res["reduction"], 4 + monk24.mod("Dextérité") + 3)
+
+    def test_dialog_take_damage(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.defense_dialog import DefenseDialog
+        win = MainWindow(DB)
+        win.engine = _sheet("Roublard", 5, "2024")
+        win.engine.ch.pv_actuels = 30
+        dlg = DefenseDialog(win, "degats", 12)
+        dlg._use(win.engine.defense_options("degats")[0])
+        self.assertEqual(dlg.final_damage()[0], 6)
+        dlg._on_take()
+        self.assertEqual(win.engine.ch.pv_actuels, 24)
+        dlg2 = DefenseDialog(win, "attaque")
+        dlg2.atk.setValue(1)
+        self.assertFalse(dlg2.touches())

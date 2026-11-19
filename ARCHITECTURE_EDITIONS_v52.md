@@ -200,6 +200,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 3. **Quand vous touchez** (`OnHitMixin` dans `core/combat_flow.py`, `ui/on_hit_dialog.py`) : après « L'attaque touche-t-elle ? », une fenêtre de cases, rien coché d'office : bonus conditionnels (Marque du chasseur, Frappe divine…), Attaque sournoise (arme de finesse ou à distance, une fois par tour), Châtiment divin en liste (un niveau par coup ; 2024 : un par tour, action bonus dépensée), aptitudes « quand vous touchez » à dés. Les coûts sont dépensés à la validation.
 
+4. **On m'attaque !** (`core/defense.py`, `ui/defense_dialog.py`) : jet de l'ennemi contre la CA (`attack_check`), réactions avant les dégâts (Bouclier, avec son effet +5 CA jusqu'au début du tour ; Duelliste défensif ; Mots cinglants ; Illumination protectrice / Éclat protecteur), puis réactions sur les dégâts (Esquive instinctive ; Parade de projectiles 2014 contre les attaques à distance, Déviation d'assaut 2024 contre toute attaque ; manœuvre Parade au corps à corps), type de dégâts et « Subir les dégâts ». La saisie rapide des PV ouvre la même étape quand une réaction de dégâts est disponible. Les effets « jusqu'au début de votre prochain tour » prennent fin au début du tour.
+
 ### 4.14 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

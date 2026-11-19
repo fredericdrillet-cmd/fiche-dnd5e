@@ -575,6 +575,12 @@ class ExtrasMixin:
         self.ch.tour_attaques = 0
         self.ch.tour_deplacement = 0.0
         self.ch.tour_utilises = []                       # Attaque sournoise… : de nouveau disponibles
+        ending = [k for k in self.ch.effets_actifs if norm(FX.EFFECTS.get(k, {}).get("duree", "")).startswith(
+            "jusqu'au debut de votre prochain tour")]   # v52 : Bouclier, Esquiver… prennent fin
+        for k in ending:
+            self.remove_effect(k)
+        if ending:
+            applied = list(applied) + ["Fin de : " + ", ".join(FX.EFFECTS[k]["nom"] for k in ending)]
         return applied
 
     # ==================================================================================
