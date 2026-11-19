@@ -305,3 +305,76 @@ class EnvironmentTests(unittest.TestCase):
         self.assertEqual(dlg.fall_formula.text(), "3d6")
         dlg._done(win.engine.hold_breath())
         self.assertIn("apnee", win.engine.ch.effets_actifs)
+
+
+class ComponentTests(unittest.TestCase):
+    def test_detection_per_edition(self):
+        old, new = sheet("Clerc", 9, "2014"), sheet("Clerc", 9, "2024")
+        self.assertEqual(old.costly_component("Rappel à la vie")["cout"], 500)
+        self.assertEqual(new.costly_component("Rappel à la vie (2024)")["cout"], 500)
+        self.assertEqual(old.costly_component("Projection astrale")["cout"], 1100)
+        self.assertEqual(new.costly_component("Projection astrale (2024)")["cout"], 7000)
+        self.assertIsNone(old.costly_component("Contrat"))
+        self.assertIsNone(old.costly_component("Soins"))
+        self.assertIsNone(new.costly_component("Identification (2024)"))     # perle non consommée
+
+    def test_inventory_and_purse(self):
+        eng = sheet("Clerc", 9, "2014")
+        info = eng.costly_component("Rappel à la vie")
+        self.assertIsNone(eng.component_item(info))
+        eng.ch.equipement.append({"nom": "Diamant (500 po)", "qte": 1})
+        item = eng.component_item(info)
+        self.assertIsNotNone(item)
+        eng.consume_component(item)
+        self.assertFalse(any(i["nom"].startswith("Diamant") for i in eng.ch.equipement))
+        eng.ch.pieces = {"po": 600, "pa": 3, "pc": 0}
+        ok, _ = eng.pay_component(info)
+        self.assertTrue(ok)
+        self.assertEqual(eng.ch.pieces, {"po": 100, "pa": 3, "pc": 0})
+        ok, msg = eng.pay_component(info)
+        self.assertFalse(ok)
+        self.assertEqual(eng.ch.pieces["po"], 100)
+
+    def test_ui_choices(self):
+        import qt_stub
+        qt_stub.install()
+        from unittest import mock
+        from ui.main_window import MainWindow
+        from ui import magic_tab as MT
+        win = MainWindow(DB)
+        eng = win.engine
+        eng.ch.pieces = {"po": 50, "pa": 0, "pc": 0}
+        with mock.patch.object(MT, "ask_choice", return_value="Annuler le sort"):
+            self.assertFalse(MT.check_costly_component(win, eng, "Peau de pierre"))
+        with mock.patch.object(MT, "ask_choice", return_value="Le MJ l'a fournie"):
+            self.assertTrue(MT.check_costly_component(win, eng, "Peau de pierre"))
+        self.assertEqual(eng.ch.pieces["po"], 50)
+        eng.ch.pieces = {"po": 150, "pa": 0, "pc": 0}
+        with mock.patch.object(MT, "ask_choice", return_value="Payer 100 po avec la bourse"):
+            self.assertTrue(MT.check_costly_component(win, eng, "Peau de pierre"))
+        self.assertEqual(eng.ch.pieces["po"], 50)
+        self.assertTrue(MT.check_costly_component(win, eng, "Soins"))
+
+
+class CoverTests(unittest.TestCase):
+    def test_attack_check_cover(self):
+        eng = sheet("Guerrier", 3, "2024")
+        ca = eng.armor_class()[0]
+        self.assertTrue(eng.attack_check(ca)["touche"])
+        self.assertFalse(eng.attack_check(ca, cover=2)["touche"])
+        self.assertTrue(eng.attack_check(ca + 5, cover=5)["touche"])
+        self.assertFalse(eng.attack_check(40, crit=True, cover=None)["touche"])
+
+    def test_dialogs(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.dice_dialog import DiceRollDialog
+        win = MainWindow(DB)
+        dlg = DiceRollDialog(win, win.engine.save_spec("Dextérité"))
+        self.assertEqual(len(dlg.cover_btns), 2)
+        before = dlg.result.total
+        dlg._apply_cover(2, "Abri important +2")
+        dlg._apply_cover(5, "Abri supérieur +5")                   # un seul abri
+        self.assertEqual(dlg.result.total, before + 2)
+        self.assertFalse(DiceRollDialog(win, win.engine.save_spec("Force")).cover_btns)

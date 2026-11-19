@@ -34,6 +34,11 @@ class DefenseDialog(QDialog):
         self.crit = QCheckBox("20 naturel (coup critique)")
         self.crit.toggled.connect(lambda _=False: self._refresh())
         al.addWidget(self.crit, 0, 2)
+        self.cover = QComboBox()                          # v52 : abri entre vous et l'attaquant
+        for label, value in self.eng.COVER:
+            self.cover.addItem(label, value)
+        self.cover.activated.connect(lambda _=0: self._refresh())
+        al.addWidget(self.cover, 0, 3)
         self.hit_label = make_label("", "head", wrap=True)
         al.addWidget(self.hit_label, 1, 0, 1, 3)
         self.atk_reacts = QVBoxLayout()
@@ -96,7 +101,10 @@ class DefenseDialog(QDialog):
     def touches(self) -> bool:
         if self.stage == "degats" and not self.attack_box.isVisible():
             return True
-        chk = self.eng.attack_check(self.atk.value() - self.malus, self.crit.isChecked())
+        cover = self.cover.currentData() if self.cover.currentIndex() > 0 else 0
+        chk = self.eng.attack_check(self.atk.value() - self.malus, self.crit.isChecked(), cover)
+        if chk.get("abri_total"):
+            return False
         return chk["touche"] if self.crit.isChecked() else chk["total"] >= chk["ca"] + self.ca_bonus
 
     def final_damage(self) -> tuple[int, str]:
@@ -107,7 +115,8 @@ class DefenseDialog(QDialog):
         return after, " ; ".join(notes)
 
     def _refresh(self) -> None:
-        ca = self.eng.attack_check(0)["ca"] + self.ca_bonus
+        cover = self.cover.currentData() if self.cover.currentIndex() > 0 else 0
+        ca = self.eng.attack_check(0, False, cover or 0)["ca"] + self.ca_bonus
         total = self.atk.value() - self.malus
         hit = self.touches()
         self.hit_label.setText("Votre CA : {} — jet {}{} : {}".format(
@@ -132,7 +141,8 @@ class DefenseDialog(QDialog):
             self.atk_reacts.addWidget(make_label("Réactions possibles avant les dégâts :", "muted"))
         for o in opts:
             b = QPushButton("◆ {} — {}".format(o["label"], o["cout"]) if o["cout"] else "◆ " + o["label"])
-            b.setToolTip(rich_tip(o["label"], "Utilise votre réaction de ce round."))
+            b.setToolTip(rich_tip(o["label"], "Dépense un point de chance (pas de réaction)." if o.get("chance")
+                                  else "Utilise votre réaction de ce round."))
             b.clicked.connect(lambda _=False, opt=o: self._use(opt))
             self.atk_reacts.addWidget(b)
 

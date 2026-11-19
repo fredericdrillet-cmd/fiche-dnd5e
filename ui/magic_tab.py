@@ -92,6 +92,34 @@ def dtype_label(dtype: str) -> str:
 from core.data_loader import SAVE_TESTS, save_success_text  # noqa: E402
 
 
+
+def check_costly_component(win, eng, spell_name: str) -> bool:
+    """v52 : composante coûteuse consommée — objet retiré de l'inventaire, ou choix du joueur (payer avec la
+    bourse, fournie par le MJ, annuler). Renvoie False si le sort est annulé (rien n'a été dépensé)."""
+    info = eng.costly_component(spell_name)
+    if not info:
+        return True
+    item = eng.component_item(info)
+    if item is not None:
+        if ask_yes_no(win, "Composante matérielle", "« {} » consomme : {}.\n\nRetirer « {} » de l'inventaire ?"
+                      .format(spell_name, info["texte"], item.get("nom", "")), yes="Retirer l'objet",
+                      no="Ne rien retirer", default_no=False):
+            win.statusBar().showMessage(eng.consume_component(item), 6000)
+        return True
+    pay, given, cancel = ("Payer {} po avec la bourse".format(info["cout"]), "Le MJ l'a fournie", "Annuler le sort")
+    picked = ask_choice(win, "Composante manquante", "« {} » consomme : {}.\n\nAucun objet correspondant dans "
+                        "l'inventaire. Que faites-vous ?".format(spell_name, info["texte"]), [pay, given, cancel])
+    if not picked or picked == cancel:
+        win.statusBar().showMessage("Sort annulé : aucun emplacement dépensé.", 6000)
+        return False
+    if picked == pay:
+        ok, msg = eng.pay_component(info)
+        win.statusBar().showMessage(msg, 6000)
+        if not ok:
+            return ask_yes_no(win, "Bourse insuffisante", msg + "\n\nLancer le sort quand même ?",
+                              yes="Lancer quand même", no="Annuler", default_no=True)
+    return True
+
 class MagicTab(BaseTab):
     def __init__(self, win):
         super().__init__(win)
@@ -651,6 +679,8 @@ class MagicTab(BaseTab):
                 ask_yes_no(self.win, "Incantation impossible", block[1] + "\n\nRetirez l'armure ou le bouclier non "
                            "maîtrisé (onglet Combat ou Inventaire) pour lancer des sorts.", yes="Compris", no="Fermer",
                            default_no=False)
+            return False
+        if not check_costly_component(self.win, eng, spell.get("nom", name)):   # v52 : composante coûteuse
             return False
         # Armure de mage : inefficace si une armure est portée -> avertissement avant de dépenser quoi que ce soit
         armor = eng.wears_armor()

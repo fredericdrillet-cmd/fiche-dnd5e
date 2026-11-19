@@ -376,6 +376,10 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **Actions communes 2014 / 2024** : Se tenir prêt ; en 2024 Saisir / Bousculer avec le DD de la cible, Se cacher DD 15, Étudier, Influencer, Magie ; les tests se lancent depuis la tuile.
 - **Inspiration héroïque automatique** (Ingénieux de l'Humain 2024) et bouton 🌟 dans la fenêtre de jet.
 - **Jet libre** « 2d6+3 » (Ctrl+R) et **Fichier > Récents**.
+- **États 2014 / 2024** (Agrippé, Étourdi, Invisible, Neutralisé…), tuile « Se libérer », concentration rompue par un état neutralisant, Caché qui prend fin à l'attaque.
+- **Chanceux** : relance automatique des 1 du Halfelin, bouton 🍀 des points de chance (et désavantage imposé en 2024).
+- **🏁 Fin du combat** (munitions récupérées, bilan) et **🌪 Environnement** (chute, suffocation).
+- **Composantes coûteuses** vérifiées au lancement du sort ; **abri** (+2 / +5) contre les attaques et aux JS de Dextérité.
 - **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
 - **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
 - **Jet contre la mort** : bouton à 0 PV, résultat appliqué (20 = 1 PV, 1 = deux échecs), mort instantanée.

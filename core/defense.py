@@ -23,8 +23,14 @@ from .rules import norm
 class DefenseMixin:
     """Mélangé à Engine."""
 
-    def attack_check(self, total: int, crit: bool = False) -> dict:
-        ca = self.armor_class()[0]
+    COVER = [("Aucun abri", 0), ("Abri important (+2 CA)", 2), ("Abri supérieur (+5 CA)", 5),
+             ("Abri total (impossible à cibler)", None)]
+
+    def attack_check(self, total: int, crit: bool = False, cover: Optional[int] = 0) -> dict:
+        """v52 : `cover` = bonus d'abri à la CA (None : abri total, l'attaque ne peut pas vous viser)."""
+        ca = self.armor_class()[0] + int(cover or 0)
+        if cover is None:
+            return {"ca": ca, "touche": False, "total": int(total), "abri_total": True}
         return {"ca": ca, "touche": crit or int(total) >= ca, "total": int(total)}
 
     def _shield_spell(self) -> str:

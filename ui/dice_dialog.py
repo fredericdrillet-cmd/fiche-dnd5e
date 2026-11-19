@@ -381,6 +381,16 @@ class DiceRollDialog(QDialog):
                 "relancez le d20 et gardez le nouveau résultat." if heroic else "relancez ce jet avec avantage."))
             self.inspire_btn.clicked.connect(lambda _=False, h=heroic: self._inspire(h))
             modes.addWidget(self.inspire_btn)
+        self.cover_btns = []                              # v52 : abri sur un JS de Dextérité (sort de zone)
+        self.cover = 0
+        if spec.kind == "sauvegarde" and "Dextérité" in spec.title:
+            for value, label in ((2, "Abri important +2"), (5, "Abri supérieur +5")):
+                b = QPushButton("🧱 " + label)
+                b.setProperty("role", "ghost")
+                b.setToolTip("Abri entre vous et l'origine de l'effet : +{} au JS de Dextérité.".format(value))
+                b.clicked.connect(lambda _=False, v=value, t=label: self._apply_cover(v, t))
+                self.cover_btns.append(b)
+                modes.addWidget(b)
         self.luck_btn = None                              # v52 : don Chanceux (points de chance)
         if eng is not None and hasattr(eng, "luck_left") and spec.kind in ("test", "competence", "sauvegarde",
                                                                             "attaque", "sort"):
@@ -505,6 +515,18 @@ class DiceRollDialog(QDialog):
             self._freeze()
         while self.phase == "apply":
             self._apply_next()
+
+    def _apply_cover(self, value: int, label: str) -> None:
+        """Ajoute le bonus d'abri au total déjà tiré (le d20 ne change pas)."""
+        if self.cover:
+            return
+        self.finish_now()
+        self.cover = value
+        self.result.total += value
+        self.result.adjust = (self.result.adjust + " ; " if self.result.adjust else "") + label
+        self._done()
+        for b in self.cover_btns:
+            b.setEnabled(False)
 
     def _luck(self) -> None:
         if not self._eng.spend_luck():

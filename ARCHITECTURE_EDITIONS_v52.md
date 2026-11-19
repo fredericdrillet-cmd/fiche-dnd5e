@@ -243,6 +243,18 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 15. **Confort** : jet libre « 2d6+3 » (`dice.free_formula`, champ de l'encart PV, Ctrl+R, animation et historique) ; Fichier > Récents (8 derniers fichiers, `remember_recent`, réglage `fichiers_recents`).
 
+16. **États selon l'édition** (`core/conditions.py`) : `CONDITIONS_2024` (texte et mécanique) remplace la table 2014 sur une fiche 2024 (`condition_mech` dans `modifier_sources`, `effect_tooltip`) ; avantage / désavantage à l'initiative (`condition_initiative`). Neutralisé, Étourdi, Paralysé, Inconscient, Pétrifié rompent la concentration (`incapacitation_breaks`, `last_effect_message`). Caché prend fin à l'attaque (`_attack_flow`) ou au sort (`cast_spell`). Tuile « Se libérer » (`commune:liberer`) : 2014 = test simple puis « Réussi / Raté » demandé au joueur ; 2024 = DD de la prise demandé (`ask_int`).
+
+17. **Chance** (`core/luck.py`) : Chanceux du Halfelin = `RollSpec.reroll_ones` (un 1 naturel relancé dans `roll_d20`, posé par `prepare_d20_spec` dans `roll_dice`) ; don Chanceux = bouton 🍀 (2014 : `RollSpec.luck_dice`, un d20 de plus et le meilleur de tous ; 2024 : avantage) et, en 2024, option sans réaction dans « On m'attaque ! ».
+
+18. **Combat** (`core/combat_end.py`) : `combat_etat` (instantané à l'initiative ou au premier tour, rounds), `fire_ammo` à chaque attaque avec une arme à munitions (`munitions_tirees`), `end_combat` (moitié des munitions rendue, fin de la rage et des effets de tour, états Surpris / Caché / À terre, bilan, horloge inchangée).
+
+19. **Environnement** (`core/environment.py`, `ui/environment_dialog.py`) : chute (`fall_formula`, `apply_fall` : À terre, Chute ralentie, Feuille morte) ; suffocation (effets `apnee` / `suffoque`, `on_effect_expired` appelé par `tick_effects` ; 2014 : 0 PV après Con rounds ; 2024 : épuisement en fin de tour, `suffocation_niveaux` retirés en respirant).
+
+20. **Composantes coûteuses** (`core/components.py`, `check_costly_component` dans `ui/magic_tab.py`) : texte « M (…, que le sort consomme) » des sorts 2024 (repris pour 2014, `OVERRIDES_2014`) ; objet de l'inventaire retiré après confirmation, sinon payer avec la bourse / fournie par le MJ / annuler (rien n'est dépensé).
+
+21. **Abri** : `attack_check(cover=…)` et liste « Abri » dans « On m'attaque ! » (+2, +5, total) ; boutons « Abri +2 / +5 » dans la fenêtre d'un JS de Dextérité (ajoutés au total sans relancer).
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
