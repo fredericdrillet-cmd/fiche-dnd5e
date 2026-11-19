@@ -208,7 +208,11 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 7. **À ne pas oublier** (`core/remember.py`, encart repliable de l'onglet « En partie ») : capacités de situation non calculables, une ligne chacune, par moment (avant d'attaquer, quand vous touchez, en défense, pour vos alliés, déplacement, hors combat), 2014 et 2024 (Rage implacable selon l'édition, Visée stable 2024, options Tasha exclues, traits d'espèce reconnus seulement sur l'espèce).
 
-### 4.14 Reste à faire
+### 4.14 Options de classe du Chaudron de Tasha (fiches 2014)
+
+Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin.feature_allowed()` : une aptitude « (option Tasha) » compte si elle **s'ajoute** ; celles qui **remplacent** (`TASHA_REPLACING` : Frappes bénies, Ennemi favori, Explorateur expert avec Vagabond et Infatigable, Conscience primordiale, Voile de la nature) ne s'appliquent jamais d'office. Appliquées : Connaissance primitive (1 compétence, 2 au niveau 10), Bond instinctif (message à l'entrée en rage), Arme dédiée (choix d'une arme de moine), sorts supplémentaires des listes (`tasha_extra_spells`, lus dans le texte de l'option), tuiles Guérison accélérée, Visée concentrée, Visée stable, Exploitation / Canalisation du pouvoir divin (emplacement rendu automatiquement), Compagnon sauvage, Guidage magique ; rappels « À ne pas oublier » (Attaque alimentée par le ki, Inspiration magique, Polyvalences, Formules de sorts mineurs, Focaliseur d'incantation).
+
+### 4.15 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
 

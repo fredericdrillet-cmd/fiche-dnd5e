@@ -49,6 +49,13 @@ RULES: tuple[HouseRule, ...] = (
         "Chaque arme propose 1 à 3 actions spéciales (Lacération, Brise-crâne, Désarmement…) avec un DD et une "
         "recharge. Règle maison : n'existe dans aucune édition officielle.",
         "Règle maison de l'application", "Combat", True, True),
+    HouseRule(
+        "options_tasha", "Options de classe du Chaudron de Tasha (ajouts)",
+        "Les options de classe de Tasha qui s'ajoutent aux aptitudes s'appliquent : Connaissance primitive, Bond "
+        "instinctif, Arme dédiée, Guérison accélérée, Visée stable, Exploitation du pouvoir divin, sorts "
+        "supplémentaires des listes… Celles qui remplacent une aptitude (Ennemi favori, Explorateur expert, "
+        "Conscience primordiale, Voile de la nature, Frappes bénies) ne s'appliquent pas. Fiches 2014 seulement.",
+        "Chaudron des merveilles de Tasha (2020)", "Classes", True, False),
 )
 BY_KEY: dict[str, HouseRule] = {r.cle: r for r in RULES}
 

@@ -17,7 +17,20 @@ ENTRIES = [
     (("attaque temeraire",), "Avant d'attaquer", "Attaque téméraire : avant votre première attaque, avantage à vos "
      "attaques de Force ce tour-ci ; les attaques contre vous ont l'avantage jusqu'à votre prochain tour.", None),
     (("visee stable",), "Avant d'attaquer", "Visée stable : action bonus, sans vous être déplacé : avantage à votre "
-     "prochaine attaque ce tour-ci (votre vitesse tombe à 0).", 2024),
+     "prochaine attaque ce tour-ci (votre vitesse tombe à 0).", None),
+    (("attaque alimentee par le ki",), "Avant d'attaquer", "Attaque alimentée par le ki : si votre action a dépensé "
+     "du ki, une attaque à mains nues ou d'arme de moine par une action bonus.", 2014),
+    (("bond instinctif",), "Déplacement", "Bond instinctif : en entrant en rage, déplacez-vous jusqu'à la moitié de "
+     "votre vitesse.", 2014),
+    (("inspiration magique",), "Pour vos alliés", "Inspiration magique : un allié qui a votre dé d'inspiration peut "
+     "l'ajouter aux dégâts ou aux soins d'un sort.", 2014),
+    (("polyvalence", "versatilite magique", "sorts mineurs polyvalents"), "Hors combat", "Polyvalence (Tasha) : à "
+     "chaque niveau d'amélioration de caractéristique, vous pouvez échanger un style de combat, un sort mineur, "
+     "une option de Métamagie ou un sort connu.", 2014),
+    (("formules de sorts mineurs",), "Hors combat", "Formules de sorts mineurs : après un repos long, échangez un "
+     "tour de magie de magicien.", 2014),
+    (("focaliseur d'incantation",), "Hors combat", "Focaliseur d'incantation : un focaliseur druidique remplace les "
+     "composantes matérielles de vos sorts de rôdeur.", 2014),
     (("attaque sournoise",), "Avant d'attaquer", "Attaque sournoise : cherchez l'avantage ou un allié à 1,50 m de la "
      "cible, avec une arme de finesse ou à distance (une fois par tour).", None),
     (("frappe brutale",), "Avant d'attaquer", "Frappe brutale : avec Attaque téméraire, renoncez à l'avantage sur une "
@@ -74,7 +87,7 @@ class RememberMixin:
 
     def remember_list(self) -> dict[str, list[str]]:
         names = [norm(f["nom"]) for e in self.ch.classes for f in self.features(e)
-                 if f.get("debloque") and "option tasha" not in norm(f["nom"])]
+                 if f.get("debloque") and self.feature_allowed(f["nom"])]
         names += [norm(n) for n in self.chosen_feats()]
         race = [norm(c.get("nom", "")) for c in self.race_capacities()]
 

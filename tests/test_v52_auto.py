@@ -427,3 +427,46 @@ class RenamedTileLevelTests(unittest.TestCase):
         self.assertIn("Représailles", [a["nom"] for a in e24.class_actions()])      # niveau 10 en 2024
         e14 = sheet_sub("Barbare", 10, "2014", "Berserker")
         self.assertNotIn("Représailles", [a["nom"] for a in e14.class_actions()])   # niveau 14 en 2014
+
+
+class TashaOptionsTests(unittest.TestCase):
+    def test_additive_options_applied_on_2014(self):
+        monk = sheet("Moine", 5, "2014")
+        ids = {a["id"] for a in monk.class_actions()}
+        self.assertTrue({"cap:guerison_acceleree", "cap:visee_concentree"} <= ids)
+        heal = next(a for a in monk.class_actions() if a["id"] == "cap:guerison_acceleree")
+        self.assertEqual(heal["formule"], "1d6+3")
+        self.assertIn("arme_dediee", [s["key"] for s in monk.option_sets()])
+        monk.ch.options_classe = {"arme_dediee": ["Lance"]}
+        self.assertEqual(monk.dedicated_weapon(), "Lance")
+        druid = sheet("Druide", 3, "2014")
+        self.assertIn("Augure", [s["nom"] for s in druid.available_spells("Druide")])
+        barb = sheet("Barbare", 10, "2014")
+        self.assertEqual(next(s for s in barb.option_sets() if s["key"] == "connaissance_primitive")["total"], 2)
+        self.assertIn("Bond instinctif", barb.use_class_action("rage")["message"])
+
+    def test_harness_divine_power(self):
+        pal = sheet("Paladin", 5, "2014")
+        pal.ch.emplacements_utilises[0] = 2
+        pal.use_class_action("cap:exploitation_divine")
+        self.assertEqual(pal.ch.emplacements_utilises[0], 1)
+        self.assertIn("cap:canalisation_divine", {a["id"] for a in sheet("Clerc", 2, "2014").class_actions()})
+
+    def test_replacing_options_never_applied(self):
+        ranger = sheet("Rôdeur", 10, "2014")
+        self.assertEqual(ranger.speed(), 9.0)                         # Vagabond (Explorateur expert) non appliqué
+        self.assertFalse(ranger.feature_allowed("Voile de la nature (option Tasha)"))
+        self.assertFalse(ranger.feature_allowed("Ennemi favori (option Tasha)"))
+        cleric = sheet("Clerc", 8, "2014", "Domaine de la Vie")
+        self.assertNotIn("Frappes bénies", " ".join(o[0] for o in cleric.weapon_damage_spec(MACE).options))
+
+    def test_rule_toggle_and_2024(self):
+        pal = sheet("Paladin", 5, "2014")
+        pal.set_house_rule("options_tasha", False)
+        self.assertNotIn("cap:exploitation_divine", {a["id"] for a in pal.class_actions()})
+        for cls, lvl in (("Moine", 5), ("Paladin", 5), ("Druide", 3)):
+            eng = sheet(cls, lvl, "2024")
+            self.assertFalse(eng.tasha_on())
+            self.assertFalse(any(a["id"] in ("cap:guerison_acceleree", "cap:exploitation_divine",
+                                             "cap:compagnon_sauvage") for a in eng.class_actions()))
+        self.assertIn("cap:visee_stable_2024", {a["id"] for a in sheet("Roublard", 3, "2024").class_actions()})

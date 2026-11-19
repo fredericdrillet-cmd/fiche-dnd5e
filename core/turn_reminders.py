@@ -44,7 +44,7 @@ class TurnRemindersMixin:
         out = []
         for e in self.ch.classes:
             for f in self.features(e):
-                if f.get("debloque") and "option tasha" not in norm(f["nom"]):
+                if f.get("debloque") and self.feature_allowed(f["nom"]):
                     out.append((f["nom"], f.get("description", "")))
         for c in self.race_capacities():
             out.append((c.get("nom", ""), c.get("description", "")))

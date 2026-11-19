@@ -1367,7 +1367,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         unarmed = w["nom"] == "Mains nues"
         pancrace = unarmed and any(e["nom"] == "Guerrier" and "pancratiaste" in norm(self.active_subclass(e))
                                    for e in self.ch.classes)
-        monk_weapon = (bool(monk) or pancrace) and (unarmed or w["nom"] == "Épée courte" or (
+        monk_weapon = (bool(monk) or pancrace) and (unarmed or w["nom"] == "Épée courte" or
+                                                    w["nom"] == self.dedicated_weapon() or (
             w["categorie"] == "courante" and w["type"] == "cac" and not {"lourde", "deux mains"} & set(props)))
         if "finesse" in props or monk_weapon:
             ab = self._best_physical()
@@ -1776,6 +1777,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if include_all:
             return [s for s in self.db.all_spells() if self.allowed(s)]
         pool = self.db.spells_for_class(c["liste"])
+        pool += [s for s in self.tasha_extra_spells(class_name) if s not in pool]   # v52 : options de Tasha
         return [s for s in pool if (s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]) and self.allowed(s)]
 
     def can_learn(self, class_name: str, spell_name: str) -> bool:

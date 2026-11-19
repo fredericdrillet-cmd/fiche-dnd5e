@@ -315,8 +315,10 @@ class RememberTests(unittest.TestCase):
             self.assertEqual(len(rage), 1)
             self.assertEqual("deux fois" in rage[0], ed == "2024")
         self.assertIn("Visée stable", " ".join(_sheet("Roublard", 3, "2024").remember_list()["Avant d'attaquer"]))
-        self.assertNotIn("Visée stable", " ".join(_sheet("Roublard", 3, "2014").remember_list().get(
-            "Avant d'attaquer", [])))                                         # option Tasha : jamais d'office
+        rogue14 = _sheet("Roublard", 3, "2014")
+        self.assertIn("Visée stable", " ".join(rogue14.remember_list()["Avant d'attaquer"]))   # option de Tasha
+        rogue14.set_house_rule("options_tasha", False)
+        self.assertNotIn("Visée stable", " ".join(rogue14.remember_list().get("Avant d'attaquer", [])))
 
     def test_race_traits_only_from_race(self):
         eng = _sheet("Magicien", 4, "2014")

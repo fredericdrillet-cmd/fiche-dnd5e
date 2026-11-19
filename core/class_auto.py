@@ -31,11 +31,33 @@ BLESSED = {"Clerc": ("frappes_benies", "Frappes bénies (Clerc 2024)", 7, 14, "r
                                  "(au niveau 15 : portée de 90 m au lieu de 9 m et plus)."})}
 
 
+# options de Tasha qui REMPLACENT une aptitude : jamais appliquées d'office
+TASHA_REPLACING = ("frappes benies", "ennemi favori", "explorateur expert", "conscience primordiale",
+                   "voile de la nature", "vagabond", "infatigable")
+
+
 class ClassAutoMixin:
     """Mélangé à Engine : utilise class_level, unlocked_feature_names, sheet_edition, ch, prof, mod."""
 
+    def tasha_on(self) -> bool:
+        """Règle de la table « Options de Tasha (ajouts) » active sur une fiche 2014."""
+        return getattr(self, "sheet_edition", 2014) == 2014 and self.rule_active("options_tasha")
+
+    def feature_allowed(self, name: str) -> bool:
+        """Aptitude prise en compte : toute aptitude normale ; une option de Tasha seulement si elle s'ajoute
+        (pas de remplacement) et que la règle est active."""
+        n = norm(name)
+        if "option tasha" not in n:
+            return True
+        return self.tasha_on() and not n.startswith(TASHA_REPLACING)
+
+    def has_tasha(self, fragment: str) -> bool:
+        frag = norm(fragment)
+        return self.tasha_on() and any(frag in n and "option tasha" in n and self.feature_allowed(n)
+                                       for n in self.unlocked_feature_names())
+
     def _feat_on(self, *names: str) -> bool:
-        have = [n for n in self.unlocked_feature_names() if "option tasha" not in n]
+        have = [n for n in self.unlocked_feature_names() if self.feature_allowed(n)]
         return any(n == x or n.startswith(x + " (") for x in map(norm, names) for n in have)
 
     @property
@@ -80,11 +102,22 @@ class ClassAutoMixin:
     # ------------------------------------------------------------------ compétences
     def class_option_sets(self) -> list[dict]:
         out = []
-        if self._ed24 and self.class_level("Barbare") >= 3:
+        barb = self.class_level("Barbare")
+        if barb >= 3 and (self._ed24 or self.has_tasha("connaissance primitive")):
             key = "connaissance_primitive"
-            out.append({"key": key, "label": "Connaissance primitive (Barbare 2024) : compétence",
-                        "total": 1, "options": {n: "" for n in BARBARIAN_SKILLS},
-                        "chosen": list((self.ch.options_classe or {}).get(key, []))[:1]})
+            n = 2 if (not self._ed24 and barb >= 10) else 1                # Tasha : 2e compétence au niveau 10
+            out.append({"key": key, "label": "Connaissance primitive ({}) : compétence{}".format(
+                "Barbare 2024" if self._ed24 else "option de Tasha", "s" * (n > 1)),
+                        "total": n, "options": {s: "" for s in BARBARIAN_SKILLS},
+                        "chosen": list((self.ch.options_classe or {}).get(key, []))[:n]})
+        if self.has_tasha("arme dediee"):
+            from . import rules as R
+            names = [w["nom"] for w in self.db.weapons.values() if w["nom"] != "Mains nues"
+                     and not {"lourde", "speciale"} & {norm(p) for p in w.get("proprietes", [])}
+                     and R.weapon_proficient(w["nom"], w["categorie"], self.weapon_proficiencies())]
+            out.append({"key": "arme_dediee", "label": "Arme dédiée (option de Tasha) : arme de moine",
+                        "total": 1, "options": {n: "" for n in sorted(names)},
+                        "chosen": list((self.ch.options_classe or {}).get("arme_dediee", []))[:1]})
         if self._ed24:
             for cls, (key, label, lvl, _, _, options) in BLESSED.items():
                 if self.class_level(cls) >= lvl:
@@ -93,9 +126,37 @@ class ClassAutoMixin:
         return out
 
     def class_skill_grants(self) -> set[str]:
-        if self._ed24 and self.class_level("Barbare") >= 3:
-            return set((self.ch.options_classe or {}).get("connaissance_primitive", [])[:1])
+        barb = self.class_level("Barbare")
+        if barb >= 3 and (self._ed24 or self.has_tasha("connaissance primitive")):
+            n = 2 if (not self._ed24 and barb >= 10) else 1
+            return set((self.ch.options_classe or {}).get("connaissance_primitive", [])[:n])
         return set()
+
+    def dedicated_weapon(self) -> str:
+        """Arme dédiée (Moine, option de Tasha) : arme choisie qui devient une arme de moine."""
+        if not self.has_tasha("arme dediee"):
+            return ""
+        picked = (self.ch.options_classe or {}).get("arme_dediee", [])
+        return picked[0] if picked else ""
+
+    def tasha_extra_spells(self, class_name: str) -> list[dict]:
+        """Sorts ajoutés à la liste de la classe par l'option « Sorts … supplémentaires » de Tasha."""
+        import re as _re
+        if not self.tasha_on():
+            return []
+        e = self.ch.find_class(class_name)
+        if not e:
+            return []
+        out = []
+        for f in self.features(e):
+            n = norm(f["nom"])
+            if not (f.get("debloque") and "option tasha" in n and "supplementaires" in n and n.startswith("sorts")):
+                continue
+            for piece in _re.split(r"[,;:.]|\bet\b|\(|\)", f.get("description", "")):
+                sp = self.db.find_spell(piece.strip())
+                if sp and sp not in out:
+                    out.append(sp)
+        return out
 
     def class_extra_expertise(self) -> int:
         n = 0
@@ -197,7 +258,7 @@ class ClassAutoMixin:
 
     # ================================================================== sous-classes (2014 et 2024)
     def _has(self, *frags: str) -> bool:
-        names = [n for n in self.unlocked_feature_names() if "option tasha" not in n]
+        names = [n for n in self.unlocked_feature_names() if self.feature_allowed(n)]
         return any(norm(f) in n for f in frags for n in names)
 
     def crit_min(self) -> int:
@@ -317,3 +378,14 @@ class ClassAutoMixin:
         gone = [k for k in self.ch.effets_actifs if k in imm]
         self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k not in imm]
         return gone
+
+    # ================================================================== v52 : options de Tasha (ajouts)
+    def harness_divine_power(self) -> str:
+        """Canalisation / Exploitation du pouvoir divin : rend le plus haut emplacement dépensé autorisé."""
+        import math
+        limit = math.ceil(self.prof / 2)
+        for lvl in range(min(limit, 9), 0, -1):
+            if self.ch.emplacements_utilises[lvl - 1] > 0:
+                self.ch.emplacements_utilises[lvl - 1] -= 1
+                return "emplacement de niveau {} récupéré".format(lvl)
+        return "aucun emplacement dépensé de niveau {} ou moins à récupérer".format(limit)

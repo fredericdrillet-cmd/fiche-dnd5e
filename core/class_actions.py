@@ -423,6 +423,8 @@ class ClassActionsMixin:
         for f in sub.get("capacites", []):
             if f["niveau"] > entry["niveau"] or not norm(f["nom"]).startswith("conduit divin"):
                 continue
+            if not self.feature_allowed(f["nom"]):         # v52 : option de Tasha selon la règle de la table
+                continue
             names = [x.strip() for x in f["nom"].split(":", 1)[-1].split("&") if x.strip()]
             desc = f["description"]
             for i, name in enumerate(names):
@@ -572,6 +574,11 @@ class ClassActionsMixin:
         if a["id"] == "rage":                            # v52 : Vitalité de l'arbre (Arbre-Monde 2024)
             extra = self.on_rage_start()
             spent = "{} — {}".format(spent, extra) if extra and spent else (extra or spent)
+        harness = a["id"] in ("cap:exploitation_divine", "cap:canalisation_divine") or (
+            a.get("choix") == "conduit" and norm(choice).startswith("canalisation de puissance divine"))
+        if harness:                                      # v52 : pouvoir divin (Tasha) — un emplacement revient
+            extra = self.harness_divine_power()
+            spent = "{} — {}".format(spent, extra) if spent else extra
         if a.get("pv_temp"):                             # Tombe de Levistus : PV temporaires
             self.apply_temp_hp(int(a["pv_temp"]))
         if a.get("rend"):                                # Récupération psionique : un dé revient dans la réserve

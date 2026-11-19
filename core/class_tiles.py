@@ -391,6 +391,40 @@ TILES = [
 from .subclass_2024 import tiles_2024  # noqa: E402
 TILES += tiles_2024()                            # v52 : sous-classes 2024 sans équivalent 2014
 
+
+def _tasha(tid, nom, icone, classe, niveau, kind, desc, feature, **kw):
+    tile = T(tid, nom, icone, classe, "", niveau, kind, desc, **kw)
+    tile["tasha"] = feature                          # nom de l'option dans les aptitudes de la classe
+    return tile
+
+
+TILES += [                                       # v52 : options de classe de Tasha (ajouts), fiches 2014
+    _tasha("guerison_acceleree", "Guérison accélérée", "💗", "Moine", 4, "Action",
+           "2 points de ki : regagnez un dé d'arts martiaux + votre bonus de maîtrise en PV.", "guerison acceleree",
+           cout={"ressource": "ki", "n": 2}, degats="1d{MA}+{BM}", soin=True),
+    _tasha("visee_concentree", "Visée concentrée", "🎯", "Moine", 5, "Spécial",
+           "Quand vous ratez une attaque : 1 à 3 points de ki, +2 au jet par point (un clic par point).",
+           "visee concentree", cout={"ressource": "ki", "n": 1}),
+    _tasha("visee_stable", "Visée stable", "🎯", "Roublard", 3, "Action bonus",
+           "Sans vous être déplacé ce tour : avantage à votre prochaine attaque ce tour-ci ; votre vitesse tombe à 0.",
+           "visee stable"),
+    _tasha("exploitation_divine", "Exploitation du pouvoir divin", "✨", "Paladin", 3, "Action bonus",
+           "1 Conduit divin : récupérez un emplacement de sort dépensé de niveau au plus la moitié de votre bonus de "
+           "maîtrise (arrondie au supérieur) — appliqué automatiquement.", "exploitation du pouvoir divin",
+           cout={"ressource": "conduit", "n": 1}),
+    _tasha("canalisation_divine", "Canalisation de puissance divine", "✨", "Clerc", 2, "Action bonus",
+           "1 Conduit divin : récupérez un emplacement de sort dépensé de niveau au plus la moitié de votre bonus de "
+           "maîtrise (arrondie au supérieur) — appliqué automatiquement.", "canalisation de puissance divine",
+           cout={"ressource": "conduit", "n": 1}),
+    _tasha("compagnon_sauvage", "Compagnon sauvage", "🦉", "Druide", 2, "Action",
+           "1 Forme sauvage : Appel de familier sans composantes matérielles (le familier est une fée, il disparaît "
+           "après la moitié de votre niveau de druide en heures).", "compagnon sauvage",
+           cout={"ressource": "forme", "n": 1}),
+    _tasha("guidage_magique", "Guidage magique", "🔁", "Ensorceleur", 5, "Spécial",
+           "Test de caractéristique raté : 1 point de sorcellerie pour relancer le d20 (le nouveau résultat "
+           "s'impose).", "guidage magique", cout={"ressource": "sorcellerie", "n": 1}),
+]
+
 # Métamagie (Ensorceleur) : option de classe choisie, une tuile par option, coût en points de sorcellerie
 METAMAGIC = {
     "Sort prudent": (1, "Jusqu'à mod. de Charisme créatures réussissent automatiquement le JS du sort."),
@@ -424,6 +458,8 @@ class ClassTilesMixin:
     def _tile_level(self, t: dict) -> int:
         e = self.ch.find_class(t["classe"])
         if not e:
+            return 0
+        if t.get("tasha") and not self.has_tasha(t["tasha"]):      # v52 : option de Tasha (ajout) active
             return 0
         alt = self.tile_feature_2024(t) if t.get("sc") and not t.get("ed") else {}
         if alt.get("masquer") or e["niveau"] < alt.get("niveau", t["niveau"]):   # v52 : niveau 2024 si renommée

@@ -30,6 +30,10 @@ def tiles_2024() -> list[dict]:
     INSP = {"ressource": "inspiration", "n": 1}
     FORME = {"ressource": "forme", "n": 1}
     return [
+        # Roublard — Visée stable (aptitude de base en 2024)
+        _t("visee_stable_2024", "Visée stable", "🎯", "Roublard", "", 3, "Action bonus",
+           "Sans vous être déplacé ce tour : avantage à votre prochaine attaque ce tour-ci ; votre vitesse tombe à 0 "
+           "jusqu'à la fin du tour."),
         # Barbare — Voie de l'Arbre-Monde
         _t("force_vivifiante", "Force vivifiante", "🌳", "Barbare", "arbre-monde", 3, "Spécial",
            "Au début de votre tour, en rage : une autre créature à 3 m gagne des PV temporaires (autant de d6 que "
@@ -191,6 +195,8 @@ class Subclass2024Mixin:
             msgs.append("Vitalité de l'arbre : {} PV temporaires".format(lvl))
         if "rage" not in self.ch.effets_actifs:          # la rage est ajoutée par l'action : on l'anticipe
             self.ch.effets_actifs.append("rage")
+        if self.class_level("Barbare") >= 7 and self.has_tasha("bond instinctif"):
+            msgs.append("Bond instinctif : déplacez-vous jusqu'à la moitié de votre vitesse")
         gone = self.purge_immune_conditions()            # Rage aveugle (Berserker, 2014 et 2024)
         if gone:
             msgs.append("Rage aveugle : fin de " + ", ".join(gone))
