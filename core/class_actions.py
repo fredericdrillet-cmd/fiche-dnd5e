@@ -526,6 +526,7 @@ class ClassActionsMixin:
         a = next((x for x in self.class_actions() if x["id"] == action_id), None)
         if a is None:
             return {"ok": False, "message": "Action indisponible.", "attaque": None, "degats": None, "soin": False}
+        self.clear_new("act:" + action_id)               # v52 : badge « Nouveau » retiré à la première utilisation
         state = self.class_action_state(a, slot_level)
         if not state["disponible"]:
             return {"ok": False, "message": "{} : {}".format(a["nom"], state["raison"]), "attaque": None,

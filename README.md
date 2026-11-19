@@ -362,6 +362,7 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **Quand vous touchez** : une fenêtre de cases (Attaque sournoise, Châtiment divin, Marque du chasseur, Frappe divine…) avant de lancer les dégâts, rien coché d'office ; coûts dépensés, « une fois par tour » suivi.
 - **🛡 On m'attaque !** : jet de l'ennemi contre votre CA, réactions proposées (Bouclier, Duelliste défensif, Mots cinglants, Esquive instinctive, Parade / Déviation…), puis dégâts typés ; « Subir les dégâts » toujours possible.
 - **Avant un repos** : la fenêtre de repos liste aussi ce qui n'a pas servi (rages, Second souffle, Conduit divin, emplacements…).
+- **✨ Nouveau** : après une montée de niveau, les capacités et sorts gagnés portent un badge jusqu'à leur première utilisation (ou au repos long).
 - **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
 - **Jet contre la mort** : bouton à 0 PV, résultat appliqué (20 = 1 PV, 1 = deux échecs), mort instantanée.
 - **Aptitudes 2024 calculées** : Sorcellerie innée (DD +1, avantage aux attaques de sorts, 2 par repos long, Sorcellerie incarnée au niveau 7), Ordre divin du Clerc et Ordre primitif du Druide (maîtrises, tour de magie, bonus de Sagesse aux tests), prérequis des dons 2024 (Faveurs épiques au niveau 19).

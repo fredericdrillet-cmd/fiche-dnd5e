@@ -553,7 +553,8 @@ class CombatTab(BaseTab):
             with blocked(b):
                 b.setChecked(name == self.turn_filter)
             b.setText("{} ({})".format(name, len(tiles) if name == "Tout" else counts.get(name, 0)))
-        key = tuple((x["id"], x["nom"], x["disponible"], x["origine"], x.get("groupe")) for x in shown) + \
+        key = tuple((x["id"], x["nom"], x["disponible"], x["origine"], x.get("groupe"), x.get("nouveau"))
+                    for x in shown) + \
             (self.turn_filter, t.key)
         if key != self._turn_key:
             self._turn_key = key
@@ -566,8 +567,10 @@ class CombatTab(BaseTab):
                 title = dict(self.TURN_GROUPS)[gkey]
                 head_lab.setText("{}  ({})".format(title, len(items)))
                 for n, x in enumerate(items):
-                    b = QPushButton("{} {}\n{} {} · {}".format(x["icone"], x["nom"], self.TURN_ICONS.get(x["type"], ""),
-                                                                x["type"], x["origine"]))
+                    b = QPushButton("{} {}{}\n{} {} · {}".format(x["icone"], x["nom"],
+                                                                  "  ✨ Nouveau" if x.get("nouveau") else "",
+                                                                  self.TURN_ICONS.get(x["type"], ""),
+                                                                  x["type"], x["origine"]))
                     b.setMinimumHeight(48)
                     b.setEnabled(x["disponible"])
                     b.setCursor(Qt.CursorShape.PointingHandCursor)

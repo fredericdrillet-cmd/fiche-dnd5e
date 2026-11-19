@@ -151,8 +151,13 @@ class TurnMixin:
             used = state.get(kind) if kind != "Gratuit" else False
             if ok and used:
                 ok, why = False, "{} déjà utilisée ce tour.".format("Réaction" if kind == "Réaction" else kind)
+            r = ref or {}
+            new = (self.is_new("act:" + r["action"]) if r.get("action") else
+                   self.is_new("sort:" + r["sort"]) if r.get("sort") else
+                   self.is_new("reac:" + r["reaction"]) if r.get("reaction") else False)   # v52 : badge
             out.append({"id": tid, "nom": nom, "icone": icone, "type": kind, "origine": origine,
-                        "description": desc, "disponible": ok, "raison": why, "cout": cost, "ref": ref or {}})
+                        "description": desc, "disponible": ok, "raison": why, "cout": cost, "ref": r,
+                        "nouveau": new})
 
         # armes équipées : l'action Attaquer permet plusieurs attaques (Attaque supplémentaire)
         n_att, done = self.attacks_per_action(), int(self.ch.tour_attaques)

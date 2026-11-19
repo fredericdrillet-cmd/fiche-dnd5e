@@ -1086,6 +1086,7 @@ def run_level_up(win) -> bool:
 def apply_level_up(win, sim, cls: str) -> None:
     for e in sim.ch.classes:
         e.pop("_wizard_sub", None)
+    sim.mark_new_since(win.engine.snapshot_known())     # v52 : badges « ✨ Nouveau »
     win.engine = sim
     win.changed()
     note = win.missing_note() if hasattr(win, "missing_note") else ""

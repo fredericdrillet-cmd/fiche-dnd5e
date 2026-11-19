@@ -362,7 +362,8 @@ class ClassPanel(QWidget):
             self.feat_list.clear()
             for f in self._features:
                 tag = "★ " if f["sous_classe"] else ""
-                item = QListWidgetItem("Niv. {:>2} — {}{}".format(f["niveau"], tag, f["nom"]))
+                item = QListWidgetItem("Niv. {:>2} — {}{}{}".format(f["niveau"], tag, f["nom"], "  ✨ Nouveau" if
+                                                                      eng.is_new("apt:" + f["nom"]) else ""))
                 item.setToolTip(formula_tip(eng, "{} (niveau {})".format(f["nom"], f["niveau"]), f["description"], e["nom"]))
                 if not f["debloque"]:
                     item.setForeground(QBrush(QColor(theme.current().locked)))

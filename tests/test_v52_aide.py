@@ -277,3 +277,29 @@ class RestSummaryTests(unittest.TestCase):
         win = MainWindow(DB)
         win.engine = _sheet("Guerrier", 5, "2024")
         RestDialog(win, "short")
+
+
+class NoveltyTests(unittest.TestCase):
+    def test_level_up_marks_new_and_clears(self):
+        for ed in ("2014", "2024"):
+            eng = _sheet("Guerrier", 1, ed)
+            before = eng.snapshot_known()
+            eng.ch.classes[0]["niveau"] = 2
+            eng.normalize()
+            new = eng.mark_new_since(before)
+            self.assertIn("act:sursaut", new, ed)                          # Fougue / Sursaut d'activité
+            tile = next(t for t in eng.turn_actions() if (t.get("ref") or {}).get("action") == "sursaut")
+            self.assertTrue(tile["nouveau"])
+            eng.use_class_action("sursaut")
+            self.assertFalse(eng.is_new("act:sursaut"))
+            self.assertTrue(any(k.startswith("apt:") for k in eng.ch.nouveautes))
+            eng.long_rest()
+            self.assertEqual(eng.ch.nouveautes, [])
+
+    def test_new_spell_badge_and_save(self):
+        from core.character import Character
+        eng = _sheet("Magicien", 3, "2024")
+        eng.mark_new("sort:Projectile magique (2024)")
+        self.assertEqual(Character.from_dict(eng.ch.to_dict()).nouveautes, ["sort:Projectile magique (2024)"])
+        eng.cast_spell("Projectile magique (2024)")
+        self.assertFalse(eng.is_new("sort:Projectile magique (2024)"))

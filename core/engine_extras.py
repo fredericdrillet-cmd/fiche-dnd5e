@@ -564,6 +564,7 @@ class ExtrasMixin:
 
     def use_reaction(self, key: str) -> None:
         """Clic sur une réaction : la marque utilisée pour ce round (un second clic l'annule)."""
+        self.clear_new("reac:" + key)
         self.ch.reaction_utilisee = "" if self.ch.reaction_utilisee == key else key
 
     def new_round(self) -> list[str]:
@@ -660,6 +661,7 @@ class ExtrasMixin:
         spell = self.db.find_spell(spell_name)
         if not spell:
             return {"ok": False, "message": f"Sort introuvable : {spell_name}", "emplacement": None}
+        self.clear_new("sort:" + spell["nom"])           # v52 : badge « Nouveau »
         block = self.spell_block_reason()
         if block:
             return {"ok": False, "emplacement": None, "message": block[1]}

@@ -204,6 +204,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 5. **Avant un repos** (`unused_before_rest`, fenêtre de repos) : ressources jamais dépensées depuis leur retour (repos court : celles qui reviennent au repos court ; repos long : toutes), emplacements de sort et de pacte non utilisés.
 
+6. **Badge « ✨ Nouveau »** (`core/novelty.py`, `Character.nouveautes`) : à la validation de « Niveau supérieur », différence avant / après des tuiles (`act:`), réactions (`reac:`), sorts (`sort:`), aptitudes (`apt:`) et dons ; un sort ajouté dans l'onglet Magie est aussi marqué. Badge sur les tuiles de « Ce tour-ci », la liste des sorts et la liste des aptitudes ; retiré à la première utilisation ou au repos long.
+
 ### 4.14 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

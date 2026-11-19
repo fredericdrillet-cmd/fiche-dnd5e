@@ -583,6 +583,7 @@ class MagicTab(BaseTab):
         if why:
             self.win.statusBar().showMessage("« {} » appris comme {}".format(sp["nom"], why[0].lower() + why[1:]), 6000)
         lst.append({"nom": sp["nom"], "prepare": True})
+        self.engine.mark_new("sort:" + sp["nom"])        # v52 : badge « ✨ Nouveau »
         self._spell_list_changed()
         self._update_lib_btn()
 
@@ -962,7 +963,8 @@ class MagicTab(BaseTab):
                         self.chosen.setItem(r, col, cell("", "center", selectable=False))
                     continue
                 st = spell_status(row, ch.concentration, blocked_form)
-                label = row["nom"] + ("  (sous-classe)" if row["domaine"] else "")
+                label = row["nom"] + ("  (sous-classe)" if row["domaine"] else "") + (
+                    "  ✨ Nouveau" if eng.is_new("sort:" + row["nom"]) else "")              # v52 : badge
                 tip = rich_tip(row["nom"], eng.spell_description_at(row["nom"], 0, name)[0]) if row["sort"] else ""
                 color = t.muted if blocked_form else t.good if st["actif"] else t.accent_text if row["domaine"] else None
                 self.chosen.setItem(r, 0, cell("    " + label, "left", tip, color, bold=row["domaine"] or st["actif"]))
