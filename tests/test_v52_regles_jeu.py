@@ -134,3 +134,54 @@ class ConditionUiTests(unittest.TestCase):
         eng.ch.concentration = "Bénédiction"
         self.assertTrue(eng.add_effect("etourdi"))
         self.assertIn("Concentration rompue", eng.last_effect_message)
+
+
+class SeqRng:
+    def __init__(self, seq):
+        self.seq = list(seq)
+
+    def randint(self, a, b):
+        return self.seq.pop(0)
+
+
+class LuckTests(unittest.TestCase):
+    def test_halfling_rerolls_ones(self):
+        from core import dice as D
+        for ed, race in (("2014", "Halfelin Pied-léger"), ("2024", "Halfelin")):
+            eng = sheet("Guerrier", 3, ed)
+            eng.ch.race = race
+            eng.normalize()
+            self.assertTrue(eng.halfling_lucky(), ed)
+            spec = eng.prepare_d20_spec(eng.save_spec("Force"))
+            r = D.roll_d20(spec, SeqRng([1, 14]))
+            self.assertEqual(r.natural, 14)
+            self.assertIn("1 relancé", r.adjust)
+        self.assertFalse(sheet("Guerrier", 3, "2014").halfling_lucky())
+
+    def test_lucky_feat_2014_extra_die(self):
+        from core import dice as D
+        spec = D.RollSpec("t", mode="désavantage", luck_dice=[2, 17])
+        self.assertEqual(D.roll_d20(spec, SeqRng([9])).natural, 17)
+
+    def test_lucky_points_and_defense(self):
+        eng = sheet("Guerrier", 4, "2024")
+        sid = [x["id"] for x in eng.asi_slots()][0]
+        eng.ch.ameliorations[sid] = {"mode": "don", "don": "Chanceux (2024)", "don_carac": ""}
+        if not eng.luck_tracker():
+            eng.ch.ameliorations[sid]["don"] = "Chanceux"
+        self.assertEqual(eng.luck_left(), eng.prof)
+        opt = next(o for o in eng.defense_options("attaque") if o["key"] == "chance")
+        eng.ch.reaction_utilisee = "autre"
+        self.assertTrue(any(o["key"] == "chance" for o in eng.defense_options("attaque")))
+        r = eng.use_defense(opt)
+        self.assertTrue(r["desavantage"])
+        self.assertEqual(eng.luck_left(), eng.prof - 1)
+        self.assertEqual(eng.ch.reaction_utilisee, "autre")
+
+    def test_dice_dialog_luck_button(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.dice_dialog import DiceRollDialog
+        win = MainWindow(DB)
+        self.assertIsNone(DiceRollDialog(win, win.engine.skill_spec("Athlétisme")).luck_btn)

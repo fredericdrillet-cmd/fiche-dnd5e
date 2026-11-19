@@ -41,6 +41,8 @@ class RollSpec:
     d20_min: int = 1                                     # v52 : Talent fiable (d20 de 9 ou moins = 10)
     total_min: int = 0                                   # v52 : Puissance indomptable (total au moins la Force)
     floor_label: str = ""                                # source du plancher (affichée)
+    reroll_ones: str = ""                                # v52 : Chanceux du Halfelin (relance des 1 naturels)
+    luck_dice: list[int] = field(default_factory=list)   # v52 : don Chanceux 2014 (d20 déjà lancés, + 1)
 
     @property
     def flat(self) -> int:
@@ -84,8 +86,19 @@ def roll_d20(spec: RollSpec, rng=None) -> RollResult:
     rng = rng or random
     mode = spec.mode
     count = 2 if mode in ("avantage", "désavantage") else 1
-    d20s = [rng.randint(1, 20) for _ in range(count)]
-    natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+    luck = list(getattr(spec, "luck_dice", []) or [])
+    if luck:                                         # don Chanceux 2014 : un d20 de plus, on garde le meilleur
+        d20s = luck + [rng.randint(1, 20)]
+        natural = max(d20s)
+    else:
+        d20s = [rng.randint(1, 20) for _ in range(count)]
+        natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+    lucky_note = ""
+    if getattr(spec, "reroll_ones", "") and natural == 1 and not luck:   # Chanceux (halfelin) : on relance le 1
+        i = d20s.index(1) if mode != "avantage" else len(d20s) - 1 - d20s[::-1].index(1)
+        d20s[i] = rng.randint(1, 20)
+        natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+        lucky_note = "{} : 1 relancé → {}".format(spec.reroll_ones, d20s[i])
     values = [roll_die_expr(t.dice, rng) if t.dice else t.value for t in spec.terms]
     used = max(natural, getattr(spec, "d20_min", 1))
     total = used + sum(values)
@@ -97,6 +110,8 @@ def roll_d20(spec: RollSpec, rng=None) -> RollResult:
         adjust = "{} : total {} → {}".format(spec.floor_label or "Plancher", total, floor)
         total = floor
     crit = "succes" if natural >= getattr(spec, "crit_min", 20) else "echec" if natural == 1 else ""
+    if lucky_note:
+        adjust = lucky_note + (" ; " + adjust if adjust else "")
     return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec", adjust=adjust)
 
 

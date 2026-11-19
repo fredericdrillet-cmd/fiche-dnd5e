@@ -381,6 +381,17 @@ class DiceRollDialog(QDialog):
                 "relancez le d20 et gardez le nouveau résultat." if heroic else "relancez ce jet avec avantage."))
             self.inspire_btn.clicked.connect(lambda _=False, h=heroic: self._inspire(h))
             modes.addWidget(self.inspire_btn)
+        self.luck_btn = None                              # v52 : don Chanceux (points de chance)
+        if eng is not None and hasattr(eng, "luck_left") and spec.kind in ("test", "competence", "sauvegarde",
+                                                                            "attaque", "sort"):
+            left = eng.luck_left()
+            if isinstance(left, int) and left > 0:
+                old = eng.sheet_edition != 2024
+                self.luck_btn = QPushButton("🍀 Chanceux ({})".format(left))
+                self.luck_btn.setToolTip("Dépense un point de chance : " + (
+                    "lancez un d20 de plus et gardez le meilleur de tous." if old else "avantage à ce jet."))
+                self.luck_btn.clicked.connect(lambda _=False: self._luck())
+                modes.addWidget(self.luck_btn)
         modes.addStretch(1)
         lay.addLayout(modes)
         buttons = QHBoxLayout()
@@ -437,7 +448,10 @@ class DiceRollDialog(QDialog):
                 die.set_choice(kept=i == kept, dimmed=i != kept)
                 self.captions[i].setText("<b style='color:{}'>✔ Retenu</b>".format(self._accent) if i == kept
                                          else "<span style='color:gray'>✖ Écarté</span>")
-        if len(r.d20s) == 2:
+        if getattr(self.spec, "luck_dice", None):        # v52 : don Chanceux 2014
+            self.other.setText("Chanceux : {} — on garde le meilleur → <b>{}</b>".format(
+                ", ".join(str(x) for x in r.d20s), r.natural))
+        elif len(r.d20s) == 2:
             rule = "on garde le meilleur" if self.spec.mode == "avantage" else "on garde le moins bon"
             self.other.setText("{} : {} et {} — {} → <b>{}</b>".format(
                 self.spec.mode.capitalize(), r.d20s[0], r.d20s[1], rule, r.natural))
@@ -492,6 +506,15 @@ class DiceRollDialog(QDialog):
         while self.phase == "apply":
             self._apply_next()
 
+    def _luck(self) -> None:
+        if not self._eng.spend_luck():
+            return
+        self.lucky = True
+        if self._eng.sheet_edition == 2024:
+            self._reroll("" if self.spec.desavantage else "avantage")
+        else:
+            self._reroll(self.spec.mode)
+
     def _inspire(self, heroic: bool) -> None:
         self._eng.ch.inspiration = False
         self.inspired = True
@@ -531,6 +554,9 @@ def roll_dice(win, spec) -> "D.RollResult | None":
     """Ouvre la fenêtre de lancer (fond flouté semi-transparent) et renvoie le résultat."""
     if spec is None:
         return None
+    eng = getattr(win, "engine", None)
+    if eng is not None and hasattr(eng, "prepare_d20_spec"):
+        spec = eng.prepare_d20_spec(spec)               # v52 : Chanceux du Halfelin
     while True:
         backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
         dialog = DiceRollDialog(win, spec)
@@ -540,6 +566,14 @@ def roll_dice(win, spec) -> "D.RollResult | None":
             backdrop.dispose()
         if getattr(dialog, "reroll_mode", None) is None:
             break
+        if getattr(dialog, "lucky", False) is True:      # v52 : don Chanceux
+            import dataclasses
+            note = ((spec.note + " — ") if spec.note else "") + "Point de chance dépensé."
+            if eng is not None and eng.sheet_edition == 2024:
+                spec = dataclasses.replace(spec, mode=dialog.reroll_mode, note=note)
+            else:                                        # 2014 : les d20 déjà lancés + 1, on garde le meilleur
+                spec = dataclasses.replace(spec, luck_dice=list(dialog.result.d20s), note=note)
+            continue
         if getattr(dialog, "inspired", False) is True:   # v52 : relance par l'inspiration
             import dataclasses
             spec = dataclasses.replace(spec, mode=dialog.reroll_mode, note=((spec.note + " — ") if spec.note else "")
@@ -547,7 +581,6 @@ def roll_dice(win, spec) -> "D.RollResult | None":
             continue
         spec = with_mode(spec, dialog.reroll_mode)        # relance : seul le dernier jet compte
     r = dialog.result
-    eng = getattr(win, "engine", None)
     if eng is not None and hasattr(eng, "record_roll"):    # v52 : historique des lancers (Ctrl+H)
         eng.record_roll(spec.title, spec.kind, r.total, "d20 = {}{}".format(
             r.natural, " (critique)" if r.critical == "succes" else " (échec critique)" if r.critical else ""),

@@ -35,10 +35,11 @@ class DefenseMixin:
 
     def defense_options(self, stage: str, total: int = 0, melee: Optional[bool] = None) -> list[dict]:
         """Réactions possibles à ce stade (« attaque » avant les dégâts, « degats » après) ; [] si réaction prise."""
+        luck = self.luck_defense_option() if stage == "attaque" else []   # v52 : Chanceux 2024 (sans réaction)
         if self.ch.reaction_utilisee:
-            return []
+            return luck
         acts = {a["id"]: a for a in self.class_actions()}
-        out = []
+        out = list(luck)
         if stage == "attaque":
             spell = self._shield_spell()
             if spell and any(self.smite_levels()):
@@ -83,6 +84,11 @@ class DefenseMixin:
         rng = rng or random
         res = {"ok": True, "message": "", "ca": 0, "malus": 0, "moitie": False, "reduction": 0,
                "desavantage": False}
+        if option.get("chance"):                         # v52 : point de chance, pas de réaction
+            if not self.spend_luck():
+                return dict(res, ok=False, message="Plus de point de chance.")
+            return dict(res, desavantage=True, message="Chanceux : désavantage imposé à l'attaquant (point de chance "
+                                                         "dépensé).")
         if option.get("spell"):
             cast = self.cast_spell(option["spell"], slot_level=1, effect="bouclier")   # +5 CA jusqu'à votre tour
             if not cast["ok"]:
