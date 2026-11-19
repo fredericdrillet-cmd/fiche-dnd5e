@@ -398,6 +398,12 @@ def _tasha(tid, nom, icone, classe, niveau, kind, desc, feature, **kw):
     return tile
 
 
+for _tile in TILES:                              # v52 : la marque au toucher est l'option de Tasha « Ennemi favori »
+    if _tile["id"] == "cap:ennemi_jure":
+        _tile.update(nom="Ennemi favori", tasha="ennemi favori", effet="", description=(
+            "Quand vous touchez : marquez la créature (concentration, 1 minute) ; +dé aux dégâts une fois par tour "
+            "contre elle. Utilisations : bonus de maîtrise par repos long (option de Tasha)."))
+
 TILES += [                                       # v52 : options de classe de Tasha (ajouts), fiches 2014
     _tasha("guerison_acceleree", "Guérison accélérée", "💗", "Moine", 4, "Action",
            "2 points de ki : regagnez un dé d'arts martiaux + votre bonus de maîtrise en PV.", "guerison acceleree",
@@ -416,6 +422,12 @@ TILES += [                                       # v52 : options de classe de Ta
            "1 Conduit divin : récupérez un emplacement de sort dépensé de niveau au plus la moitié de votre bonus de "
            "maîtrise (arrondie au supérieur) — appliqué automatiquement.", "canalisation de puissance divine",
            cout={"ressource": "conduit", "n": 1}),
+    _tasha("voile_nature", "Voile de la nature", "🍃", "Rôdeur", 10, "Action bonus",
+           "Vous devenez invisible jusqu'au début de votre prochain tour (option de Tasha, remplace Camouflage).",
+           "voile de la nature", uses="BM", effet="invisible"),
+    _tasha("infatigable", "Infatigable", "💪", "Rôdeur", 10, "Action",
+           "Gagnez 1d8 + modificateur de Sagesse PV temporaires (minimum 1) ; un repos court retire un niveau "
+           "d'épuisement (option de Tasha).", "infatigable", uses="BM", degats="1d8+{MOD_SAG}"),
     _tasha("compagnon_sauvage", "Compagnon sauvage", "🦉", "Druide", 2, "Action",
            "1 Forme sauvage : Appel de familier sans composantes matérielles (le familier est une fée, il disparaît "
            "après la moitié de votre niveau de druide en heures).", "compagnon sauvage",

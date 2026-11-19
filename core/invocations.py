@@ -121,7 +121,8 @@ class InvocationsMixin:
 
     def granted_limit_left(self, key: str) -> Optional[int]:
         """Utilisations restantes d'un sort accordé limité (None = à volonté)."""
-        tr = next((t for t in self.invocation_trackers() + self.feat_trackers() if t["key"] == key), None)
+        tr = next((t for t in self.invocation_trackers() + self.feat_trackers() + self.tasha_trackers()
+                   if t["key"] == key), None)
         return None if tr is None else max(0, tr["total"] - self.resource_used(key))
 
     def spend_granted_limit(self, key: str) -> None:

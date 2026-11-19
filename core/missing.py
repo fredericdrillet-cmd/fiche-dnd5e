@@ -92,7 +92,7 @@ class MissingChoicesMixin:
                 out.append(("Don : " + feat, _count_word(m.group(1))))
         for e in self.ch.classes:
             for f in self.features(e):
-                m = rx.search(norm(f["description"])) if f["debloque"] else None
+                m = rx.search(norm(f["description"])) if f["debloque"] and self.feature_allowed(f["nom"]) else None
                 if m:
                     out.append(("{} : {}".format(e["nom"], f["nom"]), _count_word(m.group(1))))
         return out

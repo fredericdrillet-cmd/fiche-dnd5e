@@ -31,9 +31,18 @@ BLESSED = {"Clerc": ("frappes_benies", "Frappes bénies (Clerc 2024)", 7, 14, "r
                                  "(au niveau 15 : portée de 90 m au lieu de 9 m et plus)."})}
 
 
-# options de Tasha qui REMPLACENT une aptitude : jamais appliquées d'office
+# options de Tasha qui REMPLACENT une aptitude : jamais appliquées d'office, seulement si le joueur les choisit
 TASHA_REPLACING = ("frappes benies", "ennemi favori", "explorateur expert", "conscience primordiale",
                    "voile de la nature", "vagabond", "infatigable")
+# option choisie -> (classe, aptitudes remplacées, libellé de ce qui est remplacé)
+TASHA_REPLACEMENTS = {
+    "ennemi favori": ("Rôdeur", ("ennemi jure",), "Ennemi juré"),
+    "explorateur expert": ("Rôdeur", ("explorateur-ne", "explorateur ne"), "Explorateur-né"),
+    "conscience primordiale": ("Rôdeur", ("conscience primitive",), "Conscience primitive"),
+    "voile de la nature": ("Rôdeur", ("camouflage",), "Camouflage"),
+    "frappes benies": ("Clerc", ("frappe divine", "incantation puissante"), "Frappe divine ou Incantation puissante"),
+}
+FOLLOWS = {"vagabond": "explorateur expert", "infatigable": "explorateur expert"}
 
 
 class ClassAutoMixin:
@@ -44,12 +53,42 @@ class ClassAutoMixin:
         return getattr(self, "sheet_edition", 2014) == 2014 and self.rule_active("options_tasha")
 
     def feature_allowed(self, name: str) -> bool:
-        """Aptitude prise en compte : toute aptitude normale ; une option de Tasha seulement si elle s'ajoute
-        (pas de remplacement) et que la règle est active."""
+        """Aptitude prise en compte : toute aptitude normale (sauf si une option de Tasha choisie la remplace) ;
+        une option de Tasha si elle s'ajoute, ou si c'est un remplacement choisi par le joueur."""
         n = norm(name)
         if "option tasha" not in n:
+            return not self.feature_replaced(n)
+        if not self.tasha_on():
+            return False
+        rep = next((r for r in TASHA_REPLACING if n.startswith(r)), "")
+        if not rep:
             return True
-        return self.tasha_on() and not n.startswith(TASHA_REPLACING)
+        return FOLLOWS.get(rep, rep) in self.tasha_chosen()
+
+    def tasha_chosen(self) -> list[str]:
+        return [c for c in (self.ch.tasha_remplacements or []) if c in TASHA_REPLACEMENTS] if self.tasha_on() else []
+
+    def feature_replaced(self, n: str) -> bool:
+        """Aptitude 2014 remplacée par une option de Tasha que le joueur a choisie."""
+        for cle in self.tasha_chosen():
+            if any(n == o or n.startswith(o + " ") for o in TASHA_REPLACEMENTS[cle][1]):
+                return True
+        return False
+
+    def tasha_replacement_options(self, class_name: str) -> list[dict]:
+        """Options de Tasha qui remplacent une aptitude de cette classe : [{cle, nom, remplace, actif}]."""
+        if not self.tasha_on():
+            return []
+        out = []
+        for cle, (cls, _, label) in TASHA_REPLACEMENTS.items():
+            if cls == class_name and self.class_level(cls):
+                out.append({"cle": cle, "nom": cle.capitalize().replace("Frappes benies", "Frappes bénies"),
+                            "remplace": label, "actif": cle in self.tasha_chosen()})
+        return out
+
+    def set_tasha_replacement(self, cle: str, on: bool) -> None:
+        chosen = [c for c in (self.ch.tasha_remplacements or []) if c != cle]
+        self.ch.tasha_remplacements = chosen + ([cle] if on and cle in TASHA_REPLACEMENTS else [])
 
     def has_tasha(self, fragment: str) -> bool:
         frag = norm(fragment)
@@ -83,6 +122,8 @@ class ClassAutoMixin:
     def class_speed_bonus(self, armor_category: str) -> float:
         if self._ed24 and self.class_level("Rôdeur") >= 6 and armor_category != "lourde":
             return 3.0                                    # Nomade (Rôdeur 2024)
+        if self.has_tasha("vagabond") and armor_category != "lourde":
+            return 1.5                                    # Vagabond (Explorateur expert, Tasha)
         return 0.0
 
     def class_senses(self) -> list[str]:
@@ -159,7 +200,7 @@ class ClassAutoMixin:
         return out
 
     def class_extra_expertise(self) -> int:
-        n = 0
+        n = 1 if self.has_tasha("explorateur expert") else 0       # Tasha : expertise d'Explorateur expert
         if self._ed24 and self._feat_on("explorateur habile"):
             n += 1
         if self._ed24 and self.class_level("Magicien") >= 2:
@@ -176,6 +217,11 @@ class ClassAutoMixin:
     def class_weapon_riders(self, slot: dict) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
         """([(source, dés)] toujours ajoutés, [(source, dés)] une fois par tour) aux dégâts d'une arme."""
         always, once = [], []
+        if self.has_tasha("frappes benies"):              # Tasha (remplace Frappe divine / Incantation puissante)
+            once.append(("Frappes bénies (1/tour, radiants)", "1d8"))
+        if self.ch.concentration == "Ennemi favori" and self.has_tasha("ennemi favori"):
+            r = self.class_level("Rôdeur")
+            once.append(("Ennemi favori (1/tour, cible marquée)", "1d8" if r >= 14 else "1d6" if r >= 6 else "1d4"))
         w = self.db.weapons.get(slot.get("nom", ""), {})
         melee = w.get("type") == "cac"
         if melee and self._feat_on("chatiment divin ameliore", "frappes radiantes"):
@@ -400,3 +446,34 @@ class ClassAutoMixin:
                 self.ch.emplacements_utilises[lvl - 1] -= 1
                 return "emplacement de niveau {} récupéré".format(lvl)
         return "aucun emplacement dépensé de niveau {} ou moins à récupérer".format(limit)
+
+    # ------------------------------------------------------------------ v52 : remplacements de Tasha choisis
+    PRIMAL_AWARENESS = [(3, "Communication avec les animaux"), (5, "Sens animal"), (9, "Communication avec les plantes"),
+                        (13, "Localisation de créature"), (17, "Communion avec la nature")]
+
+    def tasha_granted_spells(self) -> list[dict]:
+        """Conscience primordiale : sorts toujours préparés, chacun lançable une fois sans emplacement par repos
+        long (format de granted_spells)."""
+        if not self.has_tasha("conscience primordiale"):
+            return []
+        from . import rules as R
+        lvl = self.class_level("Rôdeur")
+        m = self.mod("Sagesse")
+        out = []
+        for need, name in self.PRIMAL_AWARENESS:
+            spell = self.db.find_spell(name)
+            if lvl < need or not spell:
+                continue
+            key = "tasha:conscience:" + norm(name).replace(" ", "_")
+            left = max(0, 1 - self.resource_used(key))
+            out.append({"nom": spell["nom"], "niveau": spell["niveau"], "sort": spell,
+                        "usage": "1 fois sans emplacement / repos long — {} / 1 restant ; aussi avec vos emplacements"
+                                 .format(left), "source": "Conscience primordiale (Tasha)", "categorie": "Rôdeur",
+                        "emplacement": True, "limite": "1", "cle": key, "cible": "", "carac": "Sagesse",
+                        "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
+                        "recover": "repos long"})
+        return out
+
+    def tasha_trackers(self) -> list[dict]:
+        return [{"key": s["cle"], "label": s["nom"], "total": 1, "kind": "sursaut", "recover": "repos long",
+                 "where": "interne", "de": "", "info": s["usage"]} for s in self.tasha_granted_spells()]

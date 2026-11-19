@@ -224,6 +224,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 5. **Dons de combat** : `Character.attaque_puissante` (bascule −5 / +10 de Tireur d'élite et Briseur d'armes lourdes 2014, partagée entre la case de la ligne d'arme et la tuile ; détail du jet et des dégâts) ; tuiles d'attaque en action bonus : talon d'arme d'hast (1d4 contondant, Maître des armes d'hast / Maître d'hast 2024), arbalète de poing (Expert en arbalètes), attaque après un critique ou un ennemi à 0 PV (Briseur d'armes lourdes / Cogneur lourd 2024), Coup de bouclier (Maître des boucliers 2014 / 2024, DD calculé) ; rappel du bonus de bouclier aux JS de Dextérité (2014).
 
+6. **Options de Tasha qui remplacent** (`Character.tasha_remplacements`, `TASHA_REPLACEMENTS`, encart de l'onglet Classes, désactivées par défaut) : l'aptitude remplacée disparaît des aptitudes actives (`unlocked_feature_names`, `feature_replaced`). Ennemi favori (tuile de marque au toucher, concentration, dé 1d4 → 1d8 proposé aux dégâts ; la tuile 2014 « Ennemi juré » qui appliquait déjà cette mécanique ne s'affiche plus sans ce choix), Explorateur expert (expertise, deux langues, Vagabond +1,50 m, Infatigable : PV temporaires appliqués), Conscience primordiale (sorts lancés une fois sans emplacement), Voile de la nature (invisible), Frappes bénies 2014 (1d8 radiants une fois par tour, à la place de Frappe divine / Incantation puissante).
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

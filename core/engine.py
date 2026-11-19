@@ -759,7 +759,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         names = []
         for e in self.ch.classes:
             names += [norm(f["nom"]) for f in self.features(e) if f["debloque"]]
-        return names
+        return [n for n in names if not self.feature_replaced(n)]          # v52 : remplacées par Tasha
 
     @memo
     def has_feature(self, fragment: str) -> bool:
@@ -1312,6 +1312,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                             "categorie": "Manifestations occultes", "emplacement": bool(g.get("emplacement")),
                             "limite": g.get("limite", ""), "cle": key, "cible": g.get("cible", "")})
         out += self.feat_spells()                        # v52 : sorts des dons (Initié à la magie, Affinité féérique…)
+        out += self.tasha_granted_spells()               # v52 : Conscience primordiale (Tasha, si choisie)
         out += self.ritual_book_spells()                 # Livre des secrets anciens : rituels inscrits
         for g in self.ch.sorts_mj:                       # sorts accordés par le MJ (roleplay)
             spell = self.db.find_spell(g["nom"])

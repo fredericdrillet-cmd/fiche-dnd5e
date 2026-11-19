@@ -145,6 +145,7 @@ class ClassActionsMixin:
         out += self.invocation_trackers()                # manifestations occultes (v37)
         out += self.feat_trackers()                      # v52 : dons (points de chance, Faveurs épiques…)
         out += self.class_flag_trackers()                # v52 : Rage persistante, Restauration d'ensorceleur
+        out += self.tasha_trackers()                     # v52 : Conscience primordiale (Tasha)
         out += self.class_tile_trackers()                # v39 : aptitudes limitées des classes et sous-classes
         if self.class_level("Paladin"):
             pool = 5 * self.class_level("Paladin")
@@ -581,6 +582,18 @@ class ClassActionsMixin:
             spent = "{} — {}".format(spent, extra) if extra and spent else (extra or spent)
         harness = a["id"] in ("cap:exploitation_divine", "cap:canalisation_divine") or (
             a.get("choix") == "conduit" and norm(choice).startswith("canalisation de puissance divine"))
+        if a["id"] == "cap:ennemi_jure":                 # v52 : Ennemi favori (Tasha) — concentration
+            old = self.break_concentration() if self.ch.concentration not in ("", "Ennemi favori") else ""
+            self.ch.concentration = "Ennemi favori"
+            if old:
+                spent = (spent + " — " if spent else "") + "concentration sur {} rompue".format(old)
+        if a["id"] == "cap:infatigable":                 # v52 : Infatigable (Tasha) — PV temporaires appliqués
+            import random as _random
+            dice, flat = D.parse_damage(state["formule"] or "1d8")
+            n = max(1, flat + sum(sg * sum(_random.randint(1, f) for _ in range(k)) for sg, k, f in dice))
+            self.apply_temp_hp(n)
+            return {"ok": True, "message": "Infatigable : {} PV temporaires.".format(n), "attaque": None,
+                    "degats": None, "soin": False, "lancer_maintenant": False}
         if a["id"] == "cap:ruse_magique":                # v52 : Ruse magique (Occultiste 2024)
             import math as _math
             back = min(self.ch.pacte_utilises, _math.ceil(self.pact()[0] / 2))

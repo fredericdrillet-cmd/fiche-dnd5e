@@ -146,6 +146,14 @@ class ClassPanel(QWidget):
         row.addWidget(self.prof_box, 1)
         lay.addLayout(row)
 
+        # v52 : options de Tasha qui remplacent une aptitude (choix du joueur, désactivées par défaut)
+        self.tasha_box = QGroupBox("Options de Tasha qui remplacent une aptitude (avec l'accord du MJ)")
+        self.tasha_lay = QHBoxLayout(self.tasha_box)
+        self.tasha_checks: dict[str, QCheckBox] = {}
+        self._tasha_key = None
+        self.tasha_box.setVisible(False)
+        lay.addWidget(self.tasha_box)
+
         # --- aptitudes + détail + sorts associés
         split = QSplitter(Qt.Orientation.Horizontal)
         feat_box = QGroupBox("Aptitudes et capacités (survolez pour le détail)")
@@ -282,7 +290,33 @@ class ClassPanel(QWidget):
                 theme.current().accent_text, html.escape(f["nom"]), f["niveau"], html.escape(f["source"]), state, formula_html(self.tab.engine, f["description"], self.entry["nom"])))
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _refresh_tasha(self) -> None:
+        opts = self.tab.engine.tasha_replacement_options(self.entry["nom"])
+        self.tasha_box.setVisible(bool(opts))
+        key = tuple(o["cle"] for o in opts)
+        if key != self._tasha_key:
+            self._tasha_key = key
+            while self.tasha_lay.count():
+                item = self.tasha_lay.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            self.tasha_checks = {}
+            for o in opts:
+                cb = QCheckBox("{} (remplace {})".format(o["nom"], o["remplace"]))
+                cb.toggled.connect(lambda on, k=o["cle"]: self._on_tasha(k, on))
+                self.tasha_lay.addWidget(cb)
+                self.tasha_checks[o["cle"]] = cb
+            self.tasha_lay.addStretch(1)
+        for o in opts:
+            with blocked(self.tasha_checks[o["cle"]]):
+                self.tasha_checks[o["cle"]].setChecked(o["actif"])
+
+    def _on_tasha(self, cle: str, on: bool) -> None:
+        self.tab.engine.set_tasha_replacement(cle, on)
+        self.tab.changed()
+
     def refresh(self):
+        self._refresh_tasha()
         eng, db, e = self.tab.engine, self.tab.engine.db, self.entry      # v52 : classes de l'édition de la fiche
         owned = {c["nom"] for i, c in enumerate(self.tab.ch.classes) if i != self.index}
         fill_combo(self.class_combo, [n for n in db.class_names() if n not in owned], e["nom"])

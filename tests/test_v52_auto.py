@@ -535,3 +535,42 @@ class CombatFeatTests(unittest.TestCase):
         self.assertNotIn("don_puissance", ids)                                     # pas de −5/+10 en 2024
         res = e24.use_class_action("don_pommeau")
         self.assertTrue(res["degats"].formula.startswith("1d4"))
+
+
+class TashaReplacementTests(unittest.TestCase):
+    def test_ranger_replacements(self):
+        r = sheet("Rôdeur", 10, "2014")
+        self.assertEqual([o["cle"] for o in r.tasha_replacement_options("Rôdeur")],
+                         ["ennemi favori", "explorateur expert", "conscience primordiale", "voile de la nature"])
+        ids = {a["id"] for a in r.class_actions()}
+        self.assertFalse(ids & {"cap:ennemi_jure", "cap:voile_nature", "cap:infatigable"})   # rien d'office
+        speed, exp = r.speed(), r.expertise_allowed()
+        for cle in ("ennemi favori", "explorateur expert", "conscience primordiale", "voile de la nature"):
+            r.set_tasha_replacement(cle, True)
+        ids = {a["id"] for a in r.class_actions()}
+        self.assertTrue({"cap:ennemi_jure", "cap:voile_nature", "cap:infatigable"} <= ids)
+        self.assertEqual(r.speed(), speed + 1.5)                                   # Vagabond
+        self.assertEqual(r.expertise_allowed(), exp + 1)
+        self.assertIn("Communication avec les animaux", [g["nom"] for g in r.granted_spells()])
+        self.assertFalse(r.has_feature("camouflage"))                              # aptitude remplacée
+        r.use_class_action("cap:ennemi_jure")
+        self.assertEqual(r.ch.concentration, "Ennemi favori")
+        self.assertTrue(any(o[0].startswith("Ennemi favori") for o in
+                            r.weapon_damage_spec({"nom": "Arc long", "bonus": 0, "maitrise": None}).options))
+        r.ch.pv_temporaires = 0
+        r.use_class_action("cap:infatigable")
+        self.assertGreater(r.ch.pv_temporaires, 0)
+
+    def test_blessed_strikes_replaces_divine_strike(self):
+        c = sheet("Clerc", 8, "2014", "Domaine de la Vie")
+        self.assertTrue(any(o[0].startswith("Frappe divine") for o in c.weapon_damage_spec(MACE).options))
+        c.set_tasha_replacement("frappes benies", True)
+        opts = [o[0] for o in c.weapon_damage_spec(MACE).options]
+        self.assertTrue(any(o.startswith("Frappes bénies") for o in opts))
+        self.assertFalse(any(o.startswith("Frappe divine") for o in opts))
+
+    def test_not_on_2024_or_without_rule(self):
+        self.assertEqual(sheet("Rôdeur", 10, "2024").tasha_replacement_options("Rôdeur"), [])
+        r = sheet("Rôdeur", 10, "2014")
+        r.set_house_rule("options_tasha", False)
+        self.assertEqual(r.tasha_replacement_options("Rôdeur"), [])
