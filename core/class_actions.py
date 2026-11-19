@@ -541,6 +541,10 @@ class ClassActionsMixin:
                     "degats": None, "soin": False}
         if state.get("actif"):                           # capacité active : on y met fin, sans coût
             self.remove_effect(a["effet"])
+            if a["effet"] == "rage" and "frenesie" in self.ch.effets_actifs and self.sheet_edition == 2014:
+                self.remove_effect("frenesie")           # v52 : Frénésie 2014 — un niveau d'épuisement
+                return {"ok": True, "message": "{} : fin de l'effet. {}".format(a["nom"], self.gain_exhaustion(
+                    "Frénésie")), "attaque": None, "degats": None, "soin": False, "lancer_maintenant": False}
             return {"ok": True, "message": "{} : fin de l'effet.".format(a["nom"]), "attaque": None, "degats": None,
                     "soin": False, "lancer_maintenant": False}
         needs_reaction = self.action_needs_reaction(a, choice) or (

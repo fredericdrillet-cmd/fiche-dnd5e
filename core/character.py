@@ -96,6 +96,8 @@ class Character:
     effets_actifs: list[str] = field(default_factory=list)      # clés de core/effects.py (buffs, débuffs, états)
     effets_retires: list[str] = field(default_factory=list)     # traits innés (race / classe) retirés volontairement
     effets_potions: list[str] = field(default_factory=list)     # effets venus d'un consommable (expirent au repos)
+    effets_rounds: dict = field(default_factory=dict)            # v52 : rounds restants par effet (1 minute = 10)
+    effets_rounds_max: dict = field(default_factory=dict)        # v52 : durée complète (« Prolonger »)
     concentration: str = ""                 # sort dont la concentration est en cours
     concentration_cible: str = ""           # "soi" | "allie" : destinataire du sort de concentration
     concentration_effet: str = ""           # effet appliqué sur soi par ce sort (retiré quand la concentration cesse)

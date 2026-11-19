@@ -21,6 +21,7 @@ from core.proficiencies import CAST_BLOCKED, WEAPON_WARNING
 from . import theme
 from .orbs import GaugeBar, OrbBar
 from core import dice as D
+from core import durations as D_
 from .common import (CENTER, BaseTab, DamageLabel, adv_badge, blocked, calc_tip, center, fill_combo, formula_html,
                      head, hline, make_label, rich_tip)
 from .dialogs import ask_choice, ask_yes_no
@@ -360,6 +361,26 @@ class CombatTab(BaseTab):
         conc.addWidget(self.conc_label, 1)
         conc.addWidget(self.conc_btn)
         fl.addLayout(conc)
+        exh = QHBoxLayout()                               # v52 : épuisement selon l'édition
+        self.exh_minus = QPushButton("−")
+        self.exh_plus = QPushButton("＋")
+        for b in (self.exh_minus, self.exh_plus):
+            b.setProperty("role", "ghost")
+            b.setFixedWidth(34)
+        self.exh_label = make_label("")
+        self.exh_roll = QPushButton("🎲 JS d'épuisement…")
+        self.exh_roll.setProperty("role", "ghost")
+        self.exh_roll.setToolTip(rich_tip("JS d'épuisement", "Marche forcée, chaleur ou froid extrêmes, privation… "
+                                          "Le DD officiel est proposé ; un échec ajoute un niveau d'épuisement."))
+        self.exh_minus.setToolTip(rich_tip("Épuisement", "Retire un niveau (un repos long en retire un aussi)."))
+        self.exh_plus.setToolTip(rich_tip("Épuisement", "Ajoute un niveau d'épuisement."))
+        exh.addWidget(make_label("Épuisement", "muted"))
+        exh.addWidget(self.exh_minus)
+        exh.addWidget(self.exh_label)
+        exh.addWidget(self.exh_plus)
+        exh.addWidget(self.exh_roll)
+        exh.addStretch(1)
+        fl.addLayout(exh)
         self.fx_holder = QWidget()
         self.fx_grid = QGridLayout(self.fx_holder)
         self.fx_grid.setContentsMargins(0, 0, 0, 0)
@@ -438,6 +459,9 @@ class CombatTab(BaseTab):
         self.fx_add.clicked.connect(self._on_add_effect)
         self.fx_combo.activated.connect(lambda _=0: None)
         self.fx_clear.clicked.connect(self._on_clear_effects)
+        self.exh_minus.clicked.connect(lambda: self._on_exhaustion(-1))
+        self.exh_plus.clicked.connect(lambda: self._on_exhaustion(1))
+        self.exh_roll.clicked.connect(lambda: self.open_exhaustion())
         self.conc_btn.clicked.connect(self._on_break_concentration)
         self.armor.activated.connect(self._on_armor)
         self.armor_magic.activated.connect(self._on_armor)
@@ -1005,7 +1029,8 @@ class CombatTab(BaseTab):
     def _refresh_effects(self):
         eng, t = self.engine, theme.current()
         keys = eng.active_effect_keys()
-        state = (tuple(keys), tuple(eng.innate_effects()), self.ch.concentration, t.key)
+        timers = tuple(eng.effect_rounds(k) for k in keys)
+        state = (tuple(keys), tuple(eng.innate_effects()), self.ch.concentration, t.key, timers)
         if state != self._fx_key:
             self._fx_key = state
             clear_layout(self.fx_grid)
@@ -1023,8 +1048,15 @@ class CombatTab(BaseTab):
                 if k == "concentration":
                     tip += "<p>🧠 Sort en cours : <b>{}</b> — clic : rompre la concentration.</p>".format(
                         self.ch.concentration)
+                left = eng.effect_rounds(k)
+                short = ""
+                if left is not None:                      # v52 : décompte en rounds
+                    tip += "<p>⏳ <b>{}</b> — baisse à chaque « ▶ Début de mon tour » et avec le temps qui " \
+                           "passe.</p>".format(eng.effect_rounds_text(k))
+                    short = "{} r".format(left) if left < 20 else D_.rounds_text(left)
                 badge = EffectBadge(k, e["icone"], e["nom"], e["categorie"], tip,
-                                    on_remove=self._on_remove_effect, permanent=bool(source))
+                                    on_remove=self._on_remove_effect, permanent=bool(source), timer=short,
+                                    on_extend=self._on_extend_effect if left is not None else None)
                 self.fx_grid.addWidget(badge, n // FX_PER_ROW, n % FX_PER_ROW)
             self.fx_grid.setColumnStretch(FX_PER_ROW, 1)
         self.fx_holder.setVisible(bool(keys))
@@ -1038,6 +1070,10 @@ class CombatTab(BaseTab):
         self.fx_defenses.setText("   ".join(parts))
         self.fx_defenses.setToolTip(rich_tip("Résistances et immunités", "\n".join(
             "{} — {}".format(x, src) for field in ("resistances", "immunites") for x, src in d[field])) if parts else "")
+        n = eng.exhaustion_level()
+        self.exh_label.setText("{}  {}".format("◆" * n + "◇" * (6 - n), eng.exhaustion_text()))
+        self.exh_minus.setEnabled(n > 0)
+        self.exh_plus.setEnabled(n < 6)
         lines = eng.effect_summary_lines()
         self.fx_summary.setText("Modificateurs en vigueur : " + " · ".join(lines) if lines else "")
         self._fill_fx_picker()
@@ -1050,7 +1086,9 @@ class CombatTab(BaseTab):
             self.conc_label.setText("🧠 Concentration en cours : {}{} — lancer un autre sort de concentration la "
                                     "romprait. Un JS de Constitution (DD 10 ou moitié des dégâts) est requis quand "
                                     "vous subissez des dégâts.".format(name, " (lancé sur un allié)"
-                                                                       if self.ch.concentration_cible == "allie" else ""))
+                                                                       if self.ch.concentration_cible == "allie" else "")
+                                    + (" ⏳ " + self.engine.effect_rounds_text("concentration") + "."
+                                       if self.engine.effect_rounds("concentration") is not None else ""))
 
     def _refresh_weapon_extras(self, key: str, i: int, w: dict, slot: dict, st):
         """Pastilles d'actions d'arme (infobulle riche immédiate) et sélecteur de munitions."""
@@ -1772,6 +1810,25 @@ class CombatTab(BaseTab):
     def focus_hp_entry(self) -> None:
         self.hp_entry.setFocus()
         self.hp_entry.selectAll()
+
+    def _on_extend_effect(self, key: str) -> None:
+        msg = self.engine.extend_effect(key)
+        if msg:
+            self._message(msg)
+            self.changed()
+
+    def _on_exhaustion(self, delta: int) -> None:
+        self._message(self.engine.set_exhaustion(self.engine.exhaustion_level() + delta))
+        self.changed()
+
+    def open_exhaustion(self, cause: str = "marche") -> bool:
+        from .exhaustion_dialog import ExhaustionDialog
+        dlg = ExhaustionDialog(self.win, cause)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            return True
+        return False
 
     def maybe_concentration_save(self) -> None:
         """v52 : après des dégâts subis en se concentrant, propose le JS de Constitution et applique le résultat."""

@@ -99,6 +99,7 @@ class RestDialog(QDialog):
             self._build_spell_section(lay)
 
         self.ration = None
+        self.starving = None
         if long_rest:
             warn = eng.long_rest_warning()
             if warn:
@@ -113,6 +114,8 @@ class RestDialog(QDialog):
                     lay.addWidget(make_label("⚠ Aucune ration : le personnage se repose le ventre vide. Au-delà de "
                                              "3 + modificateur de Constitution jours sans manger, il subit un niveau "
                                              "d'épuisement par jour (PHB).", "warn", wrap=True))
+                    self.starving = QCheckBox("Délai dépassé : +1 niveau d'épuisement (privation de nourriture)")
+                    lay.addWidget(self.starving)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)
@@ -245,6 +248,8 @@ class RestDialog(QDialog):
         eng = self.win.engine
         if self.kind == "long":
             eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()))
+            if self.starving is not None and self.starving.isChecked():     # v52 : après la récupération du repos
+                eng.gain_exhaustion("Privation de nourriture")
             self.spell_messages = self._apply_spell_changes()
         else:
             eng.do_short_rest()

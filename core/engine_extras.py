@@ -22,6 +22,7 @@ from . import mechanics as M
 from . import rules as R
 from . import weapon_actions as WA
 from .rules import norm
+from .durations import parse_rounds
 from .feat_effects import feat_base as feat_base_name
 
 START_MINUTES = 8 * 60                      # l'aventure commence le jour 1 à 8 h 00
@@ -112,8 +113,9 @@ class ExtrasMixin:
         t = START_MINUTES + int(self.ch.temps_minutes if minutes is None else minutes)
         return "Jour {}, {:02d}:{:02d}".format(1 + t // DAY, (t % DAY) // 60, t % 60)      # « Jour 1, 09:00 »
 
-    def advance_time(self, minutes: int) -> None:
+    def advance_time(self, minutes: int) -> list[str]:
         self.ch.temps_minutes = int(self.ch.temps_minutes) + int(minutes)
+        return self.tick_effects(int(minutes) * 10) if minutes > 0 else []   # v52 : durées en rounds
 
     # ==================================================================================
     # Effets actifs (barre d'états) : effets ajoutés + traits innés (race, classe)
@@ -178,6 +180,7 @@ class ExtrasMixin:
         if key.startswith("epuisement_"):                  # un seul niveau d'épuisement à la fois
             self.ch.effets_actifs = [k for k in self.ch.effets_actifs if not k.startswith("epuisement_")]
         self.ch.effets_actifs.append(key)
+        self.start_effect_timer(key)                     # v52 : « 1 minute » = 10 rounds
         return True
 
     def remove_effect(self, key: str) -> None:
@@ -251,6 +254,8 @@ class ExtrasMixin:
         out = []
         for k in self.active_effect_keys():
             m = M.mech(k)
+            if k.startswith("epuisement_") and self.sheet_edition == 2024:    # v52 : épuisement 2024
+                m = self.exhaustion_mech_2024(int(k.split("_")[1]))
             if m:
                 out.append((FX.EFFECTS[k]["nom"], m))
         out += self.order_modifiers()                    # v52 : Thaumaturge / Magicien (2024)
@@ -580,8 +585,9 @@ class ExtrasMixin:
             "jusqu'au debut de votre prochain tour")]   # v52 : Bouclier, Esquiver… prennent fin
         for k in ending:
             self.remove_effect(k)
+        ending = [FX.EFFECTS[k]["nom"] for k in ending] + self.tick_effects(1)    # v52 : durées en rounds
         if ending:
-            applied = list(applied) + ["Fin de : " + ", ".join(FX.EFFECTS[k]["nom"] for k in ending)]
+            applied = list(applied) + ["Fin de : " + ", ".join(ending)]
         return applied
 
     # ==================================================================================
@@ -702,9 +708,12 @@ class ExtrasMixin:
             old = self.break_concentration()
             self.ch.concentration = spell["nom"]
             self.ch.concentration_cible = target or "soi"
+            self.ch.effets_rounds.pop("concentration", None)
+            self.start_effect_timer("concentration", parse_rounds(spell.get("duree", "")))   # v52
             msg += " — concentration" + (f" (remplace {old})" if old and old != spell["nom"] else "")
         if effect and target != "allie":              # sur soi : les bonus s'appliquent à la fiche
             self.add_effect(effect)
+            self.start_effect_timer(effect, parse_rounds(spell.get("duree", "")) or None)   # v52 : durée du sort
             if spell.get("concentration"):
                 self.ch.concentration_effet = effect
             msg += " — effet « {} » actif sur vous".format(FX.EFFECTS[effect]["nom"])
