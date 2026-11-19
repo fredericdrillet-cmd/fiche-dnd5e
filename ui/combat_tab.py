@@ -721,6 +721,10 @@ class CombatTab(BaseTab):
                 win.statusBar().showMessage("Forme sauvage : {}.".format(picked), 6000)
             self.changed()
             return
+        if res.get("tests"):                              # v52 : action commune résolue par un test
+            self._common_test(res)
+            self.changed()
+            return
         if res.get("attaque") is not None:
             self._attack_flow(res["attaque"], res.get("degats"))
         elif res.get("degats") is not None:
@@ -728,6 +732,24 @@ class CombatTab(BaseTab):
             if r is not None and res.get("soin"):
                 eng.heal(r.total)
         self.changed()
+
+    def _common_test(self, res: dict) -> None:
+        eng, skills = self.engine, res["tests"]
+        if len(skills) > 1:
+            rows = {r["nom"]: r for r in eng.skill_rows()}
+            labels = {"{} ({:+d})".format(s, rows[s]["bonus"]) if s in rows else s: s for s in skills}
+            picked = ask_choice(self.win, res["message"].split(" :")[0], "Quelle compétence ?", list(labels))
+            if not picked:
+                return
+            skill = labels[picked]
+        else:
+            skill = skills[0]
+        spec = eng.skill_spec(skill)
+        if res.get("dd"):
+            spec.title += " — DD {}".format(res["dd"])
+        r = roll_dice(self.win, spec)
+        if r is not None:
+            self._message(eng.resolve_common_test(res.get("commune", ""), skill, r.total, res.get("dd", 0)))
 
     def _use_item_power(self, res: dict) -> None:
         """Sort lancé par l'objet (sans emplacement : charges déjà décomptées) -> résolution habituelle (attaque,

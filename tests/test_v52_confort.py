@@ -138,6 +138,54 @@ class DurationTests(unittest.TestCase):
         self.assertNotIn(key, eng.ch.effets_actifs)
 
 
+class CommonActionTests(unittest.TestCase):
+    def names(self, eng):
+        return {t["id"].split(":", 1)[1]: t for t in eng.turn_actions() if t["id"].startswith("commune:")}
+
+    def test_lists_per_edition(self):
+        old, new = self.names(sheet("Guerrier", 5, "2014")), self.names(sheet("Guerrier", 5, "2024"))
+        for cid in ("pret", "cacher", "saisir", "bousculer", "chercher"):
+            self.assertIn(cid, old)
+            self.assertIn(cid, new)
+        for cid in ("etudier", "influencer", "magie"):
+            self.assertNotIn(cid, old)
+            self.assertIn(cid, new)
+        self.assertIn("Perception passive", old["cacher"]["description"])
+        self.assertIn("DD 15", new["cacher"]["description"])
+
+    def test_grapple_2024_dc_and_attack_count(self):
+        eng = sheet("Guerrier", 5, "2024")
+        dc = eng.grapple_dc()
+        self.assertEqual(dc, 8 + eng.mod("Force") + eng.prof)
+        self.assertIn("DD {}".format(dc), self.names(eng)["saisir"]["description"])
+        r = eng.use_turn_action("commune:saisir")
+        self.assertIn("JS de Force ou de Dextérité DD {}".format(dc), r["message"])
+        self.assertEqual(eng.ch.tour_attaques, 1)
+        self.assertFalse(r.get("tests"))
+
+    def test_grapple_2014_contest(self):
+        eng = sheet("Guerrier", 5, "2014")
+        r = eng.use_turn_action("commune:bousculer")
+        self.assertEqual(r["tests"], ["Athlétisme"])
+
+    def test_hide(self):
+        eng = sheet("Roublard", 3, "2024")
+        r = eng.use_turn_action("commune:cacher")
+        self.assertEqual((r["tests"], r["dd"]), (["Discrétion"], 15))
+        self.assertIn("visible", eng.resolve_common_test("cacher", "Discrétion", 12, 15))
+        self.assertNotIn("cache", eng.ch.effets_actifs)
+        self.assertIn("DD 17 pour vous trouver", eng.resolve_common_test("cacher", "Discrétion", 17, 15))
+        self.assertIn("cache", eng.ch.effets_actifs)
+        eng14 = sheet("Roublard", 3, "2014")
+        r = eng14.use_turn_action("commune:cacher")
+        self.assertEqual(r["dd"], 0)
+        self.assertIn("Perception passive", eng14.resolve_common_test("cacher", "Discrétion", 12))
+
+    def test_search_skills(self):
+        self.assertIn("Médecine", sheet("Clerc", 3, "2024").use_turn_action("commune:chercher")["tests"])
+        self.assertIn("Investigation", sheet("Clerc", 3, "2014").use_turn_action("commune:chercher")["tests"])
+
+
 class ExhaustionUiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
