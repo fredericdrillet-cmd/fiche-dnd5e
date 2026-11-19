@@ -241,6 +241,17 @@ class CombatTab(BaseTab):
         self._options_key = None
         self.options_box.setVisible(False)
         right_col.addWidget(self.options_box)
+        # v52 : « À ne pas oublier » — capacités de situation, une ligne chacune, repliable
+        self.remember_box = QGroupBox("📌 À ne pas oublier")
+        rl = QVBoxLayout(self.remember_box)
+        self.remember_toggle = QPushButton("▾ Masquer")
+        self.remember_toggle.setProperty("role", "ghost")
+        self.remember_toggle.clicked.connect(self._on_remember_toggle)
+        rl.addWidget(self.remember_toggle)
+        self.remember_text = make_label("", "", wrap=True)
+        rl.addWidget(self.remember_text)
+        self._remember_open = True
+        right_col.addWidget(self.remember_box)
         # jets de sauvegarde ultra-condensés (3 × 2) juste sous le style de combat
         self.saves_box = QGroupBox("Jets de sauvegarde")
         sg = QGridLayout(self.saves_box)
@@ -1699,6 +1710,20 @@ class CombatTab(BaseTab):
                 row += 1
         self.options_layout.setColumnStretch(1, 1)
 
+    def _on_remember_toggle(self) -> None:
+        self._remember_open = not self._remember_open
+        self._refresh_remember()
+
+    def _refresh_remember(self) -> None:
+        groups = self.engine.remember_list()
+        self.remember_box.setVisible(bool(groups))
+        n = sum(len(v) for v in groups.values())
+        self.remember_box.setTitle("📌 À ne pas oublier ({})".format(n))
+        self.remember_toggle.setText("▾ Masquer" if self._remember_open else "▸ Afficher")
+        self.remember_text.setVisible(self._remember_open)
+        self.remember_text.setText("".join("<b>{}</b><br/>{}<br/>".format(
+            html.escape(m), "<br/>".join("• " + html.escape(x) for x in lines)) for m, lines in groups.items()))
+
     def _on_class_option(self, key: str, index: int, combo) -> None:
         text = combo.currentText()
         self.engine.set_class_option(key, index, "" if text == self.NO_OPTION else text)
@@ -1933,6 +1958,7 @@ class CombatTab(BaseTab):
         self._refresh_masteries()
         self._refresh_slot_strip()
         self._refresh_class_options()
+        self._refresh_remember()                         # v52 : À ne pas oublier
         self._refresh_resources()
         self._refresh_saves()
         self._refresh_effects()

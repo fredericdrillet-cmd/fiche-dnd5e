@@ -192,7 +192,7 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 - **Immunités aux états** (`condition_immunities`, `effect_blocked`) : Aura de dévotion (charmé), Aura de courage (effrayé), Pureté du corps 2014 (empoisonné, malade), Protégé de dame Nature (empoisonné ; et malade en 2014), Rage aveugle en rage (charmé et effrayé, retirés à l'entrée en rage). L'état ne peut pas être ajouté ; l'interface dit pourquoi.
 - **Textes 2024 des sous-classes renommées** (`TILE_FEATURE_2024`) : sur une fiche 2024, une tuile 2014 prend le nom, le texte et le niveau de l'aptitude 2024 équivalente (Présence féerique → Foulée des fées, Moi illusoire → Double illusoire…) ; Frénésie 2024 (dés de dégâts en plus avec Attaque téméraire) remplace l'attaque en action bonus de 2014.
 
-### 4.13 Aides de jeu (en cours)
+### 4.13 Aides de jeu
 
 1. **Lexique** : `data/Lexique.json` (clé `lexique` : `termes` [terme, catégorie, définition, 2014, 2024, variantes, auto], `aides_onglets`, `aides_creation`) chargé dans `Database.glossary` (`core/glossary.py`, repérage par mots entiers, expressions longues d'abord). `ui/common.rich_tip` ajoute les définitions des termes employés (édition de la fiche) ; `ui/glossary_dialog.py` (F1) ; option `aides_debutant` : soulignement dans les étiquettes (`make_label`), bandeau d'aide par onglet (`MainWindow.refresh_help_banner`) et par étape de l'assistant.
 
@@ -205,6 +205,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 5. **Avant un repos** (`unused_before_rest`, fenêtre de repos) : ressources jamais dépensées depuis leur retour (repos court : celles qui reviennent au repos court ; repos long : toutes), emplacements de sort et de pacte non utilisés.
 
 6. **Badge « ✨ Nouveau »** (`core/novelty.py`, `Character.nouveautes`) : à la validation de « Niveau supérieur », différence avant / après des tuiles (`act:`), réactions (`reac:`), sorts (`sort:`), aptitudes (`apt:`) et dons ; un sort ajouté dans l'onglet Magie est aussi marqué. Badge sur les tuiles de « Ce tour-ci », la liste des sorts et la liste des aptitudes ; retiré à la première utilisation ou au repos long.
+
+7. **À ne pas oublier** (`core/remember.py`, encart repliable de l'onglet « En partie ») : capacités de situation non calculables, une ligne chacune, par moment (avant d'attaquer, quand vous touchez, en défense, pour vos alliés, déplacement, hors combat), 2014 et 2024 (Rage implacable selon l'édition, Visée stable 2024, options Tasha exclues, traits d'espèce reconnus seulement sur l'espèce).
 
 ### 4.14 Reste à faire
 

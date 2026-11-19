@@ -303,3 +303,36 @@ class NoveltyTests(unittest.TestCase):
         self.assertEqual(Character.from_dict(eng.ch.to_dict()).nouveautes, ["sort:Projectile magique (2024)"])
         eng.cast_spell("Projectile magique (2024)")
         self.assertFalse(eng.is_new("sort:Projectile magique (2024)"))
+
+
+class RememberTests(unittest.TestCase):
+    def test_lists_by_edition(self):
+        for ed in ("2014", "2024"):
+            barb = _sheet("Barbare", 11, ed)
+            groups = barb.remember_list()
+            self.assertTrue(any(x.startswith("Attaque téméraire") for x in groups["Avant d'attaquer"]))
+            rage = [x for x in groups["En défense"] if x.startswith("Rage implacable")]
+            self.assertEqual(len(rage), 1)
+            self.assertEqual("deux fois" in rage[0], ed == "2024")
+        self.assertIn("Visée stable", " ".join(_sheet("Roublard", 3, "2024").remember_list()["Avant d'attaquer"]))
+        self.assertNotIn("Visée stable", " ".join(_sheet("Roublard", 3, "2014").remember_list().get(
+            "Avant d'attaquer", [])))                                         # option Tasha : jamais d'office
+
+    def test_race_traits_only_from_race(self):
+        eng = _sheet("Magicien", 4, "2014")
+        eng.ch.race = "Gnome"
+        eng.normalize()
+        flat = " ".join(x for v in eng.remember_list().values() for x in v)
+        self.assertIn("Ruse gnome", flat)
+        self.assertNotIn("Action rusée", flat)                               # « Ruse » du roublard ≠ Ruse gnome
+
+    def test_ui_box(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        win.engine = _sheet("Barbare", 5, "2024")
+        win.combat_tab._refresh_remember()
+        self.assertIn("Attaque téméraire", win.combat_tab.remember_text.text())
+        win.combat_tab._on_remember_toggle()
+        self.assertIn("Afficher", win.combat_tab.remember_toggle.text())
