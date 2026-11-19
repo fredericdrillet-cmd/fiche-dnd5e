@@ -417,6 +417,8 @@ class ClassActionsMixin:
         sub = self.db.subclass(class_name, entry.get("sous_classe", "")) if entry else None
         if not sub:
             return []
+        if str(sub.get("edition", "")) == "2024":       # v52 : aptitudes qui dépensent le Conduit divin
+            return self.channel_options_2024(class_name, entry, sub)
         out = []
         for f in sub.get("capacites", []):
             if f["niveau"] > entry["niveau"] or not norm(f["nom"]).startswith("conduit divin"):
@@ -566,6 +568,9 @@ class ClassActionsMixin:
             used = next(p["utilises"] for p in self.hit_dice_pool() if p["de"] == die)
             self.ch.des_vie_utilises[die] = used + 1
             spent = "1 dé de vie ({})".format(die)
+        if a["id"] == "rage":                            # v52 : Vitalité de l'arbre (Arbre-Monde 2024)
+            extra = self.on_rage_start()
+            spent = "{} — {}".format(spent, extra) if extra and spent else (extra or spent)
         if a.get("pv_temp"):                             # Tombe de Levistus : PV temporaires
             self.apply_temp_hp(int(a["pv_temp"]))
         if a.get("rend"):                                # Récupération psionique : un dé revient dans la réserve

@@ -565,6 +565,14 @@ def _fmt(value) -> str:
 
 
 # v52 — Sorcellerie innée (Ensorceleur 2024) : effet d'aptitude (DD +1 et avantage calculés par le moteur)
+# v52 — sous-classes 2024
+_e("courroux_mers", "Courroux des mers", "🌊", "Aptitude", "Druide, Cercle des Mers (2024)", "10 minutes",
+   "Émanation d'embruns autour de vous : à chaque action bonus, une créature de l'émanation fait un JS de Constitution "
+   "ou subit des dégâts de froid et est repoussée. Niveau 10 (Enfant des tempêtes) : vol, et les trois énergies des "
+   "tempêtes ne vous atteignent qu'à moitié.")
+_e("lien_elementaire", "Lien élémentaire", "🌀", "Aptitude", "Moine, Credo des Éléments (2024)", "10 minutes",
+   "Allonge +3 m des frappes à mains nues, dégâts d'acide, de froid, de feu, de foudre ou de tonnerre au choix, cible "
+   "déplacée de 3 m sur un JS de Force raté.")
 _e("sorcellerie_innee", "Sorcellerie innée", "🔮", "Aptitude", "Ensorceleur (Manuel des joueurs 2024)", "1 minute",
    "La magie de votre âme se libère : le DD de sauvegarde de vos sorts d'ensorceleur augmente de 1 et vous avez "
    "l'avantage aux jets d'attaque des sorts d'ensorceleur que vous lancez.",

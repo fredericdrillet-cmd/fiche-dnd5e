@@ -101,6 +101,7 @@ from .creation import CreationMixin  # noqa: E402
 from .class_guide import ClassGuideMixin  # noqa: E402
 from .feat_effects import FeatEffectsMixin, feat_base  # noqa: E402
 from .class_auto import ClassAutoMixin  # noqa: E402
+from .subclass_2024 import Subclass2024Mixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -122,7 +123,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
-             FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin):
+             FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -1336,6 +1337,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if self.style_active("Combat à mains nues"):
             notes.append("Combat à mains nues : d6 (d8 si aucune arme ni bouclier)")
             best = max(best, 6)
+        dance = self.subclass24_unarmed_die()             # v52 : Collège de la Danse (dé d'inspiration)
+        if dance:
+            notes.append("Dégâts bardiques : d{}".format(dance))
+            best = max(best, dance)
         for f in self.feat_flag("mains_nues"):            # v52 : Bagarreur de tavernes (2024)
             notes.append("{} : d4 (relancez les 1)".format(f))
             best = max(best, 4)

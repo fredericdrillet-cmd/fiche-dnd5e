@@ -254,3 +254,63 @@ class SubclassTests(unittest.TestCase):
         life.ch.classes[0]["sous_classe"] = "Domaine de la vie"
         life.normalize()
         self.assertIn("Disciple de la vie", [b[0] for b in life.spell_values("Soins (2024)")["bonus"]])
+
+
+def sub24(cls, lvl, sub):
+    eng = sheet(cls, lvl)
+    eng.ch.classes[0]["sous_classe"] = sub
+    eng.normalize()
+    return eng
+
+
+class Subclass2024OnlyTests(unittest.TestCase):
+    def test_world_tree(self):
+        eng = sub24("Barbare", 6, "Voie de l'Arbre-Monde")
+        eng.use_class_action("rage")
+        self.assertEqual(eng.ch.pv_temporaires, 6)                 # Vitalité de l'arbre
+        acts = {a["id"]: a for a in eng.class_actions()}
+        self.assertEqual(acts["cap:force_vivifiante"]["formule"], "2d6")
+        self.assertIn("cap:branches_arbre", acts)
+
+    def test_wild_heart_bear_and_owl(self):
+        eng = sub24("Barbare", 6, "Voie du Cœur sauvage")
+        eng.ch.options_classe = {"coeur_sauvage_rage": ["Ours"], "coeur_sauvage_aspect": ["Chouette"]}
+        self.assertEqual(eng.defenses()["resistances"], [])
+        eng.use_class_action("rage")
+        self.assertIn("contondant", [t for t, _ in eng.defenses()["resistances"]])
+        self.assertEqual(eng.darkvision()["portee"], 18.0)
+
+    def test_dance_land_sea_elements(self):
+        dance = sub24("Barde", 6, "Collège de la Danse")
+        self.assertEqual(dance.unarmed_die()[0], 8)
+        self.assertIn("cap:pirouettes_coordonnees", {a["id"] for a in dance.class_actions()})
+        land = sub24("Druide", 10, "Cercle de la terre")
+        self.assertEqual(next(a for a in land.class_actions() if a["id"] == "cap:aval_terre")["formule"], "3d6")
+        self.assertIn(("feu", "Protégé de dame Nature"), land.defenses()["resistances"])
+        sea = sub24("Druide", 10, "Cercle des Mers")
+        self.assertEqual(sea.defenses()["resistances"], [])         # seulement pendant Courroux des mers
+        sea.use_class_action("cap:courroux_mers")
+        self.assertEqual(len(sea.defenses()["resistances"]), 3)
+        monk = sub24("Moine", 6, "Credo des Éléments")
+        self.assertIn("cap:decharge_elementaire", {a["id"] for a in monk.class_actions()})
+        self.assertNotIn("cap:aval_terre", {a["id"] for a in sheet("Druide", 10, "2014").class_actions()})
+
+    def test_channel_divinity_2024_options(self):
+        self.assertEqual([o["nom"] for o in sub24("Clerc", 3, "Domaine de la vie").channel_options("Clerc")],
+                         ["Préservation de la vie"])
+        self.assertIn("Arme sacrée", [o["nom"] for o in sub24("Paladin", 3, "Serment de dévotion")
+                                      .channel_options("Paladin")])
+
+    def test_champion_turn_start_and_assassin(self):
+        champ = sub24("Guerrier", 18, "Champion")
+        champ.ch.inspiration = False
+        champ.ch.pv_actuels = 10
+        champ.new_round()
+        self.assertTrue(champ.ch.inspiration)
+        self.assertEqual(champ.ch.pv_actuels, 10 + 5 + champ.mod("Constitution"))
+        champ.ch.pv_actuels = 0
+        champ.apply_death_save(18)
+        self.assertEqual(champ.ch.pv_actuels, 1)                     # 18-20 compte comme un 20
+        assassin = sub24("Roublard", 3, "Assassin")
+        self.assertIn("Matériel d’empoisonneur", assassin.granted_tools())
+        self.assertIn("Assassinat", assassin.initiative_detail()["avantage"])

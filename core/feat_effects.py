@@ -280,6 +280,10 @@ class FeatEffectsMixin:
                     out += [p for p in self.feat_choice(name, c["id"]) if p not in skills]
         return list(dict.fromkeys(out))
 
+    def granted_tools(self) -> list[str]:
+        """Outils accordés par les dons et la sous-classe (Assassin 2024)."""
+        return list(dict.fromkeys(self.feat_tools() + self.subclass24_tools()))
+
     def feat_proficiency_sources(self) -> list[dict]:
         out = []
         for name, spec in self.feat_specs():

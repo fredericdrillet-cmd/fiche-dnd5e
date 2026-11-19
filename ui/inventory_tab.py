@@ -459,9 +459,9 @@ class InventoryTab(BaseTab):
         names = [x["nom"] for x in db.tools]
         fill_combo(self.tool_combo, names, self.tool_combo.currentText() or (names[0] if names else ""))
         bg = db.backgrounds.get(ch.historique, {})
-        feat_tools = eng.feat_tools()                     # v52 : outils accordés par les dons
+        feat_tools = eng.granted_tools()                  # v52 : outils accordés par les dons et la sous-classe
         self.tool_bg.setText("Outils accordés par l'historique : {}".format(bg.get("outil_maitrise") or "—") + (
-            " — par les dons : {}".format(", ".join(feat_tools)) if feat_tools else ""))
+            " — par les dons / la sous-classe : {}".format(", ".join(feat_tools)) if feat_tools else ""))
         with blocked(self.tool_list):
             self.tool_list.clear()
             for n in ch.outils:

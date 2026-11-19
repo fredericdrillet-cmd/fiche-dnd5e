@@ -388,6 +388,9 @@ TILES = [
       uses="MOD:Intelligence", degats={9: "2d6", 15: "4d6"}, type_degats="force", par_tour=True),
 ]
 
+from .subclass_2024 import tiles_2024  # noqa: E402
+TILES += tiles_2024()                            # v52 : sous-classes 2024 sans équivalent 2014
+
 # Métamagie (Ensorceleur) : option de classe choisie, une tuile par option, coût en points de sorcellerie
 METAMAGIC = {
     "Sort prudent": (1, "Jusqu'à mod. de Charisme créatures réussissent automatiquement le JS du sort."),
@@ -422,7 +425,10 @@ class ClassTilesMixin:
         e = self.ch.find_class(t["classe"])
         if not e or e["niveau"] < t["niveau"]:
             return 0
-        if t["sc"] and t["sc"] not in sub_norm_of(e):
+        if t.get("ed"):                                  # v52 : tuile d'une sous-classe 2024 (nom 2024)
+            if getattr(self, "sheet_edition", 2014) != t["ed"] or t["sc"] not in norm(e.get("sous_classe", "")):
+                return 0
+        elif t["sc"] and t["sc"] not in sub_norm_of(e):
             return 0
         return e["niveau"]
 
@@ -463,7 +469,11 @@ class ClassTilesMixin:
                 "MOD_CHA": str(self.mod("Charisme")),
                 "DEMI_SOURNOISE": "{}d6".format(max(1, math.ceil(math.ceil(rogue / 2) / 2))) if rogue else "1d6",
                 "DEUX_ARTS_MARTIAUX": "2d{}".format(ma), "SOINS_LUNE": "{}d8".format(
-                    max(1, (self.smite_levels() or [1])[0]))}
+                    max(1, (self.smite_levels() or [1])[0])),
+                "MA": str(ma), "MOD_SAG_MIN": str(max(1, self.mod("Sagesse"))),     # v52 : tuiles 2024
+                "RAGE_DES": str(max(1, _rage_bonus(self.class_level("Barbare")))),
+                "DE_INSP": next((tr.get("de") or "d6" for tr in self.resource_trackers() if tr["key"] == "inspiration"),
+                                "d6")}
 
     def class_tile_actions(self) -> list[dict]:
         out = []
@@ -476,7 +486,8 @@ class ClassTilesMixin:
             dmg = re.sub(r"\{([A-Z_]+)\}", lambda m: ctx.get(m.group(1), "{" + m.group(1) + "}"), dmg)
             desc = t["description"]
             if t["js"]:
-                ab = {"CHA": "Charisme", "SAG": "Sagesse", "INT": "Intelligence", "CON": "Constitution"}[t["js"]]
+                ab = {"CHA": "Charisme", "SAG": "Sagesse", "INT": "Intelligence", "CON": "Constitution",
+                      "FOR": "Force", "DEX": "Dextérité"}[t["js"]]
                 desc += " (DD {} : 8 + maîtrise + mod. de {})".format(8 + self.prof + self.mod(ab), ab)
             cost = dict(t["cout"]) if t["cout"] else ({"ressource": t["id"], "n": 1} if self._uses_total(t, lvl)
                                                        is not None else {})
@@ -536,3 +547,8 @@ class ClassTilesMixin:
 def R_martial(level: int) -> int:
     from . import rules as R
     return R.martial_arts_die(level) if level else 4
+
+
+def _rage_bonus(level: int) -> int:
+    from .rules import rage_damage
+    return rage_damage(level) if level else 0

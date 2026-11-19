@@ -176,10 +176,17 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 - **Sorts 2024** : soins, jet de sauvegarde, demi-dégâts, surclassement lus dans le texte 2024 (`rules.parse_spell_mechanics_2024`), complétés par les règles auditées du sort 2014 équivalent (projectiles, modificateur…).
 - **Jet contre la mort** (onglet « En partie », bouton 🎲 à 0 PV) : 10+ réussite, 1 = deux échecs, 20 = 1 PV ; avantage avec Gaillard ; dégâts reçus à 0 PV = un échec ; mort instantanée si les dégâts restants atteignent le maximum de PV.
 
-### 4.11 Reste à faire
+### 4.11 Fait : sous-classes 2024 sans équivalent 2014 (`core/subclass_2024.py`)
 
-- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Talent fiable, Puissance indomptable, Aura de dévotion…) : texte affiché, rien à chiffrer.
-- Tuiles des sous-classes 2024 sans équivalent 2014 (Voie de l'Arbre-Monde, Voie du Cœur sauvage, Cercle des Mers, Collège de la Danse hors CA…) : texte affiché.
+- **Tuiles** (champ `ed: 2024`, reconnues par le nom 2024 de la sous-classe) : Force vivifiante, Branches de l'Arbre, Voyage au gré de l'arbre (Arbre-Monde) ; Déplacement exaltant, Pirouettes coordonnées (Danse) ; Aval de la terre (2d6 → 4d6), Sanctuaire de dame Nature (Terre) ; Courroux des mers (effet actif) ; Lien élémentaire, Décharge élémentaire (Éléments) ; Halo de lumière (Lumière) ; Surcharge magique (Évocateur).
+- **Effets automatiques** : PV temporaires de la Vitalité de l'arbre à l'entrée en rage ; choix du Cœur sauvage (Rage du prédateur, Aspect de faune, Puissance de la faune) avec la résistance de l'Ours en rage et la vision de la Chouette ; Protégé de dame Nature (résistance selon la terre choisie) ; Enfant des tempêtes (résistances pendant le Courroux des mers seulement) ; Avatar de bataille ; dé d'inspiration aux frappes à mains nues (Danse) ; outils de l'Assassin et Frappes surprises (+ niveau de roublard, proposé aux dégâts) ; Champion : Inspiration héroïque et Ralliement héroïque au début du tour (nouveau round), jets contre la mort avec avantage et 18-20 comptés comme 20 ; Évocation améliorée.
+- **Conduit divin 2024** : les options sont les aptitudes de la sous-classe qui dépensent « une utilisation de votre Conduit divin » (Préservation de la vie, Radiance de l'aube, Frappe guidée, Arme sacrée, Vœu d'hostilité…).
+- Correctif : « tant qu'elle est active » est reconnu comme une condition, donc pas d'effet permanent (seul changement constaté sur toutes les sous-classes : Enfant des tempêtes).
+
+### 4.12 Reste à faire
+
+- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Talent fiable, Puissance indomptable, Aura de dévotion, Esquive cavalière…) : texte affiché, rien à chiffrer.
+- Les tuiles des sous-classes 2024 renommées reprennent les textes 2014 de leur équivalent.
 
 ## 5. Décisions prises
 

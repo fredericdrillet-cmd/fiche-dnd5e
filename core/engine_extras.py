@@ -119,7 +119,7 @@ class ExtrasMixin:
     # ==================================================================================
     CLASS_INNATE = [("Paladin", 6, "aura_protection"), ("Paladin", 10, "aura_courage")]
     _INNATE_SENTENCE = re.compile(r"\bvous\s+(?:avez|obtenez|gagnez|[êe]tes|b[ée]n[ée]ficiez|rend)\b", re.I)
-    _CONDITIONAL = ("tant que", "pendant", "lorsque", "quand ", "si vous", "jusqu'", "par une action", "au choix",
+    _CONDITIONAL = ("tant que", "tant qu'", "pendant", "lorsque", "quand ", "si vous", "jusqu'", "par une action", "au choix",
                     "rage", "forme")
 
     @_batch_memo
@@ -254,6 +254,7 @@ class ExtrasMixin:
         out += self.feat_modifiers()                     # v52 : dons (PV max, résistances…)
         out += self.class_modifiers()                    # v52 : Sens du danger
         out += self.subclass_modifiers()                 # v52 : résistances et auras de sous-classe
+        out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = M.item_mech(entry.get("nom", ""))
@@ -563,6 +564,7 @@ class ExtrasMixin:
     def new_round(self) -> None:
         """Nouveau round : réaction, action, action bonus et déplacement de nouveau disponibles (v30)."""
         self.ch.reaction_utilisee = ""
+        self.subclass24_turn_start()                     # v52 : Héros du champ d'honneur, Ralliement héroïque
         self.ch.tour_action = self.ch.tour_bonus = False
         self.ch.tour_attaques = 0
         self.ch.tour_deplacement = 0.0
@@ -765,7 +767,7 @@ class ExtrasMixin:
             dist = float(m.group(1).replace(",", ".")) if m else 18.0
             if dist > best:
                 best, src, text = dist, c["nom"], c.get("description", "")
-        sub_dv = self.subclass_darkvision()              # v52 : Vision ombreuse (Traqueur des ténèbres)
+        sub_dv = self.subclass_darkvision() or self.subclass24_darkvision()     # v52 : Vision ombreuse, Chouette
         if sub_dv:
             gain = sub_dv if (best == 0 or self._ed24) else 9.0
             best, src = best + gain if best else sub_dv, "Vision ombreuse (Traqueur des ténèbres)"
@@ -1097,7 +1099,8 @@ class ExtrasMixin:
     def death_save_spec(self) -> "D.RollSpec":
         """Jet contre la mort : d20 sans modificateur ; avantage avec le don Gaillard (2024)."""
         fx = self.save_mods("mort") if hasattr(self, "save_mods") else {"avantage": [], "desavantage": []}
-        adv = list(fx.get("avantage", [])) + ["Don : " + f for f in self.feat_flag("mort_avantage")]
+        adv = list(fx.get("avantage", [])) + ["Don : " + f for f in self.feat_flag("mort_avantage")] + (
+            ["Survivant (Champion)"] if self.death_save_crit_min() < 20 else [])
         return D.spec_from_detail("Jet contre la mort", "sauvegarde", [], adv, list(fx.get("desavantage", [])), (),
                                   "10 ou plus : réussite ; 1 : deux échecs ; 20 : vous reprenez 1 PV.")
 
@@ -1105,7 +1108,7 @@ class ExtrasMixin:
         """Applique le résultat d'un jet contre la mort (20 naturel : 1 PV ; 1 naturel : 2 échecs)."""
         ch = self.ch
         total = natural if total is None else total
-        if natural == 20:
+        if natural >= self.death_save_crit_min():         # 20 (18 à 20 : Survivant du Champion)
             ch.pv_actuels = max(1, ch.pv_actuels)
             ch.mort_reussites = ch.mort_echecs = 0
             if "inconscient" in ch.effets_actifs:

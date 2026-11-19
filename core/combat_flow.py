@@ -137,7 +137,8 @@ class CombatFlowMixin:
             return None
         always, conditional = self.damage_riders()
         cls_always, cls_once = self.class_weapon_riders(slot)       # v52 : Frappes radiantes, Frappe divine…
-        always, conditional = always + cls_always, conditional + cls_once + self.subclass_weapon_riders()
+        always, conditional = always + cls_always, conditional + cls_once + self.subclass_weapon_riders() + \
+            self.subclass24_riders()
         formula = st["degats"]
         notes = []
         for label, dice in always:

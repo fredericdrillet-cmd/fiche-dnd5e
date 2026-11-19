@@ -387,7 +387,7 @@ class InvocationsMixin:
         elif lvl == 0:
             out += self.class_cantrip_bonus(spell)      # v52 : Incantation puissante 2024 (Clerc, Druide)
         if norm(spell.get("ecole", "")) == "evocation" and "Magicien" in spell.get("classes", []) and \
-                any(n.startswith("evocation renforcee") for n in names):
+                any(n.startswith(("evocation renforcee", "evocation amelioree")) for n in names):     # 2014 / 2024
             out.append(("Évocation renforcée (Intelligence)", self.mod("Intelligence")))
         if self.class_level("Ensorceleur") >= 6 and any(n.startswith("affinite elementaire") for n in names):
             from .engine_extras import DRACONIC
