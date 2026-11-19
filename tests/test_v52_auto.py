@@ -470,3 +470,35 @@ class TashaOptionsTests(unittest.TestCase):
             self.assertFalse(any(a["id"] in ("cap:guerison_acceleree", "cap:exploitation_divine",
                                              "cap:compagnon_sauvage") for a in eng.class_actions()))
         self.assertIn("cap:visee_stable_2024", {a["id"] for a in sheet("Roublard", 3, "2024").class_actions()})
+
+
+class RestRecoveryAuditTests(unittest.TestCase):
+    def test_short_rest_partial_2024(self):
+        for cls, key in (("Barbare", "rage"), ("Clerc", "conduit"), ("Druide", "forme"), ("Guerrier", "second_souffle")):
+            e14, e24 = sheet(cls, 6, "2014"), sheet(cls, 6, "2024")
+            for eng in (e14, e24):
+                eng.ch.ressources_utilisees[key] = 2
+                eng.short_rest()
+            self.assertEqual(e24.ch.ressources_utilisees.get(key, 0), 1, cls)        # 2024 : une utilisation
+            self.assertEqual(e14.ch.ressources_utilisees.get(key, 0), 2 if key == "rage" else 0, cls)
+
+    def test_long_rest_hit_dice(self):
+        for ed, left in (("2014", 3), ("2024", 0)):
+            eng = sheet("Guerrier", 6, ed)
+            eng.ch.des_vie_utilises = {"d10": 6}
+            eng.long_rest()
+            self.assertEqual(eng.ch.des_vie_utilises["d10"], left, ed)
+
+    def test_uncanny_metabolism_and_magical_cunning(self):
+        monk = sheet("Moine", 5, "2024")
+        monk.ch.ressources_utilisees["ki"] = 4
+        monk.roll_initiative(10)
+        self.assertEqual(monk.ch.ressources_utilisees["ki"], 0)
+        monk.ch.ressources_utilisees["ki"] = 4
+        monk.roll_initiative(10)
+        self.assertEqual(monk.ch.ressources_utilisees["ki"], 4)                     # une fois par repos long
+        lock = sheet("Occultiste", 5, "2024")
+        lock.ch.pacte_utilises = 2
+        lock.use_class_action("cap:ruse_magique")
+        self.assertEqual(lock.ch.pacte_utilises, 1)
+        self.assertNotIn("cap:ruse_magique", {a["id"] for a in sheet("Occultiste", 5, "2014").class_actions()})

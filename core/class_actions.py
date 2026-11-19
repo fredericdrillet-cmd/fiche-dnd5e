@@ -576,6 +576,12 @@ class ClassActionsMixin:
             spent = "{} — {}".format(spent, extra) if extra and spent else (extra or spent)
         harness = a["id"] in ("cap:exploitation_divine", "cap:canalisation_divine") or (
             a.get("choix") == "conduit" and norm(choice).startswith("canalisation de puissance divine"))
+        if a["id"] == "cap:ruse_magique":                # v52 : Ruse magique (Occultiste 2024)
+            import math as _math
+            back = min(self.ch.pacte_utilises, _math.ceil(self.pact()[0] / 2))
+            self.ch.pacte_utilises -= back
+            spent = "{} — {} emplacement(s) de pacte récupéré(s)".format(spent, back) if spent else \
+                "{} emplacement(s) de pacte récupéré(s)".format(back)
         if harness:                                      # v52 : pouvoir divin (Tasha) — un emplacement revient
             extra = self.harness_divine_power()
             spent = "{} — {}".format(spent, extra) if spent else extra

@@ -742,12 +742,16 @@ class ExtrasMixin:
             out.append("Emplacements de Magie de pacte")
         if self.class_level("Moine") >= 2:
             out.append("Points de ki")
+        one = self.sheet_edition == 2024                 # v52 : 2024 — une utilisation au repos court
+        if self.class_level("Barbare") and one:
+            out.append("1 rage")
         if self.class_level("Druide") >= 2:
-            out.append("Formes sauvages")
+            out.append("1 Forme sauvage" if one else "Formes sauvages")
         if self.class_level("Guerrier"):
-            out.append("Second souffle" + (" et Fougue" if self.class_level("Guerrier") >= 2 else ""))
+            out.append(("1 Second souffle" if one else "Second souffle") +
+                       (" et Fougue" if self.class_level("Guerrier") >= 2 else ""))
         if self.class_level("Clerc") >= 2 or self.class_level("Paladin") >= 3:
-            out.append("Conduit divin")
+            out.append("1 Conduit divin" if one else "Conduit divin")
         if self.class_level("Barde") >= 5:
             out.append("Inspiration bardique (Source d'inspiration)")
         if self.class_level("Magicien"):
@@ -759,7 +763,8 @@ class ExtrasMixin:
         return out
 
     def long_rest_recharges(self) -> list[str]:
-        out = ["Points de vie au maximum", "Moitié des dés de vie (minimum 1)", "Tous les emplacements de sorts"]
+        out = ["Points de vie au maximum", "Tous les dés de vie" if self.sheet_edition == 2024 else
+               "Moitié des dés de vie (minimum 1)", "Tous les emplacements de sorts"]
         for cls, label in (("Barbare", "Rages"), ("Moine", "Points de ki"), ("Druide", "Formes sauvages"),
                            ("Ensorceleur", "Points de sorcellerie"), ("Paladin", "Imposition des mains et Sens divin")):
             if self.class_level(cls):

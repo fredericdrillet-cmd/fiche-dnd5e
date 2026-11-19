@@ -225,6 +225,13 @@ class ClassAutoMixin:
             refill_to("ki", 4, "Concentration parfaite : 4 points de concentration")
         elif not self._ed24 and monk >= 20:
             refill_to("ki", 4, "Yo perfectionné : 4 points de ki")
+        if self._ed24 and monk >= 2 and used.get("ki") and not used.get("metabolisme"):   # Métabolisme surnaturel
+            import random as _random
+            die = self.martial_arts_die(monk)
+            gained = self.heal(_random.randint(1, die) + monk)
+            used["ki"] = 0
+            used["metabolisme"] = 1
+            msgs.append("Métabolisme surnaturel : concentration récupérée, +{} PV".format(gained))
         if self.class_level("Barbare") >= 15 and self._ed24 and used.get("rage") and \
                 not used.get("rage_persistante"):
             used["rage"] = 0
@@ -250,6 +257,10 @@ class ClassAutoMixin:
             out.append({"key": "rage_persistante", "label": "Rage persistante", "total": 1, "kind": "sursaut",
                         "recover": "repos long", "where": "interne", "de": "",
                         "info": "Rages récupérées à l'initiative — une fois par repos long"})
+        if self._ed24 and self.class_level("Moine") >= 2:
+            out.append({"key": "metabolisme", "label": "Métabolisme surnaturel", "total": 1, "kind": "sursaut",
+                        "recover": "repos long", "where": "interne", "de": "",
+                        "info": "À l'initiative : concentration récupérée et PV — une fois par repos long"})
         if self._ed24 and self.class_level("Ensorceleur") >= 5:
             out.append({"key": "restauration_ensorceleur", "label": "Restauration d'ensorceleur", "total": 1,
                         "kind": "sursaut", "recover": "repos long", "where": "interne", "de": "",

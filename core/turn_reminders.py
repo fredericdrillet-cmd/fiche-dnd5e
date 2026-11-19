@@ -26,7 +26,7 @@ _SENTENCE = re.compile(r"(?<=[.!?])\s+")
 # capacités déjà appliquées automatiquement à ce moment (pas de rappel en double)
 AUTO_APPLIED = {"survivant", "heros du champ d'honneur", "rage persistante", "inspiration superieure",
                 "concentration parfaite", "yo perfectionne", "instinct sauvage", "athlete accompli", "assassinat",
-                "esprit parfait"}
+                "esprit parfait", "metabolisme surnaturel"}
 
 
 def _sentence_with(text: str, rx) -> str:

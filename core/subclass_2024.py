@@ -30,6 +30,10 @@ def tiles_2024() -> list[dict]:
     INSP = {"ressource": "inspiration", "n": 1}
     FORME = {"ressource": "forme", "n": 1}
     return [
+        # Occultiste — Ruse magique (aptitude de base en 2024)
+        _t("ruse_magique", "Ruse magique", "🌀", "Occultiste", "", 2, "Spécial",
+           "1 minute de rite : récupérez la moitié de vos emplacements de pacte (arrondie au supérieur) — appliqué "
+           "automatiquement.", uses=1),
         # Roublard — Visée stable (aptitude de base en 2024)
         _t("visee_stable_2024", "Visée stable", "🎯", "Roublard", "", 3, "Action bonus",
            "Sans vous être déplacé ce tour : avantage à votre prochaine attaque ce tour-ci ; votre vitesse tombe à 0 "

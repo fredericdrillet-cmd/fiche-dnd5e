@@ -2427,11 +2427,20 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     # ==================================================================================
     # Repos
     # ==================================================================================
+    # 2024 : ressources dont le repos court ne rend qu'une utilisation (toutes au repos long)
+    SHORT_REST_PARTIAL_2024 = ("rage", "conduit", "forme", "second_souffle")
+
     def short_rest(self) -> None:
         """Repos court : emplacements de Pacte et points de ki récupérés ; Restauration de sorcellerie (niv. 20) : 4 points."""
         self.ch.pacte_utilises = 0
+        partial = self.SHORT_REST_PARTIAL_2024 if self.sheet_edition == 2024 else ()
         for key in SHORT_REST_KEYS:                      # ki, formes, supériorité, second souffle, sursaut, conduit
-            self.ch.ressources_utilisees.pop(key, None)
+            if key not in partial:
+                self.ch.ressources_utilisees.pop(key, None)
+        for key in partial:                              # v52 : 2024 — une seule utilisation au repos court
+            used = self.ch.ressources_utilisees.get(key, 0)
+            if used:
+                self.ch.ressources_utilisees[key] = used - 1
         for key in self.subclass_short_rest_keys():      # runes, Tir arcanique, utilisations gratuites psi
             self.ch.ressources_utilisees.pop(key, None)
         for key in self.invocation_short_rest_keys():    # Tombe de Levistus, Voile de mouches, Regard fantomatique
@@ -2459,8 +2468,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         ch.ressources_utilisees = {}                       # rages, ki, points de sorcellerie : tout est récupéré
         ch.mort_reussites = ch.mort_echecs = 0
         self.recharge_magic_items()                        # v45 : charges des objets magiques (« à l'aube »)
-        for die, total in self.hit_dice().items():
-            ch.des_vie_utilises[die] = max(0, ch.des_vie_utilises.get(die, 0) - max(1, total // 2))
+        for die, total in self.hit_dice().items():          # 2014 : la moitié des dés de vie ; 2024 : tous
+            back = total if self.sheet_edition == 2024 else max(1, total // 2)
+            ch.des_vie_utilises[die] = max(0, ch.des_vie_utilises.get(die, 0) - back)
 
     # ==================================================================================
     # Résumé texte (tests / débogage)

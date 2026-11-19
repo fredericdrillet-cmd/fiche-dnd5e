@@ -212,7 +212,11 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin.feature_allowed()` : une aptitude « (option Tasha) » compte si elle **s'ajoute** ; celles qui **remplacent** (`TASHA_REPLACING` : Frappes bénies, Ennemi favori, Explorateur expert avec Vagabond et Infatigable, Conscience primordiale, Voile de la nature) ne s'appliquent jamais d'office. Appliquées : Connaissance primitive (1 compétence, 2 au niveau 10), Bond instinctif (message à l'entrée en rage), Arme dédiée (choix d'une arme de moine), sorts supplémentaires des listes (`tasha_extra_spells`, lus dans le texte de l'option), tuiles Guérison accélérée, Visée concentrée, Visée stable, Exploitation / Canalisation du pouvoir divin (emplacement rendu automatiquement), Compagnon sauvage, Guidage magique ; rappels « À ne pas oublier » (Attaque alimentée par le ki, Inspiration magique, Polyvalences, Formules de sorts mineurs, Focaliseur d'incantation).
 
-### 4.15 Reste à faire
+### 4.15 Chantier suivant (en cours)
+
+1. **Récupérations 2024** : au repos court, Rage, Conduit divin, Forme sauvage et Second souffle ne rendent qu'une utilisation (`SHORT_REST_PARTIAL_2024`) ; le repos long rend tous les dés de vie (moitié en 2014) ; Métabolisme surnaturel du Moine (initiative, une fois par repos long) et Ruse magique de l'Occultiste (moitié des emplacements de pacte) appliqués.
+
+### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
 
