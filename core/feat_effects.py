@@ -286,6 +286,24 @@ class FeatEffectsMixin:
         """Outils accordés par les dons et la sous-classe (Assassin 2024)."""
         return list(dict.fromkeys(self.feat_tools() + self.subclass24_tools()))
 
+    def power_attack_feat(self, weapon: dict) -> str:
+        """Don qui permet −5 / +10 avec cette arme (2014) : Tireur d'élite (à distance), Briseur d'armes lourdes
+        (arme lourde de corps à corps) ; "" sinon."""
+        props = {norm(p) for p in weapon.get("proprietes", [])}
+        for f in self.chosen_feats():
+            if self._feat_edition(f) != 2014:
+                continue
+            b = feat_base(f)
+            if b == "tireur d'elite" and weapon.get("type") == "distance":
+                return f
+            if b == "briseur d'armes lourdes" and weapon.get("type") == "cac" and "lourde" in props:
+                return f
+        return ""
+
+    def has_power_attack(self) -> bool:
+        return any(feat_base(f) in ("tireur d'elite", "briseur d'armes lourdes") and self._feat_edition(f) == 2014
+                   for f in self.chosen_feats())
+
     def feat_proficiency_sources(self) -> list[dict]:
         out = []
         for name, spec in self.feat_specs():
@@ -424,6 +442,40 @@ class FeatEffectsMixin:
     def feat_actions(self) -> list[dict]:
         out = []
         base = {"classe": "Don", "sous_classe": "", "niveau": 1, "jet": "aucun", "degats": "", "type_degats": ""}
+        bases = {feat_base(f): f for f in self.chosen_feats()}
+        if self.has_power_attack():                      # v52 : dons de combat
+            on = self.ch.attaque_puissante
+            out.append(dict(base, id="don_puissance", nom="Attaque puissante (−5 / +10) : " + ("activée" if on
+                            else "désactivée"), icone="💪", type="Gratuit", cout=None, bascule=True,
+                            description="Avant d'attaquer : −5 au toucher et +10 aux dégâts avec une arme à distance "
+                            "(Tireur d'élite) ou une arme lourde de corps à corps (Briseur d'armes lourdes). Un clic "
+                            "active ou désactive (aussi sur la ligne de l'arme)."))
+        polearm = next((f for b, f in bases.items() if b in ("maitre des armes d'hast", "maitre d'hast")), "")
+        if polearm:
+            out.append(dict(base, id="don_pommeau", nom="Attaque du talon (arme d'hast)", icone="🔱",
+                            type="Action bonus", cout=None, attaque_arme=True, flux="pommeau",
+                            description="Après l'action Attaquer avec une coutille, une hallebarde, un bâton{} : "
+                            "attaque avec l'autre bout, 1d4 dégâts contondants.".format(
+                                " ou une lance" if self._feat_edition(polearm) == 2024 else "")))
+        if "expert en arbaletes" in bases:
+            out.append(dict(base, id="don_arbalete", nom="Arbalète de poing (Expert en arbalètes)", icone="🏹",
+                            type="Action bonus", cout=None, attaque_arme=True,
+                            description="Après une attaque avec une arme à une main : attaque avec une arbalète de "
+                            "poing chargée ; pas de désavantage au contact."))
+        cleave = next((f for b, f in bases.items() if b in ("briseur d'armes lourdes", "cogneur lourd")), "")
+        if cleave:
+            out.append(dict(base, id="don_fauchage", nom="Attaque bonus après un critique ou un ennemi à 0 PV",
+                            icone="🪓", type="Action bonus", cout=None, attaque_arme=True,
+                            description="Juste après un coup critique au corps à corps ou une créature réduite à 0 PV : "
+                            "une attaque d'arme de corps à corps ({}).".format(cleave)))
+        if "maitre des boucliers" in bases:
+            ed = self._feat_edition(bases["maitre des boucliers"])
+            out.append(dict(base, id="don_bouclier", nom="Coup de bouclier", icone="🛡", type="Action bonus" if
+                            ed == 2014 else "Spécial", cout=None,
+                            description="2014 : après l'action Attaquer, bousculez une créature à 1,50 m avec votre "
+                            "bouclier (test d'Athlétisme opposé)." if ed == 2014 else "2024 : une fois par tour, "
+                            "quand vous touchez au corps à corps : JS de Force DD {} ou la cible est repoussée de "
+                            "1,50 m ou tombe à terre.".format(8 + self.prof + self.mod("Force"))))
         for name, spec in self.feat_specs():
             for aid in spec.get("actions", []):
                 if aid == "vitalite":

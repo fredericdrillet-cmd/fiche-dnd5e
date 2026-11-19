@@ -222,6 +222,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 4. **Bottes d'arme dans le déroulé d'attaque** (`MasteryFlowMixin`) : sur un raté (1 naturel compris), Effleurement indique les dégâts infligés malgré tout (modificateur) ; au toucher, rappel de la botte dans la fenêtre « Quand vous touchez » et la note des dégâts (Sape, Ouverture, Poussée, Ralentissement, Entaille, Coup double, Renversement avec son DD).
 
+5. **Dons de combat** : `Character.attaque_puissante` (bascule −5 / +10 de Tireur d'élite et Briseur d'armes lourdes 2014, partagée entre la case de la ligne d'arme et la tuile ; détail du jet et des dégâts) ; tuiles d'attaque en action bonus : talon d'arme d'hast (1d4 contondant, Maître des armes d'hast / Maître d'hast 2024), arbalète de poing (Expert en arbalètes), attaque après un critique ou un ennemi à 0 PV (Briseur d'armes lourdes / Cogneur lourd 2024), Coup de bouclier (Maître des boucliers 2014 / 2024, DD calculé) ; rappel du bonus de bouclier aux JS de Dextérité (2014).
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

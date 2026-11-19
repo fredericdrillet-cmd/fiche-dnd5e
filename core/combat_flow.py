@@ -256,6 +256,10 @@ class CombatFlowMixin:
         attack = self.weapon_attack_spec(slot)
         label = ("Attaque sournoise" if a.get("id") == "sournoise" else
                  "Dé de supériorité ({})".format(a["manoeuvre"]) if a.get("manoeuvre") else a["nom"])
+        if a.get("flux") == "pommeau":                              # v52 : talon d'une arme d'hast, 1d4 contondant
+            st = self.weapon_stats(slot) or {}
+            mod = self.mod(st.get("carac", "Force"))
+            return attack, D.DamageSpec("Dégâts — talon de l'arme", R.add_flat("1d4", mod), "contondant")
         if a.get("flux") == "precise" and attack is not None:      # Attaque précise : le dé s'ajoute au d20
             attack.terms.append(D.Term(label, 0, "+" + die))
             dmg = self.weapon_damage_spec(slot)

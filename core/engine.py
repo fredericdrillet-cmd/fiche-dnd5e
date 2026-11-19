@@ -1439,6 +1439,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             flat += rage
             terms.append(("Rage", rage))
             notes.append("Rage : +{} dégâts".format(rage))
+        power = self.power_attack_feat(w)                # v52 : −5 / +10 (2014)
+        if power and self.ch.attaque_puissante and not offhand:
+            attack -= 5
+            flat += 10
+            terms.append((power + " (−5 / +10)", 10))
+            notes.append("{} : −5 au toucher, +10 aux dégâts".format(power))
         ammo = self.selected_ammo(slot) if w["type"] == "distance" else None
         if ammo and ammo["bonus"]:                       # munition magique : bonus au toucher et aux dégâts
             attack += ammo["bonus"]
@@ -1472,6 +1478,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 "proprietes": w.get("proprietes", []), "portee": w.get("portee", ""), "magique": magic,
                 "botte": w.get("botte", "") if self.botte_allowed(w["nom"], bool(prof)) else "",
                 "botte_desc": w.get("botte_desc", "") if self.botte_allowed(w["nom"], bool(prof)) else "", "origine": w.get("origine", ""),
+                "puissance_possible": bool(power) and not offhand,
+                "puissance": bool(power and self.ch.attaque_puissante and not offhand),
                 "styles": notes, "munition": ammo, "etat": M.adv_state(fx_atk), "des_attaque": fx_atk["des"],
                 "avantage": fx_atk["avantage"], "desavantage": fx_atk["desavantage"]}
 

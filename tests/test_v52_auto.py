@@ -502,3 +502,36 @@ class RestRecoveryAuditTests(unittest.TestCase):
         lock.use_class_action("cap:ruse_magique")
         self.assertEqual(lock.ch.pacte_utilises, 1)
         self.assertNotIn("cap:ruse_magique", {a["id"] for a in sheet("Occultiste", 5, "2014").class_actions()})
+
+
+class CombatFeatTests(unittest.TestCase):
+    def _fighter(self, ed, feats):
+        eng = sheet("Guerrier", 8, ed)
+        for sid, f in zip([s["id"] for s in eng.asi_slots()], feats):
+            eng.ch.ameliorations[sid] = {"mode": "don", "don": f, "don_carac": "Force"}
+        return eng
+
+    def test_power_attack_2014(self):
+        eng = self._fighter("2014", ["Tireur d'élite", "Briseur d'armes lourdes"])
+        bow = {"nom": "Arc long", "bonus": 0, "maitrise": None}
+        sword = {"nom": "Épée longue", "bonus": 0, "maitrise": None}
+        before = eng.weapon_stats(bow)["attaque"]
+        self.assertTrue(eng.weapon_stats(bow)["puissance_possible"])
+        self.assertFalse(eng.weapon_stats(sword)["puissance_possible"])            # ni lourde ni à distance
+        eng.use_class_action("don_puissance")
+        self.assertEqual(eng.weapon_stats(bow)["attaque"], before - 5)
+        self.assertIn("+", eng.weapon_stats(bow)["degats"])
+        self.assertIn("Attaque puissante (−5 / +10)", [t.label for t in eng.weapon_attack_spec(bow).terms])
+        eng.use_class_action("don_puissance")
+        self.assertEqual(eng.weapon_stats(bow)["attaque"], before)
+
+    def test_bonus_attack_tiles(self):
+        e14 = self._fighter("2014", ["Maître des armes d'hast", "Expert en arbalètes", "Briseur d'armes lourdes"])
+        ids = {a["id"] for a in e14.class_actions()}
+        self.assertTrue({"don_pommeau", "don_arbalete", "don_fauchage", "don_puissance"} <= ids)
+        e24 = self._fighter("2024", ["Maître d'hast", "Cogneur lourd"])
+        ids = {a["id"] for a in e24.class_actions()}
+        self.assertTrue({"don_pommeau", "don_fauchage"} <= ids)
+        self.assertNotIn("don_puissance", ids)                                     # pas de −5/+10 en 2024
+        res = e24.use_class_action("don_pommeau")
+        self.assertTrue(res["degats"].formula.startswith("1d4"))

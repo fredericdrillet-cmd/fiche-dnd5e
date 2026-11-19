@@ -529,6 +529,11 @@ class ClassActionsMixin:
         if a is None:
             return {"ok": False, "message": "Action indisponible.", "attaque": None, "degats": None, "soin": False}
         self.clear_new("act:" + action_id)               # v52 : badge « Nouveau » retiré à la première utilisation
+        if action_id == "don_puissance":                 # v52 : bascule −5 / +10
+            self.ch.attaque_puissante = not self.ch.attaque_puissante
+            return {"ok": True, "message": "Attaque puissante (−5 / +10) {}.".format(
+                "activée" if self.ch.attaque_puissante else "désactivée"), "attaque": None, "degats": None,
+                "soin": False, "lancer_maintenant": False}
         state = self.class_action_state(a, slot_level)
         if not state["disponible"]:
             return {"ok": False, "message": "{} : {}".format(a["nom"], state["raison"]), "attaque": None,

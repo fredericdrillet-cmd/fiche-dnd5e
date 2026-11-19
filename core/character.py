@@ -118,6 +118,7 @@ class Character:
     inspiration: bool = False               # v52 : inspiration (règle 2014 ou inspiration héroïque 2024)
     bottes_choisies: list[str] = field(default_factory=list)   # v52 : armes dont la botte est maîtrisée (2024)
     historique_jets: list[dict] = field(default_factory=list)  # v52 : 50 derniers lancers (Ctrl+H)
+    attaque_puissante: bool = False          # v52 : −5 / +10 (Tireur d'élite, Briseur d'armes lourdes, 2014)
     nouveautes: list[str] = field(default_factory=list)       # v52 : badge « Nouveau » (act:, reac:, sort:, apt:)
 
     # ---- Éditions et règles de la table (v52, core/editions.py et core/house_rules.py) -----------

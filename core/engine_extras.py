@@ -884,6 +884,10 @@ class ExtrasMixin:
         spec = D.spec_from_detail("Jet de sauvegarde de " + ab, "sauvegarde", row["detail"],
                                   row["avantage"], row["desavantage"], row["echec"])
         spec = self._apply_floors(spec, ab, "sauvegarde")
+        if ab == "Dextérité" and self.ch.armure.get("bouclier") and any(
+                feat_base_name(f) == "maitre des boucliers" for f in self.chosen_feats()):
+            spec.note = (spec.note + " — " if spec.note else "") + "Maître des boucliers : + bonus du bouclier ({}) " \
+                "contre un effet qui ne vise que vous".format(self.shield_bonus())
         if ab == "Dextérité":                            # v52 : Évasion, Esquive cavalière
             ev = self.evasion_note()
             if ev:
@@ -923,6 +927,8 @@ class ExtrasMixin:
             detail.append(("Arme magique", "{:+d}".format(st["magique"])))
         if any(n.startswith("Archerie") for n in st["styles"]):
             detail.append(("Style Archerie", "+2"))
+        if st.get("puissance"):                          # v52 : Tireur d'élite / Briseur d'armes lourdes
+            detail.append(("Attaque puissante (−5 / +10)", "-5"))
         ammo = st.get("munition")
         if ammo and ammo.get("bonus"):
             detail.append(("Munition : " + ammo["nom"], "{:+d}".format(ammo["bonus"])))

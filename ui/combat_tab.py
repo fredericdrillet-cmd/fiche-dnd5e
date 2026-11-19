@@ -753,8 +753,17 @@ class CombatTab(BaseTab):
             w["hands"].setProperty("role", "toggle")
             w["hands"].setCursor(Qt.CursorShape.PointingHandCursor)
             w["hands"].clicked.connect(lambda checked=False, k=key, n=i: self._on_hands(k, n, checked))
+            w["power"] = QPushButton("💪 −5/+10")              # v52 : Tireur d'élite / Briseur d'armes lourdes
+            w["power"].setCheckable(True)
+            w["power"].setProperty("role", "toggle")
+            w["power"].setToolTip(rich_tip("Attaque puissante", "−5 au toucher, +10 aux dégâts (Tireur d'élite "
+                                           "ou Briseur d'armes lourdes). Même bascule que la tuile « Attaque "
+                                           "puissante »."))
+            w["power"].clicked.connect(lambda checked=False: self._on_power(checked))
+            w["power"].setVisible(False)
             db_lay.addWidget(w["dmg"])
             db_lay.addWidget(w["hands"])
+            db_lay.addWidget(w["power"])
             db_lay.addStretch(1)
             order = ["combo", "prof", "magic", "ab", "atk", "d20", "dmg_box", "acts"]
             if kind == "distance":
@@ -1718,6 +1727,10 @@ class CombatTab(BaseTab):
                 row += 1
         self.options_layout.setColumnStretch(1, 1)
 
+    def _on_power(self, checked: bool) -> None:
+        self.ch.attaque_puissante = bool(checked)
+        self.changed()
+
     def _on_remember_toggle(self) -> None:
         self._remember_open = not self._remember_open
         self._refresh_remember()
@@ -2050,6 +2063,9 @@ class CombatTab(BaseTab):
                     " ({})".format(st["prise"]) if st.get("prise") else "")
                 w["dmg"].set_formula(st["degats"], calc + ("<br/>" + html.escape(other) if other else ""))
                 self._refresh_hands(w, st)
+                w["power"].setVisible(bool(st.get("puissance_possible")))
+                with blocked(w["power"]):
+                    w["power"].setChecked(bool(st.get("puissance")))
                 info = ", ".join(st["proprietes"])
                 if st["portee"]:
                     info += " — portée {} m".format(st["portee"])
