@@ -369,6 +369,18 @@ class DiceRollDialog(QDialog):
             b.clicked.connect(lambda _=False, m=mode: self._reroll(m))
             self.mode_btns[mode] = b
             modes.addWidget(b)
+        # v52 : inspiration — 2024 : relancer le d20 et garder le nouveau ; 2014 : avantage à ce jet
+        eng = getattr(parent, "engine", None)
+        self.inspire_btn = None
+        self._eng = eng
+        if eng is not None and getattr(eng.ch, "inspiration", False) is True and spec.kind != "degats":
+            heroic = eng.rule_active("inspiration_heroique")
+            self.inspire_btn = QPushButton("🌟 " + ("Relancer (inspiration héroïque)" if heroic
+                                                   else "Avantage (inspiration)"))
+            self.inspire_btn.setToolTip("Dépense votre inspiration : " + (
+                "relancez le d20 et gardez le nouveau résultat." if heroic else "relancez ce jet avec avantage."))
+            self.inspire_btn.clicked.connect(lambda _=False, h=heroic: self._inspire(h))
+            modes.addWidget(self.inspire_btn)
         modes.addStretch(1)
         lay.addLayout(modes)
         buttons = QHBoxLayout()
@@ -480,6 +492,11 @@ class DiceRollDialog(QDialog):
         while self.phase == "apply":
             self._apply_next()
 
+    def _inspire(self, heroic: bool) -> None:
+        self._eng.ch.inspiration = False
+        self.inspired = True
+        self._reroll(self.spec.mode if heroic else "avantage")
+
     def _reroll(self, mode: str) -> None:
         """Relance demandée dans un autre mode (avantage / désavantage / normal) : décision du MJ."""
         self.reroll_mode = mode
@@ -523,6 +540,11 @@ def roll_dice(win, spec) -> "D.RollResult | None":
             backdrop.dispose()
         if getattr(dialog, "reroll_mode", None) is None:
             break
+        if getattr(dialog, "inspired", False) is True:   # v52 : relance par l'inspiration
+            import dataclasses
+            spec = dataclasses.replace(spec, mode=dialog.reroll_mode, note=((spec.note + " — ") if spec.note else "")
+                                       + "Inspiration dépensée : relance.")
+            continue
         spec = with_mode(spec, dialog.reroll_mode)        # relance : seul le dernier jet compte
     r = dialog.result
     eng = getattr(win, "engine", None)
@@ -694,10 +716,10 @@ class DamageRollDialog(QDialog):
         if r.flat or getattr(self.spec, "calcul", ""):
             self.flat_label.setText("<b style='color:{}'>✔ {}</b>".format(self._accent, html.escape(
                 flat_text(self.spec, r.flat))))
-        word = {"soins": "PV regagnés", "de": "Résultat", "pv_temp": "PV temporaires"}.get(self.spec.kind, "dégâts")
+        word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires"}.get(self.spec.kind, "dégâts")
         self.total.setText("Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
                                                   "dégâts" + (" " + self.spec.damage_type if self.spec.damage_type
-                                                              else "")))
+                                                              else "")).rstrip())
         self.phase = "done"
         if self.timer.isActive():
             self.timer.stop()

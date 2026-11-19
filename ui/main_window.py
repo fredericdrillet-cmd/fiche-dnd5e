@@ -34,6 +34,19 @@ from .theme_picker import make_theme_combo, theme_icon
 FILE_FILTER = "Personnage D&D (*.json);;Tous les fichiers (*)"
 
 
+RECENT_MAX = 8
+
+
+def remember_recent(settings: dict, path) -> list:
+    """v52 : Fichier > Récents — le fichier ouvert ou enregistré passe en tête (8 au plus, sans doublon)."""
+    p = str(Path(path).resolve()) if path else ""
+    if not p:
+        return list(settings.get("fichiers_recents") or [])
+    keep = [x for x in (settings.get("fichiers_recents") or []) if x != p]
+    settings["fichiers_recents"] = ([p] + keep)[:RECENT_MAX]
+    return settings["fichiers_recents"]
+
+
 class MainWindow(QMainWindow):
     def __init__(self, db: Database, settings: dict | None = None):
         super().__init__()
@@ -252,6 +265,8 @@ class MainWindow(QMainWindow):
             act.setShortcut(key)
             act.triggered.connect(slot)
             fm.addAction(act)
+        self.recent_menu = fm.addMenu("Récents")                    # v52 : 8 derniers fichiers
+        self.recent_menu.aboutToShow.connect(self._fill_recent_menu)
         pdf_act = QAction("Exporter la fiche en PDF…", self)       # v52 : fiche imprimable
         pdf_act.setShortcut(QKeySequence("Ctrl+P"))
         pdf_act.triggered.connect(self.action_export_pdf)
@@ -303,6 +318,10 @@ class MainWindow(QMainWindow):
         hp_entry.setShortcut(QKeySequence("Ctrl+D"))
         hp_entry.triggered.connect(self.action_hp_entry)
         om.addAction(hp_entry)
+        free_roll = QAction("Jet de dés libre (2d6+3…)", self)           # v52 : Ctrl+R -> onglet En partie
+        free_roll.setShortcut(QKeySequence("Ctrl+R"))
+        free_roll.triggered.connect(self.action_free_roll)
+        om.addAction(free_roll)
         om.addSeparator()
         group = QActionGroup(self)
         group.setExclusive(True)
@@ -371,6 +390,11 @@ class MainWindow(QMainWindow):
         """Ctrl+D : onglet En partie, curseur dans la saisie rapide des PV."""
         self.tabs.setCurrentWidget(self.combat_tab)
         self.combat_tab.focus_hp_entry()
+
+    def action_free_roll(self):
+        """Ctrl+R : onglet En partie, curseur dans le jet libre."""
+        self.tabs.setCurrentWidget(self.combat_tab)
+        self.combat_tab.focus_free_roll()
 
     def action_rules(self):
         """v52 : Options > Règles de la table (édition du personnage et règles optionnelles)."""
@@ -501,9 +525,48 @@ class MainWindow(QMainWindow):
         self.path, self._dirty = path, dirty
         if path is not None:
             self.settings["dernier_fichier"] = str(path)
+            remember_recent(self.settings, path)
             save_settings(self.settings)
         self.reset_history()
         self.refresh_all()
+
+    def _fill_recent_menu(self) -> None:
+        menu = self.recent_menu
+        menu.clear()
+        paths = list(self.settings.get("fichiers_recents") or [])
+        if not paths:
+            act = QAction("(aucun fichier récent)", self)
+            act.setEnabled(False)
+            menu.addAction(act)
+            return
+        for i, p in enumerate(paths):
+            exists = Path(p).is_file()
+            act = QAction("&{}  {}{}".format(i + 1, Path(p).name, "" if exists else " (introuvable)"), self)
+            act.setToolTip(p)
+            act.setStatusTip(p)
+            act.setEnabled(exists)
+            act.triggered.connect(lambda _=False, path=p: self.open_recent(path))
+            menu.addAction(act)
+        menu.addSeparator()
+        clear = QAction("Vider la liste", self)
+        clear.triggered.connect(self._clear_recent)
+        menu.addAction(clear)
+
+    def _clear_recent(self) -> None:
+        self.settings["fichiers_recents"] = []
+        save_settings(self.settings)
+
+    def open_recent(self, path: str) -> bool:
+        if not self._confirm_discard():
+            return False
+        try:
+            char = Character.load(path)
+        except (OSError, ValueError, KeyError) as exc:
+            QMessageBox.critical(self, "Chargement impossible", str(exc))
+            return False
+        self.settings["last_dir"] = str(Path(path).parent)
+        self.load_character(char, Path(path))
+        return True
 
     def _start_dir(self) -> str:
         d = self.settings.get("last_dir") or ""
@@ -531,6 +594,7 @@ class MainWindow(QMainWindow):
             return
         self.path, self._dirty = path, False
         self.settings["dernier_fichier"] = str(path)        # v48 : rouvert au prochain lancement
+        remember_recent(self.settings, path)
         save_settings(self.settings)
         self._update_title()
         note = self.missing_note()

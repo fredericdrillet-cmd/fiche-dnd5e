@@ -371,6 +371,11 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **Options de Tasha qui remplacent une aptitude** : au choix par personnage (onglet Classes) — Ennemi favori, Explorateur expert, Conscience primordiale, Voile de la nature, Frappes bénies — avec leurs effets ; l'aptitude remplacée est désactivée.
 - **Forme sauvage 2024** : formes connues, action bonus, PV du druide conservés et PV temporaires (×3 Cercle de la Lune), CA 13 + Sagesse de la Lune, limites de FP et de vol 2024.
 - **Compagnon primitif 2024** (Maître des bêtes) : choisi en un clic, créé et tenu à jour dans la Ménagerie (CA et dégâts sur votre Sagesse, deux attaques au niveau 11) ; ses attaques sont des tuiles de « Ce tour-ci ».
+- **Épuisement selon l'édition** : compteur dans « En partie », malus 2014 ou 2024 appliqués, JS d'épuisement (marche forcée, chaleur, froid, privation) avec le DD officiel, Frénésie du Berserker 2014.
+- **Durées des effets** : décompte en rounds à chaque début de tour et avec le temps qui passe (« Bénédiction : 7 rounds »), fin automatique, clic droit pour prolonger.
+- **Actions communes 2014 / 2024** : Se tenir prêt ; en 2024 Saisir / Bousculer avec le DD de la cible, Se cacher DD 15, Étudier, Influencer, Magie ; les tests se lancent depuis la tuile.
+- **Inspiration héroïque automatique** (Ingénieux de l'Humain 2024) et bouton 🌟 dans la fenêtre de jet.
+- **Jet libre** « 2d6+3 » (Ctrl+R) et **Fichier > Récents**.
 - **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
 - **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
 - **Jet contre la mort** : bouton à 0 PV, résultat appliqué (20 = 1 PV, 1 = deux échecs), mort instantanée.

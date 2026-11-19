@@ -145,6 +145,19 @@ class CombatTab(BaseTab):
         quick.addWidget(self.dmg_btn)
         quick.addWidget(self.heal_btn)
         g.addLayout(quick, 8, 0, 1, 2)
+        free = QHBoxLayout()                              # v52 : jet libre (Ctrl+R)
+        self.free_roll = QLineEdit()
+        self.free_roll.setPlaceholderText("🎲 Jet libre : 2d6+3, d20+5, 4d6… (Ctrl+R)")
+        self.free_roll.setToolTip(rich_tip("Jet libre", "Tapez une formule de dés puis Entrée : les dés roulent et "
+                                           "le résultat va dans l'historique des lancers (Ctrl+H)."))
+        self.free_roll.returnPressed.connect(self._on_free_roll)
+        self.free_roll_btn = QPushButton("🎲 Lancer")
+        self.free_roll_btn.clicked.connect(self._on_free_roll)
+        self.free_roll_last = make_label("", "muted")
+        free.addWidget(self.free_roll, 1)
+        free.addWidget(self.free_roll_btn)
+        free.addWidget(self.free_roll_last)
+        g.addLayout(free, 9, 0, 1, 2)
         g.addWidget(make_label("PV max"), 0, 0)
         g.addWidget(self.hp_max, 0, 1)
         g.addWidget(make_label("PV actuels"), 1, 0)
@@ -1063,6 +1076,9 @@ class CombatTab(BaseTab):
                 source = eng.innate_source(k)
                 lines = M.mech_lines(k)
                 tip = FX.tooltip_html(k, t.accent_text)
+                if k.startswith("epuisement_") and eng.sheet_edition == 2024:     # v52 : règle 2024
+                    tip = "<p><b>{}</b> — règle 2024</p><p>{}</p>".format(e["nom"], html.escape(eng.exhaustion_text()))
+                    lines = []
                 if lines:
                     tip += "<p><b>Appliqué à la fiche :</b> {}</p>".format(" · ".join(lines))
                 if source:
@@ -1829,6 +1845,21 @@ class CombatTab(BaseTab):
         self.changed()
 
     # ------------------------------------------------------------------ v52 : saisie rapide des PV, emplacements
+    def _on_free_roll(self) -> None:
+        formula = D.free_formula(self.free_roll.text())
+        if not formula:
+            self.win.statusBar().showMessage("Formule de dés non reconnue : essayez « 2d6+3 » ou « d20+5 ».", 6000)
+            return
+        r = roll_damage_dialog(self.win, D.DamageSpec("Jet libre", formula, kind="de"))
+        if r is not None:
+            self.free_roll_last.setText("{} → {}".format(formula, r.total))
+            self.free_roll.selectAll()
+            self.changed()
+
+    def focus_free_roll(self) -> None:
+        self.free_roll.setFocus()
+        self.free_roll.selectAll()
+
     def focus_hp_entry(self) -> None:
         self.hp_entry.setFocus()
         self.hp_entry.selectAll()

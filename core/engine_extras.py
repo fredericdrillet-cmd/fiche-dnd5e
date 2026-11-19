@@ -327,6 +327,11 @@ class ExtrasMixin:
     def effect_mods(self) -> dict:
         """CA et vitesse dues aux effets (modificateurs structurés) + listes lisibles pour le récapitulatif."""
         res = FX.summary_mods(self.active_effect_keys())
+        exh = self.exhaustion_level()
+        if exh and self.sheet_edition == 2024:            # v52 : épuisement 2024 (−2 par niveau), pas la table 2014
+            label = "{} (Épuisement {})".format(-2 * exh, exh)
+            for key in ("attaque", "js", "tests"):
+                res[key] = [x for x in res.get(key, []) if "Épuisement" not in x] + [label]
         ca, mult, bonus, ca_min, pv_max, half = 0, 1.0, 0.0, 0, 0, False
         for _, m in self.modifier_sources():
             ca += int(m.get("ca", 0))
@@ -358,9 +363,10 @@ class ExtrasMixin:
         if m["ca"]:
             out.append("CA {:+d}".format(m["ca"]))
         if m["vitesse_mult"] != 1 or m["vitesse_bonus"]:
-            out.append("Vitesse " + ("0" if m["vitesse_mult"] == 0 else
-                                     ("×{:g}".format(m["vitesse_mult"]) if m["vitesse_mult"] != 1 else "")
-                                     + (" {:+g} m".format(m["vitesse_bonus"]) if m["vitesse_bonus"] else "")))
+            out.append(("Vitesse " + ("0" if m["vitesse_mult"] == 0 else
+                                      ("×{:g}".format(m["vitesse_mult"]) if m["vitesse_mult"] != 1 else "")
+                                      + (" {:+g} m".format(m["vitesse_bonus"]) if m["vitesse_bonus"] else "")))
+                       .replace("  ", " "))
         for key, label in (("attaque", "Attaques"), ("js", "Jets de sauvegarde"), ("tests", "Tests"),
                            ("degats", "Dégâts")):
             if m[key]:
@@ -769,7 +775,19 @@ class ExtrasMixin:
             out.append("4 points de sorcellerie (Restauration de sorcellerie)")
         out.append("Actions d'arme (1 utilisation par repos court)")
         out += ["{} (race)".format(t["label"]) for t in self.race_action_trackers() if t["recover"] == "repos court"]
+        out += self.musician_note()
         return out
+
+    # ------------------------------------------------------------------ v52 : inspiration héroïque automatique
+    def resourceful(self) -> bool:
+        """Ingénieux (Humain 2024) : inspiration héroïque à chaque repos long."""
+        return any(norm(c.get("nom", "")) in ("ingenieux", "resourceful") for c in self.race_capacities())
+
+    def musician_note(self) -> list[str]:
+        """Musicien (2024) : à la fin d'un repos, inspiration héroïque à des alliés (rappel, pas sur votre fiche)."""
+        if not any(norm(f).startswith("musicien") for f in self.chosen_feats()) or self.sheet_edition != 2024:
+            return []
+        return ["Musicien : jouez un air pour donner l'inspiration héroïque à {} allié(s)".format(self.prof)]
 
     def long_rest_recharges(self) -> list[str]:
         out = ["Points de vie au maximum", "Tous les dés de vie" if self.sheet_edition == 2024 else
@@ -779,6 +797,9 @@ class ExtrasMixin:
             if self.class_level(cls):
                 out.append(label)
         out += ["{} (race)".format(t["label"]) for t in self.race_action_trackers()]
+        if self.resourceful():
+            out.append("Inspiration héroïque (Ingénieux)")
+        out += self.musician_note()
         if any(k.startswith("epuisement_") for k in self.ch.effets_actifs):
             out.append("Épuisement réduit d'un niveau")
         out.append("Concentration et réaction réinitialisées")
@@ -872,6 +893,8 @@ class ExtrasMixin:
             self.consume_ration()
         self.advance_time(self.long_rest_minutes())        # Transe elfique : 4 heures au lieu de 8
         self.ch.dernier_repos_long = self.ch.temps_minutes
+        if self.resourceful():                             # v52 : Ingénieux (Humain 2024)
+            self.ch.inspiration = True
 
     # ==================================================================================
     # Jets de d20 animés : description des bonus / malus de chaque jet (core/dice.py)

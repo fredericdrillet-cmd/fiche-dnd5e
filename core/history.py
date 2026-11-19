@@ -20,7 +20,7 @@ LABELS = [
     (("mort_reussites", "mort_echecs"), "jets contre la mort"),
     (("ressources_utilisees",), "ressources"),
     (("emplacements_utilises", "pacte_utilises"), "emplacements de sort"),
-    (("effets_actifs", "effets_retires", "effets_potions"), "états et effets"),
+    (("effets_actifs", "effets_retires", "effets_potions", "effets_rounds", "effets_rounds_max"), "états et effets"),
     (("concentration", "concentration_cible", "concentration_effet"), "concentration"),
     (("classes",), "classes et niveaux"),
     (("ameliorations",), "améliorations et dons"),

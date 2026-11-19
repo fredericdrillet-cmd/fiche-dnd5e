@@ -201,6 +201,19 @@ def has_dice(formula: str) -> bool:
     return bool(parse_damage(formula)[0])
 
 
+def free_formula(text: str) -> str:
+    """v52 — jet libre : « d20+5 », « 2D6 + 3 », « d% » -> formule normalisée (« 1d20+5 ») ; '' si aucun dé."""
+    t = (text or "").strip().lower().replace(" ", "").replace("−", "-").replace("d%", "d100")
+    if not re.fullmatch(r"[0-9d+\-]+", t):
+        return ""
+    groups, flat = parse_damage(t)
+    if not groups or sum(n for _, n, _ in groups) > 100:
+        return ""
+    parts = ["{}{}d{}".format("-" if s < 0 else "+", n, f) for s, n, f in groups]
+    out = "".join(parts).lstrip("+")
+    return out + ("{:+d}".format(flat) if flat else "")
+
+
 def roll_damage(spec: DamageSpec, rng=None) -> DamageResult:
     rng = rng or random
     groups, flat = parse_damage(spec.formula)

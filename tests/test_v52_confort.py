@@ -25,6 +25,11 @@ def sheet(cls, lvl, edition="2024", sub=""):
     return eng
 
 
+def give_feat(eng, feat, carac=""):
+    sid = [x["id"] for x in eng.asi_slots()][0]
+    eng.ch.ameliorations[sid] = {"mode": "don", "don": feat, "don_carac": carac}
+
+
 class ExhaustionTests(unittest.TestCase):
     def test_2014_table(self):
         eng = sheet("Guerrier", 3, "2014")
@@ -186,6 +191,31 @@ class CommonActionTests(unittest.TestCase):
         self.assertIn("Investigation", sheet("Clerc", 3, "2014").use_turn_action("commune:chercher")["tests"])
 
 
+class InspirationTests(unittest.TestCase):
+    def test_resourceful_human_2024(self):
+        eng = sheet("Guerrier", 3, "2024")
+        eng.ch.race = "Humain (2024)"
+        eng.normalize()
+        self.assertTrue(eng.resourceful())
+        self.assertIn("Inspiration héroïque (Ingénieux)", eng.long_rest_recharges())
+        eng.ch.inspiration = False
+        eng.do_long_rest()
+        self.assertTrue(eng.ch.inspiration)
+
+    def test_no_auto_inspiration_otherwise(self):
+        eng = sheet("Guerrier", 3, "2014")
+        eng.ch.race = "Humain"
+        eng.normalize()
+        self.assertFalse(eng.resourceful())
+        eng.do_long_rest()
+        self.assertFalse(eng.ch.inspiration)
+
+    def test_musician_reminder(self):
+        eng = sheet("Barde", 4, "2024")
+        give_feat(eng, "Musicien")
+        self.assertTrue(any("Musicien" in x for x in eng.short_rest_recharges()))
+
+
 class ExhaustionUiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -235,3 +265,76 @@ class DurationUiTests(unittest.TestCase):
         tab._on_extend_effect("benediction")
         self.assertEqual(eng.effect_rounds("benediction"), 10)
         eng.remove_effect("benediction")
+
+
+class InspirationUiTests(unittest.TestCase):
+    def test_dice_dialog_inspiration(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.dice_dialog import DiceRollDialog
+        win = MainWindow(DB)
+        win.engine.ch.inspiration = True
+        dlg = DiceRollDialog(win, win.engine.skill_spec("Athlétisme"))
+        self.assertIsNotNone(dlg.inspire_btn)
+        dlg._inspire(True)
+        self.assertFalse(win.engine.ch.inspiration)
+        self.assertTrue(dlg.inspired)
+        self.assertIsNone(DiceRollDialog(win, win.engine.skill_spec("Athlétisme")).inspire_btn)
+
+
+class FreeRollTests(unittest.TestCase):
+    def test_formula(self):
+        from core import dice as D
+        self.assertEqual(D.free_formula("d20 + 5"), "1d20+5")
+        self.assertEqual(D.free_formula("2D6+3"), "2d6+3")
+        self.assertEqual(D.free_formula("d%"), "1d100")
+        self.assertEqual(D.free_formula("7"), "")
+        self.assertEqual(D.free_formula("2d6; rm"), "")
+
+    def test_ui_shortcut(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        win.action_free_roll()
+        win.combat_tab.free_roll.setText("pas une formule")
+        win.combat_tab._on_free_roll()
+        self.assertEqual(win.combat_tab.free_roll_last.text(), "")
+
+
+class RecentFilesTests(unittest.TestCase):
+    def test_remember_recent(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import remember_recent, RECENT_MAX
+        s = {}
+        for i in range(10):
+            remember_recent(s, "/tmp/perso{}.json".format(i))
+        self.assertEqual(len(s["fichiers_recents"]), RECENT_MAX)
+        self.assertTrue(s["fichiers_recents"][0].endswith("perso9.json"))
+        remember_recent(s, "/tmp/perso5.json")
+        self.assertTrue(s["fichiers_recents"][0].endswith("perso5.json"))
+        self.assertEqual(len(set(s["fichiers_recents"])), RECENT_MAX)
+
+    def test_save_and_reopen(self):
+        import tempfile
+        import qt_stub
+        qt_stub.install()
+        from unittest import mock
+        from ui import main_window as MW
+        patcher = mock.patch.object(MW, "save_settings", lambda _s: None)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        win = MW.MainWindow(DB)
+        win.settings["fichiers_recents"] = []
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "eolin.json"
+            win.ch.nom = "Eolin"
+            win._write(path)
+            self.assertEqual(win.settings["fichiers_recents"][0], str(path.resolve()))
+            win._fill_recent_menu()
+            win.ch.nom = "Autre"
+            win._dirty = False
+            self.assertTrue(win.open_recent(str(path)))
+            self.assertEqual(win.ch.nom, "Eolin")
