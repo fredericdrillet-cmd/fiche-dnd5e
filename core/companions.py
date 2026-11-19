@@ -148,11 +148,37 @@ class CompanionsMixin:
         for eid in wanted - have:
             self.menagerie_add(eid, auto=True)
 
+    PRIMAL_2024 = {"Bête de la terre": "esprit_terre", "Bête de la mer": "esprit_mer", "Bête du ciel": "esprit_ciel"}
+
+    def primal_companion_2024(self) -> str:
+        """2024 : identifiant du compagnon primitif choisi (Maître des bêtes niveau 3+), "" sinon."""
+        e = self.ch.find_class("Rôdeur")
+        if self.sheet_edition != 2024 or not e or e["niveau"] < 3 or "maitre des betes" not in norm(
+                e.get("sous_classe", "")):
+            return ""
+        picked = (self.ch.options_classe or {}).get("compagnon_primitif", [])
+        return self.PRIMAL_2024.get(picked[0], "") if picked else ""
+
+    def primal_option_set(self) -> Optional[dict]:
+        e = self.ch.find_class("Rôdeur")
+        if self.sheet_edition != 2024 or not e or e["niveau"] < 3 or "maitre des betes" not in norm(
+                e.get("sous_classe", "")):
+            return None
+        return {"key": "compagnon_primitif", "label": "Compagnon primitif (Maître des bêtes 2024)", "total": 1,
+                "options": {"Bête de la terre": "Terrestre : 12 m, escalade ; Charge (à terre).",
+                            "Bête de la mer": "Aquatique : nage 18 m, respiration aquatique ; Étreinte (agrippé).",
+                            "Bête du ciel": "Volante : vol 18 m ; Survol (pas d'attaque d'opportunité)."},
+                "chosen": list((self.ch.options_classe or {}).get("compagnon_primitif", []))[:1]}
+
     def auto_entities(self) -> dict[str, bool]:
         """Entités ajoutées d'office : {id: condition remplie}."""
         druid = self.ch.find_class("Druide")
         wildfire = bool(druid and druid["niveau"] >= 2 and "fournaise" in sub_norm_of(druid))
-        return {"esprit_feu_sauvage": wildfire}
+        out = {"esprit_feu_sauvage": wildfire}
+        primal = self.primal_companion_2024()                 # v52 : compagnon primitif 2024 choisi
+        for eid in self.PRIMAL_2024.values():
+            out[eid] = eid == primal
+        return out
 
     def companion_hints(self) -> list[dict]:
         """Conseils contextuels : [{niveau: 'warning'|'info', texte, recommandes: [ids]}]."""
@@ -305,6 +331,16 @@ class CompanionsMixin:
             else ent.get("passive_perception")
         multi = eval_formula(sc.get("attacks_per_multiattack"), cur) if scaled and sc.get("attacks_per_multiattack") \
             else None
+        if scaled and self.sheet_edition == 2024 and inst.get("id") in self.PRIMAL_2024.values():
+            # v52 : compagnon primitif 2024 — CA 13 + Sagesse, dégâts + Sagesse (au lieu du bonus de maîtrise)
+            ac = 13 + cur.get("ability_mod", 0)
+            if isinstance(sc.get("damage_formula"), str):
+                dice, flat, _n = eval_dice(sc["damage_formula"].replace("BM", "ability_mod"), cur)
+                for row in actions:
+                    if row.get("attack_type") not in (None, "none") and row.get("damage_dice"):
+                        row["damage_dice"] = join_damage(dice, flat)
+            if cur.get("class_level", 0) >= 11:
+                multi = 2                                     # Fureur bestiale : deux Frappes de la bête
         return {"entite": ent, "nom": inst.get("nom") or ent.get("name", "?"),
                 "ca": ac if ac is not None else ent.get("ac"), "ca_note": ent.get("ac_note", ""),
                 "pv_max": hp_max, "pv_temp_sort": temp or 0, "taille": SIZE_LABELS.get(size, size),

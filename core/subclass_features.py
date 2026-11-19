@@ -154,6 +154,9 @@ class SubclassFeaturesMixin:
         out += self.class_option_sets()                  # v52 : Connaissance primitive, Frappes bénies, Fureur…
         out += self.subclass_option_sets()               # v52 : Résistance fiélonne, Maîtrises supplémentaires
         out += self.subclass24_option_sets()             # v52 : Cœur sauvage (2024)
+        primal = self.primal_option_set()                # v52 : compagnon primitif (Maître des bêtes 2024)
+        if primal:
+            out.append(primal)
         forms = self.known_forms_option_set()            # v52 : formes connues (Forme sauvage 2024)
         if forms:
             out.append(forms)

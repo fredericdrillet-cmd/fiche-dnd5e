@@ -338,6 +338,22 @@ class TurnMixin:
             tile(p["id"], p["nom"], "✨", p["type"], "[Objet Magique : {}]{}".format(p["objet"], charge_txt),
                  p["description"][:500], ok, why, "{} charge(s)".format(p["cout"]) if p["cout"] else "",
                  ref={"pouvoir": p["id"]})
+        # v52 — compagnons de classe actifs (Maître des bêtes…) : une tuile par attaque, sur votre ordre
+        for inst in self.ch.menagerie:
+            ent = self.entity(inst.get("id", "")) or {}
+            if ent.get("entity_type") != "class_companion" or inst.get("statut", "Actif") != "Actif":
+                continue
+            sheet = self.entity_sheet(inst)
+            for i, a in enumerate(sheet["actions"]):
+                if a.get("attack_type") in (None, "none"):
+                    continue
+                tile("compagnon:{}:{}".format(inst["uid"], i), "{} : {}".format(sheet["nom"], a["name"]), "🐾",
+                     "Action bonus", "Compagnon", "Ordre à votre compagnon (action bonus, ou à la place d'une de vos "
+                     "attaques) : +{} au toucher, {} {}.{}".format(a.get("attack_bonus", 0), a.get("damage_dice", ""),
+                                                                 a.get("damage_type", ""), " Deux attaques (Fureur "
+                                                                 "bestiale)." if sheet.get("attaques_multiples") == 2
+                                                                 else ""),
+                     ref={"compagnon": inst["uid"], "attaque": i})
         # v40 — règle optionnelle : boire soi-même une potion de son inventaire par une action bonus
         drinks = self.drinkable_potions() if self.rule_active("potion_action_bonus") else []
         if self.rule_active("potion_action_bonus"):
@@ -443,6 +459,18 @@ class TurnMixin:
             res.update(ok=True, attaque=self.beast_attack_spec(a),
                        degats=D.DamageSpec("{} — {}".format(self.ch.forme_active, a["nom"]), a["degats"], a["type"]),
                        message="{} : attaque.".format(t["nom"]))
+        elif tile_id.startswith("compagnon:"):            # v52 : attaque du compagnon sur votre ordre
+            inst = self.menagerie_get(ref["compagnon"])
+            sheet = self.entity_sheet(inst) if inst else None
+            a = sheet["actions"][ref["attaque"]] if sheet and ref["attaque"] < len(sheet["actions"]) else None
+            if a is None:
+                res["message"] = "Compagnon indisponible."
+                return res
+            self.spend_economy(kind)
+            res.update(ok=True, attaque=self.entity_attack_spec(inst, a),
+                       degats=D.DamageSpec("{} — {}".format(sheet["nom"], a["name"]), a.get("damage_dice", ""),
+                                           (a.get("damage_type") or "").lower()),
+                       message="{} : attaque sur votre ordre.".format(sheet["nom"]))
         elif tile_id.startswith("objet:"):                # v45 : capacité d'un objet magique
             out = self.use_item_power(ref["pouvoir"])
             if out["ok"]:

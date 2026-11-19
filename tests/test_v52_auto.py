@@ -611,3 +611,32 @@ class WildShape2024Tests(unittest.TestCase):
         self.assertEqual((ws["fp_max"], ws["pv_temp"]), (2.0, 18))
         beast = next(iter(moon.db.beasts.values()))
         self.assertGreaterEqual(moon.beast_ac(beast), 13 + moon.mod("Sagesse"))
+
+
+class PrimalCompanion2024Tests(unittest.TestCase):
+    def test_created_and_scaled(self):
+        r = sheet("Rôdeur", 11, "2024", "Maître des bêtes")
+        self.assertIn("compagnon_primitif", [s["key"] for s in r.option_sets()])
+        self.assertEqual(r.ch.menagerie, [])
+        r.set_class_option("compagnon_primitif", 0, "Bête du ciel")
+        r.normalize()
+        self.assertEqual([m["id"] for m in r.ch.menagerie], ["esprit_ciel"])
+        sh = r.entity_sheet(r.ch.menagerie[0])
+        wis = r.mod("Sagesse")
+        self.assertEqual(sh["ca"], 13 + wis)
+        self.assertEqual(sh["attaques_multiples"], 2)
+        r.set_class_option("compagnon_primitif", 0, "Bête de la terre")
+        r.normalize()
+        self.assertEqual([m["id"] for m in r.ch.menagerie], ["esprit_terre"])      # remplacé, pas cumulé
+
+    def test_turn_tile_rolls(self):
+        r = sheet("Rôdeur", 3, "2024", "Maître des bêtes")
+        r.set_class_option("compagnon_primitif", 0, "Bête de la terre")
+        r.normalize()
+        tile = next(t for t in r.turn_actions() if t["id"].startswith("compagnon:"))
+        self.assertEqual(tile["type"], "Action bonus")
+        res = r.use_turn_action(tile["id"])
+        self.assertTrue(res["ok"])
+        self.assertIsNotNone(res["attaque"])
+        self.assertTrue(res["degats"].formula.startswith("1d8"))
+        self.assertEqual(sheet("Rôdeur", 3, "2014", "Maître des bêtes").primal_option_set(), None)

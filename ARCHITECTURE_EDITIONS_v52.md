@@ -228,6 +228,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 7. **Forme sauvage 2024** (`wild_shape_2024`, `known_forms_option_set`) : FP 1/4 → 1/2 → 1 (Lune : niveau ÷ 3, minimum 1), nage dès le niveau 2, vol au niveau 8, formes connues (4, 6 puis 8, choix dans « Options de classe »), action bonus, vos PV conservés + PV temporaires égaux au niveau (×3 pour la Lune), CA du Cercle de la Lune au moins 13 + Sagesse ; à 0 PV, la forme prend fin. La Métamorphose et les fiches 2014 gardent les PV de la bête.
 
+8. **Compagnon primitif 2024** (`primal_option_set`, `primal_companion_2024`, `core/companions.py`) : choix Bête de la terre / de la mer / du ciel ; le compagnon est ajouté d'office à la Ménagerie (et remplacé si le choix change) ; CA 13 + Sagesse, dégâts + Sagesse au lieu du bonus de maîtrise, deux attaques au niveau 11. Tuiles « Ce tour-ci » pour les attaques des compagnons de classe actifs (action bonus), qui passent par le déroulé d'attaque habituel.
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
