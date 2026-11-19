@@ -136,7 +136,12 @@ class CreationWizard(QDialog):
         self.step_list.currentRowChanged.connect(self._on_step_clicked)
         body.addWidget(self.step_list)
         self.pages = QStackedWidget()
-        body.addWidget(self.pages, 1)
+        page_col = QVBoxLayout()                          # v52 : aide de l'étape (Aides pour débuter)
+        self.step_help = make_label("", "muted", wrap=True)
+        self.step_help.setVisible(False)
+        page_col.addWidget(self.step_help)
+        page_col.addWidget(self.pages, 1)
+        body.addLayout(page_col, 1)
         right = QVBoxLayout()
         right.addWidget(make_label("Résumé du personnage", "head"))
         self.summary = QTextBrowser()
@@ -357,7 +362,15 @@ class CreationWizard(QDialog):
     def go(self, step: int) -> None:
         self.step = max(0, min(len(STEPS) - 1, step))
         self.pages.setCurrentIndex(self.step)
+        self._refresh_step_help()
         self.refresh()
+
+    def _refresh_step_help(self) -> None:
+        from . import common as _common
+        glossary = _common.GLOSSARY
+        text = glossary.step_help.get(STEPS[self.step], "") if glossary and _common.BEGINNER() else ""
+        self.step_help.setText(("💡 " + text) if text else "")
+        self.step_help.setVisible(bool(text))
 
     def _on_step_clicked(self, row: int) -> None:
         if 0 <= row < len(STEPS) and row != self.step:

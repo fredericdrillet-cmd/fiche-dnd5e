@@ -1,0 +1,763 @@
+{
+ "lexique": {
+  "version": 1,
+  "termes": [
+   {
+    "terme": "Action",
+    "categorie": "Tour de jeu",
+    "definition": "Ce que vous faites de principal à votre tour : Attaquer, lancer un sort, Foncer, Se désengager, Esquiver, Aider, Se cacher, Chercher, Utiliser un objet, Se tenir prêt.",
+    "2014": "",
+    "2024": "Lancer un sort ou activer un objet magique passe par l'action Magie ; nouvelles actions Étudier et Influencer.",
+    "variantes": [],
+    "auto": false
+   },
+   {
+    "terme": "Action bonus",
+    "categorie": "Tour de jeu",
+    "definition": "Action rapide en plus de l'action, seulement si une aptitude, un sort ou un objet le permet. Une seule par tour.",
+    "2014": "Après un sort lancé en action bonus, vous ne pouvez lancer qu'un tour de magie d'une action à ce tour.",
+    "2024": "Vous ne pouvez pas dépenser deux emplacements de sort au même tour.",
+    "variantes": [
+     "actions bonus"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Réaction",
+    "categorie": "Tour de jeu",
+    "definition": "Réponse instantanée à un déclencheur (attaque d'opportunité, sort Bouclier…). Une seule par round ; elle revient au début de votre tour.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "réactions"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Action Magie",
+    "categorie": "Tour de jeu",
+    "definition": "Action pour lancer un sort, activer un objet magique ou utiliser une aptitude magique.",
+    "2014": "N'existe pas : on parle de l'action « Lancer un sort ».",
+    "2024": "Nouvelle action de 2024.",
+    "variantes": [
+     "action magie"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Attaque d'opportunité",
+    "categorie": "Tour de jeu",
+    "definition": "Quand une créature hostile que vous voyez quitte votre allonge, vous pouvez utiliser votre réaction pour une attaque au corps à corps. Se désengager l'évite.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "attaques d'opportunité"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Vitesse",
+    "categorie": "Tour de jeu",
+    "definition": "Distance que vous pouvez parcourir à votre tour, avant et après votre action. Une case = 1,50 m.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": false
+   },
+   {
+    "terme": "Foncer",
+    "categorie": "Tour de jeu",
+    "definition": "Action : vous gagnez un déplacement supplémentaire égal à votre vitesse pour ce tour.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Se désengager",
+    "categorie": "Tour de jeu",
+    "definition": "Action : vos déplacements ne provoquent pas d'attaque d'opportunité jusqu'à la fin du tour.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "désengager"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Esquiver",
+    "categorie": "Tour de jeu",
+    "definition": "Action : jusqu'à votre prochain tour, les attaques contre vous ont le désavantage (si vous voyez l'attaquant) et vous avez l'avantage aux JS de Dextérité.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Se cacher",
+    "categorie": "Tour de jeu",
+    "definition": "Action : test de Dextérité (Discrétion). Caché, vous avez l'avantage à votre prochaine attaque et les attaques contre vous ont le désavantage.",
+    "2014": "Le MJ fixe la difficulté selon la situation.",
+    "2024": "DD 15 ; réussi, vous gagnez l'état Invisible tant que vous restez caché.",
+    "variantes": [
+     "cacher"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Initiative",
+    "categorie": "Tour de jeu",
+    "definition": "Test de Dextérité lancé au début d'un combat ; les créatures jouent du plus haut résultat au plus bas.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Round",
+    "categorie": "Tour de jeu",
+    "definition": "Six secondes de jeu, pendant lesquelles chaque créature joue un tour.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "rounds"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Surprise",
+    "categorie": "Tour de jeu",
+    "definition": "Les créatures qui ne s'attendaient pas au combat sont surprises.",
+    "2014": "Une créature surprise ne peut ni bouger ni agir à son premier tour, ni réagir avant la fin de ce tour.",
+    "2024": "Une créature surprise a le désavantage à son jet d'initiative.",
+    "variantes": [
+     "surpris",
+     "surprise"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Test de d20",
+    "categorie": "Jets",
+    "definition": "Nom commun du jet d'attaque, du test de caractéristique et du jet de sauvegarde : 1d20 + modificateurs, comparé à un nombre cible (CA ou DD).",
+    "2014": "",
+    "2024": "Terme introduit en 2024.",
+    "variantes": [
+     "tests de d20"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Avantage",
+    "categorie": "Jets",
+    "definition": "Lancez deux d20 et gardez le meilleur. Avantage et désavantage s'annulent, quel que soit leur nombre.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "l'avantage"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Désavantage",
+    "categorie": "Jets",
+    "definition": "Lancez deux d20 et gardez le moins bon. Avantage et désavantage s'annulent.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "le désavantage"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "DD",
+    "categorie": "Jets",
+    "definition": "Degré de difficulté : nombre à atteindre ou dépasser pour réussir un test ou un jet de sauvegarde. DD de vos sorts = 8 + bonus de maîtrise + modificateur d'incantation.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "degré de difficulté"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Jet de sauvegarde",
+    "categorie": "Jets",
+    "definition": "Jet pour résister à un effet (sort, poison, piège) : 1d20 + modificateur de la caractéristique + bonus de maîtrise si vous maîtrisez ce JS.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "jets de sauvegarde",
+     "JS"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Test de caractéristique",
+    "categorie": "Jets",
+    "definition": "Jet pour réussir une tâche : 1d20 + modificateur de la caractéristique, + bonus de maîtrise si une compétence ou un outil maîtrisé s'applique.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "tests de caractéristique"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Compétence",
+    "categorie": "Jets",
+    "definition": "Domaine où vous êtes entraîné (Discrétion, Perception…) : maîtrisée, elle ajoute votre bonus de maîtrise au test.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "compétences"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Bonus de maîtrise",
+    "categorie": "Jets",
+    "definition": "+2 au niveau 1, jusqu'à +6 au niveau 17. Il s'ajoute à vos attaques avec ce que vous maîtrisez, à vos compétences et JS maîtrisés, et au DD de vos sorts.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "maîtrise"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Expertise",
+    "categorie": "Jets",
+    "definition": "Votre bonus de maîtrise est doublé pour cette compétence.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Coup critique",
+    "categorie": "Jets",
+    "definition": "20 naturel au jet d'attaque : l'attaque touche quelle que soit la CA et les dés de dégâts sont doublés. Un 1 naturel rate toujours.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "critique",
+     "coups critiques"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Classe d'armure",
+    "categorie": "Jets",
+    "definition": "Nombre qu'un jet d'attaque doit atteindre pour vous toucher (armure, Dextérité, bouclier…).",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "CA"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Modificateur",
+    "categorie": "Jets",
+    "definition": "(valeur − 10) ÷ 2, arrondi à l'inférieur : 10-11 → +0, 12-13 → +1, 14-15 → +2, 16-17 → +3, 18-19 → +4.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "modificateurs"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Inspiration",
+    "categorie": "Jets",
+    "definition": "Récompense du MJ ou d'une aptitude, à dépenser sur un jet.",
+    "2014": "Dépensez-la pour avoir l'avantage à un jet d'attaque, un test ou un JS.",
+    "2024": "Inspiration héroïque : dépensez-la pour relancer un dé juste après l'avoir lancé.",
+    "variantes": [
+     "inspiration héroïque"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Charmé",
+    "categorie": "États",
+    "definition": "Vous ne pouvez pas attaquer la créature qui vous a charmé ni la cibler avec un effet nuisible ; elle a l'avantage à ses tests sociaux contre vous.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "charmée",
+     "charme"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Effrayé",
+    "categorie": "États",
+    "definition": "Désavantage aux tests et attaques tant que la source de votre peur est en vue ; vous ne pouvez pas vous en approcher volontairement.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "effrayée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Empoisonné",
+    "categorie": "États",
+    "definition": "Désavantage aux jets d'attaque et aux tests de caractéristique.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "empoisonnée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "À terre",
+    "categorie": "États",
+    "definition": "Vous ne pouvez que ramper ou vous relever (moitié de votre vitesse). Les attaques à 1,50 m contre vous ont l'avantage, celles de plus loin le désavantage ; vos attaques ont le désavantage.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "a terre"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Agrippé",
+    "categorie": "États",
+    "definition": "Votre vitesse tombe à 0.",
+    "2014": "",
+    "2024": "Appelé « Empoigné » : vous avez aussi le désavantage aux attaques contre d'autres cibles que celle qui vous tient.",
+    "variantes": [
+     "agrippée",
+     "empoigné",
+     "empoignée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Entravé",
+    "categorie": "États",
+    "definition": "Vitesse 0 ; vos attaques et vos JS de Dextérité ont le désavantage, les attaques contre vous ont l'avantage.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "entravée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Neutralisé",
+    "categorie": "États",
+    "definition": "Vous ne pouvez faire aucune action ni réaction.",
+    "2014": "",
+    "2024": "Votre concentration se rompt et vous ne pouvez pas parler ; désavantage à l'initiative.",
+    "variantes": [
+     "neutralisée",
+     "incapable d'agir"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Étourdi",
+    "categorie": "États",
+    "definition": "Neutralisé, vous ne bougez plus ; vous ratez vos JS de Force et de Dextérité, et les attaques contre vous ont l'avantage.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "étourdie"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Paralysé",
+    "categorie": "États",
+    "definition": "Neutralisé et immobile ; vous ratez vos JS de Force et de Dextérité ; une attaque qui vous touche à 1,50 m est un coup critique.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "paralysée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Inconscient",
+    "categorie": "États",
+    "definition": "À 0 PV ou endormi : neutralisé, à terre, vous lâchez ce que vous tenez ; une attaque à 1,50 m qui touche est un coup critique.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "inconsciente"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Invisible",
+    "categorie": "États",
+    "definition": "On ne peut pas vous voir : vos attaques ont l'avantage, celles contre vous le désavantage.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "invisibilité"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Aveuglé",
+    "categorie": "États",
+    "definition": "Vous ratez les tests qui demandent la vue ; vos attaques ont le désavantage, celles contre vous l'avantage.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "aveuglée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Épuisement",
+    "categorie": "États",
+    "definition": "Fatigue cumulative, par niveaux.",
+    "2014": "Six niveaux aux effets croissants (désavantage aux tests, vitesse réduite de moitié…) ; le 6e est mortel.",
+    "2024": "Chaque niveau : −2 aux tests de d20 et −1,50 m de vitesse ; le 6e est mortel. Un repos long retire un niveau.",
+    "variantes": [
+     "épuisé"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Pétrifié",
+    "categorie": "États",
+    "definition": "Changé en pierre : neutralisé, résistance à tous les dégâts, immunité au poison.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "pétrifiée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Ensanglanté",
+    "categorie": "États",
+    "definition": "Vous avez la moitié de vos PV ou moins.",
+    "2014": "N'existe pas en 2014.",
+    "2024": "État décrit en 2024, utilisé par plusieurs aptitudes.",
+    "variantes": [
+     "ensanglantée"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Emplacement de sort",
+    "categorie": "Magie",
+    "definition": "Réserve d'énergie magique pour lancer un sort de niveau 1 ou plus ; vous les récupérez au repos long.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "emplacements de sort",
+     "emplacement",
+     "emplacements"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Tour de magie",
+    "categorie": "Magie",
+    "definition": "Sort de niveau 0, lancé à volonté sans emplacement ; ses dégâts augmentent aux niveaux 5, 11 et 17.",
+    "2014": "Appelé « sort mineur ».",
+    "2024": "",
+    "variantes": [
+     "tours de magie",
+     "sort mineur",
+     "sorts mineurs"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Concentration",
+    "categorie": "Magie",
+    "definition": "Certains sorts durent tant que vous vous concentrez : un seul à la fois. Quand vous subissez des dégâts, JS de Constitution DD 10 ou la moitié des dégâts, sinon le sort prend fin.",
+    "2014": "",
+    "2024": "Le DD est plafonné à 30.",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Rituel",
+    "categorie": "Magie",
+    "definition": "Un sort avec l'étiquette rituel peut être lancé en 10 minutes de plus, sans dépenser d'emplacement.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "rituels"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Niveau supérieur",
+    "categorie": "Magie",
+    "definition": "Lancer un sort avec un emplacement de niveau plus élevé que le sien pour en augmenter l'effet (dégâts, cibles…).",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "surclasser",
+     "surclassé"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Sorts préparés",
+    "categorie": "Magie",
+    "definition": "Sorts que vous pouvez lancer aujourd'hui, choisis dans votre liste.",
+    "2014": "Clerc, Druide, Magicien et Paladin changent leurs sorts après un repos long ; les autres classes « connaissent » un nombre fixe de sorts.",
+    "2024": "Toutes les classes préparent leurs sorts ; certaines n'en changent qu'un par niveau.",
+    "variantes": [
+     "sort préparé",
+     "préparés"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Composantes",
+    "categorie": "Magie",
+    "definition": "V : il faut parler ; S : une main libre pour les gestes ; M : un matériau, ou un focaliseur / une sacoche à composantes.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "composante"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Magie de pacte",
+    "categorie": "Magie",
+    "definition": "Emplacements de l'Occultiste : peu nombreux, tous du niveau le plus haut accessible, récupérés au repos court.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "magie des pactes",
+     "emplacements de pacte"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Attaque de sort",
+    "categorie": "Magie",
+    "definition": "1d20 + modificateur d'incantation + bonus de maîtrise, contre la CA de la cible.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "attaques de sort",
+     "jet d'attaque de sort"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Focaliseur",
+    "categorie": "Magie",
+    "definition": "Objet (baguette, symbole sacré, instrument…) qui remplace les composantes matérielles sans coût indiqué.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "focaliseur d'incantation"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Repos court",
+    "categorie": "Repos et points de vie",
+    "definition": "Au moins 1 heure de pause : dépensez des dés de vie pour regagner des PV ; certaines ressources reviennent (ki, Magie de pacte…).",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "repos courts"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Repos long",
+    "categorie": "Repos et points de vie",
+    "definition": "8 heures de repos, une fois par 24 heures : tous les PV et emplacements reviennent.",
+    "2014": "Vous récupérez la moitié de vos dés de vie dépensés.",
+    "2024": "Vous récupérez tous vos dés de vie ; un niveau d'épuisement disparaît.",
+    "variantes": [
+     "repos longs"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Dé de vie",
+    "categorie": "Repos et points de vie",
+    "definition": "Un par niveau. Au repos court, lancez-en : chaque dé rend son résultat + modificateur de Constitution en PV.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "dés de vie"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "PV temporaires",
+    "categorie": "Repos et points de vie",
+    "definition": "Tampon perdu avant vos PV. Ils ne se cumulent pas (gardez le plus grand) et disparaissent au repos long.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "points de vie temporaires",
+     "PV temporaire"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Jet contre la mort",
+    "categorie": "Repos et points de vie",
+    "definition": "À 0 PV, un d20 au début de chaque tour : 10+ réussite, sinon échec ; 1 = deux échecs ; 20 = vous reprenez 1 PV. Trois réussites : stabilisé ; trois échecs : mort.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "jets contre la mort"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Résistance",
+    "categorie": "Repos et points de vie",
+    "definition": "Les dégâts de ce type sont divisés par deux (arrondi à l'inférieur).",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "résistances"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Immunité",
+    "categorie": "Repos et points de vie",
+    "definition": "Vous ne subissez aucun dégât de ce type, ou l'état ne vous affecte pas.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "immunités",
+     "immunisé"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Vulnérabilité",
+    "categorie": "Repos et points de vie",
+    "definition": "Les dégâts de ce type sont doublés.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "vulnérabilités"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Don",
+    "categorie": "Personnage",
+    "definition": "Talent particulier qui donne de nouvelles capacités.",
+    "2014": "Pris à la place d'une amélioration de caractéristique (règle optionnelle).",
+    "2024": "Dons d'origine (historique), généraux (dès le niveau 4), de style de combat et Faveurs épiques (niveau 19).",
+    "variantes": [
+     "dons"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Historique",
+    "categorie": "Personnage",
+    "definition": "Passé de votre personnage : compétences, outils, équipement.",
+    "2014": "Donne aussi une aptitude (Abri du fidèle…).",
+    "2024": "Donne aussi +2/+1 (ou +1/+1/+1) à trois caractéristiques et un don d'origine.",
+    "variantes": [],
+    "auto": false
+   },
+   {
+    "terme": "Sous-classe",
+    "categorie": "Personnage",
+    "definition": "Spécialisation de votre classe (domaine, serment, école…).",
+    "2014": "Choisie entre les niveaux 1 et 3 selon la classe.",
+    "2024": "Toujours choisie au niveau 3.",
+    "variantes": [
+     "sous-classes"
+    ],
+    "auto": false
+   },
+   {
+    "terme": "Botte d'arme",
+    "categorie": "Personnage",
+    "definition": "Propriété spéciale d'une arme maîtrisée (Sape, Ouverture, Poussée…) utilisable par certaines classes.",
+    "2014": "Règle de la table : n'existe pas en 2014.",
+    "2024": "« Maîtrise des armes » : Guerrier, Barbare, Paladin, Rôdeur et Roublard en connaissent quelques-unes.",
+    "variantes": [
+     "bottes d'arme",
+     "maîtrise des armes"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Allonge",
+    "categorie": "Combat",
+    "definition": "Distance à laquelle vous attaquez au corps à corps : 1,50 m, 3 m avec une arme qui a la propriété Allonge.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Abri",
+    "categorie": "Combat",
+    "definition": "Un obstacle entre vous et l'attaquant : abri partiel +2 à la CA et aux JS de Dextérité, abri important +5, abri total : impossible à cibler.",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "abri partiel"
+    ],
+    "auto": true
+   },
+   {
+    "terme": "Attaque sournoise",
+    "categorie": "Combat",
+    "definition": "Roublard, une fois par tour : dés de dégâts en plus si vous avez l'avantage, ou si un allié est à 1,50 m de la cible, avec une arme de finesse ou à distance.",
+    "2014": "",
+    "2024": "",
+    "variantes": [],
+    "auto": true
+   },
+   {
+    "terme": "Frappe à mains nues",
+    "categorie": "Combat",
+    "definition": "Coup de poing, de pied… : 1 + modificateur de Force en dégâts contondants (dé d'arts martiaux pour le Moine).",
+    "2014": "",
+    "2024": "",
+    "variantes": [
+     "frappes à mains nues"
+    ],
+    "auto": true
+   }
+  ],
+  "aides_onglets": {
+   "classes": "Vos classes et leurs aptitudes, niveau par niveau. Montez de niveau avec « ▲ Niveau supérieur ».",
+   "caracteristiques": "Vos six caractéristiques et leurs modificateurs, vos compétences (ce que vous savez bien faire) et vos jets de sauvegarde.",
+   "race": "Votre espèce, votre historique et vos langues : traits innés et passé de votre personnage.",
+   "rp": "L'histoire, la personnalité et le portrait de votre personnage.",
+   "combat": "L'onglet de la table : cliquez une tuile pour agir (action, action bonus, réaction), suivez vos PV, vos ressources et vos états.",
+   "magie": "Vos sorts : préparés ou connus, emplacements restants, DD et attaque de sort. Cliquez un sort pour le lancer.",
+   "druide": "Forme sauvage : choisissez une bête ; ses statistiques remplacent les vôtres tant que vous la gardez.",
+   "menagerie": "Vos compagnons, familiers et montures, avec leurs statistiques.",
+   "progression": "Améliorations de caractéristiques et dons, débloqués aux niveaux 4, 8, 12, 16 et 19.",
+   "inventaire": "Votre équipement, votre argent, vos outils et vos objets magiques ; le poids porté est calculé."
+  },
+  "aides_creation": {
+   "Race / Sous-race": "Votre espèce donne des traits innés (vision dans le noir, résistances…) et votre vitesse.",
+   "Historique": "Votre passé : deux compétences, des outils, de l'équipement (et en 2024 des bonus de caractéristique et un don).",
+   "Classe": "Votre métier d'aventurier : il décide de vos PV, de vos maîtrises et de vos aptitudes. La fiche pédagogique aide à choisir.",
+   "Caractéristiques": "Six valeurs de 3 à 20 : mettez les plus hautes dans les caractéristiques marquées ⭐ pour votre classe.",
+   "Sorts et tours de magie": "Les tours de magie se lancent à volonté ; les sorts de niveau 1 dépensent un emplacement.",
+   "Équipement": "Prenez le paquetage de classe (le plus simple) ou achetez votre équipement avec l'or de départ.",
+   "Identité": "Nom, apparence et personnalité : ce qui rend votre personnage unique."
+  }
+ }
+}

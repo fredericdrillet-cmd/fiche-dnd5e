@@ -41,6 +41,10 @@ class MainWindow(QMainWindow):
         self.settings = settings or {"theme": theme.DEFAULT_THEME, "font_px": 14, "last_dir": ""}
         self.settings["theme"] = theme.resolve_key(self.settings["theme"])   # ancienne préférence -> thème par défaut
         self.engine = Engine(db, Engine.new_character(db))
+        from . import common as _common                   # v52 : lexique au survol, option « Aides pour débuter »
+        _common.GLOSSARY = getattr(db, "glossary", None)
+        _common.EDITION = lambda: getattr(self.engine, "sheet_edition", 0)
+        _common.BEGINNER = lambda: bool(self.settings.get("aides_debutant", False))
         self.path: Path | None = None
         self._dirty = False
         self.resize(1600, 900)                 # format 16/9
@@ -63,6 +67,9 @@ class MainWindow(QMainWindow):
         fb.addWidget(self.form_end_btn)
         self.form_banner.setVisible(False)
         lay.addWidget(self.form_banner)
+        self.help_banner = make_label("", "muted", wrap=True)      # v52 : aide de l'onglet (Aides pour débuter)
+        self.help_banner.setVisible(False)
+        lay.addWidget(self.help_banner)
         self.form_end_btn.clicked.connect(self._on_end_form)
 
         # Rafraîchissement paresseux : seul l'onglet visible est recalculé ; les autres le seront à leur ouverture.
@@ -296,12 +303,30 @@ class MainWindow(QMainWindow):
         bar.setCornerWidget(self.theme_combo)
 
         hm = bar.addMenu("&Aide")
+        lexicon = QAction("Lexique des règles…", self)           # v52 : définitions 2014 / 2024
+        lexicon.setShortcut(QKeySequence("F1"))
+        lexicon.triggered.connect(self.action_glossary)
+        hm.addAction(lexicon)
         about = QAction("À propos / données chargées", self)
         about.triggered.connect(self.action_about)
         hm.addAction(about)
 
     def action_options(self):
         OptionsDialog(self).exec()
+        self.refresh_help_banner()
+
+    def action_glossary(self, initial: str = ""):
+        from .glossary_dialog import GlossaryDialog
+        GlossaryDialog(self, self.db.glossary, getattr(self.engine, "sheet_edition", 0), initial or "").exec()
+
+    def refresh_help_banner(self) -> None:
+        """v52 : une ligne d'explication sur l'onglet affiché, avec l'option « Aides pour débuter »."""
+        on = bool(self.settings.get("aides_debutant", False))
+        key = self._key_of.get(id(self.tabs.currentWidget())) if self.tabs.currentWidget() is not None else None
+        text = (getattr(self.db, "glossary", None).tab_help.get(key, "") if on and getattr(self.db, "glossary", None)
+                else "")
+        self.help_banner.setText("💡 " + text if text else "")
+        self.help_banner.setVisible(bool(text))
 
     def action_history(self):
         from .history_dialog import HistoryDialog
@@ -572,6 +597,7 @@ class MainWindow(QMainWindow):
         key = self._key_of.get(id(self.tabs.currentWidget()))
         if key in self._stale:
             self._refresh_tab(key)
+        self.refresh_help_banner()
 
     def _refresh_tab(self, key: str) -> None:
         widget, _ = self._tab_by_key[key]
