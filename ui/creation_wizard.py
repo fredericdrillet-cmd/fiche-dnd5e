@@ -851,6 +851,8 @@ def run_creation(win) -> bool:
 
 def apply_creation(win, dialog: "CreationWizard") -> None:
     win.engine = dialog.engine
+    if hasattr(win, "reset_history"):                  # v52 : nouvelle fiche, historique neuf
+        win.reset_history()
     win.path, win._dirty = None, True
     win.refresh_all()
     if hasattr(win, "schedule_autosave"):

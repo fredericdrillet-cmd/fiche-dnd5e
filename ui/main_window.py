@@ -41,6 +41,10 @@ class MainWindow(QMainWindow):
         self.settings = settings or {"theme": theme.DEFAULT_THEME, "font_px": 14, "last_dir": ""}
         self.settings["theme"] = theme.resolve_key(self.settings["theme"])   # ancienne préférence -> thème par défaut
         self.engine = Engine(db, Engine.new_character(db))
+        from core.history import UndoHistory               # v52 : Annuler / Refaire
+        self.history = UndoHistory()
+        self._restoring = False
+        self.history.reset(self.engine.ch.to_dict())
         from . import common as _common                   # v52 : lexique au survol, option « Aides pour débuter »
         _common.GLOSSARY = getattr(db, "glossary", None)
         _common.EDITION = lambda: getattr(self.engine, "sheet_edition", 0)
@@ -259,6 +263,17 @@ class MainWindow(QMainWindow):
         quit_act.triggered.connect(self.close)
         fm.addAction(quit_act)
 
+        em = bar.addMenu("&Édition")                     # v52 : Annuler / Refaire
+        self.undo_act = QAction("Annuler", self)
+        self.undo_act.setShortcut(QKeySequence.StandardKey.Undo)
+        self.undo_act.triggered.connect(self.action_undo)
+        em.addAction(self.undo_act)
+        self.redo_act = QAction("Refaire", self)
+        self.redo_act.setShortcuts([QKeySequence.StandardKey.Redo, QKeySequence("Ctrl+Y")])
+        self.redo_act.triggered.connect(self.action_redo)
+        em.addAction(self.redo_act)
+        self._update_undo_actions()
+
         vm = bar.addMenu("&Affichage")
         full = QAction("Plein écran", self)
         full.setShortcut(QKeySequence("F11"))
@@ -390,7 +405,59 @@ class MainWindow(QMainWindow):
         from .rules_dialog import apply_table_defaults
         apply_table_defaults(self.engine.ch, self.settings)
         self.path, self._dirty = None, False
+        self.reset_history()
         self.refresh_all()
+
+    def reset_history(self) -> None:
+        """Nouvelle fiche ouverte : l'historique d'annulation repart de zéro."""
+        self.history.reset(self.engine.ch.to_dict())
+        self._update_undo_actions()
+
+    def _capture_history(self) -> None:
+        if self._restoring:
+            return
+        self.history.capture(self.engine.ch.to_dict())
+        self._update_undo_actions()
+
+    def _update_undo_actions(self) -> None:
+        undo, redo = getattr(self, "undo_act", None), getattr(self, "redo_act", None)
+        if undo is None:
+            return
+        u, r = self.history.undo_label(), self.history.redo_label()
+        undo.setText("Annuler : {}".format(u) if u else "Annuler")
+        undo.setEnabled(bool(u))
+        redo.setText("Refaire : {}".format(r) if r else "Refaire")
+        redo.setEnabled(bool(r))
+
+    def _apply_history(self, res) -> None:
+        if res is None:
+            return
+        state, label = res
+        self._restoring = True
+        try:
+            path = self.path
+            self.engine = Engine(self.db, Character.from_dict(state))
+            self.engine.normalize()
+            self.path, self._dirty = path, True
+            self._stale = {k for k, _, _ in self.tab_defs}
+            self.refresh_all()
+            self.schedule_autosave()
+        finally:
+            self._restoring = False
+        self._update_undo_actions()
+        return label
+
+    def action_undo(self):
+        res = self.history.undo()
+        if res is not None:
+            self._apply_history(res)
+            self.statusBar().showMessage("↶ Annulé : {}.".format(res[1]), 6000)
+
+    def action_redo(self):
+        res = self.history.redo()
+        if res is not None:
+            self._apply_history(res)
+            self.statusBar().showMessage("↷ Rétabli : {}.".format(res[1]), 6000)
 
     def action_open(self):
         if not self._confirm_discard():
@@ -415,6 +482,7 @@ class MainWindow(QMainWindow):
         if path is not None:
             self.settings["dernier_fichier"] = str(path)
             save_settings(self.settings)
+        self.reset_history()
         self.refresh_all()
 
     def _start_dir(self) -> str:
@@ -613,6 +681,7 @@ class MainWindow(QMainWindow):
         self._dirty = True
         self.refresh_all()
         self.schedule_autosave()
+        self._capture_history()                          # v52 : étape d'annulation
 
     def light_changed(self, keep_current: bool = True) -> None:
         """
@@ -623,6 +692,7 @@ class MainWindow(QMainWindow):
         current = self._key_of.get(id(self.tabs.currentWidget()))
         self._stale = {k for k, _, _ in self.tab_defs if not (keep_current and k == current)}
         self._update_title()
+        self._capture_history()                          # v52 : étape d'annulation
 
     def refresh_all(self):
         """En-tête + onglet visible (les autres sont marqués et recalculés à leur ouverture)."""

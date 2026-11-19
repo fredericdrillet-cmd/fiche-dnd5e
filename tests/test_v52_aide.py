@@ -338,3 +338,43 @@ class RememberTests(unittest.TestCase):
         self.assertIn("Attaque téméraire", win.combat_tab.remember_text.text())
         win.combat_tab._on_remember_toggle()
         self.assertIn("Afficher", win.combat_tab.remember_toggle.text())
+
+
+class UndoTests(unittest.TestCase):
+    def test_history_labels_merge_and_limit(self):
+        from core.history import UndoHistory, describe
+        t = [0.0]
+        h = UndoHistory(limit=3, clock=lambda: t[0])
+        h.reset({"pv_actuels": 10, "historique_jets": []})
+        self.assertEqual(describe({"pv_actuels": 1}, {"pv_actuels": 2}), "PV")
+        h.capture({"pv_actuels": 9, "historique_jets": []})
+        t[0] = 0.5
+        h.capture({"pv_actuels": 8, "historique_jets": []})          # même champ, rapproché : fusion
+        self.assertEqual(len(h.undo_stack), 1)
+        t[0] = 5
+        h.capture({"pv_actuels": 8, "ressources_utilisees": {"rage": 1}, "historique_jets": [1]})
+        self.assertEqual(h.undo_label(), "ressources")                 # le journal des lancers ne compte pas
+        state, label = h.undo()
+        self.assertEqual((state["pv_actuels"], state["historique_jets"]), (8, [1]))
+        self.assertEqual(h.redo_label(), "ressources")
+        h.redo()
+        for i in range(6):
+            t[0] = 10 + 5 * i
+            h.capture({"pv_actuels": i, "historique_jets": []})
+        self.assertEqual(len(h.undo_stack), 3)
+
+    def test_window_undo_redo(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        win.history.clock = iter(range(0, 1000, 10)).__next__
+        win.engine.ch.pv_actuels = 5
+        win.changed()
+        self.assertIn("PV", win.undo_act.text())
+        win.action_undo()
+        self.assertNotEqual(win.engine.ch.pv_actuels, 5)
+        win.action_redo()
+        self.assertEqual(win.engine.ch.pv_actuels, 5)
+        win.reset_history()
+        self.assertEqual(win.undo_act.text(), "Annuler")

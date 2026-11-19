@@ -216,6 +216,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 1. **Récupérations 2024** : au repos court, Rage, Conduit divin, Forme sauvage et Second souffle ne rendent qu'une utilisation (`SHORT_REST_PARTIAL_2024`) ; le repos long rend tous les dés de vie (moitié en 2014) ; Métabolisme surnaturel du Moine (initiative, une fois par repos long) et Ruse magique de l'Occultiste (moitié des emplacements de pacte) appliqués.
 
+2. **Annuler / Refaire** (`core/history.py`, menu Édition, Ctrl+Z / Ctrl+Y) : instantané `Character.to_dict()` après chaque `changed()` / `light_changed()`, 30 étapes, libellé déduit des champs modifiés (« Annuler : PV »), modifications rapprochées du même champ fusionnées (2 s), journal des lancers jamais annulé ; historique remis à zéro à l'ouverture, à la création ou au chargement d'une fiche.
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
