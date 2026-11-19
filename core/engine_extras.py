@@ -1071,7 +1071,10 @@ class ExtrasMixin:
         return self._first_int(beast["pv"], 1) if beast else 0
 
     def beast_ac(self, beast: dict) -> int:
-        return self._first_int(beast["ca"], 10)
+        ac = self._first_int(beast["ca"], 10)
+        if self.sheet_edition == 2024 and self.class_level("Druide") >= 3 and self.wild_shape().get("lune"):
+            ac = max(ac, 13 + self.mod("Sagesse"))      # v52 : Formes du cercle (Lune 2024)
+        return ac
 
     @staticmethod
     def beast_prof(beast: dict) -> int:
@@ -1186,7 +1189,7 @@ class ExtrasMixin:
         raw = amount
         amount, notes = self.damage_after_defenses(amount, dtype, magical)
         prefix = "{} {} → {} ({}) — ".format(raw, dtype, amount, " ; ".join(notes)) if notes else ""
-        if self.ch.forme_active:
+        if self.ch.forme_active and not self.wild_shape_2024():      # 2024 : la forme ne protège pas vos PV
             return prefix + self.damage_form(amount)
         ch = self.ch
         if ch.pv_actuels == 0 and amount > 0 and not ch.pv_temporaires:
@@ -1212,6 +1215,9 @@ class ExtrasMixin:
             ch.pv_actuels = min(self.hp_max(), 1 + self.hp_max() // 2)
             return text + ". Dernier rempart (Faveur de récupération) : vous restez debout avec {} PV.".format(
                 ch.pv_actuels)
+        if ch.pv_actuels == 0 and ch.forme_active and self.wild_shape_2024():
+            self.end_form()                              # v52 : 2024 — neutralisé, la forme prend fin
+            text += ". Votre Forme sauvage prend fin"
         if ch.pv_actuels == 0:
             if "inconscient" in FX.EFFECTS:
                 self.add_effect("inconscient")
@@ -1260,7 +1266,7 @@ class ExtrasMixin:
     def receive_healing(self, amount: int) -> str:
         """Soins reçus (forme sauvage d'abord) ; sortir de 0 PV remet les jets contre la mort à zéro."""
         amount = max(0, int(amount))
-        if self.ch.forme_active:
+        if self.ch.forme_active and not self.wild_shape_2024():
             self.heal_form(amount)
             return "La bête récupère {} PV.".format(amount)
         gained = self.heal(amount)
@@ -1391,5 +1397,6 @@ class ExtrasMixin:
         return {"icone": "🦋" if poly else "🐺", "bete": beast["nom"],
                 "libelle": "État actif : {} - {}".format("Métamorphose" if poly else "Forme Sauvage", beast["nom"]),
                 "pv": self.ch.forme_pv, "pv_max": self.beast_hp_max(beast["nom"]), "ca": self.beast_ac(beast),
+                "regles_2024": self.wild_shape_2024(),
                 "metamorphose": poly}
 

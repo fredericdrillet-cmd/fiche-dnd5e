@@ -837,8 +837,11 @@ class MainWindow(QMainWindow):
             head = ("🦋 État actif : Métamorphose ({})" if poly else "🐾 Forme active : {}").format(beast["nom"])
             conc = (" — concentration sur Métamorphose (JS de Constitution à chaque dégât)" if poly else
                     " — concentration maintenue : " + self.ch.concentration if self.ch.concentration else "")
-            self.form_label.setText("{} — PV de la bête {} / {} — CA {} — sorts indisponibles{}".format(
-                head, self.ch.forme_pv, self.engine.beast_hp_max(beast["nom"]), self.engine.beast_ac(beast), conc))
+            hp = ("vos PV {} + {} temporaires".format(self.ch.pv_actuels, self.ch.pv_temporaires)
+                  if self.engine.wild_shape_2024() else
+                  "PV de la bête {} / {}".format(self.ch.forme_pv, self.engine.beast_hp_max(beast["nom"])))
+            self.form_label.setText("{} — {} — CA {} — sorts indisponibles{}".format(
+                head, hp, self.engine.beast_ac(beast), conc))
             self.form_end_btn.setText("✕ Mettre fin à la Métamorphose" if poly else "✕ Reprendre sa forme normale")
 
     def _update_title(self):

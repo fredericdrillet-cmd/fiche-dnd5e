@@ -199,7 +199,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             ch.langues_liste = [NAME_MIGRATIONS.get(x, x) for x in ch.langues_liste]
         if ch.forme_active and not ch.forme_type:
             ch.forme_type = "sauvage"
-        if ch.forme_active and ch.forme_active in self.db.beasts and ch.forme_pv <= 0:
+        if ch.forme_active and ch.forme_active in self.db.beasts and ch.forme_pv <= 0 and not self.wild_shape_2024():
             ch.forme_pv = self.beast_hp_max(ch.forme_active)       # anciennes sauvegardes
         for name in self.db.skill_names:
             ch.competences.setdefault(name, {"maitrise": False, "expertise": False})
@@ -1954,12 +1954,17 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         lvl = entry["niveau"] if entry else 0
         moon = bool(entry) and "lune" in norm(self.active_subclass(entry))
         rules = R.wild_shape_limits(lvl, moon)
+        if self.sheet_edition == 2024 and lvl >= 2:      # v52 : Forme sauvage 2024
+            rules.update(fp_max=float(max(1, lvl // 3)) if moon else 0.25 if lvl < 4 else 0.5 if lvl < 8 else 1.0,
+                         nage=True, vol=lvl >= 8, duree=lvl // 2,
+                         formes_connues=4 if lvl < 4 else 6 if lvl < 8 else 8,
+                         pv_temp=lvl * (3 if moon else 1), action="Action bonus")
         rules.update(niveau=lvl, lune=moon, mouvements=(
             "vol et nage autorisés" if rules["vol"] else "nage autorisée, vol interdit" if rules["nage"]
             else "ni vol ni nage"))
         return rules
 
-    def beast_status(self, name: str) -> tuple[bool, str]:
+    def beast_status(self, name: str, check_known: bool = True) -> tuple[bool, str]:
         """(autorisée, raison) : une bête est autorisée si son FP, son vol et sa nage respectent les règles du druide."""
         beast = self.db.beasts.get(name)
         ws = self.wild_shape()
@@ -1973,12 +1978,14 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             return False, "FP {} > FP max {}".format(beast["fp_txt"], R.fmt_cr(ws["fp_max"]))
         if beast["vol"] and not ws["vol"]:
             return False, "vitesse de vol : druide niveau 8 requis"
+        if check_known and ws.get("formes_connues") and name not in self.known_forms():
+            return False, "forme non connue (2024 : choisissez vos formes connues)"
         if beast["nage"] and not ws["nage"]:
             return False, "vitesse de nage : druide niveau 4 requis"
         return True, ""
 
-    def allowed_beasts(self) -> list[dict]:
-        return [b for n, b in self.db.beasts.items() if self.beast_status(n)[0]]
+    def allowed_beasts(self, check_known: bool = True) -> list[dict]:
+        return [b for n, b in self.db.beasts.items() if self.beast_status(n, check_known)[0]]
 
     def assume_form(self, name: str) -> bool:
         """Adopte une forme (dépense une utilisation de Forme sauvage si elle n'est pas illimitée)."""
@@ -1993,9 +2000,31 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             self.ch.ressources_utilisees["forme"] = used + 1
         self.ch.forme_active = name
         self.ch.forme_type = "sauvage"
-        self.ch.forme_pv = self.beast_hp_max(name)       # PV tampon de la bête ; ceux du druide sont mis de côté
+        if self.wild_shape_2024():                       # v52 : 2024 — vos PV + PV temporaires (niveau, ×3 Lune)
+            self.ch.forme_pv = 0
+            self.apply_temp_hp(self.wild_shape().get("pv_temp", 0))
+        else:
+            self.ch.forme_pv = self.beast_hp_max(name)   # PV tampon de la bête ; ceux du druide sont mis de côté
         self.add_effect("forme_sauvage")                  # la concentration éventuelle n'est PAS rompue
         return True
+
+    def wild_shape_2024(self) -> bool:
+        """Forme sauvage selon les règles 2024 (fiche 2024, transformation de druide, pas Métamorphose)."""
+        return self.sheet_edition == 2024 and self.ch.forme_type != "metamorphose"
+
+    def known_forms(self) -> list[str]:
+        return list((self.ch.options_classe or {}).get("formes_connues", []))
+
+    def known_forms_option_set(self) -> Optional[dict]:
+        """2024 : formes connues de Forme sauvage (4, 6 puis 8) parmi les bêtes autorisées par le FP et le vol."""
+        ws = self.wild_shape()
+        if self.sheet_edition != 2024 or not ws.get("formes_connues"):
+            return None
+        saved = (self.ch.options_classe or {}).get("formes_connues")
+        names = {b["nom"]: "FP {} — CA {} — {}".format(b["fp_txt"], self.beast_ac(b), b["vitesse"])
+                 for b in self.allowed_beasts(check_known=False)}
+        return {"key": "formes_connues", "label": "Formes connues (Forme sauvage 2024)", "total": ws["formes_connues"],
+                "options": dict(sorted(names.items())), "chosen": list(saved or [])[:ws["formes_connues"]]}
 
     def end_form(self, overflow: int = 0) -> None:
         """Fin de la forme (manuelle, repos, PV de la bête à 0) : les statistiques du druide sont restaurées ;

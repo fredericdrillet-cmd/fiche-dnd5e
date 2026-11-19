@@ -1141,9 +1141,11 @@ class CombatTab(BaseTab):
         kept = ("INT {} SAG {} CHA {} de la bête (Métamorphose : toutes les caractéristiques sont remplacées ; "
                 "concentration du lanceur requise)".format(c["INT"][0], c["SAG"][0], c["CHA"][0]) if poly else
                 "INT, SAG, CHA, maîtrises et alignement du druide conservés")
-        self.form_info.setText("{} — CA {} — vitesse {} — FOR {} DEX {} CON {} — {} — vos PV ({}/{}) sont mis de "
-                               "côté".format(beast["nom"], eng.beast_ac(beast), beast["vitesse"], c["FOR"][0],
-                                             c["DEX"][0], c["CON"][0], kept, ch.pv_actuels, eng.hp_max()))
+        hp_note = ("vous gardez vos PV ({}/{}) et vos PV temporaires de forme (2024)".format(ch.pv_actuels, eng.hp_max())
+                   if eng.wild_shape_2024() else "vos PV ({}/{}) sont mis de côté".format(ch.pv_actuels, eng.hp_max()))
+        self.form_info.setText("{} — CA {} — vitesse {} — FOR {} DEX {} CON {} — {} — {}".format(
+            beast["nom"], eng.beast_ac(beast), beast["vitesse"], c["FOR"][0], c["DEX"][0], c["CON"][0], kept, hp_note))
+        self.form_hp.setVisible(not eng.wild_shape_2024())   # 2024 : pas de PV de bête
         with blocked(self.form_hp):
             self.form_hp.setRange(0, hp_max)
             self.form_hp.setValue(ch.forme_pv)

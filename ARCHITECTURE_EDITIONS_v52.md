@@ -226,6 +226,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 6. **Options de Tasha qui remplacent** (`Character.tasha_remplacements`, `TASHA_REPLACEMENTS`, encart de l'onglet Classes, désactivées par défaut) : l'aptitude remplacée disparaît des aptitudes actives (`unlocked_feature_names`, `feature_replaced`). Ennemi favori (tuile de marque au toucher, concentration, dé 1d4 → 1d8 proposé aux dégâts ; la tuile 2014 « Ennemi juré » qui appliquait déjà cette mécanique ne s'affiche plus sans ce choix), Explorateur expert (expertise, deux langues, Vagabond +1,50 m, Infatigable : PV temporaires appliqués), Conscience primordiale (sorts lancés une fois sans emplacement), Voile de la nature (invisible), Frappes bénies 2014 (1d8 radiants une fois par tour, à la place de Frappe divine / Incantation puissante).
 
+7. **Forme sauvage 2024** (`wild_shape_2024`, `known_forms_option_set`) : FP 1/4 → 1/2 → 1 (Lune : niveau ÷ 3, minimum 1), nage dès le niveau 2, vol au niveau 8, formes connues (4, 6 puis 8, choix dans « Options de classe »), action bonus, vos PV conservés + PV temporaires égaux au niveau (×3 pour la Lune), CA du Cercle de la Lune au moins 13 + Sagesse ; à 0 PV, la forme prend fin. La Métamorphose et les fiches 2014 gardent les PV de la bête.
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

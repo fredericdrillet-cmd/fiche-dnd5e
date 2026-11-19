@@ -574,3 +574,40 @@ class TashaReplacementTests(unittest.TestCase):
         r = sheet("Rôdeur", 10, "2014")
         r.set_house_rule("options_tasha", False)
         self.assertEqual(r.tasha_replacement_options("Rôdeur"), [])
+
+
+class WildShape2024Tests(unittest.TestCase):
+    def test_rules_and_known_forms(self):
+        d14, d24 = sheet("Druide", 4, "2014"), sheet("Druide", 4, "2024")
+        self.assertIsNone(d14.known_forms_option_set())
+        s = d24.known_forms_option_set()
+        self.assertEqual(s["total"], 6)
+        self.assertEqual(d24.allowed_beasts(), [])                       # aucune forme connue choisie
+        pick = list(s["options"])[0]
+        d24.set_class_option("formes_connues", 0, pick)
+        self.assertEqual([b["nom"] for b in d24.allowed_beasts()], [pick])
+        self.assertTrue(d24.wild_shape()["nage"])                        # 2024 : nage dès le niveau 2
+        self.assertEqual(sheet("Druide", 8, "2024").wild_shape()["formes_connues"], 8)
+
+    def test_hp_temp_and_damage(self):
+        d24 = sheet("Druide", 4, "2024")
+        pick = list(d24.known_forms_option_set()["options"])[0]
+        d24.set_class_option("formes_connues", 0, pick)
+        d24.ch.pv_actuels = 20
+        self.assertTrue(d24.assume_form(pick))
+        self.assertEqual(d24.ch.pv_temporaires, 4)                      # niveau de druide
+        d24.take_damage(6)
+        self.assertEqual((d24.ch.pv_actuels, d24.ch.forme_active), (18, pick))
+        d24.take_damage(30)
+        self.assertEqual(d24.ch.forme_active, "")                        # 0 PV : la forme prend fin
+        self.assertEqual([a["type"] for a in d24.class_actions() if a["id"] == "cap:forme_sauvage"],
+                         ["Action bonus"])
+
+    def test_moon_2024(self):
+        moon = sheet("Druide", 6, "2024")
+        moon.ch.classes[0]["sous_classe"] = "Cercle de la lune"
+        moon.normalize()
+        ws = moon.wild_shape()
+        self.assertEqual((ws["fp_max"], ws["pv_temp"]), (2.0, 18))
+        beast = next(iter(moon.db.beasts.values()))
+        self.assertGreaterEqual(moon.beast_ac(beast), 13 + moon.mod("Sagesse"))

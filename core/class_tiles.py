@@ -549,9 +549,9 @@ class ClassTilesMixin:
             cost = dict(t["cout"]) if t["cout"] else ({"ressource": t["id"], "n": 1} if self._uses_total(t, lvl)
                                                        is not None else {})
             kind = t["type"]
-            if t["id"] == "cap:forme_sauvage" and "lune" in norm((self.ch.find_class("Druide") or {}).get(
-                    "sous_classe", "")):
-                kind = "Action bonus"                    # Cercle de la Lune : Forme sauvage de combat
+            if t["id"] == "cap:forme_sauvage" and ("lune" in norm((self.ch.find_class("Druide") or {}).get(
+                    "sous_classe", "")) or self.sheet_edition == 2024):
+                kind = "Action bonus"                    # Cercle de la Lune ; 2024 : toujours une action bonus
             a = {"id": t["id"], "nom": t["nom"], "icone": t["icone"], "classe": t["classe"], "sous_classe": "",
                  "niveau": t["niveau"], "type": kind, "cout": cost, "jet": "degats" if dmg else "aucun",
                  "degats": dmg, "type_degats": t["type_degats"], "description": desc, "effet": t["effet"],
