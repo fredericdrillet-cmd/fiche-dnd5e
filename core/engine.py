@@ -110,6 +110,8 @@ from .exhaustion import ExhaustionMixin  # noqa: E402
 from .durations import DurationsMixin  # noqa: E402
 from .conditions import ConditionsMixin  # noqa: E402
 from .luck import LuckMixin  # noqa: E402
+from .combat_end import CombatEndMixin  # noqa: E402
+from .environment import EnvironmentMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -134,7 +136,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin,
              TurnRemindersMixin, OnHitMixin, DefenseMixin, NoveltyMixin,
              RememberMixin, MasteryFlowMixin, ExhaustionMixin,
-             DurationsMixin, ConditionsMixin, LuckMixin):
+             DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
+             EnvironmentMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -2504,6 +2507,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def long_rest(self) -> None:
         ch = self.ch
         ch.nouveautes = []                                 # v52 : badges « Nouveau » retirés au repos long
+        ch.munitions_tirees, ch.combat_etat = {}, {}       # v52 : combat terminé
         ch.pv_actuels = self.hp_max()
         ch.pv_temporaires = 0
         ch.emplacements_utilises = [0] * 9

@@ -487,6 +487,7 @@ class TurnMixin:
             self.ch.tour_attaques = int(self.ch.tour_attaques) + 1
             self.spend_economy(kind)
             n = self.attacks_per_action()
+            res["slot"] = slot                           # v52 : munitions consommées au jet
             res["degats"] = self.weapon_damage_spec(slot)
             res.update(ok=True, attaque=self.weapon_attack_spec(slot), message="{} : attaque {} / {}.".format(
                 t["nom"], self.ch.tour_attaques, n) if n > 1 else "{} : attaque.".format(t["nom"]))

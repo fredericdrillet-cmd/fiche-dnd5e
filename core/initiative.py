@@ -84,6 +84,7 @@ class InitiativeMixin:
         return {"d20": n, "total": total, "texte": text}
 
     def record_initiative(self, total: int) -> None:
+        self.ensure_combat_started()                     # v52 : le combat commence à l'initiative
         self.ch.initiative_jet = int(total)
         self.ch.ressources_utilisees.pop("don_faveur_destin", None)
         self._last_initiative_msgs = self.initiative_recovery()

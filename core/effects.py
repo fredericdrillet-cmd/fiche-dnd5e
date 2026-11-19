@@ -186,6 +186,13 @@ _e("cache", "Caché", "🫥", "État", "Action Se cacher (PHB)", "Jusqu'à être
    "Après un test de Dextérité (Discrétion) réussi, la créature n'est pas localisée. Sa première attaque "
    "a l'avantage, puis elle est révélée ; faire du bruit ou être vue met fin à l'effet.",
    attaque="avantage", notes=["Révélé après l'attaque"])
+_e("apnee", "Retient son souffle", "🫧", "État", "Règle de survie (PHB)", "Variable",
+   "Vous retenez votre souffle : 1 + modificateur de Constitution minutes (30 secondes au moins). Ensuite, "
+   "vous suffoquez.", notes=["Décompte en rounds ; ensuite : Suffoque"])
+_e("suffoque", "Suffoque", "😶‍🌫️", "Malus", "Règle de survie (PHB)", "Variable",
+   "Vous n'avez plus d'air. 2014 : vous survivez un nombre de rounds égal à votre modificateur de Constitution "
+   "(1 au moins), puis tombez à 0 PV. 2024 : un niveau d'épuisement à la fin de chacun de vos tours, retirés quand "
+   "vous respirez à nouveau.", notes=["Respirer à nouveau : retirez l'état"])
 _e("surpris", "Surpris", "😲", "État", "Règle de combat (PHB)", "Premier round",
    "La créature n'a pas vu venir l'embuscade : elle ne peut ni bouger ni agir à son premier tour, et ne "
    "peut pas prendre de réaction avant la fin de celui-ci.",

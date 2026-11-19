@@ -96,6 +96,9 @@ class Character:
     effets_actifs: list[str] = field(default_factory=list)      # clés de core/effects.py (buffs, débuffs, états)
     effets_retires: list[str] = field(default_factory=list)     # traits innés (race / classe) retirés volontairement
     effets_potions: list[str] = field(default_factory=list)     # effets venus d'un consommable (expirent au repos)
+    combat_etat: dict = field(default_factory=dict)              # v52 : instantané du début du combat
+    munitions_tirees: dict = field(default_factory=dict)         # v52 : munitions tirées pendant le combat
+    suffocation_niveaux: int = 0            # v52 : niveaux d'épuisement dus à la suffocation (2024)
     effets_rounds: dict = field(default_factory=dict)            # v52 : rounds restants par effet (1 minute = 10)
     effets_rounds_max: dict = field(default_factory=dict)        # v52 : durée complète (« Prolonger »)
     concentration: str = ""                 # sort dont la concentration est en cours

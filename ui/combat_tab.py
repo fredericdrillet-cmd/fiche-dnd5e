@@ -564,6 +564,9 @@ class CombatTab(BaseTab):
         self.turn_move_left = make_label("", "muted")
         foot.addWidget(self.turn_move_left)
         foot.addStretch(1)
+        lay.addLayout(foot)
+        foot = QHBoxLayout()                              # v52 : 2e ligne — tour, attaque subie, environnement
+        foot.addStretch(1)
         self.turn_auto_btn = QPushButton("")
         self.turn_auto_btn.setProperty("role", "ghost")
         self.turn_auto_btn.clicked.connect(self._on_auto_reaction)
@@ -588,6 +591,20 @@ class CombatTab(BaseTab):
                                               "Parade…) puis applique les dégâts."))
         self.attacked_btn.clicked.connect(lambda: self.open_defense("attaque"))
         foot.addWidget(self.attacked_btn)
+        self.env_btn = QPushButton("🌪 Environnement…")             # v52 : chute, suffocation
+        self.env_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.env_btn.setToolTip(rich_tip("Environnement", "Chute (1d6 par 3 m, À terre, Chute ralentie, Feuille "
+                                         "morte) et suffocation (souffle retenu, décompte en rounds)."))
+        self.env_btn.clicked.connect(self.open_environment)
+        foot.addWidget(self.env_btn)
+        self.end_combat_btn = QPushButton("🏁 Fin du combat")       # v52 : bilan et munitions récupérées
+        self.end_combat_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.end_combat_btn.setToolTip(rich_tip("Fin du combat", "Récupère la moitié des munitions tirées, met fin "
+                                                "à la rage et aux effets de tour (Esquiver, Bouclier…), aux états "
+                                                "Surpris, Caché et À terre, et affiche le bilan. Les sorts en cours "
+                                                "gardent leur durée."))
+        self.end_combat_btn.clicked.connect(self._on_end_combat)
+        foot.addWidget(self.end_combat_btn)
         lay.addLayout(foot)
         box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         return box
@@ -743,7 +760,7 @@ class CombatTab(BaseTab):
             self.changed()
             return
         if res.get("attaque") is not None:
-            self._attack_flow(res["attaque"], res.get("degats"))
+            self._attack_flow(res["attaque"], res.get("degats"), res.get("slot"))
         elif res.get("degats") is not None:
             r = roll_damage_dialog(win, res["degats"])
             if r is not None and res.get("soin"):
@@ -1070,6 +1087,20 @@ class CombatTab(BaseTab):
         res = self.engine.start_turn()                   # v52 : début de tour + rappels
         lines = ["✔ " + m for m in res["appliques"]] + ["• " + m for m in res["rappels"]]
         self.show_turn_banner("▶ Début de votre tour", lines or ["Rien de particulier à ce début de tour."])
+        self.changed()
+
+    def open_environment(self) -> bool:
+        from .environment_dialog import EnvironmentDialog
+        dlg = EnvironmentDialog(self.win)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            self.maybe_concentration_save()
+            return True
+        return False
+
+    def _on_end_combat(self):
+        self.show_turn_banner("🏁 Fin du combat", ["• " + m for m in self.engine.end_combat()])
         self.changed()
 
     def _on_end_turn(self):
@@ -1722,6 +1753,10 @@ class CombatTab(BaseTab):
         r = roll_dice(win, attack_spec)
         if r is not None:
             self.engine.reveal_after_attack()            # v52 : attaquer met fin à l'état Caché
+            if slot is not None:
+                shot = self.engine.fire_ammo(slot)        # v52 : une munition par attaque
+                if shot:
+                    self.win.statusBar().showMessage(shot, 6000)
         if r is None or damage_spec is None:
             return False
         if r.critical == "echec":

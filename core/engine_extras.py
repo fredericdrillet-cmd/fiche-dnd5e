@@ -191,6 +191,8 @@ class ExtrasMixin:
         if key == "concentration":                        # retirer l'icône rompt la concentration
             self.break_concentration()
             return
+        if key == "suffoque" and self.ch.suffocation_niveaux:   # v52 : on respire, épuisement de suffocation retiré
+            self.breathe_again()
         if self.innate_source(key) and key not in self.ch.effets_retires:
             self.ch.effets_retires.append(key)
         if key in ("forme_sauvage", "metamorphose") and self.ch.forme_active:   # retirer l'état = fin de la forme
@@ -513,6 +515,7 @@ class ExtrasMixin:
         if int(item.get("qte", 0)) <= 0:
             return f"Stock épuisé : {target['nom']}."
         item["qte"] = int(item["qte"]) - 1
+        self.note_shot(target["nom"])                    # v52 : récupération en fin de combat
         return f"{target['nom']} tiré(e) — reste {item['qte']}."
 
     # ==================================================================================

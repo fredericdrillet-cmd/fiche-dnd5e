@@ -73,6 +73,7 @@ class TurnRemindersMixin:
     # ------------------------------------------------------------------ début de tour
     def start_turn(self) -> dict:
         """▶ Début de mon tour : {"appliques": [effets appliqués], "rappels": [à ne pas oublier]}."""
+        self.count_round()                               # v52 : début du combat au premier tour
         applied = self.new_round()
         reminders = []
         ch = self.ch
@@ -103,6 +104,7 @@ class TurnRemindersMixin:
             out.append("Action bonus non utilisée — disponible : {}.".format(", ".join(dict.fromkeys(bonus))[:220]))
         if ch.concentration:
             out.append("Concentration en cours : {}.".format(ch.concentration))
+        out += self.suffocation_end_turn()               # v52 : suffocation 2024
         out += self.trigger_reminders("fin")
         return out
 

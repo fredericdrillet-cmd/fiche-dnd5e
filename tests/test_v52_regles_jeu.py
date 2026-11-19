@@ -185,3 +185,123 @@ class LuckTests(unittest.TestCase):
         from ui.dice_dialog import DiceRollDialog
         win = MainWindow(DB)
         self.assertIsNone(DiceRollDialog(win, win.engine.skill_spec("Athlétisme")).luck_btn)
+
+
+class CombatEndTests(unittest.TestCase):
+    def archer(self, ed):
+        eng = sheet("Rôdeur", 3, ed)
+        eng.ch.armes_distance[0] = {"nom": "Arc long", "bonus": 0, "maitrise": None}
+        eng.ch.equipement.append({"nom": "Flèches", "qte": 20})
+        return eng
+
+    def test_ammo_and_summary(self):
+        for ed in ("2014", "2024"):
+            eng = self.archer(ed)
+            eng.record_initiative(15)
+            self.assertTrue(eng.in_combat())
+            for _ in range(5):
+                self.assertIn("tiré", eng.fire_ammo(eng.ch.armes_distance[0]))
+            self.assertEqual(eng.ch.munitions_tirees, {"Flèches": 5})
+            arrows = next(i for i in eng.ch.equipement if i["nom"] == "Flèches")
+            self.assertEqual(arrows["qte"], 15)
+            eng.start_turn()
+            eng.start_turn()
+            eng.ch.pv_actuels = max(1, eng.ch.pv_actuels - 4)
+            eng.add_effect("esquive")
+            eng.add_effect("benediction")
+            lines = eng.end_combat()
+            self.assertEqual(arrows["qte"], 17, ed)
+            text = "\n".join(lines)
+            self.assertIn("2 récupérée(s) sur 5", text)
+            self.assertIn("Durée : 2 round(s)", text)
+            self.assertIn("PV perdus : 4", text)
+            self.assertIn("Esquive", text)
+            self.assertNotIn("esquive", eng.ch.effets_actifs)
+            self.assertIn("benediction", eng.ch.effets_actifs)       # les sorts gardent leur durée
+            self.assertFalse(eng.in_combat())
+            self.assertEqual(eng.ch.munitions_tirees, {})
+
+    def test_melee_weapon_uses_no_ammo(self):
+        eng = sheet("Guerrier", 3, "2024")
+        self.assertEqual(eng.fire_ammo({"nom": "Épée longue"}), "")
+
+    def test_rage_and_frenzy_end(self):
+        eng = sheet("Barbare", 3, "2014", "Voie du berserker")
+        eng.use_class_action("rage")
+        eng.add_effect("frenesie")
+        eng.end_combat()
+        self.assertNotIn("rage", eng.ch.effets_actifs)
+        self.assertEqual(eng.exhaustion_level(), 1)
+
+    def test_ui_button(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        win.engine.record_initiative(12)
+        win.combat_tab._on_end_combat()
+        self.assertIn("Fin du combat", win.combat_tab.turn_banner_text.text())
+        self.assertFalse(win.engine.in_combat())
+
+
+class EnvironmentTests(unittest.TestCase):
+    def test_fall(self):
+        eng = sheet("Guerrier", 5, "2024")
+        self.assertEqual(eng.fall_formula(2), "")
+        self.assertEqual(eng.fall_formula(10), "3d6")
+        self.assertEqual(eng.fall_formula(200), "20d6")
+        hp = eng.ch.pv_actuels = eng.hp_max()
+        msg = eng.apply_fall(7, 10)
+        self.assertEqual(eng.ch.pv_actuels, hp - 7)
+        self.assertIn("a_terre", eng.ch.effets_actifs)
+        self.assertIn("À terre", msg)
+        self.assertIn("aucun dégât", eng.apply_fall(0, 10, feather=True))
+
+    def test_slow_fall_monk(self):
+        eng = sheet("Moine", 4, "2014")
+        self.assertEqual(eng.slow_fall_reduction(), 20)
+        hp = eng.ch.pv_actuels = eng.hp_max()
+        msg = eng.apply_fall(15, 12, slow_fall=True)
+        self.assertEqual(eng.ch.pv_actuels, hp)
+        self.assertNotIn("a_terre", eng.ch.effets_actifs)
+        self.assertIn("Chute ralentie", msg)
+        self.assertEqual(eng.slow_fall_reduction(), 0)            # réaction dépensée
+
+    def test_suffocation_2014(self):
+        eng = sheet("Guerrier", 3, "2014")
+        eng.ch.pv_actuels = eng.hp_max()
+        eng.hold_breath()
+        self.assertEqual(eng.effect_rounds("apnee"), eng.breath_rounds())
+        msgs = eng.tick_effects(eng.breath_rounds())
+        self.assertIn("suffoque", eng.ch.effets_actifs)
+        self.assertTrue(any("suffoquez" in m for m in msgs))
+        msgs = eng.tick_effects(eng.suffocation_rounds_2014())
+        self.assertEqual(eng.ch.pv_actuels, 0)
+        self.assertTrue(any("0 PV" in m for m in msgs))
+
+    def test_suffocation_2024(self):
+        eng = sheet("Guerrier", 3, "2024")
+        eng.start_suffocating()
+        eng.end_turn()
+        eng.end_turn()
+        self.assertEqual(eng.exhaustion_level(), 2)
+        self.assertIn("2 niveau", eng.breathe_again())
+        self.assertEqual(eng.exhaustion_level(), 0)
+        eng.set_exhaustion(1)
+        eng.start_suffocating()
+        eng.end_turn()
+        eng.remove_effect("suffoque")
+        self.assertEqual(eng.exhaustion_level(), 1)
+
+    def test_dialog(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.environment_dialog import EnvironmentDialog
+        win = MainWindow(DB)
+        dlg = EnvironmentDialog(win)
+        dlg.height.setValue(9)
+        dlg._refresh_fall()
+        self.assertEqual(dlg.fall_formula.text(), "3d6")
+        dlg._done(win.engine.hold_breath())
+        self.assertIn("apnee", win.engine.ch.effets_actifs)

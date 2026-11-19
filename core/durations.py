@@ -95,4 +95,5 @@ class DurationsMixin:
                 self.break_concentration()                 # la durée du sort est écoulée : concentration finie
             else:
                 self.remove_effect(key)
+            ended += self.on_effect_expired(key)           # v52 : souffle épuisé -> suffocation…
         return ended
