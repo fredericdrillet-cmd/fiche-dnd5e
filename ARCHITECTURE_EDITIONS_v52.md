@@ -183,10 +183,18 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 - **Conduit divin 2024** : les options sont les aptitudes de la sous-classe qui dépensent « une utilisation de votre Conduit divin » (Préservation de la vie, Radiance de l'aube, Frappe guidée, Arme sacrée, Vœu d'hostilité…).
 - Correctif : « tant qu'elle est active » est reconnu comme une condition, donc pas d'effet permanent (seul changement constaté sur toutes les sous-classes : Enfant des tempêtes).
 
-### 4.12 Reste à faire
+### 4.12 Fait : règles de jeu appliquées au lancer et aux PV (2014 et 2024)
 
-- Effets purement narratifs ou situationnels (Faveur de déplacement dimensionnel, Talent fiable, Puissance indomptable, Aura de dévotion, Esquive cavalière…) : texte affiché, rien à chiffrer.
-- Les tuiles des sous-classes 2024 renommées reprennent les textes 2014 de leur équivalent.
+- **Type de dégâts** dans la saisie rapide des PV (onglet « En partie » : liste des types + case « magique ») : `damage_after_defenses()` applique les réductions (Maître des armures lourdes : 2014 -3 contre les attaques non magiques, 2024 - bonus de maîtrise), puis immunité, résistance (moitié, arrondi inférieur) ou vulnérabilité (double). Sans type, rien ne change.
+- **Planchers des lancers** (`RollSpec.d20_min` / `total_min`, affichés « Talent fiable : d20 3 → 10 ») : Talent fiable (Roublard 11 en 2014, 7 en 2024, compétences maîtrisées) ; Puissance indomptable (Barbare 18 : tests de Force, et JS de Force en 2024).
+- **JS de Dextérité** : rappel d'Évasion / Dérobade / Esquive totale / Esquive cavalière (réussite = aucun dégât, échec = moitié).
+- **Faveur de mémoire des sorts** : 1d4 lancé à chaque emplacement de niveau 1 à 4 dépensé (`cast_spell`) ; emplacement rendu si le dé égale le niveau.
+- **Immunités aux états** (`condition_immunities`, `effect_blocked`) : Aura de dévotion (charmé), Aura de courage (effrayé), Pureté du corps 2014 (empoisonné, malade), Protégé de dame Nature (empoisonné ; et malade en 2014), Rage aveugle en rage (charmé et effrayé, retirés à l'entrée en rage). L'état ne peut pas être ajouté ; l'interface dit pourquoi.
+- **Textes 2024 des sous-classes renommées** (`TILE_FEATURE_2024`) : sur une fiche 2024, une tuile 2014 prend le nom, le texte et le niveau de l'aptitude 2024 équivalente (Présence féerique → Foulée des fées, Moi illusoire → Double illusoire…) ; Frénésie 2024 (dés de dégâts en plus avec Attaque téméraire) remplace l'attaque en action bonus de 2014.
+
+### 4.13 Reste à faire
+
+- Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
 
 ## 5. Décisions prises
 

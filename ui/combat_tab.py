@@ -10,6 +10,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
                              QScrollArea, QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
 
+from core.engine_extras import ExtrasMixin
 from core import effects as FX
 from core import engine_extras as X
 from core import mechanics as M
@@ -128,7 +129,17 @@ class CombatTab(BaseTab):
         self.heal_btn = QPushButton("💚 Soins")
         self.heal_btn.setToolTip("Ajouter la valeur saisie aux PV (sans dépasser le maximum).")
         self.heal_btn.clicked.connect(lambda: self._quick_hp("soins"))
+        self.dmg_type = QComboBox()                           # v52 : type de dégâts -> résistances et réductions
+        self.dmg_type.addItems(["Type : —"] + [t.capitalize() for t in ExtrasMixin.DAMAGE_TYPES])
+        self.dmg_type.setToolTip(rich_tip("Type de dégâts", "Facultatif : avec le type, la fiche applique vos "
+                                          "immunités, résistances (moitié) et réductions (Maître des armures lourdes)."))
+        self.dmg_magic = QCheckBox("magique")
+        self.dmg_magic.setToolTip(rich_tip("Dégâts magiques", "Arme ou attaque magique : les résistances « non "
+                                           "magiques » et la réduction 2014 de Maître des armures lourdes ne "
+                                           "s'appliquent pas."))
         quick.addWidget(self.hp_entry, 1)
+        quick.addWidget(self.dmg_type)
+        quick.addWidget(self.dmg_magic)
         quick.addWidget(self.dmg_btn)
         quick.addWidget(self.heal_btn)
         g.addLayout(quick, 8, 0, 1, 2)
@@ -872,6 +883,10 @@ class CombatTab(BaseTab):
         if key == "metamorphose":                        # état « Métamorphose » : ouvre le tableau des bêtes
             from .druid_tab import start_polymorph
             start_polymorph(self.win, use_slot=False)
+            return
+        blocked = self.engine.effect_blocked(key) if key else ""
+        if blocked:                                      # v52 : immunité aux états
+            self.win.statusBar().showMessage(blocked, 8000)
             return
         if key and self.engine.add_effect(key):
             self.changed()
@@ -1657,7 +1672,9 @@ class CombatTab(BaseTab):
         self.hp_entry.selectAll()
 
     def _quick_hp(self, kind: str) -> None:
-        msg = self.engine.apply_hp_input(self.hp_entry.text(), kind)
+        idx = self.dmg_type.currentIndex()
+        dtype = ExtrasMixin.DAMAGE_TYPES[idx - 1] if idx > 0 else ""
+        msg = self.engine.apply_hp_input(self.hp_entry.text(), kind, dtype, self.dmg_magic.isChecked())
         if not msg:
             self.win.statusBar().showMessage("Saisissez un nombre : « 7 » ou « -7 » pour des dégâts, « +5 » pour des "
                                              "soins.", 6000)

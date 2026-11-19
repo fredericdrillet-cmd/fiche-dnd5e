@@ -286,3 +286,34 @@ class ClassAutoMixin:
         if barb >= 3 and self._has("fureur divine") and "rage" in (self.ch.effets_actifs or []):
             out.append(("Fureur divine (1/tour, radiants ou nécrotiques)", "1d6+{}".format(barb // 2)))
         return out
+
+    # ================================================================== v52 : immunités aux états
+    def condition_immunities(self) -> dict[str, str]:
+        """États qui ne peuvent pas vous affecter : {clé d'effet: source} (2014 et 2024)."""
+        out = {}
+        if self._has("aura de devotion"):
+            out["charme"] = "Aura de dévotion"
+        if self._has("aura de courage"):
+            out["effraye"] = "Aura de courage"
+        if self._has("purete du corps"):
+            out.update(empoisonne="Pureté du corps", malade="Pureté du corps")
+        if self._has("protege de dame nature"):
+            out["empoisonne"] = "Protégé de dame Nature"
+            if not self._ed24:
+                out["malade"] = "Protégé de dame Nature"
+        if self._has("rage aveugle") and "rage" in self.active_effect_keys():
+            out.setdefault("charme", "Rage aveugle (en rage)")
+            out.setdefault("effraye", "Rage aveugle (en rage)")
+        return out
+
+    def effect_blocked(self, key: str) -> str:
+        """Raison pour laquelle un état ne peut pas être ajouté ("" s'il peut l'être)."""
+        src = self.condition_immunities().get(key)
+        return "Immunité : {} — l'état « {} » ne vous affecte pas.".format(src, key.replace("_", " ")) if src else ""
+
+    def purge_immune_conditions(self) -> list[str]:
+        """Retire les états auxquels vous êtes (devenu) immunisé (ex. Rage aveugle en entrant en rage)."""
+        imm = self.condition_immunities()
+        gone = [k for k in self.ch.effets_actifs if k in imm]
+        self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k not in imm]
+        return gone

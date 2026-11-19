@@ -451,8 +451,11 @@ class ClassTilesMixin:
         for t in TILES:
             lvl = self._tile_level(t)
             total = self._uses_total(t, lvl) if lvl else None
+            alt = self.tile_feature_2024(t) if lvl else {}      # v52 : sous-classe 2024 renommée
+            if alt.get("masquer") or (alt and lvl < alt["niveau"]):
+                continue
             if lvl and total is not None:
-                out.append({"key": t["id"], "label": t["nom"], "total": total, "kind": "conduit",
+                out.append({"key": t["id"], "label": alt.get("nom", t["nom"]), "total": total, "kind": "conduit",
                             "recover": t["recover"], "info": "{} utilisation{} — récupération au {}".format(
                                 total, "s" * (total > 1), t["recover"]), "where": "combat", "de": ""})
         return out
@@ -481,6 +484,9 @@ class ClassTilesMixin:
             lvl = self._tile_level(t)
             if not lvl:
                 continue
+            alt = self.tile_feature_2024(t)              # v52 : texte 2024 d'une sous-classe renommée
+            if alt.get("masquer") or (alt and lvl < alt["niveau"]):
+                continue
             ctx = self._tile_context(t, lvl)
             dmg = str(_tier(t["degats"], lvl) or "")
             dmg = re.sub(r"\{([A-Z_]+)\}", lambda m: ctx.get(m.group(1), "{" + m.group(1) + "}"), dmg)
@@ -503,6 +509,10 @@ class ClassTilesMixin:
             if t["naturelle"]:
                 a["naturelle"] = t["naturelle"]
                 a["attaque_arme"] = True
+            if alt:
+                a.update(nom=alt["nom"], description=alt["description"] + (
+                    " (DD {})".format(desc.rsplit("(DD ", 1)[1].split(" ")[0]) if "(DD " in desc else ""),
+                    niveau=alt["niveau"])
             out.append(a)
         out += self.metamagic_actions()
         return out

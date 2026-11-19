@@ -464,6 +464,8 @@ class DiceRollDialog(QDialog):
             self.timer.stop()
         r = self.result
         text = "Total : {}".format(r.total)
+        if getattr(r, "adjust", ""):
+            text += "  — " + r.adjust
         if r.auto_fail:
             text += "  — échec automatique"
         self.total.setText(text)

@@ -78,6 +78,22 @@ def tiles_2024() -> list[dict]:
     ]
 
 
+# tuile 2014 -> aptitude 2024 équivalente (nom différent) ; nom, texte et niveau 2024 remplacent ceux de 2014
+TILE_FEATURE_2024 = {
+    "cap:manteau_inspiration": "Mante d'inspiration", "cap:manteau_majeste": "Mante de majesté",
+    "cap:inspiration_combat": "Inspiration martiale", "cap:eclat_protecteur": "Illumination protectrice",
+    "cap:forme_etoilee": "Forme stellaire", "cap:ailes_dragon": "Ailes draconiques",
+    "cap:marees_chaos": "Marée du chaos", "cap:chance_alteree": "Chance forcée", "cap:lien_arme": "Arme occulte",
+    "cap:moi_illusoire": "Double illusoire", "cap:main_souffrance": "Main du mal",
+    "cap:pas_ombre_moine": "Foulée d'ombre", "cap:plenitude_corps": "Plénitude physique",
+    "cap:presence_feerique": "Foulée des fées", "cap:fuite_brumeuse": "Échappatoire brumeuse",
+    "cap:garde_entropique": "Combattant clairvoyant", "cap:ange_vengeur": "Ange de la vengeance",
+    "cap:ordre_compagnon": "Compagnon primitif", "cap:frappes_terribles": "Frappes terrifiantes",
+    "cap:torsion_seduisante": "Revirement envoûtant", "cap:embuscade_terrible": "Embuscade effrayante",
+    "cap:tueur_colosses": "Proie du chasseur",
+}
+TILES_HIDDEN_2024 = {"cap:frenesie"}                     # mécanisme 2024 différent : voir subclass24_riders
+
 TERRAIN_RESIST = {"Aride": "feu", "Polaire": "froid", "Tempérée": "foudre", "Tropicale": "poison"}
 BEAR_RESIST = ["acide", "contondant", "feu", "foudre", "froid", "perforant", "poison", "tonnerre", "tranchant"]
 WILD_HEART = [
@@ -157,16 +173,28 @@ class Subclass2024Mixin:
         return ["Accessoires de déguisement", "Matériel d’empoisonneur"] if self._sub24("Roublard", "assassin") else []
 
     def subclass24_riders(self) -> list[tuple[str, str]]:
+        out = []
         n = self._sub24("Roublard", "assassin")
-        return [("Frappes surprises (1er round, cible qui n'a pas joué, avec l'Attaque sournoise)", str(n))] if n else []
+        if n:
+            out.append(("Frappes surprises (1er round, cible qui n'a pas joué, avec l'Attaque sournoise)", str(n)))
+        if self._sub24("Barbare", "berserker") and "rage" in self.active_effect_keys():
+            bonus = max(1, self.rage_damage_bonus())
+            out.append(("Frénésie (Attaque téméraire, première cible touchée ce tour)", "{}d6".format(bonus)))
+        return out
 
     # ------------------------------------------------------------------ déclencheurs
     def on_rage_start(self) -> str:
+        msgs = []
         lvl = self._sub24("Barbare", "arbre-monde")
         if lvl:
             self.apply_temp_hp(lvl)
-            return "Vitalité de l'arbre : {} PV temporaires".format(lvl)
-        return ""
+            msgs.append("Vitalité de l'arbre : {} PV temporaires".format(lvl))
+        if "rage" not in self.ch.effets_actifs:          # la rage est ajoutée par l'action : on l'anticipe
+            self.ch.effets_actifs.append("rage")
+        gone = self.purge_immune_conditions()            # Rage aveugle (Berserker, 2014 et 2024)
+        if gone:
+            msgs.append("Rage aveugle : fin de " + ", ".join(gone))
+        return " — ".join(msgs)
 
     def subclass24_turn_start(self) -> list[str]:
         """Début de tour (nouveau round) : Héros du champ d'honneur, Ralliement héroïque (Champion 2024)."""
@@ -184,6 +212,26 @@ class Subclass2024Mixin:
 
     def death_save_crit_min(self) -> int:
         return 18 if self._sub24("Guerrier", "champion", 18) else 20
+
+    def tile_feature_2024(self, tile: dict) -> dict:
+        """Aptitude 2024 d'une tuile 2014 sur une fiche 2024 (sous-classe renommée) : {nom, description, niveau}."""
+        if getattr(self, "sheet_edition", 2014) != 2024 or tile.get("ed") or not tile.get("sc"):
+            return {}
+        e = self.ch.find_class(tile["classe"])
+        sub = self.db.subclass(tile["classe"], (e or {}).get("sous_classe", "")) if e else None
+        if not sub or str(sub.get("edition", "")) != "2024":
+            return {}
+        if tile["id"] in TILES_HIDDEN_2024:
+            return {"masquer": True}
+        target = norm(TILE_FEATURE_2024.get(tile["id"], tile["nom"])).replace("’", "'")
+        feats = sub.get("capacites", [])
+        f = next((x for x in feats if norm(x["nom"]).replace("’", "'") == target), None) or \
+            next((x for x in feats if target in norm(x["nom"]).replace("’", "'")
+                  or norm(x["nom"]).replace("’", "'") in target), None)
+        if not f:
+            return {}
+        from .class_actions import short_text
+        return {"nom": f["nom"], "description": short_text(f["description"], 320), "niveau": int(f["niveau"])}
 
     def channel_options_2024(self, class_name: str, entry: dict, sub: dict) -> list[dict]:
         """Options de Conduit divin d'une sous-classe 2024 : aptitudes qui dépensent « une utilisation de votre

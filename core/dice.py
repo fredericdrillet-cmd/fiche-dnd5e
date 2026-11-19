@@ -38,6 +38,9 @@ class RollSpec:
     echec: list[str] = field(default_factory=list)
     note: str = ""                                       # ex. « Dégâts en cas de réussite : 1d8+3 tranchants »
     crit_min: int = 20                                   # v52 : critique dès 19 ou 18 (Champion)
+    d20_min: int = 1                                     # v52 : Talent fiable (d20 de 9 ou moins = 10)
+    total_min: int = 0                                   # v52 : Puissance indomptable (total au moins la Force)
+    floor_label: str = ""                                # source du plancher (affichée)
 
     @property
     def flat(self) -> int:
@@ -64,6 +67,7 @@ class RollResult:
     total: int
     critical: str                    # "succes" (20 naturel) | "echec" (1 naturel) | ""
     auto_fail: bool = False
+    adjust: str = ""                 # v52 : plancher appliqué (« Talent fiable : 4 → 10 »)
 
 
 def roll_die_expr(expr: str, rng) -> int:
@@ -83,9 +87,17 @@ def roll_d20(spec: RollSpec, rng=None) -> RollResult:
     d20s = [rng.randint(1, 20) for _ in range(count)]
     natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
     values = [roll_die_expr(t.dice, rng) if t.dice else t.value for t in spec.terms]
-    total = natural + sum(values)
+    used = max(natural, getattr(spec, "d20_min", 1))
+    total = used + sum(values)
+    adjust = ""
+    if used != natural:
+        adjust = "{} : d20 {} → {}".format(spec.floor_label or "Plancher", natural, used)
+    floor = getattr(spec, "total_min", 0)
+    if floor and total < floor:
+        adjust = "{} : total {} → {}".format(spec.floor_label or "Plancher", total, floor)
+        total = floor
     crit = "succes" if natural >= getattr(spec, "crit_min", 20) else "echec" if natural == 1 else ""
-    return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec")
+    return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec", adjust=adjust)
 
 
 def mode_of(avantage: list, desavantage: list, echec: list) -> str:

@@ -22,6 +22,7 @@ from . import mechanics as M
 from . import rules as R
 from . import weapon_actions as WA
 from .rules import norm
+from .feat_effects import feat_base as feat_base_name
 
 START_MINUTES = 8 * 60                      # l'aventure commence le jour 1 à 8 h 00
 SHORT_REST_MIN, LONG_REST_MIN = 60, 8 * 60
@@ -171,6 +172,8 @@ class ExtrasMixin:
             self.ch.effets_retires = [k for k in self.ch.effets_retires if k != key]
             return True
         if key not in FX.EFFECTS or key in self.ch.effets_actifs:
+            return False
+        if self.effect_blocked(key):                     # v52 : Aura de dévotion, Aura de courage, Pureté du corps…
             return False
         if key.startswith("epuisement_"):                  # un seul niveau d'épuisement à la fois
             self.ch.effets_actifs = [k for k in self.ch.effets_actifs if not k.startswith("epuisement_")]
@@ -334,12 +337,14 @@ class ExtrasMixin:
 
     def defenses(self) -> dict:
         """Résistances et immunités en vigueur : {"resistances": [(type, source)], "immunites": [...]}."""
-        out = {"resistances": [], "immunites": []}
+        out = {"resistances": [], "immunites": [], "vulnerabilites": []}
         for label, m in self.modifier_sources(False):
             for t in m.get("resistances", []):
                 out["resistances"].append((t, label))
             for t in m.get("immunites", []):
                 out["immunites"].append((t, label))
+            for t in m.get("vulnerabilites", []):
+                out["vulnerabilites"].append((t, label))
         return out
 
     def effect_summary_lines(self) -> list[str]:
@@ -638,7 +643,7 @@ class ExtrasMixin:
         return {"niveau": n, "exact": n == level, "pacte": False, "disponible": True}
 
     def cast_spell(self, spell_name: str, use_slot: bool = True, target: str = "", effect: str = "",
-                   slot_level: int = 0) -> dict:
+                   slot_level: int = 0, rng=None) -> dict:
         """
         Lance un sort : dépense le plus petit emplacement disponible (sorts de niveau 1+) et, pour un sort de
         concentration, remplace la concentration en cours (l'interface a demandé confirmation avant).
@@ -668,6 +673,16 @@ class ExtrasMixin:
                 cast_level, ", niveau supérieur" if cast_level > spell["niveau"] else "") if slot == "pacte" else \
                 " (emplacement de niveau {}{})".format(cast_level, ", niveau supérieur" if cast_level > spell["niveau"]
                                                        else "")
+        if slot and 1 <= cast_level <= 4 and self.feat_flag("memoire_sorts"):    # v52 : Faveur de mémoire des sorts
+            roll = (rng or random).randint(1, 4)
+            if roll == cast_level:
+                if slot == "pacte":
+                    self.ch.pacte_utilises = max(0, self.ch.pacte_utilises - 1)
+                else:
+                    self.ch.emplacements_utilises[cast_level - 1] -= 1
+                msg += " — Faveur de mémoire des sorts : 1d4 = {}, emplacement conservé".format(roll)
+            else:
+                msg += " — Faveur de mémoire des sorts : 1d4 = {}, emplacement dépensé".format(roll)
         vals = self.spell_values(spell["nom"], cast_level) if spell["niveau"] else None
         if vals and vals.get("degats"):                  # dégâts au niveau réellement lancé (surclassement)
             msg += " — Dégâts : {} {}".format(vals["degats"], vals.get("type_degats", "")).rstrip()
@@ -840,17 +855,47 @@ class ExtrasMixin:
     def ability_check_spec(self, ab: str) -> "D.RollSpec":
         fx = self.check_mods(ab)
         detail = [(R.mod_label(ab), "{:+d}".format(self.mod(ab)))] + fx["detail"]
-        return D.spec_from_detail("Test de " + ab, "test", detail, fx["avantage"], fx["desavantage"], fx["echec"])
+        spec = D.spec_from_detail("Test de " + ab, "test", detail, fx["avantage"], fx["desavantage"], fx["echec"])
+        return self._apply_floors(spec, ab, "test")
 
     def skill_spec(self, name: str) -> "D.RollSpec":
         row = next(r for r in self.skill_rows() if r["nom"] == name)
-        return D.spec_from_detail("{} ({})".format(name, row["carac"]), "competence", row["detail"],
+        spec = D.spec_from_detail("{} ({})".format(name, row["carac"]), "competence", row["detail"],
                                   row["avantage"], row["desavantage"], row["echec"])
+        return self._apply_floors(spec, row["carac"], "test", proficient=row["maitrise"])
 
     def save_spec(self, ab: str) -> "D.RollSpec":
         row = next(r for r in self.save_rows() if r["carac"] == ab)
-        return D.spec_from_detail("Jet de sauvegarde de " + ab, "sauvegarde", row["detail"],
+        spec = D.spec_from_detail("Jet de sauvegarde de " + ab, "sauvegarde", row["detail"],
                                   row["avantage"], row["desavantage"], row["echec"])
+        spec = self._apply_floors(spec, ab, "sauvegarde")
+        if ab == "Dextérité":                            # v52 : Évasion, Esquive cavalière
+            ev = self.evasion_note()
+            if ev:
+                spec.note = (spec.note + " — " if spec.note else "") + ev
+        return spec
+
+    def _apply_floors(self, spec, ab: str, kind: str, proficient: bool = False):
+        """v52 : Talent fiable (compétence maîtrisée : d20 ≤ 9 → 10) et Puissance indomptable (total ≥ Force)."""
+        if proficient and self.has_feature("talent fiable"):
+            spec.d20_min, spec.floor_label = 10, "Talent fiable"
+            spec.note = (spec.note + " — " if spec.note else "") + "Talent fiable : un d20 de 9 ou moins compte 10"
+        if ab == "Force" and self.has_feature("puissance indomptable") and (
+                kind == "test" or self.sheet_edition == 2024):
+            spec.total_min, spec.floor_label = self.score("Force"), "Puissance indomptable"
+            spec.note = (spec.note + " — " if spec.note else "") + "Puissance indomptable : total au moins {}".format(
+                self.score("Force"))
+        return spec
+
+    def evasion_note(self) -> str:
+        """Évasion (Moine 7, Roublard 7) / Esquive cavalière (Danse 14, 2024) : rappel sur les JS de Dextérité."""
+        src = [n for n, frag in (("Évasion", "evasion"), ("Dérobade (Évasion)", "derobade"),
+                                 ("Esquive totale", "esquive totale"),
+                                 ("Esquive cavalière", "esquive cavaliere")) if self.has_feature(frag)]
+        if not src:
+            return ""
+        return ("{} : contre un effet à demi-dégâts, réussite = aucun dégât, échec = moitié des dégâts"
+                .format(" / ".join(dict.fromkeys(src))))
 
     def weapon_attack_spec(self, slot: dict) -> Optional["D.RollSpec"]:
         st = self.weapon_stats(slot)
@@ -1066,20 +1111,71 @@ class ExtrasMixin:
                                   detail + fx["detail"], fx["avantage"], fx["desavantage"], fx["echec"], note)
 
     # ---- v52 : saisie rapide des PV (bureau et web) -------------------------------------------
-    def take_damage(self, amount: int) -> str:
+    # ---- v52 : type de dégâts (résistances, immunités, réductions) -------------------------
+    DAMAGE_TYPES = ["acide", "contondant", "feu", "force", "foudre", "froid", "nécrotique", "perforant", "poison",
+                    "psychique", "radiant", "tonnerre", "tranchant"]
+    PHYSICAL = ("contondant", "perforant", "tranchant")
+
+    @staticmethod
+    def _defense_matches(entry: str, dtype: str, magical: bool) -> bool:
+        n, root = norm(entry), norm(dtype).rstrip("s")
+        if "tous les degats" in n:
+            return True
+        if "non magique" in n and magical:
+            return False
+        return any(w.rstrip("s") == root or (len(root) > 4 and w.startswith(root)) for w in re.findall(r"[a-z]+", n))
+
+    def damage_after_defenses(self, amount: int, dtype: str = "", magical: bool = False) -> tuple[int, list[str]]:
+        """Dégâts après réductions (Maître des armures lourdes), puis immunité / résistance / vulnérabilité."""
+        if not dtype:
+            return amount, []
+        notes = []
+        armor = self.db.armors.get(self.ch.armure.get("nom", ""), {})
+        if dtype in self.PHYSICAL and armor.get("categorie") == "lourde":
+            for f in self.chosen_feats():
+                if feat_base_name(f) != "maitre des armures lourdes":
+                    continue
+                if self._feat_edition(f) == 2024:
+                    red = self.prof
+                    notes.append("Maître des armures lourdes : -{} (attaque)".format(red))
+                elif not magical:
+                    red = 3
+                    notes.append("Maître des armures lourdes : -3 (non magique)")
+                else:
+                    continue
+                amount = max(0, amount - red)
+                break
+        d = self.defenses()
+        if any(self._defense_matches(t, dtype, magical) for t, _ in d["immunites"]):
+            src = next(s for t, s in d["immunites"] if self._defense_matches(t, dtype, magical))
+            return 0, notes + ["immunité ({})".format(src)]
+        res = [s for t, s in d["resistances"] if self._defense_matches(t, dtype, magical)]
+        vul = [s for t, s in d.get("vulnerabilites", []) if self._defense_matches(t, dtype, magical)]
+        if res and not vul:
+            amount //= 2
+            notes.append("résistance ({}) : moitié".format(res[0]))
+        elif vul and not res:
+            amount *= 2
+            notes.append("vulnérabilité ({}) : double".format(vul[0]))
+        return amount, notes
+
+    def take_damage(self, amount: int, dtype: str = "", magical: bool = False) -> str:
         """Dégâts subis : forme sauvage d'abord, puis PV temporaires, puis PV ; rappel de concentration, 0 PV."""
         amount = max(0, int(amount))
+        raw = amount
+        amount, notes = self.damage_after_defenses(amount, dtype, magical)
+        prefix = "{} {} → {} ({}) — ".format(raw, dtype, amount, " ; ".join(notes)) if notes else ""
         if self.ch.forme_active:
-            return self.damage_form(amount)
+            return prefix + self.damage_form(amount)
         ch = self.ch
         if ch.pv_actuels == 0 and amount > 0 and not ch.pv_temporaires:
-            return self.death_damage()
+            return prefix + self.death_damage() if amount else prefix + "aucun dégât."
         absorbed = min(ch.pv_temporaires, amount)
         ch.pv_temporaires -= absorbed
         before = ch.pv_actuels if ch.pv_actuels >= 0 else self.hp_max()
         overflow = (amount - absorbed) - before                    # dégâts au-delà de 0 PV
         ch.pv_actuels = max(0, before - (amount - absorbed))
-        text = "{} dégât(s) subi(s)".format(amount) + (
+        text = prefix + "{} dégât(s) subi(s)".format(amount) + (
             " dont {} absorbé(s) par les PV temporaires".format(absorbed) if absorbed else "")
         if ch.concentration and amount > 0:
             text += ". JS de Constitution DD {} pour maintenir {}".format(max(10, amount // 2), ch.concentration)
@@ -1146,7 +1242,7 @@ class ExtrasMixin:
                 self.remove_effect("inconscient")
         return "{} PV récupéré(s).".format(gained)
 
-    def apply_hp_input(self, text: str, kind: str = "") -> str:
+    def apply_hp_input(self, text: str, kind: str = "", dtype: str = "", magical: bool = False) -> str:
         """
         Saisie rapide : « 7 » ou « -7 » = dégâts, « +5 » = soins ; `kind` (« degats » | « soins ») force le sens.
         Renvoie le message affiché, ou "" si la saisie n'est pas un nombre.
@@ -1156,7 +1252,7 @@ class ExtrasMixin:
             return ""
         amount = int(m.group(2))
         heal = kind == "soins" or (not kind and m.group(1) == "+")
-        return self.receive_healing(amount) if heal else self.take_damage(amount)
+        return self.receive_healing(amount) if heal else self.take_damage(amount, dtype, magical)
 
     MAX_ROLL_HISTORY = 50
 

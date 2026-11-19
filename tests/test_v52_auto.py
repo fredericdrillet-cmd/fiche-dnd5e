@@ -314,3 +314,108 @@ class Subclass2024OnlyTests(unittest.TestCase):
         assassin = sub24("Roublard", 3, "Assassin")
         self.assertIn("Matériel d’empoisonneur", assassin.granted_tools())
         self.assertIn("Assassinat", assassin.initiative_detail()["avantage"])
+
+
+class _Rng:
+    def __init__(self, value):
+        self.value = value
+
+    def randint(self, a, b):
+        return self.value if b in (20, 4) else 1
+
+
+def both(cls, lvl, sub14="", sub24_=""):
+    """Même personnage en 2014 et en 2024."""
+    out = []
+    for ed, sub in (("2014", sub14), ("2024", sub24_)):
+        eng = sheet(cls, lvl, ed)
+        eng.ch.classes[0]["sous_classe"] = sub
+        eng.normalize()
+        out.append(eng)
+    return out
+
+
+class TableRulesTests(unittest.TestCase):
+    def test_typed_damage_and_heavy_armor_master(self):
+        for eng, feat, red in zip(both("Guerrier", 8), ("Maître des armures lourdes", "Maître des armures lourdes (2024)"),
+                                  (3, 3)):
+            eng.ch.armure["nom"] = next(n for n, a in eng.db.armors.items() if a.get("categorie") == "lourde")
+            give(eng, feat, "Force")
+            eng.ch.pv_actuels = 50
+            eng.apply_hp_input("10", "degats", "tranchant")
+            self.assertEqual(eng.ch.pv_actuels, 50 - (10 - red), feat)
+            eng.add_effect("resist_feu")
+            eng.apply_hp_input("11", "degats", "feu")
+            self.assertEqual(eng.ch.pv_actuels, 50 - 7 - 5)
+            eng.apply_hp_input("4", "degats", "")               # sans type : inchangé
+            self.assertEqual(eng.ch.pv_actuels, 34)
+        e14, e24 = both("Guerrier", 8)
+        for eng, feat in ((e14, "Maître des armures lourdes"), (e24, "Maître des armures lourdes (2024)")):
+            eng.ch.armure["nom"] = next(n for n, a in eng.db.armors.items() if a.get("categorie") == "lourde")
+            give(eng, feat, "Force")
+            eng.ch.pv_actuels = 50
+            eng.apply_hp_input("10", "degats", "tranchant", True)
+        self.assertEqual(e14.ch.pv_actuels, 40)                  # 2014 : attaques non magiques seulement
+        self.assertEqual(e24.ch.pv_actuels, 43)
+
+    def test_reliable_talent_and_indomitable_might(self):
+        from core import dice as D
+        for eng in both("Roublard", 11):
+            eng.ch.competences["Discrétion"] = {"maitrise": True, "expertise": False}
+            r = D.roll_d20(eng.skill_spec("Discrétion"), _Rng(3))
+            self.assertIn("Talent fiable", r.adjust)
+            self.assertEqual(r.total, 10 + eng.skill_bonus("Discrétion"))
+            self.assertEqual(D.roll_d20(eng.skill_spec("Histoire"), _Rng(3)).adjust, "")   # non maîtrisée
+        self.assertEqual(D.roll_d20(sheet("Roublard", 7, "2014").skill_spec("Discrétion"), _Rng(3)).adjust, "")
+        b14, b24 = both("Barbare", 18)
+        for eng in (b14, b24):
+            self.assertEqual(D.roll_d20(eng.ability_check_spec("Force"), _Rng(1)).total, eng.score("Force"))
+        self.assertEqual(D.roll_d20(b14.save_spec("Force"), _Rng(1)).adjust, "")          # 2014 : tests seulement
+        self.assertIn("Puissance", D.roll_d20(b24.save_spec("Force"), _Rng(1)).adjust)
+
+    def test_evasion_notes(self):
+        for eng in both("Moine", 7) + both("Roublard", 7):
+            self.assertIn("aucun dégât", eng.save_spec("Dextérité").note)
+        self.assertNotIn("aucun dégât", sheet("Moine", 6).save_spec("Dextérité").note)
+
+    def test_spell_recall_boon(self):
+        eng = sheet("Magicien", 19)
+        sid = [s["id"] for s in eng.asi_slots()][-1]
+        eng.ch.ameliorations[sid] = {"mode": "don", "don": "Faveur de mémoire des sorts", "don_carac": "Intelligence"}
+        spell = next(s["nom"] for s in eng.db.spells.values() if s.get("niveau") == 1 and s.get("edition") == 2024)
+        eng.cast_spell(spell, slot_level=1, rng=_Rng(1))
+        self.assertEqual(eng.ch.emplacements_utilises[0], 0)       # 1d4 = 1 = niveau : emplacement conservé
+        eng.cast_spell(spell, slot_level=1, rng=_Rng(3))
+        self.assertEqual(eng.ch.emplacements_utilises[0], 1)
+
+    def test_condition_immunities(self):
+        for eng in both("Paladin", 10, "Serment de Dévotion", "Serment de dévotion"):
+            self.assertFalse(eng.add_effect("charme"))
+            self.assertFalse(eng.add_effect("effraye"))
+            self.assertTrue(eng.add_effect("empoisonne"))
+        m14, m24 = both("Moine", 10)
+        self.assertFalse(m14.add_effect("empoisonne"))             # Pureté du corps (2014)
+        self.assertTrue(m24.add_effect("empoisonne"))              # 2024 : Restauration de soi n'immunise pas
+        for eng in both("Barbare", 6, "Voie du Berserker", "Voie du berserker"):
+            eng.add_effect("charme")
+            eng.use_class_action("rage")
+            self.assertNotIn("charme", eng.ch.effets_actifs)       # Rage aveugle
+
+    def test_2024_texts_on_renamed_subclasses(self):
+        fey = sub24("Occultiste", 3, "Protecteur Archifée")
+        self.assertIn("Foulée des fées", [a["nom"] for a in fey.class_actions()])
+        self.assertNotIn("Présence féerique", [a["nom"] for a in fey.class_actions()])
+        self.assertIn("Présence féerique", [a["nom"] for a in sheet_sub("Occultiste", 3, "2014", "L'Archifée")
+                                            .class_actions()])
+        bers = sub24("Barbare", 3, "Voie du berserker")
+        self.assertNotIn("cap:frenesie", {a["id"] for a in bers.class_actions()})
+        bers.use_class_action("rage")
+        self.assertTrue(any(o[0].startswith("Frénésie") for o in bers.weapon_damage_spec(MACE).options))
+
+
+def sheet_sub(cls, lvl, ed, frag):
+    eng = sheet(cls, lvl, ed)
+    subs = [s if isinstance(s, str) else s.get("nom") for s in eng.db.subclasses(cls)]
+    eng.ch.classes[0]["sous_classe"] = next(s for s in subs if frag.split("'")[-1].lower() in s.lower())
+    eng.normalize()
+    return eng

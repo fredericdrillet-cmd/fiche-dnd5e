@@ -120,6 +120,7 @@ REG: dict[tuple, dict] = {
     ("faveur de resistance aux energies", 2024): {"choix": [{"id": "resistances", "label": "résistances", "n": 2,
                                                              "kind": "liste", "options": DAMAGE_TYPES_BOON}]},
     ("faveur de vigueur", 2024): {"pv_max": 40},
+    ("faveur de memoire des sorts", 2024): {"memoire_sorts": True},
     ("faveur de vitesse", 2024): {"vitesse": 9},
     ("faveur de vision veritable", 2024): {"vision_veritable": 18},
     ("faveur du destin", 2024): {"actions": ["destin"], "tracker": (
