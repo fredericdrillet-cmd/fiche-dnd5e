@@ -158,3 +158,44 @@ class TurnReminderTests(unittest.TestCase):
         self.assertIn("Fin de votre tour", tab.turn_banner_text.text())
         tab.show_turn_banner("", [])
         self.assertEqual(tab.turn_banner_text.text(), "")
+
+
+class OnHitTests(unittest.TestCase):
+    def test_options_nothing_checked_and_costs(self):
+        for ed in ("2014", "2024"):
+            rogue = _sheet("Roublard", 5, ed)
+            rapier = {"nom": "Rapière", "bonus": 0, "maitrise": None}
+            opts = rogue.on_hit_options(rapier, [("Marque du chasseur", "1d6")])
+            self.assertEqual([o["key"] for o in opts], ["rider:0", "sournoise"])
+            self.assertEqual(rogue.apply_on_hit(opts, []), [])                     # rien d'office
+            self.assertEqual(rogue.apply_on_hit(opts, ["sournoise"]), [("Attaque sournoise", "3d6")])
+            self.assertEqual(rogue.on_hit_options(rapier), [])                    # une fois par tour
+            club = {"nom": "Massue", "bonus": 0, "maitrise": None}
+            self.assertEqual(_sheet("Roublard", 5, ed).on_hit_options(club), [])  # ni finesse ni distance
+
+    def test_smite_2014_vs_2024(self):
+        sword = {"nom": "Épée longue", "bonus": 0, "maitrise": None}
+        pal14 = _sheet("Paladin", 5, "2014")
+        opts = pal14.on_hit_options(sword)
+        pal14.apply_on_hit(opts, ["chatiment:2"])
+        self.assertEqual(pal14.ch.emplacements_utilises[:2], [0, 1])
+        self.assertTrue(pal14.on_hit_options(sword))                              # 2014 : à chaque coup
+        pal24 = _sheet("Paladin", 5, "2024")
+        opts = pal24.on_hit_options(sword)
+        self.assertEqual(pal24.apply_on_hit(opts, ["chatiment:1", "chatiment:2"]), [("Châtiment divin", "2d8")])
+        self.assertTrue(pal24.ch.tour_bonus)                                      # action bonus dépensée
+        self.assertEqual(pal24.on_hit_options(sword), [])                         # un seul par tour
+        self.assertEqual(pal14.on_hit_options({"nom": "Arc long", "bonus": 0, "maitrise": None}), [])
+
+    def test_dialog(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.on_hit_dialog import OnHitDialog
+        win = MainWindow(DB)
+        pal = _sheet("Paladin", 5, "2014")
+        opts = pal.on_hit_options({"nom": "Épée longue", "bonus": 0, "maitrise": None}, [("Faveur", "1d4")])
+        dlg = OnHitDialog(win, "Attaque", opts)
+        self.assertEqual(dlg.chosen(), [])
+        dlg.checks["rider:0"].setChecked(True)
+        self.assertEqual(dlg.chosen(), ["rider:0"])

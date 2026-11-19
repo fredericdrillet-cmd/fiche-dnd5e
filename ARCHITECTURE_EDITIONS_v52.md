@@ -198,6 +198,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 2. **Début et fin de tour** (`core/turn_reminders.py`) : « ▶ Début de mon tour » (remplace « Nouveau round » : `start_turn()` remet l'économie d'actions à zéro, applique Héros du champ d'honneur / Ralliement héroïque, rappelle concentration, jet contre la mort, rage à entretenir) et « ⏹ Fin de mon tour » (`end_turn()` : action / action bonus non utilisées, concentration). Les capacités qui se déclenchent « au début / à la fin de votre tour » ou « à l'initiative » sont repérées dans les textes (aptitudes, traits, dons, effets actifs) ; celles déjà appliquées seules (`AUTO_APPLIED`) ne sont pas rappelées. Bandeau fermable en tête de « Ce tour-ci », aussi après le jet d'initiative.
 
+3. **Quand vous touchez** (`OnHitMixin` dans `core/combat_flow.py`, `ui/on_hit_dialog.py`) : après « L'attaque touche-t-elle ? », une fenêtre de cases, rien coché d'office : bonus conditionnels (Marque du chasseur, Frappe divine…), Attaque sournoise (arme de finesse ou à distance, une fois par tour), Châtiment divin en liste (un niveau par coup ; 2024 : un par tour, action bonus dépensée), aptitudes « quand vous touchez » à dés. Les coûts sont dépensés à la validation.
+
 ### 4.14 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

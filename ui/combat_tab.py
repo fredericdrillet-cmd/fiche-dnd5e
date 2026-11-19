@@ -718,7 +718,8 @@ class CombatTab(BaseTab):
             w["d20"] = d20_button("Jet d'attaque avec cette arme")
             w["d20"].clicked.connect(lambda _=False, k=key, n=i: self._attack_flow(
                 self.engine.weapon_attack_spec(getattr(self.ch, k)[n]),
-                self.engine.weapon_damage_spec(getattr(self.ch, k)[n], offhand=(k == "armes_cac" and n == 1))))
+                self.engine.weapon_damage_spec(getattr(self.ch, k)[n], offhand=(k == "armes_cac" and n == 1)),
+                getattr(self.ch, k)[n]))
             w["dmg"].clicked.connect(lambda k=key, n=i: self._roll_weapon_damage(k, n))
             # dégâts + commutateur « 1 main / 2 mains » des armes polyvalentes
             w["dmg_box"] = QWidget()
@@ -1531,7 +1532,8 @@ class CombatTab(BaseTab):
             self.changed()
             return
         if res["attaque"] is not None:
-            self._attack_flow(res["attaque"], res.get("degats"))       # Déluge de coups… : dégâts si l'attaque touche
+            weapon = eng.action_weapon_slot(a) if a and a.get("attaque_arme") else None
+            self._attack_flow(res["attaque"], res.get("degats"), weapon)   # Déluge de coups… : dégâts si l'attaque touche
         elif res["degats"] is not None and res.get("lancer_maintenant", True):
             r = roll_damage_dialog(win, res["degats"])
             if r is not None and res["soin"]:
@@ -1568,9 +1570,9 @@ class CombatTab(BaseTab):
     def _on_weapon_action(self, key: str, i: int, row: dict):
         """Action d'arme (Sape, Brise-crâne, Frappe affaiblissante…) : jet d'attaque immédiat de l'arme équipée."""
         slot = getattr(self.ch, key)[i]
-        self._attack_flow(self.engine.weapon_action_spec(slot, row), self.engine.weapon_damage_spec(slot))
+        self._attack_flow(self.engine.weapon_action_spec(slot, row), self.engine.weapon_damage_spec(slot), slot)
 
-    def _attack_flow(self, attack_spec, damage_spec=None) -> bool:
+    def _attack_flow(self, attack_spec, damage_spec=None, slot=None) -> bool:
         """Jet de toucher (d20 animé) puis « L'attaque touche-t-elle ? » : OUI -> dés de dégâts animés (dés doublés
         sur un 20 naturel), NON -> on ferme. Un 1 naturel rate toujours. Renvoie True si des dégâts ont été lancés."""
         win = self.win
@@ -1589,11 +1591,15 @@ class CombatTab(BaseTab):
             return False
         spec = D.DamageSpec(damage_spec.title, damage_spec.formula, damage_spec.damage_type, damage_spec.note,
                             damage_spec.kind)
-        for label, dice in getattr(damage_spec, "options", []) or []:   # Marque du chasseur, Maléfice… (cible)
-            if ask_yes_no(win, label, "Ajouter +{} ({}) ? La cible est-elle concernée par cet effet ?".format(
-                    dice, label), yes="Oui : ajouter " + dice, no="Non", default_no=False):
-                spec.formula += "+" + dice
-                spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
+        # v52 : « Quand vous touchez » — une fenêtre de cases (rien coché d'office) au lieu de questions successives
+        from .on_hit_dialog import ask_on_hit
+        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
+        chosen = ask_on_hit(win, attack_spec.title, options, crit)
+        if chosen is None:
+            return False
+        for label, dice in self.engine.apply_on_hit(options, chosen):
+            spec.formula += "+" + dice
+            spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
         if crit:
             spec = D.DamageSpec(spec.title + " (critique)", D.critical_formula(spec.formula),
                                 spec.damage_type, "Coup critique : dés doublés." + (" " + spec.note if spec.note else ""),

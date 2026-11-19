@@ -341,3 +341,65 @@ class CombatFlowMixin:
         elif dmg is not None:
             out["mode"] = "automatique"
         return out
+
+
+class OnHitMixin:
+    """v52 — « Quand vous touchez » : bonus de dégâts à cocher avant de lancer les dégâts (rien n'est coché d'office :
+    l'Attaque sournoise dépend de l'avantage ou d'un allié, le Châtiment se décide après avoir touché)."""
+
+    _HIT_WORDS = ("quand vous touchez", "lorsque vous touchez", "si l'attaque touche", "quand l'attaque touche")
+
+    def on_hit_options(self, slot: Optional[dict] = None, riders: Optional[list] = None) -> list[dict]:
+        """[{key, label, dice, cout, action, niveau}] proposés après un coup réussi."""
+        out = [{"key": "rider:{}".format(i), "label": label, "dice": dice, "cout": "", "action": "", "niveau": 0}
+               for i, (label, dice) in enumerate(riders or [])]
+        w = self.db.weapons.get((slot or {}).get("nom", ""), {}) if slot else {}
+        props = self._props(slot) if slot else []
+        acts = {a["id"]: a for a in self.class_actions()}
+        sneak = acts.get("sournoise")
+        if sneak and not self.per_turn_used("sournoise") and slot and ("finesse" in props or w.get("type") == "distance"):
+            out.append({"key": "sournoise", "label": "Attaque sournoise (une fois par tour : avantage, ou allié à "
+                        "1,50 m de la cible)", "dice": self.sneak_attack_dice(), "cout": "1 fois par tour",
+                        "action": "sournoise_hit", "niveau": 0})
+        smite_24_used = self.sheet_edition == 2024 and (self.ch.tour_bonus or self.per_turn_used("chatiment") or
+                                                         self.per_turn_used("chatiment_gratuit"))
+        if slot and w.get("type") == "cac" and not smite_24_used:     # 2024 : sort en action bonus, 1 par tour
+            for aid in ("chatiment_gratuit", "chatiment"):
+                a = acts.get(aid)
+                if not a or not a.get("disponible"):
+                    continue
+                levels = [1] if aid == "chatiment_gratuit" else self.smite_levels()
+                for lvl in levels:
+                    out.append({"key": "{}:{}".format(aid, lvl), "label": "{} (niveau {})".format(a["nom"], lvl),
+                                "dice": self.class_action_formula(a, lvl), "cout": "gratuit" if aid ==
+                                "chatiment_gratuit" else "emplacement de niveau {}".format(lvl),
+                                "action": aid, "niveau": lvl, "groupe": "chatiment"})
+        seen = {"sournoise", "chatiment", "chatiment_gratuit"}
+        for a in acts.values():
+            if a["id"] in seen or not a.get("disponible") or a.get("attaque_arme") or not a.get("formule"):
+                continue
+            if any(x in norm(a.get("description", "")) for x in self._HIT_WORDS) and D.has_dice(a["formule"]):
+                out.append({"key": a["id"], "label": a["nom"], "dice": a["formule"],
+                            "cout": self.class_action_state(a).get("cout_txt", ""), "action": a["id"], "niveau": 0})
+        return out
+
+    def apply_on_hit(self, options: list[dict], chosen: list[str]) -> list[tuple[str, str]]:
+        """Dépense les coûts des bonus choisis et renvoie [(libellé, dés)] à ajouter aux dégâts."""
+        out, smite_done = [], False
+        for o in options:
+            if o["key"] not in chosen:
+                continue
+            if o.get("groupe") == "chatiment":
+                if smite_done:                            # un seul Châtiment par coup
+                    continue
+                smite_done = True
+            if o["action"] == "sournoise_hit":
+                self.mark_per_turn("sournoise")
+            elif o["action"]:
+                res = self.use_class_action(o["action"], o.get("niveau") or 0)
+                if not res.get("ok"):
+                    continue
+                if o.get("groupe") == "chatiment" and self.sheet_edition == 2024:
+                    self.ch.tour_bonus = True                # Châtiment divin 2024 : action bonus
+            out.append((o["label"].split(" (")[0], o["dice"]))
+        return out
