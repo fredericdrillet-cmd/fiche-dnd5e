@@ -1750,12 +1750,29 @@ class CombatTab(BaseTab):
         self.hp_entry.setFocus()
         self.hp_entry.selectAll()
 
+    def maybe_concentration_save(self) -> None:
+        """v52 : après des dégâts subis en se concentrant, propose le JS de Constitution et applique le résultat."""
+        eng = self.engine
+        damage = int(getattr(eng, "pending_concentration", 0) or 0)
+        if not damage or not eng.ch.concentration:
+            return
+        if not ask_yes_no(self.win, "Concentration", "Vous subissez {} dégâts en vous concentrant sur {}.\n\nLancer le "
+                          "JS de Constitution (DD {}) ?".format(damage, eng.ch.concentration,
+                                                              eng.concentration_dc(damage)),
+                          yes="🎲 Lancer le JS", no="Plus tard", default_no=False):
+            return
+        r = roll_dice(self.win, eng.concentration_save_spec(damage))
+        if r is not None:
+            self._message(eng.resolve_concentration(r.total, damage))
+            self.changed()
+
     def open_defense(self, start: str = "attaque", amount: int = 0, dtype: str = "", magical: bool = False) -> bool:
         from .defense_dialog import DefenseDialog
         dlg = DefenseDialog(self.win, start, amount, dtype, magical)
         if dlg.exec() and dlg.result_text:
             self._message(dlg.result_text)
             self.changed()
+            self.maybe_concentration_save()
             return True
         self.changed()
         return False
@@ -1777,6 +1794,7 @@ class CombatTab(BaseTab):
         self.hp_entry.clear()
         self._message(msg)
         self.changed()
+        self.maybe_concentration_save()            # v52
 
     def _on_slot_used(self, level_idx: int, used: int) -> None:
         self.ch.emplacements_utilises[level_idx] = used

@@ -1192,8 +1192,15 @@ class ExtrasMixin:
         ch.pv_actuels = max(0, before - (amount - absorbed))
         text = prefix + "{} dégât(s) subi(s)".format(amount) + (
             " dont {} absorbé(s) par les PV temporaires".format(absorbed) if absorbed else "")
+        self.pending_concentration = 0
         if ch.concentration and amount > 0:
-            text += ". JS de Constitution DD {} pour maintenir {}".format(max(10, amount // 2), ch.concentration)
+            last_stand = self.feat_flag("dernier_rempart") and not self.resource_used("don_dernier_rempart")
+            if ch.pv_actuels == 0 and not last_stand:    # v52 : inconscient = concentration rompue
+                text += ". Concentration rompue : {} prend fin".format(self.break_concentration())
+            else:
+                self.pending_concentration = amount      # v52 : l'interface propose le JS
+                text += ". JS de Constitution DD {} pour maintenir {}".format(self.concentration_dc(amount),
+                                                                          ch.concentration)
         if ch.pv_actuels == 0 and self.feat_flag("dernier_rempart") and not self.resource_used("don_dernier_rempart"):
             self.set_resource_used("don_dernier_rempart", 1)              # v52 : Faveur de récupération
             ch.pv_actuels = min(self.hp_max(), 1 + self.hp_max() // 2)

@@ -218,6 +218,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 2. **Annuler / Refaire** (`core/history.py`, menu Édition, Ctrl+Z / Ctrl+Y) : instantané `Character.to_dict()` après chaque `changed()` / `light_changed()`, 30 étapes, libellé déduit des champs modifiés (« Annuler : PV »), modifications rapprochées du même champ fusionnées (2 s), journal des lancers jamais annulé ; historique remis à zéro à l'ouverture, à la création ou au chargement d'une fiche.
 
+3. **Jet de concentration** (`concentration_save_spec`, `resolve_concentration`) : après des dégâts subis en se concentrant (saisie rapide ou « On m'attaque ! »), la fiche propose le JS de Constitution — DD moitié des dégâts, minimum 10 (plafond 30 en 2024), maîtrise, effets, Mage de guerre / Lanceur de sorts, Esprit occulte ; sur un échec, le sort et ses effets prennent fin. À 0 PV, la concentration est rompue d'office (sauf Dernier rempart).
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

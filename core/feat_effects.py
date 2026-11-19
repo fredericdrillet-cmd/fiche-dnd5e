@@ -81,6 +81,7 @@ REG: dict[tuple, dict] = {
     ("maitre des armures intermediaires", None): {"dex_inter": 3},
     ("maitre d'armes", 2024): {"maitrise_armes": 1},
     ("mage de guerre", None): {"concentration": True},
+    ("lanceur de sorts", 2014): {"concentration": True},           # War Caster 2014 (nom des données)
     ("gaillard", 2024): {"mort_avantage": True, "actions": ["recuperation_rapide"]},
     ("cogneur lourd", 2024): {"lourde_maitrise": True},
     ("chef cuisinier", None): {"outils": ["Ustensiles de cuisinier"]},

@@ -378,3 +378,34 @@ class UndoTests(unittest.TestCase):
         self.assertEqual(win.engine.ch.pv_actuels, 5)
         win.reset_history()
         self.assertEqual(win.undo_act.text(), "Annuler")
+
+
+class ConcentrationTests(unittest.TestCase):
+    def test_save_spec_and_resolution(self):
+        from core import dice as D
+        for ed in ("2014", "2024"):
+            wiz = _sheet("Magicien", 5, ed)
+            wiz.ch.concentration = "Hâte"
+            wiz.ch.concentration_effet = "hate"
+            wiz.add_effect("hate")
+            wiz.ch.pv_actuels = 30
+            wiz.take_damage(24)
+            self.assertEqual(wiz.pending_concentration, 24)
+            spec = wiz.concentration_save_spec(24)
+            self.assertIn("DD 12", spec.title)
+            self.assertIn("Concentration maintenue", wiz.resolve_concentration(12, 24))
+            self.assertIn("rompue", wiz.resolve_concentration(5, 24))
+            self.assertEqual(wiz.ch.concentration, "")
+            self.assertNotIn("hate", wiz.ch.effets_actifs)
+        self.assertEqual(_sheet("Magicien", 5, "2024").concentration_dc(100), 30)
+        self.assertEqual(_sheet("Magicien", 5, "2014").concentration_dc(100), 50)
+
+    def test_war_caster_advantage_and_unconscious(self):
+        eng = _sheet("Magicien", 4, "2014")
+        sid = [s["id"] for s in eng.asi_slots()][0]
+        eng.ch.ameliorations[sid] = {"mode": "don", "don": "Lanceur de sorts"}        # War Caster 2014
+        eng.ch.concentration = "Bénédiction"
+        self.assertEqual(eng.concentration_save_spec(10).mode, "avantage")
+        eng.ch.pv_actuels = 3
+        eng.take_damage(10)
+        self.assertEqual(eng.ch.concentration, "")                          # 0 PV : rompue d'office

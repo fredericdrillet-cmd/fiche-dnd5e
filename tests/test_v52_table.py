@@ -44,7 +44,7 @@ class QuickHpTests(unittest.TestCase):
         eng = make()
         eng.ch.concentration = "Bénédiction"
         msg = eng.apply_hp_input(str(eng.hp_max() + 1))
-        self.assertIn("DD", msg)
+        self.assertIn("Concentration rompue", msg)                    # inconscient : la concentration prend fin
         self.assertIn("0 PV", msg)
         self.assertIn("inconscient", eng.ch.effets_actifs)
         eng.ch.mort_echecs = 2

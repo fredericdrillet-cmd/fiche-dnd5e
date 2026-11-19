@@ -127,3 +127,28 @@ class DefenseMixin:
             if e.get("moitie"):
                 amount //= 2
         return amount
+
+    # ------------------------------------------------------------------ v52 : jet de concentration
+    def concentration_dc(self, damage: int) -> int:
+        dc = max(10, int(damage) // 2)
+        return min(dc, 30) if self.sheet_edition == 2024 else dc
+
+    def concentration_save_spec(self, damage: int) -> "D.RollSpec":
+        """JS de Constitution pour maintenir la concentration : maîtrise, effets, Mage de guerre, Esprit occulte…"""
+        spec = self.save_spec("Constitution")
+        extra = [s for s in self.concentration_advantage() if s not in spec.avantage]
+        spec.avantage = list(spec.avantage) + extra
+        spec.mode = D.mode_of(spec.avantage, spec.desavantage, spec.echec)
+        spec.title = "Concentration — {} (DD {})".format(self.ch.concentration or "sort", self.concentration_dc(damage))
+        spec.note = (spec.note + " — " if spec.note else "") + "DD {} : moitié des dégâts subis, minimum 10".format(
+            self.concentration_dc(damage))
+        return spec
+
+    def resolve_concentration(self, total: int, damage: int) -> str:
+        """Applique le résultat : sur un échec, le sort et ses effets prennent fin."""
+        dc = self.concentration_dc(damage)
+        self.pending_concentration = 0
+        if int(total) >= dc:
+            return "Concentration maintenue sur {} ({} contre DD {}).".format(self.ch.concentration, total, dc)
+        old = self.break_concentration()
+        return "Concentration rompue ({} contre DD {}) : {} prend fin.".format(total, dc, old)
