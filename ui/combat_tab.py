@@ -1602,7 +1602,9 @@ class CombatTab(BaseTab):
         if r is None or damage_spec is None:
             return False
         if r.critical == "echec":
-            win.statusBar().showMessage("1 naturel : l'attaque rate automatiquement.", 7000)
+            graze = self.engine.mastery_on_miss(slot)       # v52 : Effleurement aussi sur un 1 naturel
+            win.statusBar().showMessage("1 naturel : l'attaque rate automatiquement." + (" " + graze if graze else ""),
+                                        12000)
             return False
         crit = r.critical == "succes"
         if not ask_yes_no(win, "L'attaque touche-t-elle ?",
@@ -1610,13 +1612,19 @@ class CombatTab(BaseTab):
                           .format(attack_spec.title, r.natural, r.total,
                                   " — 20 naturel : coup critique, les dés de dégâts sont doublés" if crit else ""),
                           yes="Oui : lancer les dégâts", no="Non", default_no=False):
+            graze = self.engine.mastery_on_miss(slot)       # v52 : Effleurement sur un raté
+            if graze:
+                win.statusBar().showMessage(graze, 12000)
             return False
         spec = D.DamageSpec(damage_spec.title, damage_spec.formula, damage_spec.damage_type, damage_spec.note,
                             damage_spec.kind)
         # v52 : « Quand vous touchez » — une fenêtre de cases (rien coché d'office) au lieu de questions successives
         from .on_hit_dialog import ask_on_hit
         options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
-        chosen = ask_on_hit(win, attack_spec.title, options, crit)
+        mastery = self.engine.mastery_on_hit(slot)       # v52 : rappel de la botte d'arme
+        if mastery:
+            spec.note = (spec.note + " ; " if spec.note else "") + mastery
+        chosen = ask_on_hit(win, attack_spec.title + ("\n" + mastery if mastery else ""), options, crit)
         if chosen is None:
             return False
         for label, dice in self.engine.apply_on_hit(options, chosen):

@@ -220,6 +220,8 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 3. **Jet de concentration** (`concentration_save_spec`, `resolve_concentration`) : après des dégâts subis en se concentrant (saisie rapide ou « On m'attaque ! »), la fiche propose le JS de Constitution — DD moitié des dégâts, minimum 10 (plafond 30 en 2024), maîtrise, effets, Mage de guerre / Lanceur de sorts, Esprit occulte ; sur un échec, le sort et ses effets prennent fin. À 0 PV, la concentration est rompue d'office (sauf Dernier rempart).
 
+4. **Bottes d'arme dans le déroulé d'attaque** (`MasteryFlowMixin`) : sur un raté (1 naturel compris), Effleurement indique les dégâts infligés malgré tout (modificateur) ; au toucher, rappel de la botte dans la fenêtre « Quand vous touchez » et la note des dégâts (Sape, Ouverture, Poussée, Ralentissement, Entaille, Coup double, Renversement avec son DD).
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

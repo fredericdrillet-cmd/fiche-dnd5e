@@ -403,3 +403,39 @@ class OnHitMixin:
                     self.ch.tour_bonus = True                # Châtiment divin 2024 : action bonus
             out.append((o["label"].split(" (")[0], o["dice"]))
         return out
+
+
+MASTERY_EFFECTS = {
+    "Coup double": "Coup double : l'attaque supplémentaire de l'arme légère fait partie de l'action Attaquer (pas "
+                   "d'action bonus), une fois par tour.",
+    "Entaille": "Entaille : attaquez une seconde créature à 1,50 m de la première (dégâts sans le modificateur), "
+                "une fois par tour.",
+    "Ouverture": "Ouverture : vous avez l'avantage à votre prochaine attaque contre cette créature avant la fin de "
+                 "votre prochain tour.",
+    "Poussée": "Poussée : repoussez la cible (taille G ou moins) de 3 m en ligne droite.",
+    "Ralentissement": "Ralentissement : la vitesse de la cible baisse de 3 m jusqu'au début de votre prochain tour.",
+    "Renversement": "Renversement : JS de Constitution DD {dd} ou la cible tombe à terre.",
+    "Sape": "Sape : la cible a le désavantage à son prochain jet d'attaque avant le début de votre prochain tour.",
+}
+
+
+class MasteryFlowMixin:
+    """v52 — bottes d'arme appliquées dans le déroulé d'attaque (rappel au toucher, Effleurement sur un raté)."""
+
+    def mastery_on_hit(self, slot: Optional[dict]) -> str:
+        st = self.weapon_stats(slot) if slot else None
+        botte = (st or {}).get("botte", "")
+        if not botte or botte == "Effleurement":
+            return ""
+        text = MASTERY_EFFECTS.get(botte, "")
+        if "{dd}" in text:
+            text = text.format(dd=8 + self.prof + self.mod(st["carac"]))
+        return "Botte d'arme — " + text if text else ""
+
+    def mastery_on_miss(self, slot: Optional[dict]) -> str:
+        st = self.weapon_stats(slot) if slot else None
+        if (st or {}).get("botte") != "Effleurement":
+            return ""
+        dmg = max(0, self.mod(st["carac"]))
+        return ("Botte d'arme — Effleurement : la cible subit quand même {} dégâts {} (modificateur de {})."
+                .format(dmg, st.get("type_degats", ""), st["carac"])) if dmg else ""

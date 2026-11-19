@@ -409,3 +409,27 @@ class ConcentrationTests(unittest.TestCase):
         eng.ch.pv_actuels = 3
         eng.take_damage(10)
         self.assertEqual(eng.ch.concentration, "")                          # 0 PV : rompue d'office
+
+
+class MasteryFlowTests(unittest.TestCase):
+    def test_mastery_notes(self):
+        eng = _sheet("Guerrier", 3, "2024")
+        eng.ch.scores_achat["Force"] = 16
+        eng.ch.bottes_choisies = ["Épée longue", "Hache à deux mains", "Marteau léger"]
+        sword = {"nom": "Épée longue", "bonus": 0, "maitrise": None}
+        self.assertIn("Sape", eng.mastery_on_hit(sword))
+        self.assertEqual(eng.mastery_on_miss(sword), "")
+        graze = [n for n, w in eng.db.weapons.items() if w.get("botte") == "Effleurement"]
+        if graze:
+            eng.ch.bottes_choisies = graze[:1]
+            slot = {"nom": graze[0], "bonus": 0, "maitrise": None}
+            self.assertIn("Effleurement", eng.mastery_on_miss(slot))
+        topple = [n for n, w in eng.db.weapons.items() if w.get("botte") == "Renversement"]
+        if topple:
+            eng.ch.bottes_choisies = topple[:1]
+            self.assertIn("DD", eng.mastery_on_hit({"nom": topple[0], "bonus": 0, "maitrise": None}))
+
+    def test_no_mastery_on_2014_without_rule(self):
+        eng = _sheet("Guerrier", 3, "2014")
+        eng.set_house_rule("maitrises_armes_2014", False)
+        self.assertEqual(eng.mastery_on_hit({"nom": "Épée longue", "bonus": 0, "maitrise": None}), "")
