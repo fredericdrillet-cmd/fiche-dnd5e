@@ -24,7 +24,7 @@ from core import dice as D
 from core import durations as D_
 from .common import (CENTER, BaseTab, DamageLabel, adv_badge, blocked, calc_tip, center, fill_combo, formula_html,
                      head, hline, make_label, rich_tip)
-from .dialogs import ask_choice, ask_yes_no
+from .dialogs import ask_choice, ask_int, ask_yes_no
 from .dice_dialog import d20_button, d20_icon, die_icon, retain_when_hidden, roll_damage_dialog, roll_dice
 from .game_widgets import ActionChip, EffectBadge, clear_layout
 from .rest_dialog import run_rest
@@ -734,6 +734,10 @@ class CombatTab(BaseTab):
                 win.statusBar().showMessage("Forme sauvage : {}.".format(picked), 6000)
             self.changed()
             return
+        if res.get("liberer"):                            # v52 : Se libérer (Agrippé / Entravé)
+            self._escape(res)
+            self.changed()
+            return
         if res.get("tests"):                              # v52 : action commune résolue par un test
             self._common_test(res)
             self.changed()
@@ -745,6 +749,34 @@ class CombatTab(BaseTab):
             if r is not None and res.get("soin"):
                 eng.heal(r.total)
         self.changed()
+
+    def _escape(self, res: dict) -> None:
+        eng, conds = self.engine, res["liberer"]
+        key = conds[0]
+        if len(conds) > 1:
+            names = {FX.EFFECTS[k]["nom"]: k for k in conds}
+            picked = ask_choice(self.win, "Se libérer", "De quel état ?", list(names))
+            if not picked:
+                return
+            key = names[picked]
+        dc = res.get("dd", 0)
+        if dc:                                            # 2024 : DD de la prise (8 + For + maîtrise de l'agrippeur)
+            dc = ask_int(self.win, "Se libérer", "DD de la prise (donné par le MJ, 8 + Force + maîtrise de "
+                         "l'agrippeur) :", dc)
+            if dc is None:
+                return
+        spec = eng.skill_spec(res["competence"])
+        spec.title = "Se libérer — " + spec.title + (" — DD {}".format(dc) if dc else "")
+        r = roll_dice(self.win, spec)
+        if r is None:
+            return
+        if dc:
+            success = r.total >= dc
+        else:                                             # 2014 : test en opposition, le MJ compare
+            success = ask_yes_no(self.win, "Se libérer", "Votre test : {}.\n\nL'emportez-vous sur le jet adverse "
+                                 "(ou le DD de l'effet) ?".format(r.total), yes="✔ Réussi", no="✘ Raté",
+                                 default_no=False)
+        self._message(eng.resolve_escape(key, bool(success), r.total, dc))
 
     def _common_test(self, res: dict) -> None:
         eng, skills = self.engine, res["tests"]
@@ -982,7 +1014,7 @@ class CombatTab(BaseTab):
                 e = FX.EFFECTS[k]
                 self.fx_combo.addItem("{} {}  ·  {}".format(e["icone"], e["nom"], e["categorie"]), k)
                 lines = M.mech_lines(k)
-                self.fx_combo.setItemData(i, FX.tooltip_html(k) + ("<p><b>Appliqué à la fiche :</b> {}</p>".format(
+                self.fx_combo.setItemData(i, self.engine.effect_tooltip(k) + ("<p><b>Appliqué à la fiche :</b> {}</p>".format(
                     " · ".join(lines)) if lines else ""), Qt.ItemDataRole.ToolTipRole)
             idx = self.fx_combo.findData(current)
             if idx >= 0:
@@ -1000,6 +1032,8 @@ class CombatTab(BaseTab):
             self.win.statusBar().showMessage(blocked, 8000)
             return
         if key and self.engine.add_effect(key):
+            if self.engine.last_effect_message:          # v52 : état neutralisant -> concentration rompue
+                self._message(self.engine.last_effect_message)
             self.changed()
 
     def _on_remove_effect(self, key: str):
@@ -1075,7 +1109,7 @@ class CombatTab(BaseTab):
                     e["nom"] = self.ch.concentration
                 source = eng.innate_source(k)
                 lines = M.mech_lines(k)
-                tip = FX.tooltip_html(k, t.accent_text)
+                tip = eng.effect_tooltip(k, t.accent_text)  # v52 : texte de l'état selon l'édition
                 if k.startswith("epuisement_") and eng.sheet_edition == 2024:     # v52 : règle 2024
                     tip = "<p><b>{}</b> — règle 2024</p><p>{}</p>".format(e["nom"], html.escape(eng.exhaustion_text()))
                     lines = []
@@ -1686,6 +1720,8 @@ class CombatTab(BaseTab):
         sur un 20 naturel), NON -> on ferme. Un 1 naturel rate toujours. Renvoie True si des dégâts ont été lancés."""
         win = self.win
         r = roll_dice(win, attack_spec)
+        if r is not None:
+            self.engine.reveal_after_attack()            # v52 : attaquer met fin à l'état Caché
         if r is None or damage_spec is None:
             return False
         if r.critical == "echec":

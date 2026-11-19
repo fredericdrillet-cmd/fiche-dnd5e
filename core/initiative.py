@@ -61,8 +61,9 @@ class InitiativeMixin:
                 except ValueError:
                     pass
         adv = list(fx["avantage"]) + [lab for frag, lab in ADVANTAGE_FEATURES if self.has_feature(frag)] + sub_adv
-        return {"termes": terms, "total": sum(v for _, v in terms), "des": dice, "avantage": adv,
-                "desavantage": list(fx["desavantage"])}
+        c_adv, c_dis = self.condition_initiative()       # v52 : Invisible / Neutralisé (2024)
+        return {"termes": terms, "total": sum(v for _, v in terms), "des": dice, "avantage": adv + c_adv,
+                "desavantage": list(fx["desavantage"]) + c_dis}
 
     def initiative_spec(self) -> "D.RollSpec":
         d = self.initiative_detail()

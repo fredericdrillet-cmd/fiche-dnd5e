@@ -23,6 +23,7 @@ from . import dice as D
 from . import rules as R
 from .rules import norm
 from .data_loader import SAVE_TESTS, save_success_text
+from .conditions import ESCAPE_DC_2024
 
 ECONOMY = ("Action", "Action bonus", "Réaction", "Gratuit")
 REACTION_MODES = {"demander": "Demander", "auto": "Automatique", "off": "Désactivée"}
@@ -90,6 +91,8 @@ COMMON_TESTS = {          # tuile -> (compétences proposées, DD fixe 2024 ou 0
     "etudier": (["Arcanes", "Histoire", "Investigation", "Nature", "Religion"], 0),
     "influencer": (["Persuasion", "Tromperie", "Intimidation", "Représentation", "Dressage"], 0),
 }
+ESCAPE = ("liberer", "Se libérer", "🔓", "Action", "",
+          "Agrippé ou Entravé : test de Force (Athlétisme) ou de Dextérité (Acrobaties) pour vous libérer.")
 COMMON_TESTS_2024 = {"chercher": (["Perception", "Perspicacité", "Médecine", "Survie"], 0)}
 
 
@@ -551,6 +554,11 @@ class TurnMixin:
                     res["message"] = "{}{} : test de Force (Athlétisme) contre Athlétisme ou Acrobaties.".format(
                         t["nom"], more)
                     res["tests"], res["dd"] = ["Athlétisme"], 0
+            elif cid == "liberer":                       # v52 : Agrippé / Entravé
+                res["liberer"] = self.escape_conditions()
+                res["competence"] = self.escape_skill()
+                res["dd"] = ESCAPE_DC_2024 if self.sheet_edition == 2024 else 0
+                res["message"] = "Se libérer : test de {}.".format(res["competence"])
             elif tests:
                 res["tests"], res["dd"] = tests
                 res["message"] = "{} : test de {}.".format(t["nom"], " / ".join(tests[0]))
@@ -574,13 +582,17 @@ class TurnMixin:
             base = [c if c[0] != "cacher" else c[:5] + ("Test de Dextérité (Discrétion) contre la Perception passive "
                                                         "des ennemis, hors de vue : réussite = état Caché.",)
                     for c in base]
-            return base
+            return base + self._escape_action()
         out = []
         for c in base:
             desc = COMMON_2024.get(c[0])
             out.append(c[:5] + (desc.replace("{DD}", str(self.grapple_dc())),) if desc else c)
         i = next(i for i, c in enumerate(out) if c[0] == "objet")
-        return out[:i] + EXTRA_2024 + out[i:]
+        return out[:i] + EXTRA_2024 + out[i:] + self._escape_action()
+
+    def _escape_action(self) -> list[tuple]:
+        """v52 : tuile « Se libérer » quand on est agrippé ou entravé."""
+        return [ESCAPE] if self.escape_conditions() else []
 
     def common_action_tests(self, cid: str):
         """(compétences proposées, DD) d'une action commune qui se résout par un test ; None sinon."""

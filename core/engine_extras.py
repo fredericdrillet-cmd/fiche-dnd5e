@@ -181,6 +181,7 @@ class ExtrasMixin:
             self.ch.effets_actifs = [k for k in self.ch.effets_actifs if not k.startswith("epuisement_")]
         self.ch.effets_actifs.append(key)
         self.start_effect_timer(key)                     # v52 : « 1 minute » = 10 rounds
+        self.last_effect_message = self.incapacitation_breaks(key)   # v52 : neutralisé -> concentration rompue
         return True
 
     def remove_effect(self, key: str) -> None:
@@ -253,7 +254,7 @@ class ExtrasMixin:
         """[(libellé de la source, modificateur MECH)] : effets actifs puis équipement (armure)."""
         out = []
         for k in self.active_effect_keys():
-            m = M.mech(k)
+            m = self.condition_mech(k)                   # v52 : états selon l'édition
             if k.startswith("epuisement_") and self.sheet_edition == 2024:    # v52 : épuisement 2024
                 m = self.exhaustion_mech_2024(int(k.split("_")[1]))
             if m:
@@ -725,6 +726,8 @@ class ExtrasMixin:
             msg += " — effet « {} » actif sur vous".format(FX.EFFECTS[effect]["nom"])
         elif target == "allie":
             msg += " — lancé sur un allié (aucun bonus sur votre fiche)"
+        if self.reveal_after_attack():                   # v52 : lancer un sort met fin à l'état Caché
+            msg += " — vous n'êtes plus caché"
         return {"ok": True, "message": msg + ".", "emplacement": slot, "niveau": cast_level}
 
     # ==================================================================================
