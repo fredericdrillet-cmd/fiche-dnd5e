@@ -419,3 +419,11 @@ def sheet_sub(cls, lvl, ed, frag):
     eng.ch.classes[0]["sous_classe"] = next(s for s in subs if frag.split("'")[-1].lower() in s.lower())
     eng.normalize()
     return eng
+
+
+class RenamedTileLevelTests(unittest.TestCase):
+    def test_level_follows_2024_feature(self):
+        e24 = sub24("Barbare", 10, "Voie du berserker")
+        self.assertIn("Représailles", [a["nom"] for a in e24.class_actions()])      # niveau 10 en 2024
+        e14 = sheet_sub("Barbare", 10, "2014", "Berserker")
+        self.assertNotIn("Représailles", [a["nom"] for a in e14.class_actions()])   # niveau 14 en 2014

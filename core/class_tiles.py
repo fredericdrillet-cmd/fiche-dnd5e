@@ -423,7 +423,10 @@ class ClassTilesMixin:
 
     def _tile_level(self, t: dict) -> int:
         e = self.ch.find_class(t["classe"])
-        if not e or e["niveau"] < t["niveau"]:
+        if not e:
+            return 0
+        alt = self.tile_feature_2024(t) if t.get("sc") and not t.get("ed") else {}
+        if alt.get("masquer") or e["niveau"] < alt.get("niveau", t["niveau"]):   # v52 : niveau 2024 si renommée
             return 0
         if t.get("ed"):                                  # v52 : tuile d'une sous-classe 2024 (nom 2024)
             if getattr(self, "sheet_edition", 2014) != t["ed"] or t["sc"] not in norm(e.get("sous_classe", "")):
