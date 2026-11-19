@@ -109,3 +109,26 @@ class TurnRemindersMixin:
     # ------------------------------------------------------------------ initiative
     def initiative_reminders(self) -> list[str]:
         return list(getattr(self, "_last_initiative_msgs", []) or []) + self.trigger_reminders("initiative")
+
+    # ------------------------------------------------------------------ v52 : avant un repos
+    def unused_before_rest(self, kind: str) -> list[str]:
+        """Ressources jamais dépensées depuis qu'elles sont revenues (« long » : tout ce qui revient ;
+        « court » : ce qui revient au repos court)."""
+        out = []
+        for tr in self.resource_trackers():
+            if tr.get("where") == "interne" or not tr.get("total"):
+                continue
+            if kind == "court" and tr.get("recover") != "repos court":
+                continue
+            if self.resource_used(tr["key"]) == 0:
+                out.append("{} ({} / {})".format(tr["label"], tr["total"], tr["total"]))
+        slots = self.spell_slots()
+        free = [(i + 1, s - self.ch.emplacements_utilises[i]) for i, s in enumerate(slots)
+                if s and s - self.ch.emplacements_utilises[i] > 0]
+        if kind == "long" and free and all(self.ch.emplacements_utilises[i] == 0 for i, s in enumerate(slots) if s):
+            out.append("Emplacements de sort : aucun dépensé ({})".format(
+                ", ".join("niv. {} ×{}".format(lv, n) for lv, n in free)))
+        count, plvl = self.pact()
+        if count and self.ch.pacte_utilises == 0:
+            out.append("Emplacements de pacte (niveau {}) : {} non dépensé(s)".format(plvl, count))
+        return out

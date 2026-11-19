@@ -202,6 +202,8 @@ Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tou
 
 4. **On m'attaque !** (`core/defense.py`, `ui/defense_dialog.py`) : jet de l'ennemi contre la CA (`attack_check`), réactions avant les dégâts (Bouclier, avec son effet +5 CA jusqu'au début du tour ; Duelliste défensif ; Mots cinglants ; Illumination protectrice / Éclat protecteur), puis réactions sur les dégâts (Esquive instinctive ; Parade de projectiles 2014 contre les attaques à distance, Déviation d'assaut 2024 contre toute attaque ; manœuvre Parade au corps à corps), type de dégâts et « Subir les dégâts ». La saisie rapide des PV ouvre la même étape quand une réaction de dégâts est disponible. Les effets « jusqu'au début de votre prochain tour » prennent fin au début du tour.
 
+5. **Avant un repos** (`unused_before_rest`, fenêtre de repos) : ressources jamais dépensées depuis leur retour (repos court : celles qui reviennent au repos court ; repos long : toutes), emplacements de sort et de pacte non utilisés.
+
 ### 4.14 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

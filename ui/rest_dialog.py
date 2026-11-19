@@ -79,6 +79,10 @@ class RestDialog(QDialog):
             recharges = eng.long_rest_recharges()
         lay.addWidget(make_label("Rechargé à la fin du repos :", "head"))
         lay.addWidget(make_label("<br/>".join("✔ " + html.escape(x) for x in recharges), wrap=True))
+        unused = eng.unused_before_rest("long" if long_rest else "court")      # v52 : ce qui n'a pas servi
+        if unused:
+            lay.addWidget(make_label("Pas utilisé depuis qu'il est revenu — pensez-y au prochain combat :", "head"))
+            lay.addWidget(make_label("<br/>".join("○ " + html.escape(x) for x in unused), "muted", wrap=True))
         ending = eng.effects_ending(long_rest)
         if ending:
             lay.addWidget(make_label("Effets temporaires qui prendront fin :", "head"))

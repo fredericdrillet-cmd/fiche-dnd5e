@@ -252,3 +252,28 @@ class DefenseTests(unittest.TestCase):
         dlg2 = DefenseDialog(win, "attaque")
         dlg2.atk.setValue(1)
         self.assertFalse(dlg2.touches())
+
+
+class RestSummaryTests(unittest.TestCase):
+    def test_unused_resources(self):
+        for ed in ("2014", "2024"):
+            ftr = _sheet("Guerrier", 5, ed)
+            self.assertTrue(any(u.startswith("Second souffle") for u in ftr.unused_before_rest("court")), ed)
+            ftr.use_class_action("second_souffle")
+            self.assertFalse(any(u.startswith("Second souffle") for u in ftr.unused_before_rest("court")))
+            barb = _sheet("Barbare", 3, ed)
+            self.assertEqual(barb.unused_before_rest("court"), [])            # la rage revient au repos long
+            self.assertTrue(any(u.startswith("Rages") for u in barb.unused_before_rest("long")))
+            cleric = _sheet("Clerc", 3, ed)
+            self.assertTrue(any(u.startswith("Emplacements de sort") for u in cleric.unused_before_rest("long")))
+            cleric.ch.emplacements_utilises[0] = 1
+            self.assertFalse(any(u.startswith("Emplacements de sort") for u in cleric.unused_before_rest("long")))
+
+    def test_dialog_shows_section(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.rest_dialog import RestDialog
+        win = MainWindow(DB)
+        win.engine = _sheet("Guerrier", 5, "2024")
+        RestDialog(win, "short")
