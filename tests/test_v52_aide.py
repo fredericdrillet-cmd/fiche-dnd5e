@@ -447,9 +447,12 @@ class SheetExportTests(unittest.TestCase):
             self.assertIn("Jets de sauvegarde", html_text)
             self.assertIn("Aptitudes et traits", html_text)
             self.assertIn("D&amp;D 5e {}".format(ed), html_text)
-            self.assertIn("Sorts", html_text)                                     # lanceur : page 3
+            self.assertIn("Grimoire", html_text)                                  # lanceur de sorts
+            self.assertNotIn("(2024)", html_text)                                 # noms affichés sans suffixe
+            self.assertEqual(html_text.count("page-break"), 1)                    # recto / verso
         fighter = _sheet("Guerrier", 3, "2014")
-        self.assertEqual(sheet_html(fighter).count("page-break"), 1)             # pas de page de sorts
+        self.assertNotIn("Grimoire", sheet_html(fighter))
+        self.assertIn("Équipement", sheet_html(fighter))
 
     def test_2024_feature_texts_matched(self):
         for cls, lvl, name, word in (("Paladin", 1, "Maîtrise des armes", "propriétés"),
