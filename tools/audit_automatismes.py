@@ -107,6 +107,8 @@ def fingerprint(eng) -> str:
                      ("def", eng.defenses), ("vision", lambda: eng.darkvision()["portee"]),
                      ("fx", lambda: sorted(eng.innate_effects())), ("rappels", eng.remember_list),
                      ("attaques", eng.attacks_per_action),
+                     ("a_choisir", lambda: sorted(str(m.get("message", m)) for m in eng.missing_choices()
+                                                  if "sort" not in norm(str(m.get("message", m))))),
                      ("maitrises", lambda: sorted(eng.armor_proficiencies() + eng.weapon_proficiencies()))):
         try:
             parts.append((name, repr(fn())))
