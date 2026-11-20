@@ -269,6 +269,12 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 28. **Journal de session** (`core/journal.py`, `Character.journal`, 500 événements, jamais annulé) : `log` explicite (sorts lancés, repos) et `record_diff` (PV, PV temporaires, emplacements, ressources, états, concentration, niveaux) appelé par `MainWindow._capture_history` ; onglet de la fenêtre Ctrl+H avec export texte et « Vider ».
 
+29. **Versions de sauvegarde** (`core/versions.py`) : copie datée à chaque enregistrement volontaire (10 au plus, `versions/<nom>/`), Fichier > Restaurer une version précédente (l'état actuel est gardé d'abord, le fichier n'est pas écrasé).
+
+30. **Manuel d'utilisation** (`data/Manuel.json`, `core/manual.py`, `ui/manual_dialog.py`) : F2 ouvre le chapitre de l'onglet affiché ; recherche, « Ouvrir l'onglet », export PDF (`pdf_export.export_html_pdf`) ; lien dans le bandeau d'aide.
+
+31. **Performance** : `rules.norm` mis en cache (`lru_cache`, 65 536 entrées) — appelée des dizaines de milliers de fois par écran. Mesure sur un Paladin 8 / Occultiste 6 / Ensorceleur 6 avec 25 objets et 7 effets : onglets 10–66 ms (au lieu de 18–83), `changed()` sur « En partie » 57 ms (au lieu de 150) ; suite de tests 2 min 20 au lieu de 4 min.
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

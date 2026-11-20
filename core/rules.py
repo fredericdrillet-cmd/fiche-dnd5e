@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import random
 import re
+import functools
 import unicodedata
 from typing import Iterable, Optional
 
@@ -86,6 +87,17 @@ def norm(text: str) -> str:
     """Normalise un texte (minuscules, sans accents, apostrophes droites) pour les comparaisons."""
     if text is None:
         return ""
+    if isinstance(text, str):
+        return _norm_cached(text)                      # v52 : appelée des dizaines de milliers de fois par écran
+    return _norm_raw(text)
+
+
+@functools.lru_cache(maxsize=1 << 16)
+def _norm_cached(text: str) -> str:
+    return _norm_raw(text)
+
+
+def _norm_raw(text) -> str:
     text = text.replace("’", "'").replace("œ", "oe").replace("Œ", "oe")
     text = unicodedata.normalize("NFD", text)
     text = "".join(c for c in text if unicodedata.category(c) != "Mn")

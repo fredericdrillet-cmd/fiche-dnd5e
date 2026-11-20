@@ -383,6 +383,8 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **Recherche Ctrl+F**, **menu Partie** (Ctrl+T, Ctrl+E, Ctrl+I, Ctrl+A) et **Aide > Raccourcis clavier**.
 - **Contresort et Dissipation de la magie** calculés ; **lumière** (bougie, torche, lanternes) avec la règle de survie.
 - **Aide-mémoire de combat** en option dans l'export PDF ; **journal de session** (Ctrl+H, export texte).
+- **Versions de sauvegarde** (10 dernières, Fichier > Restaurer) et **manuel d'utilisation** (F2, export PDF).
+- **Plus rapide** : rafraîchissement des onglets deux à trois fois plus court.
 - **Composantes coûteuses** vérifiées au lancement du sort ; **abri** (+2 / +5) contre les attaques et aux JS de Dextérité.
 - **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
 - **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
