@@ -14,7 +14,7 @@ from typing import Callable, Optional
 
 LIMIT = 30
 MERGE_SECONDS = 2.0
-IGNORED = ("historique_jets",)                         # jamais annulé (journal des lancers)
+IGNORED = ("historique_jets", "journal")                         # jamais annulé (journal des lancers)
 LABELS = [
     (("pv_actuels", "pv_temporaires", "pv_divers"), "PV"),
     (("mort_reussites", "mort_echecs"), "jets contre la mort"),

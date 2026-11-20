@@ -379,6 +379,10 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
 - **États 2014 / 2024** (Agrippé, Étourdi, Invisible, Neutralisé…), tuile « Se libérer », concentration rompue par un état neutralisant, Caché qui prend fin à l'attaque.
 - **Chanceux** : relance automatique des 1 du Halfelin, bouton 🍀 des points de chance (et désavantage imposé en 2024).
 - **🏁 Fin du combat** (munitions récupérées, bilan) et **🌪 Environnement** (chute, suffocation).
+- **Objets magiques** : recharge selon leur formule (dés animés), charges multiples des baguettes, d20 de destruction, perles et autres éléments comptés (Collier de boules de feu…).
+- **Recherche Ctrl+F**, **menu Partie** (Ctrl+T, Ctrl+E, Ctrl+I, Ctrl+A) et **Aide > Raccourcis clavier**.
+- **Contresort et Dissipation de la magie** calculés ; **lumière** (bougie, torche, lanternes) avec la règle de survie.
+- **Aide-mémoire de combat** en option dans l'export PDF ; **journal de session** (Ctrl+H, export texte).
 - **Composantes coûteuses** vérifiées au lancement du sort ; **abri** (+2 / +5) contre les attaques et aux JS de Dextérité.
 - **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
 - **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.

@@ -255,6 +255,20 @@ Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin
 
 21. **Abri** : `attack_check(cover=…)` et liste « Abri » dans « On m'attaque ! » (+2, +5, total) ; boutons « Abri +2 / +5 » dans la fenêtre d'un JS de Dextérité (ajoutés au total sans relancer).
 
+22. **Objets magiques** (`core/magic_gear.py`, `item_rules`) : recharge selon le texte (`RECHARGE`, dés animés au repos long via `pending_recharges` / `do_long_rest(recharge_rolls=…)`), charges multiples (`MULTI`, `item_count_choice`, niveau du sort qui suit), destruction à la dernière charge (`DESTROY`, `resolve_item_destruction`, « transformation » seulement indiquée), éléments comptés (`ELEMENTS` : perles, haricots… demandés à l'ajout, `entry["elements"]`, « Épuisé » à 0, sans recharge) ; « comme une boule de feu de niveau 3 » reconnu (`AS_SPELL`).
+
+23. **Recherche Ctrl+F** (`core/search.py`, `ui/search_dialog.py`) : fiche d'abord (ouvre l'onglet via `MainWindow.open_tab`), puis règles de l'édition et lexique.
+
+24. **Contresort / Dissipation de la magie** (`core/counterspell.py`, `counter_flow` dans `ui/spell_flow.py`).
+
+25. **Lumière** (`core/light.py`) : onglet de la fenêtre Environnement avec la règle de survie.
+
+26. **Aide-mémoire de combat** (`sheet_export._cheatsheet`, `sheet_html(eng, cheatsheet=True)`), choix retenu dans `pdf_aide_memoire`.
+
+27. **Menu Partie** (Ctrl+T / Ctrl+E / Ctrl+I / Ctrl+A) et **Aide > Raccourcis clavier** (`MainWindow.SHORTCUTS`).
+
+28. **Journal de session** (`core/journal.py`, `Character.journal`, 500 événements, jamais annulé) : `log` explicite (sorts lancés, repos) et `record_diff` (PV, PV temporaires, emplacements, ressources, états, concentration, niveaux) appelé par `MainWindow._capture_history` ; onglet de la fenêtre Ctrl+H avec export texte et « Vider ».
+
 ### 4.16 Reste à faire
 
 - Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.

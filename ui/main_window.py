@@ -310,7 +310,7 @@ class MainWindow(QMainWindow):
         rules = QAction("Règles de la table… (édition 2014 / 2024 / libre, règles optionnelles)", self)
         rules.triggered.connect(self.action_rules)
         om.addAction(rules)
-        history = QAction("Historique des lancers…", self)              # v52 : discret, Ctrl+H
+        history = QAction("Historique des lancers et journal de session…", self)   # v52 : Ctrl+H
         history.setShortcut(QKeySequence("Ctrl+H"))
         history.triggered.connect(self.action_history)
         om.addAction(history)
@@ -532,6 +532,8 @@ class MainWindow(QMainWindow):
     def _capture_history(self) -> None:
         if self._restoring:
             return
+        if self.history.current is not None:            # v52 : journal de session (différence avant / après)
+            self.engine.record_diff(self.history.current)
         self.history.capture(self.engine.ch.to_dict())
         self._update_undo_actions()
 

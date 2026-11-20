@@ -122,6 +122,7 @@ class Character:
     initiative_jet: int = 0                 # v45 : dernier jet d'initiative (0 = aucun)
     inspiration: bool = False               # v52 : inspiration (règle 2014 ou inspiration héroïque 2024)
     bottes_choisies: list[str] = field(default_factory=list)   # v52 : armes dont la botte est maîtrisée (2024)
+    journal: list[dict] = field(default_factory=list)            # v52 : journal de session (500 derniers événements)
     historique_jets: list[dict] = field(default_factory=list)  # v52 : 50 derniers lancers (Ctrl+H)
     tasha_remplacements: list[str] = field(default_factory=list)   # v52 : options de Tasha qui remplacent (choisies)
     attaque_puissante: bool = False          # v52 : −5 / +10 (Tireur d'élite, Briseur d'armes lourdes, 2014)

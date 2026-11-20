@@ -169,3 +169,61 @@ class ShortcutTests(unittest.TestCase):
         with mock.patch.object(MW, "ask_yes_no", return_value=True) as ask:
             win.action_shortcuts()
         self.assertIn("Ctrl+T", ask.call_args[0][2])
+
+
+class JournalTests(unittest.TestCase):
+    def test_diff_events(self):
+        for ed in ("2014", "2024"):
+            eng = sheet("Clerc", 3, ed)
+            eng.ch.pv_actuels = eng.hp_max()
+            before = eng.ch.to_dict()
+            eng.take_damage(5)
+            eng.add_effect("empoisonne")
+            events = eng.record_diff(before)
+            self.assertTrue(any(e.startswith("Dégâts : −5") for e in events), events)
+            self.assertTrue(any("Empoisonné" in e for e in events))
+            before = eng.ch.to_dict()
+            name = "Bénédiction" if ed == "2014" else "Bénédiction (2024)"
+            if not eng.db.find_spell(name):
+                name = "Bénédiction"
+            eng.cast_spell(name, slot_level=1, target="allie")
+            events = eng.record_diff(before)
+            self.assertFalse(any("Emplacement" in e for e in events))       # déjà dans « Sort lancé »
+            self.assertTrue(eng.ch.journal[0]["texte"].startswith("Sort lancé") or
+                            any(j["texte"].startswith("Sort lancé") for j in eng.ch.journal))
+            before = eng.ch.to_dict()
+            eng.do_long_rest()
+            eng.record_diff(before)
+            self.assertTrue(any(j["texte"] == "Repos long" for j in eng.ch.journal))
+            self.assertFalse(any(j["texte"].startswith("Soins") for j in eng.ch.journal[:2]))
+
+    def test_limit_and_text(self):
+        eng = sheet()
+        for i in range(520):
+            eng.log("Événement {}".format(i))
+        self.assertEqual(len(eng.ch.journal), 500)
+        self.assertEqual(eng.ch.journal[0]["texte"], "Événement 519")
+        text = eng.journal_text()
+        self.assertTrue(text.splitlines()[-1].endswith("Événement 519"))
+
+    def test_window_and_undo(self):
+        import tempfile
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.history_dialog import HistoryDialog
+        win = MainWindow(DB)
+        win.engine.ch.pv_actuels = win.engine.hp_max()
+        win.reset_history()
+        win.engine.take_damage(3)
+        win.changed()
+        self.assertTrue(any(j["texte"].startswith("Dégâts") for j in win.engine.ch.journal))
+        n = len(win.engine.ch.journal)
+        win.action_undo()
+        self.assertEqual(len(win.engine.ch.journal), n)                  # le journal n'est pas annulé
+        dlg = HistoryDialog(win, 1)
+        with tempfile.TemporaryDirectory() as d:
+            path = dlg.export_journal(str(Path(d) / "j.txt"))
+            self.assertIn("Dégâts", Path(path).read_text(encoding="utf-8"))
+        dlg.clear_journal()
+        self.assertEqual(win.engine.ch.journal, [])

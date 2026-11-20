@@ -732,6 +732,8 @@ class ExtrasMixin:
             msg += " — lancé sur un allié (aucun bonus sur votre fiche)"
         if self.reveal_after_attack():                   # v52 : lancer un sort met fin à l'état Caché
             msg += " — vous n'êtes plus caché"
+        self.log("Sort lancé : {}{}".format(spell["nom"], " (emplacement de niveau {})".format(slot) if slot
+                                            else ""))           # v52 : journal de session
         return {"ok": True, "message": msg + ".", "emplacement": slot, "niveau": cast_level}
 
     # ==================================================================================
@@ -882,6 +884,7 @@ class ExtrasMixin:
         self.purge_after_rest(long_rest=False)
         self.ch.reaction_utilisee = ""
         self.advance_time(SHORT_REST_MIN)
+        self.log("Repos court")
 
     def do_long_rest(self, eat_ration: bool = False, recharge_rolls: Optional[dict] = None) -> None:
         if self.ch.forme_active:
@@ -902,6 +905,7 @@ class ExtrasMixin:
             self.consume_ration()
         self.advance_time(self.long_rest_minutes())        # Transe elfique : 4 heures au lieu de 8
         self.ch.dernier_repos_long = self.ch.temps_minutes
+        self.log("Repos long")
         if self.resourceful():                             # v52 : Ingénieux (Humain 2024)
             self.ch.inspiration = True
 
