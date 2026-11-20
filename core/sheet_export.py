@@ -325,7 +325,7 @@ def _cheatsheet(eng) -> str:
                 _e(t["label"]), _e(t.get("recover", "")), "&#9671; " * min(int(t["total"]), 30) +
                 ("(+{})".format(int(t["total"]) - 30) if int(t["total"]) > 30 else ""))
             for t in trackers)))
-    out.append(section("États courants ({})".format(eng.sheet_edition)))
+    out.append(section("États courants — règles {}".format(eng.sheet_edition)))
     out.append("<table width='100%' cellspacing='0' cellpadding='2'>{}</table>".format("".join(
         "<tr{}><td width='18%'><b>{}</b></td><td class='small'>{}</td></tr>".format(
             " bgcolor='{}'".format(SHADE) if i % 2 else "", _e(FX.EFFECTS[k]["nom"].split(" (")[0]),

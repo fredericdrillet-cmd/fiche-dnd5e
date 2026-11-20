@@ -143,6 +143,6 @@ class CheatsheetTests(unittest.TestCase):
             html = sheet_html(eng, cheatsheet=True)
             self.assertIn("Aide-mémoire de combat", html)
             self.assertIn("Ressources à cocher", html)
-            self.assertIn("États courants ({})".format(ed), html)
+            self.assertIn("États courants — règles {}".format(ed), html)
             self.assertNotIn("Aide-mémoire de combat", sheet_html(eng))
         self.assertIn("autre que l", sheet_html(sheet("Guerrier", 3, "2024"), True))
