@@ -371,6 +371,9 @@ class MainWindow(QMainWindow):
         manual.setShortcut(QKeySequence("F2"))
         manual.triggered.connect(lambda: self.action_manual())
         hm.addAction(manual)
+        reports = QAction("Ouvrir le dossier des rapports d'erreur", self)   # v52 : filet de sécurité
+        reports.triggered.connect(self.action_open_reports)
+        hm.addAction(reports)
         keys = QAction("Raccourcis clavier…", self)
         keys.triggered.connect(self.action_shortcuts)
         hm.addAction(keys)
@@ -442,6 +445,12 @@ class MainWindow(QMainWindow):
             chap = self.db.manual.chapter_for_tab(key) if getattr(self.db, "manual", None) and key else None
             chapter_id = chap["id"] if chap else ""
         ManualDialog(self, chapter_id).exec()
+
+    def action_open_reports(self) -> str:
+        from .crash_guard import open_reports_folder
+        folder = open_reports_folder()
+        self.statusBar().showMessage("Rapports d'erreur : " + folder, 8000)
+        return folder
 
     def action_shortcuts(self):
         text = "\n".join("{}  —  {}".format(k, label) for k, label in self.SHORTCUTS)
@@ -1072,6 +1081,8 @@ def run(db: Database, settings: dict | None = None) -> int:
             app.setWindowIcon(QIcon(icon_path))
             break
     win = MainWindow(db, settings)
+    from .crash_guard import install as install_crash_guard   # v52 : une erreur ne ferme plus l'application
+    install_crash_guard(win)
     win.show()
     # v48 : le dernier personnage est rouvert ; sinon (premier lancement) l'assistant de création s'ouvre
     if not win.restore_last_session() and settings.get("assistant_au_demarrage", True):
