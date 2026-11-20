@@ -116,7 +116,18 @@ def add_catalog_item(win, engine, item: dict, bonus: int = 0) -> str:
     if engine.magic_gear_kind(item):
         base = ask_gear_base(win, engine, item)
         return engine.add_magic_gear(item["nom"], base, bonus) if base else ""
-    return item["nom"] if engine.add_magic_item(item["nom"], bonus) else ""
+    if not engine.add_magic_item(item["nom"], bonus):
+        return ""
+    elements = engine.item_rules(item)["elements"]
+    entry = engine.ch.objets_magiques[-1] if engine.ch.objets_magiques else {}
+    if elements and entry.get("nom") == item["nom"]:     # v52 : nombre de perles… indiqué par le joueur
+        from .dialogs import ask_int
+        n = ask_int(win, item["nom"], "Nombre de {} ({} — tirage proposé : {}). Indiquez le nombre réel si le MJ "
+                    "l'a fixé.".format(elements[1], elements[0], entry.get("elements", 0)),
+                    int(entry.get("elements", 0) or 1), 0, 99)
+        if n is not None:
+            engine.set_item_elements(len(engine.ch.objets_magiques) - 1, n)
+    return item["nom"]
 
 
 def rarity_group(text: str) -> str:

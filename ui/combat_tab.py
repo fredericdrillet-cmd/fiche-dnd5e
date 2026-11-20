@@ -695,7 +695,15 @@ class CombatTab(BaseTab):
     def _on_turn_tile(self, tile_id: str) -> None:
         """Tuile : dépense l'action / l'action bonus / la réaction, puis le jet animé (attaque, dés) ou le sort."""
         eng, win = self.engine, self.win
-        res = eng.use_turn_action(tile_id)
+        count = 0
+        if tile_id.startswith("objet:"):                  # v52 : charges ou perles à dépenser
+            choice = eng.item_count_choice(tile_id)
+            if choice and choice["max"] > choice["min"]:
+                count = ask_int(win, choice["objet"], "Combien de {} dépenser ({} à {}) ?".format(
+                    choice["nom"], choice["min"], choice["max"]), choice["min"], choice["min"], choice["max"])
+                if count is None:
+                    return
+        res = eng.use_turn_action(tile_id, count) if count else eng.use_turn_action(tile_id)
         win.statusBar().showMessage(res["message"], 6000)
         if res.get("sort"):
             from .spell_flow import choose_slot_level, resolve_spell
@@ -735,6 +743,11 @@ class CombatTab(BaseTab):
             return
         if res.get("objet"):                              # v45 : capacité d'un objet magique
             self._use_item_power(res)
+            if res.get("destruction") and res.get("entree") is not None:   # v52 : dernière charge -> d20
+                r = roll_damage_dialog(win, D.DamageSpec("Dernière charge — " + res["objet"]["objet"], "1d20",
+                                                         kind="de"))
+                if r is not None:
+                    self._message(eng.resolve_item_destruction(res["entree"], r.total))
             self.changed()
             return
         if res.get("ok") and tile_id == "classe:cap:forme_sauvage":   # v39 : choix de la bête puis transformation

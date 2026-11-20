@@ -436,6 +436,11 @@ class InventoryTab(BaseTab):
             r = base_row + i
             item = eng.magic_item(entry["nom"]) or {}
             label = eng.magic_display_name(entry)
+            gone = eng.item_state_label(entry)           # v52 : détruit / épuisé
+            if entry.get("elements") is not None and not gone:
+                rules = eng.item_rules(item)
+                left = max(0, int(entry["elements"]) - int(entry.get("charges_utilisees", 0)))
+                label += " ({} {})".format(left, (rules["elements"] or ("", "éléments"))[1])
             state = ("équipé" + (" — {}".format(entry.get("emplacement", "").replace("_", " "))
                                  if entry.get("emplacement") else "")) if entry.get("equipe") else "non équipé"
             if item.get("lien"):
@@ -444,8 +449,13 @@ class InventoryTab(BaseTab):
             tip = rich_tip(("⚠ " if warn else "✨ ") + label, "{}{}\n{} — {} ({})".format(
                 warn + "\n" if warn else "", item.get("description", "")[:500], item.get("type", "Objet magique"),
                 item.get("rarete", ""), state))
-            self.table.setItem(r, 0, cell(("⚠ " if warn else "") + "✨ " + label, "left", tip,
-                                          t.warn if warn else t.accent_text, bold=True))
+            name_cell = cell(("⚠ " if warn else "") + "✨ " + label + (" — " + gone if gone else ""), "left", tip,
+                             t.warn if warn else (t.muted if gone else t.accent_text), bold=not gone)
+            if gone:
+                f = name_cell.font()
+                f.setStrikeOut(True)
+                name_cell.setFont(f)
+            self.table.setItem(r, 0, name_cell)
             self.table.removeCellWidget(r, 1)
             self.table.setItem(r, 1, cell("1", "center", tip))
             w = float(item.get("poids") or (db.catalog.get(entry.get("base", ""), {}) or {}).get("poids", 0) or 0)

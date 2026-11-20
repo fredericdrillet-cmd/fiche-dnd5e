@@ -2219,8 +2219,15 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             else:
                 self.ch.equipement.append({"nom": name, "qte": 10})
             return True
-        self.ch.objets_magiques.append({"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0,
-                                        "equipe": True, "harmonise": False})
+        entry = {"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0, "equipe": True,
+                 "harmonise": False}
+        elements = self.item_rules(item)["elements"]
+        if elements:                                    # v52 : perles… tirées à l'ajout (l'interface fait confirmer)
+            from . import dice as D
+            import random as _random
+            dice, flat = D.parse_damage(elements[0])
+            entry["elements"] = flat + sum(s * sum(_random.randint(1, f) for _ in range(n)) for s, n, f in dice)
+        self.ch.objets_magiques.append(entry)
         return True
 
     @staticmethod
@@ -2515,7 +2522,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         ch.pacte_utilises = 0
         ch.ressources_utilisees = {}                       # rages, ki, points de sorcellerie : tout est récupéré
         ch.mort_reussites = ch.mort_echecs = 0
-        self.recharge_magic_items()                        # v45 : charges des objets magiques (« à l'aube »)
+        self.last_recharges = self.recharge_magic_items(getattr(self, "_recharge_rolls", None))   # v52 : formules
         for die, total in self.hit_dice().items():          # 2014 : la moitié des dés de vie ; 2024 : tous
             back = total if self.sheet_edition == 2024 else max(1, total // 2)
             ch.des_vie_utilises[die] = max(0, ch.des_vie_utilises.get(die, 0) - back)

@@ -462,7 +462,7 @@ class TurnMixin:
         return counts
 
     # ------------------------------------------------------------------ utilisation d'une tuile
-    def use_turn_action(self, tile_id: str) -> dict:
+    def use_turn_action(self, tile_id: str, count: int = 0) -> dict:
         """Dépense l'économie d'action et renvoie ce qu'il faut animer :
         {ok, message, attaque (RollSpec|None), degats (DamageSpec|None), soin, sort (nom à lancer via l'onglet Magie)}."""
         t = next((x for x in self.turn_actions() if x["id"] == tile_id), None)
@@ -515,11 +515,12 @@ class TurnMixin:
                                            (a.get("damage_type") or "").lower()),
                        message="{} : attaque sur votre ordre.".format(sheet["nom"]))
         elif tile_id.startswith("objet:"):                # v45 : capacité d'un objet magique
-            out = self.use_item_power(ref["pouvoir"])
+            out = self.use_item_power(ref["pouvoir"], count)   # v52 : charges / perles choisies
             if out["ok"]:
                 self.spend_economy(kind)
             res.update(ok=out["ok"], message=out["message"], objet=out if out["ok"] else None,
-                       objet_sort=out.get("sort", ""), objet_niveau=out.get("niveau", 0))
+                       objet_sort=out.get("sort", ""), objet_niveau=out.get("niveau", 0),
+                       destruction=out.get("destruction", False), entree=out.get("entree"))
         elif tile_id.startswith("sort:"):
             res.update(ok=True, sort=ref["sort"], message="{} : lancement.".format(t["nom"]),
                        emplacement=ref.get("emplacement", True), limite=ref.get("limite", ""),

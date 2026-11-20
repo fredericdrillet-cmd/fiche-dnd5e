@@ -269,7 +269,8 @@ class ExtrasMixin:
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = M.item_mech(entry.get("nom", ""))
-            if m and entry.get("equipe", True) and (entry.get("harmonise") or not item.get("lien")):
+            if m and entry.get("equipe", True) and not entry.get("detruit") and (
+                    entry.get("harmonise") or not item.get("lien")):
                 out.append(("Objet : " + entry["nom"], m))
         if with_equipment:
             armor = self.db.armors.get(self.ch.armure.get("nom", ""))
@@ -882,10 +883,12 @@ class ExtrasMixin:
         self.ch.reaction_utilisee = ""
         self.advance_time(SHORT_REST_MIN)
 
-    def do_long_rest(self, eat_ration: bool = False) -> None:
+    def do_long_rest(self, eat_ration: bool = False, recharge_rolls: Optional[dict] = None) -> None:
         if self.ch.forme_active:
             self.end_form()
+        self._recharge_rolls = recharge_rolls             # v52 : recharges d'objets lancées par l'interface
         self.long_rest()
+        self._recharge_rolls = None
         exhaustion = sorted(k for k in self.ch.effets_actifs if k.startswith("epuisement_"))
         if exhaustion:
             lvl = int(exhaustion[-1].split("_")[1])

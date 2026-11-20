@@ -247,7 +247,14 @@ class RestDialog(QDialog):
     def apply(self):
         eng = self.win.engine
         if self.kind == "long":
-            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()))
+            rolls = {}                                     # v52 : recharge des objets magiques (formule, dés animés)
+            from core import dice as D
+            from .dice_dialog import roll_damage_dialog
+            for idx, name, formula in eng.pending_recharges():
+                r = roll_damage_dialog(self.win, D.DamageSpec("Recharge — " + name, formula, kind="de"))
+                if r is not None:
+                    rolls[idx] = r.total
+            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()), recharge_rolls=rolls)
             if self.starving is not None and self.starving.isChecked():     # v52 : après la récupération du repos
                 eng.gain_exhaustion("Privation de nourriture")
             self.spell_messages = self._apply_spell_changes()
