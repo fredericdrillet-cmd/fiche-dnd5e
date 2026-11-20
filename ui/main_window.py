@@ -318,6 +318,10 @@ class MainWindow(QMainWindow):
         hp_entry.setShortcut(QKeySequence("Ctrl+D"))
         hp_entry.triggered.connect(self.action_hp_entry)
         om.addAction(hp_entry)
+        search = QAction("Rechercher… (sorts, aptitudes, objets, règles)", self)   # v52 : Ctrl+F
+        search.setShortcut(QKeySequence("Ctrl+F"))
+        search.triggered.connect(self.action_search)
+        om.addAction(search)
         free_roll = QAction("Jet de dés libre (2d6+3…)", self)           # v52 : Ctrl+R -> onglet En partie
         free_roll.setShortcut(QKeySequence("Ctrl+R"))
         free_roll.triggered.connect(self.action_free_roll)
@@ -390,6 +394,21 @@ class MainWindow(QMainWindow):
         """Ctrl+D : onglet En partie, curseur dans la saisie rapide des PV."""
         self.tabs.setCurrentWidget(self.combat_tab)
         self.combat_tab.focus_hp_entry()
+
+    def action_search(self):
+        from .search_dialog import SearchDialog
+        SearchDialog(self).exec()
+
+    def open_tab(self, key: str) -> bool:
+        """Affiche l'onglet `key` (classes, magie, combat, inventaire…), en le rendant visible s'il était masqué."""
+        entry = self._tab_by_key.get(key)
+        if entry is None:
+            return False
+        widget = entry[0]
+        if self.tabs.indexOf(widget) < 0:
+            return False
+        self.tabs.setCurrentWidget(widget)
+        return True
 
     def action_free_roll(self):
         """Ctrl+R : onglet En partie, curseur dans le jet libre."""
