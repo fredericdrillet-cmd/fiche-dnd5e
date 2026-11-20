@@ -509,7 +509,7 @@ class Database:
                               ("equipement_aventurier_dnd_5e", "equipement"), ("listes_de_classes", "sorts_listes"),
                               ("styles_de_combat_et_armures", "styles"), ("manifestations_occultes", "manifestations"),
                               ("objets", "objets_magiques"), ("manoeuvres", "actions_classes"),
-                              ("regles_sorts", "regles_sorts"), ("lexique", "lexique")):
+                              ("regles_sorts", "regles_sorts"), ("lexique", "lexique"), ("manuel", "manuel")):
                 if key in content:
                     return kind
             if any(k.startswith("sorts_niveau") for k in content):
@@ -545,6 +545,8 @@ class Database:
         self.skills = [{"nom": s["competence"], "carac": full_ability(s["caracteristique"])} for s in raw["competences"]]
         from .glossary import Glossary                  # v52 : lexique des règles (data/Lexique.json)
         self.glossary = Glossary((raw.get("lexique") or {}).get("lexique"))
+        from .manual import Manual                      # v52 : manuel d'utilisation (data/Manuel.json)
+        self.manual = Manual((raw.get("manuel") or {}).get("manuel"))
         for item in raw.get("classes_depart", []):
             name = CLASS_ALIASES.get(norm(item["classe"]), item["classe"])
             self._starts[name] = item

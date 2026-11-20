@@ -86,6 +86,8 @@ class MainWindow(QMainWindow):
         lay.addWidget(self.form_banner)
         self.help_banner = make_label("", "muted", wrap=True)      # v52 : aide de l'onglet (Aides pour débuter)
         self.help_banner.setVisible(False)
+        self.help_banner.setTextFormat(Qt.TextFormat.RichText)     # v52 : lien « Voir le manuel »
+        self.help_banner.linkActivated.connect(lambda _href="": self.action_manual())
         lay.addWidget(self.help_banner)
         self.form_end_btn.clicked.connect(self._on_end_form)
 
@@ -365,6 +367,10 @@ class MainWindow(QMainWindow):
         lexicon.setShortcut(QKeySequence("F1"))
         lexicon.triggered.connect(self.action_glossary)
         hm.addAction(lexicon)
+        manual = QAction("Manuel d'utilisation…", self)          # v52 : F2, chapitre de l'onglet affiché
+        manual.setShortcut(QKeySequence("F2"))
+        manual.triggered.connect(lambda: self.action_manual())
+        hm.addAction(manual)
         keys = QAction("Raccourcis clavier…", self)
         keys.triggered.connect(self.action_shortcuts)
         hm.addAction(keys)
@@ -407,7 +413,8 @@ class MainWindow(QMainWindow):
         key = self._key_of.get(id(self.tabs.currentWidget())) if self.tabs.currentWidget() is not None else None
         text = (getattr(self.db, "glossary", None).tab_help.get(key, "") if on and getattr(self.db, "glossary", None)
                 else "")
-        self.help_banner.setText("💡 " + text if text else "")
+        self.help_banner.setText("💡 {} &nbsp;— <a href='manuel'>📖 Voir le manuel</a> (F2)".format(
+            html.escape(text)) if text else "")
         self.help_banner.setVisible(bool(text))
 
     def action_history(self):
@@ -426,7 +433,15 @@ class MainWindow(QMainWindow):
                  ("Ctrl+R", "Jet de dés libre"), ("Ctrl+T", "Début de mon tour"), ("Ctrl+E", "Fin de mon tour"),
                  ("Ctrl+I", "Jet d'initiative"), ("Ctrl+A", "On m'attaque ! (hors champ de saisie)"),
                  ("Ctrl+H", "Historique des lancers et journal de session"), ("Ctrl+,", "Préférences"),
-                 ("F1", "Lexique des règles"), ("F11", "Plein écran"), ("Ctrl+Q", "Quitter")]
+                 ("F1", "Lexique des règles"), ("F2", "Manuel d'utilisation"), ("F11", "Plein écran"), ("Ctrl+Q", "Quitter")]
+
+    def action_manual(self, chapter_id: str = ""):
+        from .manual_dialog import ManualDialog
+        if not chapter_id:
+            key = self._key_of.get(id(self.tabs.currentWidget())) if self.tabs.currentWidget() is not None else None
+            chap = self.db.manual.chapter_for_tab(key) if getattr(self.db, "manual", None) and key else None
+            chapter_id = chap["id"] if chap else ""
+        ManualDialog(self, chapter_id).exec()
 
     def action_shortcuts(self):
         text = "\n".join("{}  —  {}".format(k, label) for k, label in self.SHORTCUTS)

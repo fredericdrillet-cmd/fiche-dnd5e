@@ -19,6 +19,20 @@ def serif_family() -> str:
     return next((f for f in SERIF_FONTS if f in have), "serif")
 
 
+def export_html_pdf(html_text: str, path: str, title: str) -> None:
+    """v52 : HTML quelconque (manuel) imprimé en A4 avec la police grimoire."""
+    doc = QTextDocument()
+    doc.setDefaultFont(QFont(serif_family(), 9))
+    doc.setHtml(html_text)
+    writer = QPdfWriter(path)
+    writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
+    writer.setPageMargins(QMarginsF(12, 12, 12, 12), QPageLayout.Unit.Millimeter)
+    writer.setResolution(110)
+    writer.setTitle(title)
+    doc.setPageSize(writer.pageLayout().paintRectPixels(writer.resolution()).size().toSizeF())
+    doc.print(writer)
+
+
 def export_pdf(engine, path: str, cheatsheet: bool = False) -> None:
     doc = QTextDocument()
     doc.setDefaultFont(QFont(serif_family(), 9))
