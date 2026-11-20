@@ -10,7 +10,7 @@ from __future__ import annotations
 import html
 
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import (QAbstractItemView, QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit,
+from PyQt6.QtWidgets import (QAbstractItemView, QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView, QLineEdit,
                              QPushButton, QTableWidget, QTextBrowser, QVBoxLayout)
 
 from core.formulas import annotate
@@ -62,7 +62,9 @@ class ProgressionTab(BaseTab):
         self.table.setHorizontalHeaderLabels(["Don", "Prérequis", "Augmentation", "État"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        style_table(self.table, stretch_col=0)
+        style_table(self.table, stretch_col=1)          # v52 : le nom du don entier, le prérequis s'adapte
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setWordWrap(False)
         self.detail = QTextBrowser()
         split.addWidget(self.table, 3)
         split.addWidget(self.detail, 2)

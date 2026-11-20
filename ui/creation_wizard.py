@@ -36,8 +36,8 @@ from .game_widgets import clear_layout
 from .spell_inspector import make_inspector, spell_card_html
 
 # v52 : l'historique se choisit avant la classe, pour connaître ses compétences avant celles de la classe
-STEPS = ["Race / Sous-race", "Historique", "Classe", "Caractéristiques", "Sorts et tours de magie", "Équipement",
-         "Identité"]
+STEPS = ["Race / Sous-race", "Historique", "Classe", "Compétences", "Caractéristiques", "Sorts et tours de magie",
+         "Équipement", "Identité"]                       # v52 : « Compétences » séparée de « Classe »
 NO_CHOICE = "— à choisir —"
 ALL_CATS = "Toutes catégories"
 
@@ -238,6 +238,14 @@ class CreationWizard(QDialog):
         lay.addWidget(self.guide)
         self.choice_grid = QGridLayout()
         lay.addLayout(self.choice_grid)
+        self.style_desc = make_label("", "muted", wrap=True)   # v52 : texte du style de combat choisi
+        lay.addWidget(self.style_desc)
+        lay.addStretch(1)
+        self.pages.addWidget(self._scroll(w))
+        # 4. compétences (v52 : étape à part)
+        w, lay = self._page()
+        self.skill_errors = make_label("", "warn", wrap=True)
+        lay.addWidget(self.skill_errors)
         self.skills_panel = SkillsTab(self.host, compact=True)
         lay.addWidget(self.skills_panel)
         lay.addStretch(1)
@@ -381,30 +389,35 @@ class CreationWizard(QDialog):
 
         def none(pred) -> bool:
             return not any(pred(m) for m in miss)
-        class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("caracteristiques", "Compétences"),
-                                                                 ("combat", "Style de combat"),
+        class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("combat", "Style de combat"),
                                                                  ("classes", "Sous-classe")))
-        return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok,
+        skills_ok = none(lambda m: (m["onglet"], m["encart"]) == ("caracteristiques", "Compétences")) and \
+            not self.engine.skill_choice_errors()
+        return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok, skills_ok,
                 none(lambda m: m["onglet"] == "caracteristiques" and m["encart"] != "Compétences"),
                 none(lambda m: m["onglet"] == "magie"),
                 self.equip_mode == "paquetage" or self.engine.cart_total(self.cart) <= self.budget(),
-                bool(self.ch.nom.strip())]
+                bool(self.ch.nom.strip()) and bool(self.ch.joueur.strip()) and bool(self.ch.portrait)]
 
     def refresh(self) -> None:
         """Rafraîchit la page visible, les pastilles et le résumé."""
-        refreshers = [self.race_panel.refresh, self.bg_panel.refresh, self._refresh_class,
+        refreshers = [self.race_panel.refresh, self.bg_panel.refresh, self._refresh_class, self._refresh_skills,
                       self.abilities_panel.refresh, self._build_spells, self._refresh_equipment,
                       self._refresh_identity]
         refreshers[self.step]()
+        self._refresh_step_list()
+        self.prev_btn.setEnabled(self.step > 0)
+        errors = self.engine.skill_choice_errors() if self.step == STEPS.index("Compétences") else []
+        self.next_btn.setEnabled(self.step < len(STEPS) - 1 and not errors)   # v52 : compétences hors classe
+        self.refresh_summary()
+
+    def _refresh_step_list(self) -> None:
         done = self.step_done()
         with blocked(self.step_list):
             self.step_list.clear()
             for i, name in enumerate(STEPS):
                 self.step_list.addItem("{} {}. {}".format("✔" if done[i] else "○", i + 1, name))
             self.step_list.setCurrentRow(self.step)
-        self.prev_btn.setEnabled(self.step > 0)
-        self.next_btn.setEnabled(self.step < len(STEPS) - 1)
-        self.refresh_summary()
 
     # ------------------------------------------------------------------ résumé dynamique
     def summary_html(self) -> str:
@@ -479,7 +492,8 @@ class CreationWizard(QDialog):
                 continue
             combo = QComboBox()
             opts = eng.style_options(slot["id"])
-            fill_combo(combo, [NO_CHOICE] + opts, self.ch.styles_combat.get(slot["id"]) or NO_CHOICE)
+            fill_combo(combo, [NO_CHOICE] + opts, self.ch.styles_combat.get(slot["id"]) or NO_CHOICE,
+                       {o: rich_tip(o, db.style_description(cls, o)) for o in opts})   # v52 : texte au survol
             combo.activated.connect(lambda _=0, c=combo, sid=slot["id"]: self.set_style(sid, c.currentText()))
             self.choice_grid.addWidget(make_label("⚔ Style de combat", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
@@ -497,7 +511,22 @@ class CreationWizard(QDialog):
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
         self.choice_grid.setColumnStretch(1, 1)
+        chosen = [(s, self.ch.styles_combat.get(s["id"])) for s in eng.fighting_style_slots() if s["debloque"]]
+        texts = ["<b>⚔ {}</b> : {}".format(html.escape(name), html.escape(db.style_description(cls, name)))
+                 for _s, name in chosen if name]
+        if not texts and chosen:
+            texts = ["Choisissez un style de combat : survolez la liste pour lire chaque style. " + " · ".join(
+                "<b>{}</b>".format(html.escape(o)) for o in eng.style_options(chosen[0][0]["id"]))]
+        self.style_desc.setText("<br/>".join(texts))
+        self.style_desc.setVisible(bool(texts))
+
+    def _refresh_skills(self) -> None:
+        """v52 : étape Compétences — erreurs (hors liste de classe, trop de cases) qui bloquent « Suivant »."""
         self.skills_panel.refresh()
+        errors = self.engine.skill_choice_errors()
+        self.skill_errors.setText("<br/>".join("⚠ " + html.escape(e) for e in errors) +
+                                  ("<br/>Les compétences de l'historique ne comptent pas." if errors else ""))
+        self.skill_errors.setVisible(bool(errors))
 
     def set_target_subclass(self, name: str) -> None:
         """Sous-classe visée (choisie plus tard, au niveau requis) : sert aux recommandations ⭐ / ✦."""
@@ -726,6 +755,7 @@ class CreationWizard(QDialog):
     def _set_identity(self, attr: str, value: str) -> None:
         setattr(self.ch, attr, value)
         self.refresh_summary()
+        self._refresh_step_list()                         # v52 : coche de l'étape Identité tout de suite
 
     def _on_import_portrait(self) -> bool:
         from .rp_tab import IMAGE_FILTER
@@ -749,6 +779,7 @@ class CreationWizard(QDialog):
         self.ch.portrait = data or ""
         self._show_portrait()
         self.refresh_summary()
+        self._refresh_step_list()
 
     def _show_portrait(self) -> None:
         from PyQt6.QtGui import QPixmap

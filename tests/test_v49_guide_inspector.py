@@ -80,7 +80,7 @@ class CreationWizardTests(unittest.TestCase):
         w.go(2)                                           # v52 : la classe est la 3e étape
         w.set_target_subclass("Arnaqueur arcanique")
         self.assertEqual(w.engine.ability_recommendations()["Intelligence"][0], "secondaire")
-        w.go(3)
+        w.go(4)
         self.assertEqual(w.abilities_panel.rows["Intelligence"]["badge"].text(), "✦ [Secondaire]")
         w._on_class("Clerc")
         w.set_target_subclass("Domaine de la Vie")
@@ -89,7 +89,7 @@ class CreationWizardTests(unittest.TestCase):
     def test_spell_inspector_and_button(self):
         w = self.wizard()
         w._on_class("Magicien")
-        w.go(4)
+        w.go(5)
         name = next(s["nom"] for s in w.engine.level_spell_options(w.engine, "Magicien") if s["niveau"] == 0)
         text = w.inspect(name)
         for part in ("École", "Temps d'incantation", "Portée", "Composantes", "Durée", "Concentration", "Rituel"):

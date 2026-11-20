@@ -753,7 +753,8 @@
   "aides_creation": {
    "Race / Sous-race": "Votre espèce donne des traits innés (vision dans le noir, résistances…) et votre vitesse.",
    "Historique": "Votre passé : deux compétences, des outils, de l'équipement (et en 2024 des bonus de caractéristique et un don).",
-   "Classe": "Votre métier d'aventurier : il décide de vos PV, de vos maîtrises et de vos aptitudes. La fiche pédagogique aide à choisir.",
+   "Classe": "Votre métier d'aventurier : il décide de vos PV, de vos maîtrises et de vos aptitudes (et de votre style de combat). La fiche pédagogique aide à choisir.",
+   "Compétences": "Cochez les compétences proposées par votre classe (lignes surlignées). Celles de l'historique sont déjà cochées et ne comptent pas.",
    "Caractéristiques": "Six valeurs de 3 à 20 : mettez les plus hautes dans les caractéristiques marquées ⭐ pour votre classe.",
    "Sorts et tours de magie": "Les tours de magie se lancent à volonté ; les sorts de niveau 1 dépensent un emplacement.",
    "Équipement": "Prenez le paquetage de classe (le plus simple) ou achetez votre équipement avec l'or de départ.",

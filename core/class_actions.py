@@ -741,7 +741,29 @@ class ClassActionsMixin:
         before = self.ch.pv_actuels if self.ch.pv_actuels >= 0 else self.hp_max()
         after = min(self.hp_max(), before + max(0, int(amount)))
         self.ch.pv_actuels = after
+        if after > 0:
+            self.wake_up()                               # v52 : soigné -> plus inconscient, jets remis à zéro
         return after - before
+
+    dropped_to_zero = False                              # v52 : vient de tomber à 0 PV (message de l'interface)
+
+    def wake_up(self) -> bool:
+        """Au-dessus de 0 PV : l'état Inconscient prend fin et les jets contre la mort repartent de zéro
+        (À terre reste : on se relève soi-même)."""
+        woke = "inconscient" in self.ch.effets_actifs
+        if woke:
+            self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k != "inconscient"]
+        if self.ch.pv_actuels > 0:
+            self.ch.mort_reussites = self.ch.mort_echecs = 0
+        return woke
+
+    def rest_from_zero(self) -> str:
+        """v52 : un repos remet un personnage à 0 PV (stabilisé) à 1 PV au moins et le réveille."""
+        if self.ch.pv_actuels > 0 and "inconscient" not in self.ch.effets_actifs:
+            return ""
+        self.ch.pv_actuels = max(1, int(self.ch.pv_actuels))
+        self.wake_up()
+        return "Vous reprenez conscience avec {} PV.".format(self.ch.pv_actuels)
 
     # ------------------------------------------------------------------ jets de dégâts (clic sur un libellé)
     def damage_spec(self, title: str, formula: str, damage_type: str = "", note: str = "") -> Optional["D.DamageSpec"]:

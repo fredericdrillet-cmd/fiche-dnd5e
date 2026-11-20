@@ -897,6 +897,26 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                   if st.get("maitrise") and n not in self.ch.competences_historique]
         return {"options": info["competences"], "nombre": info["nb_competences"], "choisies": picked}
 
+    def off_list_skills(self) -> list[str]:
+        """v52 : compétences maîtrisées hors de la liste de la classe (l'historique ne compte pas ; les choix libres
+        de l'espèce — Demi-elfe, Humain variant… — en autorisent autant)."""
+        st = self.class_skill_status()
+        off = [n for n in st["choisies"] if n not in st["options"]]
+        free = int(self.race_skill_picks() or 0)
+        return off[free:] if len(off) > free else []
+
+    def skill_choice_errors(self) -> list[str]:
+        """Messages d'erreur des compétences de classe (création, montée de niveau)."""
+        st, out = self.class_skill_status(), []
+        cls = self.first_class()
+        for n in self.off_list_skills():
+            out.append("{} ne fait pas partie des compétences de {}.".format(n, cls))
+        extra = len(st["choisies"]) - st["nombre"] - (int(self.race_skill_picks() or 0)
+                                                      if hasattr(self, "race_skill_picks") else 0)
+        if extra > 0:
+            out.append("Trop de compétences cochées : {} de trop.".format(extra))
+        return out
+
     def apply_background(self) -> None:
         """Applique les compétences de l'historique (et retire celles de l'ancien historique)."""
         bg = self.db.backgrounds.get(self.ch.historique)

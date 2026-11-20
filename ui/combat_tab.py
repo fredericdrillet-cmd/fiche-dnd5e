@@ -8,7 +8,7 @@ import html
 import re
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
                              QScrollArea, QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
 
 from core.engine_extras import ExtrasMixin
@@ -158,22 +158,20 @@ class CombatTab(BaseTab):
         free.addWidget(self.free_roll_btn)
         free.addWidget(self.free_roll_last)
         g.addLayout(free, 9, 0, 1, 2)
-        g.addWidget(make_label("PV max"), 0, 0)
-        g.addWidget(self.hp_max, 0, 1)
-        g.addWidget(make_label("PV actuels"), 1, 0)
-        g.addWidget(self.hp_cur, 1, 1)
-        g.addWidget(make_label("PV temporaires"), 2, 0)
-        g.addWidget(self.hp_tmp, 2, 1)
-        g.addWidget(make_label("Bonus de PV divers"), 3, 0)
-        g.addWidget(self.hp_misc, 3, 1)
+        self.hp_old_labels = [make_label(t) for t in ("PV max", "PV actuels", "PV temporaires", "Bonus de PV divers")]
+        for r, (lab, wid) in enumerate(zip(self.hp_old_labels, (self.hp_max, self.hp_cur, self.hp_tmp,
+                                                                  self.hp_misc))):
+            g.addWidget(lab, r, 0)
+            g.addWidget(wid, r, 1)
         g.addWidget(self.hit_dice, 4, 0, 1, 2)
         death = QHBoxLayout()
         self.ok_boxes = [QCheckBox() for _ in range(3)]
         self.ko_boxes = [QCheckBox() for _ in range(3)]
-        death.addWidget(make_label("Jets contre la mort — réussites"))
+        self.death_labels = [make_label("Jets contre la mort — réussites"), make_label("échecs")]
+        death.addWidget(self.death_labels[0])
         for b in self.ok_boxes:
             death.addWidget(b)
-        death.addWidget(make_label("échecs"))
+        death.addWidget(self.death_labels[1])
         for b in self.ko_boxes:
             death.addWidget(b)
         self.death_btn = QPushButton("🎲 Jet contre la mort")      # v52 : résultat appliqué automatiquement
@@ -387,7 +385,8 @@ class CombatTab(BaseTab):
                                           "Le DD officiel est proposé ; un échec ajoute un niveau d'épuisement."))
         self.exh_minus.setToolTip(rich_tip("Épuisement", "Retire un niveau (un repos long en retire un aussi)."))
         self.exh_plus.setToolTip(rich_tip("Épuisement", "Ajoute un niveau d'épuisement."))
-        exh.addWidget(make_label("Épuisement", "muted"))
+        self.exh_caption = make_label("Épuisement", "muted")
+        exh.addWidget(self.exh_caption)
         exh.addWidget(self.exh_minus)
         exh.addWidget(self.exh_label)
         exh.addWidget(self.exh_plus)
@@ -401,7 +400,6 @@ class CombatTab(BaseTab):
         self.fx_empty = make_label("Aucun effet actif.", "muted")
         fl.addWidget(self.fx_holder)
         fl.addWidget(self.fx_empty)
-        pick = QHBoxLayout()
         self.fx_cat = QComboBox()
         self.fx_cat.addItems([ALL_CATS] + FX.CATEGORIES)
         self.fx_search = QLineEdit()
@@ -420,9 +418,15 @@ class CombatTab(BaseTab):
                                            "(ex. « poison », « Hâte », « feu »)."))
         self.fx_add.setToolTip(rich_tip("Ajouter l'effet", "Active l'effet choisi : ses modificateurs s'appliquent "
                                         "immédiatement à la fiche (CA, jets, compétences, vitesse…)."))
-        for wdg in (self.fx_cat, self.fx_search, self.fx_combo, self.fx_add, self.fx_clear):
-            pick.addWidget(wdg)
-        pick.setStretch(1, 1)
+        pick = QGridLayout()                              # v52 : deux lignes (colonne de gauche étroite)
+        self.fx_combo.setMinimumWidth(0)
+        self.fx_clear.setText("🧹 Retirer les temporaires")
+        pick.addWidget(self.fx_cat, 0, 0)
+        pick.addWidget(self.fx_search, 0, 1, 1, 2)
+        pick.addWidget(self.fx_combo, 1, 0, 1, 2)
+        pick.addWidget(self.fx_add, 1, 2)
+        pick.addWidget(self.fx_clear, 2, 0, 1, 3)
+        pick.setColumnStretch(1, 1)
         fl.addLayout(pick)
         self.fx_summary = make_label("", "head", wrap=True)
         fl.addWidget(self.fx_summary)
@@ -479,8 +483,229 @@ class CombatTab(BaseTab):
         self.armor.activated.connect(self._on_armor)
         self.armor_magic.activated.connect(self._on_armor)
         self.shield.activated.connect(lambda _=0: self._on_armor())
+        self._relayout(root)                              # v52 : disposition 16/9 (bandeau, colonne, tuiles)
 
     STAT_BOX_HEIGHT = 104                                # v51 : hauteur commune des encarts de statistiques
+
+    # ------------------------------------------------------------------ v52 : disposition 16/9
+    def _relayout(self, root) -> None:
+        """Bandeau du haut (PV, CA, initiative, vitesse, maîtrise, perception, vision, inspiration, épuisement),
+        colonne de gauche (caractéristiques et JS, PV, repos, ressources, rappels, états) et zone principale (tuiles
+        du tour en colonnes). Les anciens encarts (armure, style, armes, sorts mineurs) restent créés mais masqués."""
+        while root.count():
+            root.takeAt(0)
+        self._parking = QWidget(self)                    # anciens encarts conservés (logique, tests) mais cachés
+        self._parking.hide()
+        park = QVBoxLayout(self._parking)
+        ac_box = self.stat_labels["ca"].parentWidget()
+        fx_box = self.fx_holder.parentWidget()
+        turn_box = self.turn_banner.parentWidget()
+        # --- bandeau du haut
+        hdr = QFrame()
+        hdr.setObjectName("partyHeader")
+        hl = QHBoxLayout(hdr)
+        hl.setContentsMargins(8, 4, 8, 4)
+        hl.setSpacing(14)
+        self.hp_big = make_label("", "stat")
+        self.hp_big.setToolTip(rich_tip("Points de vie", "PV actuels / maximum (+ PV temporaires). Corrections "
+                                        "fines dans l'encart « Points de vie » de la colonne de gauche."))
+        self.dmg_open_btn = QPushButton("💥 Dégâts")
+        self.dmg_open_btn.setToolTip(rich_tip("Dégâts subis", "Demande le montant et le type : résistances, "
+                                              "immunités et réactions sont appliquées (Ctrl+D)."))
+        self.heal_open_btn = QPushButton("💚 Soins")
+        self.heal_open_btn.setToolTip(rich_tip("Soins reçus", "Demande le nombre de PV regagnés (ou de PV "
+                                               "temporaires)."))
+        self.dmg_open_btn.clicked.connect(self.open_damage)
+        self.heal_open_btn.clicked.connect(self.open_heal)
+        hl.addWidget(self.hp_big)
+        hl.addWidget(self.dmg_open_btn)
+        hl.addWidget(self.heal_open_btn)
+
+        def stat(caption: str, *widgets):
+            box = QVBoxLayout()
+            box.setSpacing(0)
+            box.addWidget(make_label(caption, "muted"), 0, Qt.AlignmentFlag.AlignHCenter)
+            row = QHBoxLayout()
+            row.setSpacing(2)
+            for w in widgets:
+                w.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+                row.addWidget(w)
+            box.addLayout(row)
+            hl.addLayout(box)
+        stat("CA", self.stat_labels["ca"])
+        stat("Initiative", self.stat_labels["init"], self.init_btn)
+        stat("Vitesse", self.stat_labels["vit"])
+        stat("Maîtrise", self.stat_labels["prof"])
+        stat("Perception", self.stat_labels["perc"])
+        stat("Vision", self.stat_labels["vision"])
+        for key in ("init", "vit", "prof", "perc", "vision", "ca"):
+            self.stat_labels[key].setWordWrap(False)
+        self.insp_check = QCheckBox("🌟 Inspiration")
+        self.insp_check.setToolTip(rich_tip("Inspiration", "Cochée : vous avez un point d'inspiration (accordé par "
+                                            "le MJ, ou Ingénieux). Il se dépense dans la fenêtre d'un jet de d20."))
+        self.insp_check.toggled.connect(self._on_inspiration)
+        hl.addWidget(self.insp_check)
+        self.style_badge = make_label("", "muted")
+        hl.addWidget(self.style_badge)
+        hl.addStretch(1)
+        self.exh_minus.setText("▼")
+        self.exh_plus.setText("▲")
+        self.exh_roll.setText("🎲 JS")
+        for b in (self.exh_minus, self.exh_plus):
+            b.setFixedWidth(30)
+        hl.addWidget(make_label("Épuisement", "muted"))
+        hl.addWidget(self.exh_minus)
+        hl.addWidget(self.exh_label)
+        hl.addWidget(self.exh_plus)
+        hl.addWidget(self.exh_roll)
+        root.addWidget(hdr)
+        # --- corps : colonne de gauche + zone principale
+        body = QHBoxLayout()
+        body.setSpacing(10)
+        left = QWidget()
+        left.setMaximumWidth(470)
+        left.setMinimumWidth(380)
+        ll = QVBoxLayout(left)
+        ll.setContentsMargins(0, 0, 0, 0)
+        ll.setSpacing(6)
+        ll.addWidget(self.form_box)
+        ll.addWidget(self._abilities_box())
+        ll.addWidget(self.hp_box)
+        ll.addWidget(fx_box)
+        ll.addWidget(self.res_box)
+        ll.addWidget(self.remember_box)
+        ll.addWidget(self.options_box)
+        ll.addWidget(self.mastery_box)
+        ll.addWidget(self.racial_box)
+        ll.addStretch(1)
+        body.addWidget(left)
+        main = QVBoxLayout()
+        main.addWidget(self.beast_box)
+        main.addWidget(turn_box)
+        main.addStretch(1)
+        body.addLayout(main, 1)
+        self.exh_caption.setVisible(False)
+        root.addLayout(body, 1)
+        # Magie : emplacements de sorts en tête de la colonne
+        self.turn_cols["Magie"]["top"].addWidget(self.slots_box)
+        self.slots_box.setTitle("Emplacements de sorts")
+        # PV : PV max dans le bandeau ; actuels / temporaires / divers sur une seule ligne
+        g = self.hp_box.layout()
+        for w in self.hp_old_labels + [self.hp_max]:
+            w.setVisible(False)
+        row = QWidget()
+        rl = QHBoxLayout(row)
+        rl.setContentsMargins(0, 0, 0, 0)
+        for caption, spin in (("Actuels", self.hp_cur), ("Temp.", self.hp_tmp), ("Divers", self.hp_misc)):
+            rl.addWidget(make_label(caption, "muted"))
+            spin.setVisible(True)
+            rl.addWidget(spin, 1)
+        g.addWidget(row, 0, 0, 1, 2)
+        self.hp_box.setTitle("Points de vie (corrections)")
+        # PV : la saisie rapide est remplacée par les boutons Dégâts / Soins du bandeau
+        for w in (self.hp_entry, self.dmg_type, self.dmg_magic, self.dmg_btn, self.heal_btn):
+            w.setVisible(False)
+        # ressources : seules les sphères restent (les actions sont des tuiles)
+        self.act_layout.parentWidget().setVisible(False)
+        self.res_sep.setVisible(False)
+        # encarts retirés de l'écran (armure / bouclier -> inventaire, style -> création, armes -> tuiles)
+        for w in [ac_box, self.style_box, self.saves_box, self.cantrip_box] + list(self.weapon_boxes) + \
+                list(self.stat_boxes.values()):
+            park.addWidget(w)
+
+    def _abilities_box(self) -> QGroupBox:
+        """Caractéristiques avec leur jet de sauvegarde sur la même ligne (le dé juste à côté)."""
+        box = QGroupBox("Caractéristiques et jets de sauvegarde")
+        g = QGridLayout(box)
+        g.setHorizontalSpacing(8)
+        g.setVerticalSpacing(2)
+        self.ab_labels = {}
+        for r, ab in enumerate(R.ABILITIES):
+            name = make_label(ab, "head")
+            score = make_label("", "")
+            self.ab_labels[ab] = score
+            cell_w = self.save_cells[ab]["label"].parentWidget()
+            g.addWidget(name, r, 0)
+            g.addWidget(score, r, 1)
+            g.addWidget(make_label("JS", "muted"), r, 2)
+            g.addWidget(cell_w, r, 3)
+        g.setColumnStretch(4, 1)
+        return box
+
+    def _refresh_header(self) -> None:
+        eng, ch = self.engine, self.ch
+        hp_max = eng.hp_max()
+        cur = ch.pv_actuels if ch.pv_actuels >= 0 else hp_max
+        self.hp_big.setText("❤ {} / {}{}".format(cur, hp_max, "  (+{} temp.)".format(ch.pv_temporaires)
+                                                if ch.pv_temporaires else ""))
+        for ab, lab in self.ab_labels.items():
+            lab.setText("{} ({})".format(eng.score(ab), R.fmt_bonus(eng.mod(ab))))
+        with blocked(self.insp_check):
+            self.insp_check.setChecked(bool(ch.inspiration))
+        styles = []
+        for sid, name in (ch.styles_combat or {}).items():
+            if name and "|modele" not in sid:
+                styles.append((name, self.db.style_description(sid.split("|")[0], name)))
+        self.style_badge.setText(" · ".join("⚔ " + n for n, _d in styles))
+        self.style_badge.setToolTip(rich_tip("Style de combat", "\n".join("{} : {}".format(n, d) for n, d in styles))
+                                    if styles else "")
+        down = ch.pv_actuels == 0 and not ch.forme_active          # jets contre la mort seulement à 0 PV
+        for w in self.death_labels + self.ok_boxes + self.ko_boxes + [self.death_btn]:
+            w.setVisible(down)
+
+    def _on_inspiration(self, on: bool) -> None:
+        self.ch.inspiration = bool(on)
+        self.changed()
+
+    def open_damage(self) -> bool:
+        from .hp_dialogs import DamageDialog
+        dlg = DamageDialog(self.win)
+        if not dlg.exec():
+            return False
+        amount, dtype, magical = dlg.values()
+        return self.apply_damage(amount, dtype, magical)
+
+    def apply_damage(self, amount: int, dtype: str = "", magical: bool = False) -> bool:
+        if amount <= 0:
+            return False
+        if self.engine.defense_options("degats"):        # réactions possibles avant les dégâts
+            return self.open_defense("degats", amount, dtype, magical)
+        self._message(self.engine.take_damage(amount, dtype, magical))
+        self.changed()
+        self.maybe_concentration_save()
+        self.maybe_zero_hp()
+        return True
+
+    def open_heal(self) -> bool:
+        from .hp_dialogs import HealDialog
+        dlg = HealDialog(self.win)
+        if not dlg.exec():
+            return False
+        amount, temp = dlg.values()
+        return self.apply_heal(amount, temp)
+
+    def apply_heal(self, amount: int, temp: bool = False) -> bool:
+        if amount <= 0:
+            return False
+        if temp:
+            self.ch.pv_temporaires = max(int(self.ch.pv_temporaires), int(amount))
+            self._message("PV temporaires : {}.".format(self.ch.pv_temporaires))
+        else:
+            self._message(self.engine.receive_healing(amount))
+        self.changed()
+        return True
+
+    def maybe_zero_hp(self) -> None:
+        """v52 : à 0 PV, message et jet contre la mort proposé."""
+        eng = self.engine
+        if not getattr(eng, "dropped_to_zero", False):
+            return
+        eng.dropped_to_zero = False
+        if ask_yes_no(self.win, "0 PV — inconscient", "Vous tombez à 0 PV : vous êtes inconscient et à terre.\n\n"
+                      "Faites un jet de sauvegarde contre la mort au début de chacun de vos tours (10 ou plus : "
+                      "réussite ; 3 réussites : stabilisé ; 3 échecs : mort).", yes="🎲 Lancer le jet maintenant",
+                      no="Plus tard", default_no=False):
+            self._on_death_save()
 
     # ------------------------------------------------------------------ barre du tour (v30)
     TURN_FILTERS = ["Tout", "Action", "Action bonus", "Réaction", "Gratuit"]
@@ -538,6 +763,45 @@ class CombatTab(BaseTab):
             lay.addWidget(frame)
             self.turn_groups[gkey] = (frame, head_lab, grid)
         self.turn_grid = self.turn_groups["attaques"][2]          # compatibilité (anciens accès)
+        for frame, _h, _g in self.turn_groups.values():           # v52 : remplacés par les colonnes ci-dessous
+            frame.setParent(None)
+            frame.hide()
+        for b in self.turn_filter_btns.values():
+            b.setVisible(False)
+        # v52 : quatre colonnes — Actions | Actions bonus | Réactions et gratuit | Magie (emplacements en tête)
+        cols = QHBoxLayout()
+        cols.setSpacing(10)
+        self.turn_cols: dict[str, dict] = {}
+        for key, title in (("Action", "● Actions"), ("Action bonus", "▲ Actions bonus"),
+                           ("Réaction", "◆ Réactions et gratuit"), ("Magie", "✨ Magie")):
+            frame = QFrame()
+            frame.setObjectName("turnColumn")
+            fl = QVBoxLayout(frame)
+            fl.setContentsMargins(4, 2, 4, 2)
+            fl.setSpacing(4)
+            head_lab = make_label(title, "head")
+            fl.addWidget(head_lab)
+            top_holder = QVBoxLayout()                    # Magie : emplacements de sorts
+            fl.addLayout(top_holder)
+            holder = QWidget()
+            grid = QGridLayout(holder)
+            grid.setContentsMargins(0, 0, 0, 0)
+            grid.setHorizontalSpacing(4)
+            grid.setVerticalSpacing(4)
+            fl.addWidget(holder)
+            extra_head = make_label("", "muted")
+            fl.addWidget(extra_head)
+            extra_holder = QWidget()
+            extra = QGridLayout(extra_holder)
+            extra.setContentsMargins(0, 0, 0, 0)
+            extra.setHorizontalSpacing(4)
+            extra.setVerticalSpacing(3)
+            fl.addWidget(extra_holder)
+            fl.addStretch(1)
+            cols.addWidget(frame, 1)
+            self.turn_cols[key] = {"frame": frame, "head": head_lab, "grid": grid, "top": top_holder,
+                                   "extra_head": extra_head, "extra": extra}
+        lay.addLayout(cols)
         self.turn_empty = make_label("Rien à faire dans cette catégorie.", "muted")
         lay.addWidget(self.turn_empty)
         self.turn_tiles: dict[str, QPushButton] = {}
@@ -621,32 +885,11 @@ class CombatTab(BaseTab):
         key = tuple((x["id"], x["nom"], x["disponible"], x["origine"], x.get("groupe"), x.get("nouveau"))
                     for x in shown) + \
             (self.turn_filter, t.key)
+        spheres = self._tile_spheres()
+        key = key + (tuple(sorted(spheres.items())),)
         if key != self._turn_key:
             self._turn_key = key
-            self.turn_tiles = {}
-            cols = 6
-            for gkey, (frame, head_lab, grid) in self.turn_groups.items():
-                clear_layout(grid)
-                items = [x for x in shown if x.get("groupe", "capacites") == gkey]
-                frame.setVisible(bool(items))
-                title = dict(self.TURN_GROUPS)[gkey]
-                head_lab.setText("{}  ({})".format(title, len(items)))
-                for n, x in enumerate(items):
-                    b = QPushButton("{} {}{}\n{} {} · {}".format(x["icone"], x["nom"],
-                                                                  "  ✨ Nouveau" if x.get("nouveau") else "",
-                                                                  self.TURN_ICONS.get(x["type"], ""),
-                                                                  x["type"], x["origine"]))
-                    b.setMinimumHeight(48)
-                    b.setEnabled(x["disponible"])
-                    b.setCursor(Qt.CursorShape.PointingHandCursor)
-                    b.setToolTip(rich_tip(x["nom"], "{}{}{}".format(
-                        x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
-                        "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
-                    b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
-                    grid.addWidget(b, n // cols, n % cols)
-                    self.turn_tiles[x["id"]] = b
-                for c in range(cols):
-                    grid.setColumnStretch(c, 1)
+            self._render_turn_columns(shown, spheres)
             self.turn_empty.setVisible(not shown)
         st = eng.turn_state()
         for kind, b in self.turn_lights.items():
@@ -669,6 +912,91 @@ class CombatTab(BaseTab):
                          x["id"] == "sort:" + used.replace("sort:", "")), used.split(":")[-1])
             self.turn_lights["Réaction"].setToolTip("Réaction utilisée ce round : {} — clic : annuler.".format(name))
         self.turn_auto_btn.setVisible(False)             # v40 : plus de réaction « automatique »
+
+    # ------------------------------------------------------------------ v52 : colonnes de tuiles
+    def _tile_spheres(self) -> dict:
+        """Ressource restante affichée sur chaque tuile de capacité : {id de tuile: « ●●○ 2/3 »}."""
+        eng = self.engine
+        trackers = {t["key"]: t for t in eng.resource_trackers()}
+        acts = {a["id"]: a for a in eng.class_actions()}
+        out = {}
+        for x in eng.turn_actions():
+            ref = x.get("ref") or {}
+            a = acts.get(ref.get("action", "")) if isinstance(ref, dict) else None
+            cost = (a or {}).get("cout") or {}
+            tr = trackers.get(cost.get("ressource", "")) if isinstance(cost, dict) else None
+            if tr is None and a is not None:
+                tr = trackers.get(a["id"])
+            if tr and tr.get("total"):
+                total, left = int(tr["total"]), max(0, int(tr["total"]) - eng.resource_used(tr["key"]))
+                out[x["id"]] = ("●" * left + "○" * (total - left) if total <= 10 else "") + " {}/{}".format(
+                    left, total)
+        return out
+
+    @staticmethod
+    def _is_spell_tile(x: dict) -> bool:
+        return x["id"].startswith("sort:") or x.get("groupe") == "magie"
+
+    def _make_tile(self, x: dict, spheres: dict, compact: bool = False) -> QPushButton:
+        res = spheres.get(x["id"], "")
+        x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
+        if compact:
+            text = "{} {}".format(x["icone"], x["nom"])
+        else:
+            sub = x["origine"] if x["origine"] not in ("action commune",) else ""
+            if self._is_spell_tile(x):
+                sub = "{} {}".format(self.TURN_ICONS.get(x["type"], ""), x["type"])
+            text = "{} {}{}\n{}".format(x["icone"], x["nom"], "  ✨" if x.get("nouveau") else "",
+                                        (res + "  " if res else "") + sub)
+        b = QPushButton(text)
+        b.setMinimumHeight(26 if compact else 46)
+        b.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        b.setEnabled(x["disponible"])
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+        b.setToolTip(rich_tip(x["nom"], "{}{}{}{}".format(
+            x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
+            "\n<b>Restant : {}</b>".format(res) if res else "",
+            "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
+        b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
+        self.turn_tiles[x["id"]] = b
+        return b
+
+    def _render_turn_columns(self, shown: list, spheres: dict) -> None:
+        self.turn_tiles = {}
+        groups = {"Action": [], "Action bonus": [], "Réaction": [], "Magie": []}
+        common, free = [], []
+        for x in shown:
+            if x["id"].startswith("inspiration:"):        # v52 : case « Inspiration » dans le bandeau
+                continue
+            if self._is_spell_tile(x):
+                groups["Magie"].append(x)
+            elif x.get("groupe") == "generiques" and x["type"] == "Action":
+                common.append(x)
+            elif x["type"] == "Gratuit":
+                free.append(x)
+            elif x.get("groupe") == "generiques" and x["type"] == "Action bonus":
+                groups["Action bonus"].append(x)
+            elif x["type"] in groups:
+                groups[x["type"]].append(x)
+            else:
+                groups["Action"].append(x)
+        order = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
+        groups["Magie"].sort(key=lambda x: order.get(x["type"], 4))
+        for key, col in self.turn_cols.items():
+            clear_layout(col["grid"])
+            clear_layout(col["extra"])
+            items = groups[key]
+            for n, x in enumerate(items):
+                col["grid"].addWidget(self._make_tile(x, spheres), n, 0)
+            extra = common if key == "Action" else free if key == "Réaction" else []
+            col["extra_head"].setText("Actions communes" if key == "Action" else "Gratuit" if key == "Réaction" else "")
+            col["extra_head"].setVisible(bool(extra))
+            for n, x in enumerate(extra):
+                col["extra"].addWidget(self._make_tile(x, spheres, compact=True), n // 2, n % 2)
+            count = len(items) + len(extra)
+            col["head"].setText("{}  ({})".format(col["head"].text().split("  (")[0], count))
+            if key == "Magie":
+                col["frame"].setVisible(bool(items) or self.slots_box.isVisibleTo(self))
 
     def _on_roll_initiative(self) -> None:
         from .dice_dialog import roll_initiative
@@ -1448,11 +1776,15 @@ class CombatTab(BaseTab):
                 w["orbs"].changed.connect(lambda used, k=tr["key"]: self._on_orbs(k, used))
             if tr.get("de"):                              # dés de supériorité / d'inspiration : taille du dé
                 w["label"].setText("{} ({})".format(tr["label"], tr["de"]))
-            for c, k in enumerate(("label", "orbs", "left", "info")):
-                self.res_layout.addWidget(w[k], r, c)
+            # v52 : colonne étroite — nom et compteur sur une ligne, sphères dessous, détail en infobulle
+            w["label"].setToolTip(rich_tip(tr["label"], tr["info"]))
+            w["info"].setVisible(False)
+            self.res_layout.addWidget(w["label"], 2 * r, 0)
+            self.res_layout.addWidget(w["left"], 2 * r, 1)
+            self.res_layout.addWidget(w["orbs"], 2 * r + 1, 0, 1, 2)
+            self.res_layout.addWidget(w["info"], 2 * r + 1, 2)
             self.res_rows.append(w)
-        self.res_layout.setColumnStretch(1, 1)
-        self.res_layout.setColumnStretch(3, 2)
+        self.res_layout.setColumnStretch(0, 1)
 
     def _on_orbs(self, key: str, used: int):
         """Clic sur une sphère : la sphère s'est déjà redessinée ; on met à jour le compteur sans tout recalculer."""
@@ -1477,7 +1809,7 @@ class CombatTab(BaseTab):
         actions = self._refresh_actions()
         passives = self._refresh_passives()
         racial = any(a.get("origine") == "race" for a in actions)
-        self.res_box.setTitle("⚔ Actions, capacités de classe et de race" if racial else "⚔ Actions, capacités de classe")
+        self.res_box.setTitle("Ressources")              # v52 : les actions sont des tuiles ; ici, les compteurs
         self.res_sep.setVisible(bool(trackers) and bool(actions))
         self.res_box.setVisible(bool(trackers) or bool(actions) or bool(passives))
         for tr, w in zip(trackers, self.res_rows):
@@ -1945,8 +2277,8 @@ class CombatTab(BaseTab):
         self.free_roll.selectAll()
 
     def focus_hp_entry(self) -> None:
-        self.hp_entry.setFocus()
-        self.hp_entry.selectAll()
+        """Ctrl+D : fenêtre des dégâts (v52 : le champ de saisie rapide est remplacé)."""
+        self.open_damage()
 
     def _on_extend_effect(self, key: str) -> None:
         msg = self.engine.extend_effect(key)
@@ -1990,6 +2322,7 @@ class CombatTab(BaseTab):
             self._message(dlg.result_text)
             self.changed()
             self.maybe_concentration_save()
+            self.maybe_zero_hp()
             return True
         self.changed()
         return False
@@ -2099,6 +2432,7 @@ class CombatTab(BaseTab):
 
     # ------------------------------------------------------------------ rafraîchissement
     def refresh(self):
+        self._refresh_header()                            # v52 : bandeau du haut, caractéristiques, jets contre la mort
         self.mark_box(self.style_box, "Style de combat et modèle d'armure", "combat", "Style de combat")
         eng, ch, db = self.engine, self.ch, self.db
         ac_info = eng.armor_class_detail()
@@ -2158,7 +2492,7 @@ class CombatTab(BaseTab):
                "</qt>".format(form["icone"], form["libelle"], ch.pv_actuels, eng.hp_max()) if form else "")
         for w in (self.hp_max, self.hp_cur):
             w.setToolTip(tip)
-        self.hp_box.setTitle("Points de vie — {} {}".format(form["icone"], form["bete"]) if form else "Points de vie")
+        self.hp_box.setTitle("Points de vie — {} {}".format(form["icone"], form["bete"]) if form else "Points de vie (corrections)")
         with blocked(self.hp_cur, self.hp_tmp, self.hp_misc, *self.ok_boxes, *self.ko_boxes):
             self.hp_cur.setRange(0, hp)
             self.hp_cur.setValue(form["pv"] if form else ch.pv_actuels)

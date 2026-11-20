@@ -231,6 +231,8 @@ class MainWindow(QMainWindow):
                 self.init_btn = d20_button("Jet d'initiative : 1d20 + modificateur d'initiative")
                 self.init_btn.clicked.connect(self.action_roll_initiative)
                 h.addWidget(self.init_btn)
+                b.setVisible(False)                      # v52 : l'initiative est dans « En partie »
+                self.init_btn.setVisible(False)
         self.name_edit.textEdited.connect(lambda t: self._set_text("nom", t))
         self.player_edit.textEdited.connect(lambda t: self._set_text("joueur", t))
         self.xp.valueChanged.connect(self._on_xp)

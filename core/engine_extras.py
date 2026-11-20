@@ -876,6 +876,8 @@ class ExtrasMixin:
         return ""
 
     def do_short_rest(self) -> None:
+        self.rest_from_zero()                            # v52 : à 0 PV, on se réveille à 1 PV
+        self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k != "a_terre"]
         if self.ch.forme_active:
             self.end_form()                               # la forme sauvage prend fin avec le repos
         self.short_rest()
@@ -887,6 +889,8 @@ class ExtrasMixin:
         self.log("Repos court")
 
     def do_long_rest(self, eat_ration: bool = False, recharge_rolls: Optional[dict] = None) -> None:
+        self.rest_from_zero()                            # v52 : à 0 PV, on se réveille à 1 PV
+        self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k != "a_terre"]
         if self.ch.forme_active:
             self.end_form()
         self._recharge_rolls = recharge_rolls             # v52 : recharges d'objets lancées par l'interface
@@ -1266,6 +1270,8 @@ class ExtrasMixin:
         if ch.pv_actuels == 0:
             if "inconscient" in FX.EFFECTS:
                 self.add_effect("inconscient")
+            self.add_effect("a_terre")                   # v52 : inconscient = à terre
+            self.dropped_to_zero = overflow < self.hp_max()   # l'interface propose le jet contre la mort
             text += ". Vous tombez à 0 PV : jets contre la mort" if overflow < self.hp_max() else \
                 ". Mort instantanée : les dégâts restants ({}) atteignent votre maximum de PV".format(overflow)
         return text + "."

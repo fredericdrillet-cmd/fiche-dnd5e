@@ -87,6 +87,16 @@ class SkillsTab(BaseTab):
                 return                                   # l'expertise exige la maîtrise
             st["expertise"] = not st.get("expertise")
         else:
+            name = names[row]
+            if st.get("maitrise") and name in self.ch.competences_historique:   # v52 : confirmation
+                from .dialogs import ask_yes_no
+                parent = getattr(self.win, "dialog", self.win)     # assistant : fenêtre de l'assistant
+                if not ask_yes_no(parent, "Compétence d'historique",
+                                  "{} vous est accordée par votre historique ({}).\n\nLa retirer quand même ? "
+                                  "Faites-le seulement si votre MJ l'a remplacée par une autre compétence.".format(
+                                      name, self.ch.historique or "historique"),
+                                  yes="La retirer", no="La garder"):
+                    return
             st["maitrise"] = not st.get("maitrise")
             if not st["maitrise"]:
                 st["expertise"] = False
@@ -181,6 +191,9 @@ class SkillsTab(BaseTab):
             fit_table_height(self.saves)
         n_ok = len(st["choisies"])
         warn = "  ⚠ trop de compétences cochées" if n_ok > st["nombre"] else ""
+        off = eng.off_list_skills()                      # v52 : hors liste de classe (avertissement, sans blocage)
+        if off:
+            warn += "  ⚠ hors des compétences de {} : {}".format(eng.first_class(), ", ".join(off))
         self.status.setText("Compétences de classe ({}) : {}/{} choisies parmi {}.{}".format(
             eng.first_class(), n_ok, st["nombre"], ", ".join(st["options"]) or "—", warn))
         self.passive.setText("Perception passive : {}".format(eng.passive_perception()))

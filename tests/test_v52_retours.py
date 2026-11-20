@@ -1,0 +1,150 @@
+"""v52 : retours d'essai — création (compétences, styles, identité), PV (dégâts, soins, 0 PV), repos, En partie."""
+import sys
+import unittest
+from pathlib import Path
+from unittest import mock
+
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "tests"))
+
+from core.data_loader import Database  # noqa: E402
+from core.engine import Engine  # noqa: E402
+
+DB = Database(ROOT / "data")
+
+
+def sheet(cls="Guerrier", lvl=1, edition="2014"):
+    ch = Engine.new_character(DB)
+    ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+    eng = Engine(DB, ch)
+    eng.normalize()
+    if edition == "2024":
+        eng.set_edition_mode("2024")
+        eng.normalize()
+    return eng
+
+
+class SkillChoiceTests(unittest.TestCase):
+    def test_off_list_and_background(self):
+        eng = sheet()
+        eng.ch.historique = next(iter(DB.backgrounds))
+        eng.apply_background()
+        self.assertEqual(eng.skill_choice_errors(), [])           # l'historique ne compte pas
+        eng.ch.competences["Arcanes"] = {"maitrise": True, "expertise": False}
+        self.assertIn("Arcanes ne fait pas partie des compétences de Guerrier.", eng.skill_choice_errors())
+        eng.ch.competences["Arcanes"]["maitrise"] = False
+        for s in ("Athlétisme", "Acrobaties", "Survie"):
+            eng.ch.competences[s] = {"maitrise": True, "expertise": False}
+        self.assertTrue(any("Trop" in e for e in eng.skill_choice_errors()))
+
+
+class HpTests(unittest.TestCase):
+    def test_zero_hp_states_and_heal(self):
+        for ed in ("2014", "2024"):
+            eng = sheet("Guerrier", 3, ed)
+            eng.ch.pv_actuels = 5
+            eng.take_damage(8)
+            self.assertEqual(eng.ch.pv_actuels, 0)
+            self.assertIn("inconscient", eng.ch.effets_actifs)
+            self.assertIn("a_terre", eng.ch.effets_actifs)
+            self.assertTrue(eng.dropped_to_zero)
+            eng.ch.mort_echecs = 2
+            eng.receive_healing(4)
+            self.assertNotIn("inconscient", eng.ch.effets_actifs)
+            self.assertIn("a_terre", eng.ch.effets_actifs)
+            self.assertEqual(eng.ch.mort_echecs, 0)
+
+    def test_rest_wakes_up(self):
+        for rest in ("court", "long"):
+            eng = sheet("Guerrier", 3)
+            eng.ch.pv_actuels = 1
+            eng.take_damage(5)
+            if rest == "court":
+                eng.do_short_rest()
+                self.assertEqual(eng.ch.pv_actuels, 1)
+            else:
+                eng.do_long_rest()
+                self.assertEqual(eng.ch.pv_actuels, eng.hp_max())
+            self.assertNotIn("inconscient", eng.ch.effets_actifs)
+            self.assertNotIn("a_terre", eng.ch.effets_actifs)
+
+
+class UiTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        cls.win = MainWindow(DB)
+
+    def test_damage_heal_and_zero_message(self):
+        from ui import combat_tab as CT
+        tab, eng = self.win.combat_tab, self.win.engine
+        eng.ch.pv_actuels = eng.hp_max()
+        eng.ch.effets_actifs = []
+        eng.add_effect("resist_feu")
+        before = eng.ch.pv_actuels
+        tab.apply_damage(10, "feu")
+        self.assertEqual(eng.ch.pv_actuels, before - 5)               # résistance : moitié
+        tab.apply_heal(3)
+        self.assertEqual(eng.ch.pv_actuels, before - 2)
+        tab.apply_heal(4, temp=True)
+        self.assertEqual(eng.ch.pv_temporaires, 4)
+        eng.ch.pv_temporaires = 0
+        with mock.patch.object(CT, "ask_yes_no", return_value=False) as ask:
+            tab.apply_damage(eng.ch.pv_actuels + 1)                   # 0 PV sans mort instantanée
+        self.assertEqual(eng.ch.pv_actuels, 0)
+        ask.assert_called_once()
+        self.assertIn("0 PV", ask.call_args[0][1])
+
+    def test_header_inspiration_and_init_badge(self):
+        tab = self.win.combat_tab
+        tab._on_inspiration(True)
+        self.assertTrue(self.win.engine.ch.inspiration)
+        tab.refresh()
+        self.assertTrue(tab.insp_check.isChecked())
+        self.assertNotIn("inspiration:recevoir", tab.turn_tiles)
+        self.assertIn("❤", tab.hp_big.text())
+
+
+class WizardTests(unittest.TestCase):
+    def test_skills_step_and_identity(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.creation_wizard import CreationWizard, STEPS
+        win = MainWindow(DB)
+        w = CreationWizard(win)
+        self.assertEqual(STEPS[3], "Compétences")
+        w._on_class("Guerrier")
+        w.go(3)
+        w.ch.competences["Arcanes"] = {"maitrise": True, "expertise": False}
+        w.refresh()
+        self.assertIn("Arcanes", w.skill_errors.text())
+        self.assertFalse(w.step_done()[3])
+        w.ch.competences["Arcanes"]["maitrise"] = False
+        w.refresh()
+        w._set_identity("nom", "Aldric")
+        self.assertFalse(w.step_done()[7])
+        w._set_identity("joueur", "Fred")
+        w.set_portrait("iVBORw0KGgo=")
+        self.assertTrue(w.step_done()[7])
+
+    def test_style_description_shown(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.creation_wizard import CreationWizard
+        w = CreationWizard(MainWindow(DB))
+        w._on_class("Guerrier")
+        w.go(2)
+        self.assertIn("style de combat", w.style_desc.text().lower())
+        sid = next(s["id"] for s in w.engine.fighting_style_slots())
+        w.set_style(sid, "Défense")
+        w.go(2)
+        self.assertIn("Défense", w.style_desc.text())
+
+
+if __name__ == "__main__":
+    unittest.main()
