@@ -42,7 +42,12 @@ def write_report(text: str, root: Optional[Path] = None, keep: int = KEEP) -> Op
     folder = root or reports_dir()
     try:
         folder.mkdir(parents=True, exist_ok=True)
-        path = folder / "erreur_{}.txt".format(_dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
+        stamp = _dt.datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        path = folder / "erreur_{}.txt".format(stamp)
+        n = 1
+        while path.exists():                              # Windows : horloge parfois identique d'un appel à l'autre
+            path = folder / "erreur_{}-{:03d}.txt".format(stamp, n)
+            n += 1
         path.write_text(text, encoding="utf-8")
         for old in sorted(folder.glob("erreur_*.txt"))[:-keep]:
             old.unlink(missing_ok=True)

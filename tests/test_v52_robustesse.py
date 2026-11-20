@@ -34,6 +34,18 @@ class CrashTests(unittest.TestCase):
                 CR.write_report(text, Path(d))
             self.assertEqual(len(list(Path(d).glob("erreur_*.txt"))), CR.KEEP)
 
+    def test_same_clock_no_overwrite(self):
+        import datetime as dt
+
+        class Frozen(dt.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return dt.datetime(2026, 11, 20, 10, 0, 0, 123)
+        with tempfile.TemporaryDirectory() as d, mock.patch.object(CR._dt, "datetime", Frozen):
+            for _ in range(5):
+                CR.write_report("x", Path(d))
+            self.assertEqual(len(list(Path(d).glob("erreur_*.txt"))), 5)
+
     def test_handler_saves_and_continues(self):
         import qt_stub
         qt_stub.install()
