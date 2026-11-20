@@ -366,8 +366,13 @@ class MainWindow(QMainWindow):
         if not path.lower().endswith(".pdf"):
             path += ".pdf"
         from .pdf_export import export_pdf
+        cheat = ask_yes_no(self, "Aide-mémoire de combat", "Ajouter l'aide-mémoire de combat (une page de plus : "
+                           "actions, actions bonus, réactions, ressources à cocher, états courants) ?",
+                           yes="Ajouter l'aide-mémoire", no="Fiche seule",
+                           default_no=not self.settings.get("pdf_aide_memoire", False))
+        self.settings["pdf_aide_memoire"] = bool(cheat)
         try:
-            export_pdf(self.engine, path)
+            export_pdf(self.engine, path, cheatsheet=bool(cheat))
         except Exception as exc:                          # noqa: BLE001 — message utilisateur
             QMessageBox.critical(self, "Export impossible", str(exc))
             return

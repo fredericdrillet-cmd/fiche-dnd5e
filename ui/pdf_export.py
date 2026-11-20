@@ -19,14 +19,14 @@ def serif_family() -> str:
     return next((f for f in SERIF_FONTS if f in have), "serif")
 
 
-def export_pdf(engine, path: str) -> None:
+def export_pdf(engine, path: str, cheatsheet: bool = False) -> None:
     doc = QTextDocument()
     doc.setDefaultFont(QFont(serif_family(), 9))
     if engine.ch.portrait:                               # portrait base64 -> ressource « portrait.png »
         img = QImage()
         img.loadFromData(QByteArray(base64.b64decode(engine.ch.portrait)))
         doc.addResource(QTextDocument.ResourceType.ImageResource.value, QUrl("portrait.png"), img)
-    doc.setHtml(sheet_html(engine))
+    doc.setHtml(sheet_html(engine, cheatsheet))
     writer = QPdfWriter(path)
     writer.setPageSize(QPageSize(QPageSize.PageSizeId.A4))
     writer.setPageMargins(QMarginsF(10, 10, 10, 10), QPageLayout.Unit.Millimeter)

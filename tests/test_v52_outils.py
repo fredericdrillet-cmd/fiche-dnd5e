@@ -133,3 +133,16 @@ class LightTests(unittest.TestCase):
         self.assertEqual(EnvironmentDialog(win).light_btns, {})
         win.settings["regle_survie"] = True
         self.assertEqual(len(EnvironmentDialog(win).light_btns), 4)
+
+
+class CheatsheetTests(unittest.TestCase):
+    def test_cheatsheet_both_editions(self):
+        from core.sheet_export import sheet_html
+        for ed in ("2014", "2024"):
+            eng = sheet("Paladin", 5, ed)
+            html = sheet_html(eng, cheatsheet=True)
+            self.assertIn("Aide-mémoire de combat", html)
+            self.assertIn("Ressources à cocher", html)
+            self.assertIn("États courants ({})".format(ed), html)
+            self.assertNotIn("Aide-mémoire de combat", sheet_html(eng))
+        self.assertIn("autre que l", sheet_html(sheet("Guerrier", 3, "2024"), True))

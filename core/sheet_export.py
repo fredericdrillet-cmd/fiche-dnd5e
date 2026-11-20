@@ -285,11 +285,61 @@ def _grimoire(eng) -> str:
 
 
 
-def sheet_html(eng) -> str:
+CHEAT_STATES = ("a_terre", "agrippe", "aveugle", "effraye", "empoisonne", "entrave", "invisible", "neutralise",
+                "etourdi", "inconscient")
+ECONOMY_TITLES = (("Action", "Actions"), ("Action bonus", "Actions bonus"), ("Réaction", "Réactions"),
+                  ("Gratuit", "Gratuit"))
+
+
+def _cheatsheet(eng) -> str:
+    """v52 : aide-mémoire de combat — actions, actions bonus, réactions (avec leurs chiffres), ressources à cocher,
+    états courants (texte de l'édition de la fiche)."""
+    from . import effects as FX
+    out = [_header_small(eng), section("Aide-mémoire de combat")]
+    stats = [("CA", eng.armor_class()[0]), ("Initiative", R.fmt_bonus(eng.initiative_detail()["total"])),
+             ("Vitesse", eng.speed_text()), ("PV max", eng.hp_max()), ("Maîtrise", R.fmt_bonus(eng.prof))]
+    casters = eng.casters()
+    if casters:
+        stats.append(("DD des sorts", " / ".join(str(c["dc"]) for c in casters)))
+    out.append("<table width='100%' cellspacing='4'><tr>{}</tr></table>".format("".join(
+        _stat(label, _e(v)) for label, v in stats)))
+    tiles = eng.turn_actions()
+    generic = [t["nom"] for t in tiles if t.get("groupe") == "generiques"]
+    for kind, title in ECONOMY_TITLES:
+        rows = [t for t in tiles if t["type"] == kind and t.get("groupe") != "generiques"]
+        if not rows:
+            continue
+        out.append(section(title))
+        body = "".join("<tr{}><td width='30%'><b>{}</b>{}</td><td class='small'>{}</td></tr>".format(
+            " bgcolor='{}'".format(SHADE) if i % 2 else "", _e(t["nom"]),
+            "<br/><span class='mut small'>{}</span>".format(_e(t["cout"])) if t.get("cout") else "",
+            _e(_short(t.get("description", ""), 170))) for i, t in enumerate(rows))
+        out.append("<table width='100%' cellspacing='0' cellpadding='2'>{}</table>".format(body))
+    if generic:
+        out.append("<p class='small'><b>Actions communes</b> : {}</p>".format(_e(", ".join(dict.fromkeys(generic)))))
+    trackers = [t for t in eng.resource_trackers() if t.get("total") and t.get("where") != "interne"]
+    if trackers:
+        out.append(section("Ressources à cocher"))
+        out.append("<table width='100%' cellspacing='0' cellpadding='2'>{}</table>".format("".join(
+            "<tr><td width='40%'><b>{}</b> <span class='mut small'>({})</span></td><td>{}</td></tr>".format(
+                _e(t["label"]), _e(t.get("recover", "")), "&#9671; " * min(int(t["total"]), 30) +
+                ("(+{})".format(int(t["total"]) - 30) if int(t["total"]) > 30 else ""))
+            for t in trackers)))
+    out.append(section("États courants ({})".format(eng.sheet_edition)))
+    out.append("<table width='100%' cellspacing='0' cellpadding='2'>{}</table>".format("".join(
+        "<tr{}><td width='18%'><b>{}</b></td><td class='small'>{}</td></tr>".format(
+            " bgcolor='{}'".format(SHADE) if i % 2 else "", _e(FX.EFFECTS[k]["nom"].split(" (")[0]),
+            _e(_short(eng.effect_description(k), 210))) for i, k in enumerate(CHEAT_STATES) if k in FX.EFFECTS)))
+    return "".join(out)
+
+
+def sheet_html(eng, cheatsheet: bool = False) -> str:
     """Fiche complète en HTML : recto (identité, caractéristiques, combat, compétences, aptitudes), puis verso
-    (suite des aptitudes, équipement, personnalité, grimoire, notes)."""
+    (suite des aptitudes, équipement, personnalité, grimoire, notes) ; `cheatsheet` ajoute l'aide-mémoire de combat."""
     with eng.batch():
         page1, rest = _page1(eng)
         page2 = _page2(eng, rest)
+        page3 = _cheatsheet(eng) if cheatsheet else ""
     br = "<div style='page-break-before: always'></div>"
-    return "<html><head><style>{}</style></head><body>{}{}</body></html>".format(CSS, page1, br + page2)
+    return "<html><head><style>{}</style></head><body>{}{}{}</body></html>".format(
+        CSS, page1, br + page2, br + page3 if page3 else "")
