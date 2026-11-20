@@ -267,6 +267,9 @@ class MainWindow(QMainWindow):
             fm.addAction(act)
         self.recent_menu = fm.addMenu("Récents")                    # v52 : 8 derniers fichiers
         self.recent_menu.aboutToShow.connect(self._fill_recent_menu)
+        restore_act = QAction("Restaurer une version précédente…", self)   # v52 : 10 dernières versions
+        restore_act.triggered.connect(self.action_restore_version)
+        fm.addAction(restore_act)
         pdf_act = QAction("Exporter la fiche en PDF…", self)       # v52 : fiche imprimable
         pdf_act.setShortcut(QKeySequence("Ctrl+P"))
         pdf_act.triggered.connect(self.action_export_pdf)
@@ -604,6 +607,34 @@ class MainWindow(QMainWindow):
         self.reset_history()
         self.refresh_all()
 
+    def action_restore_version(self) -> bool:
+        """v52 : rouvre une des 10 dernières versions enregistrées du fichier courant (la version en cours est
+        gardée d'abord)."""
+        from core.versions import list_versions, save_version, version_label
+        if self.path is None:
+            QMessageBox.information(self, "Versions", "Enregistrez d'abord la fiche : les versions sont gardées à "
+                                    "chaque enregistrement (Ctrl+S).")
+            return False
+        versions = list_versions(self.path)
+        if not versions:
+            QMessageBox.information(self, "Versions", "Aucune version enregistrée pour ce fichier.")
+            return False
+        labels = {version_label(v): v for v in versions}
+        picked = ask_choice(self, "Restaurer une version", "Version à rouvrir (la fiche actuelle est gardée comme "
+                            "version avant la restauration) :", list(labels))
+        if not picked:
+            return False
+        try:
+            char = Character.load(labels[picked]["chemin"])
+            save_version(self.path, write=self.ch.save)     # l'état actuel devient une version (fichier intact)
+        except (OSError, ValueError, KeyError) as exc:
+            QMessageBox.critical(self, "Restauration impossible", str(exc))
+            return False
+        self.load_character(char, self.path, dirty=True)
+        self.statusBar().showMessage("Version du {} restaurée — enregistrez (Ctrl+S) pour la garder.".format(
+            labels[picked]["date"]), 8000)
+        return True
+
     def _fill_recent_menu(self) -> None:
         menu = self.recent_menu
         menu.clear()
@@ -667,6 +698,11 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Enregistrement impossible", str(exc))
             return
         self.path, self._dirty = path, False
+        try:                                              # v52 : copie datée (10 dernières versions)
+            from core.versions import save_version
+            save_version(path)
+        except OSError:
+            pass
         self.settings["dernier_fichier"] = str(path)        # v48 : rouvert au prochain lancement
         remember_recent(self.settings, path)
         save_settings(self.settings)
