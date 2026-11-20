@@ -115,6 +115,7 @@ from .environment import EnvironmentMixin  # noqa: E402
 from .components import ComponentsMixin  # noqa: E402
 from .search import SearchMixin  # noqa: E402
 from .counterspell import CounterspellMixin  # noqa: E402
+from .light import LightMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -140,7 +141,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              TurnRemindersMixin, OnHitMixin, DefenseMixin, NoveltyMixin,
              RememberMixin, MasteryFlowMixin, ExhaustionMixin,
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
-             EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin):
+             EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
+             LightMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db

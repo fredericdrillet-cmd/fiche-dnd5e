@@ -96,3 +96,40 @@ class CounterTests(unittest.TestCase):
             self.skipTest("aptitude absente des données")
         spec = eng.counter_check_spec("Contresort", 15, "Intelligence")
         self.assertTrue(any(t.label == "Abjuration améliorée" for t in spec.terms))
+
+
+class LightTests(unittest.TestCase):
+    def test_torch_and_lantern(self):
+        for ed in ("2014", "2024"):
+            eng = sheet("Guerrier", 3, ed)
+            self.assertIn("aveuglé", eng.light_status())
+            eng.ch.equipement += [{"nom": "Torche", "qte": 1}, {"nom": "Lanterne à capote", "qte": 1},
+                                  {"nom": "Huile", "qte": 2}]
+            self.assertIn("allumée", eng.light_source("lumiere_torche"))
+            self.assertEqual(next(i for i in eng.ch.equipement if i["nom"] == "Torche")["qte"], 0)
+            self.assertEqual(eng.effect_rounds("lumiere_torche"), 600)
+            self.assertFalse(next(o for o in eng.light_options() if o["key"] == "lumiere_torche")["possible"])
+            eng.light_source("lumiere_lanterne")
+            self.assertEqual(eng.effect_rounds("lumiere_lanterne"), 3600)
+            self.assertIn("Éclairé", eng.light_status())
+            eng.advance_time(60)
+            self.assertNotIn("lumiere_torche", eng.ch.effets_actifs)
+            self.assertIn("lumiere_lanterne", eng.ch.effets_actifs)
+
+    def test_darkvision_reminder(self):
+        eng = sheet("Guerrier", 3, "2014")
+        eng.ch.race = "Nain des collines"
+        eng.normalize()
+        if eng.darkvision()["portee"]:
+            self.assertIn("vision dans le noir", eng.light_status())
+
+    def test_tab_only_with_survival_rule(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.environment_dialog import EnvironmentDialog
+        win = MainWindow(DB)
+        win.settings["regle_survie"] = False
+        self.assertEqual(EnvironmentDialog(win).light_btns, {})
+        win.settings["regle_survie"] = True
+        self.assertEqual(len(EnvironmentDialog(win).light_btns), 4)

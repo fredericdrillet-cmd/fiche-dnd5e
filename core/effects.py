@@ -193,6 +193,12 @@ _e("suffoque", "Suffoque", "😶‍🌫️", "Malus", "Règle de survie (PHB)", 
    "Vous n'avez plus d'air. 2014 : vous survivez un nombre de rounds égal à votre modificateur de Constitution "
    "(1 au moins), puis tombez à 0 PV. 2024 : un niveau d'épuisement à la fin de chacun de vos tours, retirés quand "
    "vous respirez à nouveau.", notes=["Respirer à nouveau : retirez l'état"])
+for _k, _n, _ic, _v, _f, _d in (("lumiere_bougie", "Bougie", "🕯️", "1,50 m", "1,50 m", "1 heure"),
+                                 ("lumiere_torche", "Torche", "🔥", "6 m", "6 m", "1 heure"),
+                                 ("lumiere_lanterne", "Lanterne à capote", "🏮", "9 m", "9 m", "6 heures"),
+                                 ("lumiere_sourde", "Lanterne sourde", "🔦", "cône de 18 m", "18 m", "6 heures")):
+    _e(_k, _n, _ic, "Bonus", "Équipement d'aventurier (PHB)", _d,
+       "Lumière vive sur {}, lumière faible sur {} de plus.".format(_v, _f), notes=["Lumière vive " + _v])
 _e("surpris", "Surpris", "😲", "État", "Règle de combat (PHB)", "Premier round",
    "La créature n'a pas vu venir l'embuscade : elle ne peut ni bouger ni agir à son premier tour, et ne "
    "peut pas prendre de réaction avant la fin de celui-ci.",

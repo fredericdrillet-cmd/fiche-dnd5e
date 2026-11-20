@@ -20,6 +20,9 @@ class EnvironmentDialog(QDialog):
         tabs = QTabWidget()
         tabs.addTab(self._fall_tab(), "🪂 Chute")
         tabs.addTab(self._breath_tab(), "🫧 Suffocation")
+        self.light_btns = {}
+        if (getattr(win, "settings", None) or {}).get("regle_survie"):    # v52 : lumière (règle de survie)
+            tabs.addTab(self._light_tab(), "🔦 Lumière")
         lay.addWidget(tabs)
         close = QPushButton("Fermer")
         close.setProperty("role", "ghost")
@@ -91,6 +94,21 @@ class EnvironmentDialog(QDialog):
                            ("🌬 Respirer à nouveau", e.breathe_again)):
             b = QPushButton(text)
             b.clicked.connect(lambda _=False, s=slot: self._done(s()))
+            lay.addWidget(b)
+        return w
+
+    # ------------------------------------------------------------------ lumière
+    def _light_tab(self) -> QWidget:
+        w = QWidget()
+        lay = QVBoxLayout(w)
+        lay.addWidget(make_label(self.eng.light_status(), "head", wrap=True))
+        for o in self.eng.light_options():
+            b = QPushButton("{} — vive {}, faible {} de plus, {} h ({} en stock)".format(
+                o["nom"], o["vive"], o["faible"], o["heures"], o["stock"]))
+            b.setEnabled(o["possible"])
+            b.setToolTip(o["raison"] or "Allumer : l'objet (ou une flasque d'huile) est retiré de l'inventaire.")
+            b.clicked.connect(lambda _=False, k=o["key"]: self._done(self.eng.light_source(k)))
+            self.light_btns[o["key"]] = b
             lay.addWidget(b)
         return w
 
