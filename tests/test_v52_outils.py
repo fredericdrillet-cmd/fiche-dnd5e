@@ -146,3 +146,26 @@ class CheatsheetTests(unittest.TestCase):
             self.assertIn("États courants — règles {}".format(ed), html)
             self.assertNotIn("Aide-mémoire de combat", sheet_html(eng))
         self.assertIn("autre que l", sheet_html(sheet("Guerrier", 3, "2024"), True))
+
+
+class ShortcutTests(unittest.TestCase):
+    def test_turn_shortcuts(self):
+        import qt_stub
+        qt_stub.install()
+        from unittest import mock
+        from ui.main_window import MainWindow
+        from ui import main_window as MW
+        win = MainWindow(DB)
+        win.action_start_turn()
+        self.assertIn("Début de votre tour", win.combat_tab.turn_banner_text.text())
+        win.action_end_turn()
+        self.assertIn("Fin de votre tour", win.combat_tab.turn_banner_text.text())
+        win.engine.record_initiative(10)
+        win.action_end_combat()
+        self.assertFalse(win.engine.in_combat())
+        keys = [k for k, _ in win.SHORTCUTS]
+        for k in ("Ctrl+F", "Ctrl+T", "Ctrl+E", "Ctrl+I", "Ctrl+A", "Ctrl+R"):
+            self.assertTrue(any(k in x for x in keys), k)
+        with mock.patch.object(MW, "ask_yes_no", return_value=True) as ask:
+            win.action_shortcuts()
+        self.assertIn("Ctrl+T", ask.call_args[0][2])

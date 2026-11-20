@@ -344,11 +344,27 @@ class MainWindow(QMainWindow):
             lambda _=0: self.apply_appearance(self.theme_combo.currentData(), self.settings["font_px"], save=True))
         bar.setCornerWidget(self.theme_combo)
 
+        pm = bar.addMenu("&Partie")                      # v52 : raccourcis du tour
+        for text, key, slot in (("▶ Début de mon tour", "Ctrl+T", self.action_start_turn),
+                                ("⏹ Fin de mon tour", "Ctrl+E", self.action_end_turn),
+                                ("🎲 Jet d'initiative", "Ctrl+I", self.action_roll_initiative),
+                                ("🛡 On m'attaque !", "Ctrl+A", self.action_attacked),
+                                ("🌪 Environnement…", "", self.action_environment),
+                                ("🏁 Fin du combat", "", self.action_end_combat)):
+            act = QAction(text, self)
+            if key:
+                act.setShortcut(QKeySequence(key))
+            act.triggered.connect(slot)
+            pm.addAction(act)
+
         hm = bar.addMenu("&Aide")
         lexicon = QAction("Lexique des règles…", self)           # v52 : définitions 2014 / 2024
         lexicon.setShortcut(QKeySequence("F1"))
         lexicon.triggered.connect(self.action_glossary)
         hm.addAction(lexicon)
+        keys = QAction("Raccourcis clavier…", self)
+        keys.triggered.connect(self.action_shortcuts)
+        hm.addAction(keys)
         about = QAction("À propos / données chargées", self)
         about.triggered.connect(self.action_about)
         hm.addAction(about)
@@ -399,6 +415,38 @@ class MainWindow(QMainWindow):
         """Ctrl+D : onglet En partie, curseur dans la saisie rapide des PV."""
         self.tabs.setCurrentWidget(self.combat_tab)
         self.combat_tab.focus_hp_entry()
+
+    SHORTCUTS = [("Ctrl+N", "Nouveau personnage (assistant)"), ("Ctrl+O", "Charger"), ("Ctrl+S", "Sauvegarder"),
+                 ("Ctrl+Maj+S", "Sauvegarder sous"), ("Ctrl+P", "Exporter la fiche en PDF"),
+                 ("Ctrl+L", "Niveau supérieur"), ("Ctrl+Z / Ctrl+Y", "Annuler / Refaire"),
+                 ("Ctrl+F", "Rechercher (sorts, aptitudes, objets, règles)"), ("Ctrl+D", "Saisir des dégâts ou des soins"),
+                 ("Ctrl+R", "Jet de dés libre"), ("Ctrl+T", "Début de mon tour"), ("Ctrl+E", "Fin de mon tour"),
+                 ("Ctrl+I", "Jet d'initiative"), ("Ctrl+A", "On m'attaque ! (hors champ de saisie)"),
+                 ("Ctrl+H", "Historique des lancers et journal de session"), ("Ctrl+,", "Préférences"),
+                 ("F1", "Lexique des règles"), ("F11", "Plein écran"), ("Ctrl+Q", "Quitter")]
+
+    def action_shortcuts(self):
+        text = "\n".join("{}  —  {}".format(k, label) for k, label in self.SHORTCUTS)
+        ask_yes_no(self, "Raccourcis clavier", text, yes="OK", no="Fermer", default_no=False)
+
+    def _combat(self):
+        self.tabs.setCurrentWidget(self.combat_tab)
+        return self.combat_tab
+
+    def action_start_turn(self):
+        self._combat()._on_new_round()
+
+    def action_end_turn(self):
+        self._combat()._on_end_turn()
+
+    def action_attacked(self):
+        self._combat().open_defense("attaque")
+
+    def action_environment(self):
+        self._combat().open_environment()
+
+    def action_end_combat(self):
+        self._combat()._on_end_combat()
 
     def action_search(self):
         from .search_dialog import SearchDialog
