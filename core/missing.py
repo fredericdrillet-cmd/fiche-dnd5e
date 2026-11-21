@@ -17,7 +17,6 @@ from .engine_extras import _batch_memo
 from .rules import ABILITIES, norm
 
 NUMBERS = {"un": 1, "une": 1, "deux": 2, "trois": 3, "quatre": 4}
-DRACONIC_RACES = ("drakeide",)
 
 
 def _count_word(text: str) -> int:
@@ -164,9 +163,6 @@ class MissingChoicesMixin:
         # race, historique, langues
         n = self.languages_missing()
         add("race", "Langues", n, "{} langue{} au choix à ajouter".format(n, "s" * (n > 1)))
-        if any(norm(ch.race).startswith(r) for r in DRACONIC_RACES) and hasattr(self, "has_breath") \
-                and self.has_breath() and not ch.ascendance_raciale:
-            add("combat", "Capacités de combat raciales", 1, "Couleur du dragon ancestral à choisir")
         # combat : styles de combat, modèle d'armure
         for slot in self.fighting_style_slots():
             if slot["debloque"] and slot["id"] not in ch.styles_combat:
@@ -174,7 +170,9 @@ class MissingChoicesMixin:
                 add("combat", "Style de combat", 1, "{} à choisir ({})".format(what, slot["classe"]))
         for st in self.option_sets():                   # runes, options de Tir arcanique, choix des dons (v52)
             n = st["total"] - len(st["chosen"])
-            if st["key"].startswith("don:"):
+            if st["key"] == "ascendance_raciale":       # v52 : choix de l'espèce (étape Race de l'assistant)
+                add("race", "Ascendance draconique", n, "Couleur du dragon ancestral à choisir")
+            elif st["key"].startswith("don:"):
                 add("progression", "Choix des dons", n, "{} : {} à choisir".format(st["label"], n))
             else:
                 add("classes", "Options de classe", n, "{} : {} à choisir".format(st["label"], n))   # v52

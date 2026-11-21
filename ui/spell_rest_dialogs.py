@@ -84,6 +84,9 @@ class PrepareSpellsDialog(QDialog):
         lay.addWidget(make_label("Choisissez les sorts préparés pour la journée à venir. Limite : {} = <b>{}</b> "
                                  "sort(s) de niveau 1 ou plus.".format(html.escape(info["formule"]), info["maximum"]),
                                  "muted", wrap=True))
+        if info.get("remplacements"):                     # v52 : Paladin et Rôdeur 2024
+            lay.addWidget(make_label("Règle 2024 : vous ne remplacez qu'<b>un</b> sort préparé par repos long.",
+                                     "warn", wrap=True))
         if info["toujours"]:
             lay.addWidget(make_label("✦ Toujours préparés (sous-classe, hors quota) : " +
                                      html.escape(", ".join(info["toujours"])), "", wrap=True))
@@ -142,6 +145,12 @@ class PrepareSpellsDialog(QDialog):
             if len(self.selected) >= self.info["maximum"]:
                 self.warn.setText("Limite atteinte : {} / {} sorts préparés. Décochez d'abord un sort.".format(
                     len(self.selected), self.info["maximum"]))
+                return False
+            from core.spell_swap import SpellSwapMixin
+            limit = SpellSwapMixin.rest_new_allowed(self.info)
+            if limit is not None and name not in self.info["prepares"] and \
+                    len([n for n in self.selected if n not in self.info["prepares"]]) >= limit:
+                self.warn.setText("Règle 2024 : un seul sort remplacé par repos long.")
                 return False
             self.selected.append(name)
         elif not on and name in self.selected:

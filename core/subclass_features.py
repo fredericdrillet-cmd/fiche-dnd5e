@@ -147,6 +147,7 @@ class SubclassFeaturesMixin:
         bm = self.maneuver_option_set()                  # v39 : manœuvres du Maître de guerre
         if bm:
             out.append(bm)
+        out += self.draconic_option_sets()               # v52 : couleur du dragon (Drakéide, Ensorceleur)
         if self.superior_technique():                    # v52 : manœuvre du style Technique supérieure
             tech = self.ch.technique_manoeuvre
             out.append({"key": "technique_superieure", "label": "Technique supérieure (style de combat)", "total": 1,
@@ -182,9 +183,28 @@ class SubclassFeaturesMixin:
             clean[key] = keep[:s["total"]]
         self.ch.options_classe = clean
 
+    def draconic_option_sets(self) -> list[dict]:
+        """v52 : couleur du dragon ancestral — Drakéide (souffle, résistance) et Ensorceleur de la Lignée draconique
+        (affinité élémentaire), choisie à la création ou quand la sous-classe est prise."""
+        from .engine_extras import DRACONIC
+        opts = {c: "Dégâts : {} — souffle : {} — JS de {}".format(t, z, js) for c, (t, z, js) in DRACONIC.items()}
+        out = []
+        if norm(self.ch.race).startswith("drakeide") and self.has_breath():
+            c = self.ch.ascendance_raciale
+            out.append({"key": "ascendance_raciale", "label": "Ascendance draconique ({})".format(self.ch.race),
+                        "total": 1, "options": opts, "chosen": [c] if c in DRACONIC else []})
+        if self.is_draconic_sorcerer():
+            c = self.ch.ascendance_ensorceleur
+            out.append({"key": "ascendance_ensorceleur", "label": "Ascendance draconique (Ensorceleur)", "total": 1,
+                        "options": opts, "chosen": [c] if c in DRACONIC else []})
+        return out
+
+    FIELD_OPTIONS = {"technique_superieure": "technique_manoeuvre", "ascendance_raciale": "ascendance_raciale",
+                     "ascendance_ensorceleur": "ascendance_ensorceleur"}   # v52 : choix rangés dans leur champ
+
     def set_class_option(self, key: str, index: int, name: str) -> None:
-        if key == "technique_superieure":                # v52 : rangée dans son champ historique
-            self.ch.technique_manoeuvre = name
+        if key in self.FIELD_OPTIONS:
+            setattr(self.ch, self.FIELD_OPTIONS[key], name)
             self.normalize()
             return
         chosen = list((self.ch.options_classe or {}).get(key, []))

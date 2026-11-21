@@ -175,6 +175,70 @@ class LevelUpSummaryTests(unittest.TestCase):
         self.assertEqual(changes["Amélioration de caractéristiques ou don"], ["+2 en Intelligence"])
 
 
+class CreationChoicesTests(unittest.TestCase):
+    def test_draconic_colors_are_choices(self):
+        eng = sheet("Guerrier", 1)
+        eng.ch.race = "Drakéide"
+        eng.normalize()
+        st = next(s for s in eng.option_sets() if s["key"] == "ascendance_raciale")
+        self.assertEqual(st["chosen"], [])
+        self.assertIn(("race", "Ascendance draconique"), {(m["onglet"], m["encart"]) for m in eng.missing_choices()})
+        eng.set_class_option("ascendance_raciale", 0, "Rouge")
+        self.assertEqual(eng.ch.ascendance_raciale, "Rouge")
+        sorc = sheet("Ensorceleur", 1, "Lignée draconique")
+        self.assertIn("ascendance_ensorceleur", {s["key"] for s in sorc.option_sets()})
+
+    def test_wizard_steps(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.creation_wizard import CreationWizard
+        win = MainWindow(DB)
+        wiz = CreationWizard(win, "2014")
+        wiz.ch.race = "Humain variant"
+        wiz.engine.normalize()
+        self.assertFalse(wiz.step_done()[0])                       # don de départ à choisir
+        wiz.set_race_feat("✔ Doué")
+        self.assertEqual(wiz._race_feat(), "Doué")
+        self.assertTrue(wiz._feat_keys("Doué"))
+        self.assertFalse(wiz.step_done()[0])                       # les 3 compétences de Doué
+        for k in wiz._feat_keys("Doué"):
+            st = next(s for s in wiz.engine.option_sets() if s["key"] == k)
+            for i, n in enumerate(list(st["options"])[:st["total"]]):
+                wiz.engine.set_class_option(k, i, n)
+        wiz._refresh_race()
+        self.assertTrue(wiz.step_done()[0] or any(m["onglet"] == "race" and m["encart"] != "Langues"
+                                                  for m in wiz.engine.missing_choices()))
+
+    def test_warlock_2024_invocation_in_wizard(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.creation_wizard import CreationWizard
+        wiz = CreationWizard(MainWindow(DB), "2024")
+        wiz.engine.change_class(0, "Occultiste")
+        wiz.engine.normalize()
+        opts = [m["nom"] for m in wiz.engine.level_invocation_options(wiz.engine)]
+        wiz.set_manifestation(0, opts[0])
+        self.assertEqual(wiz.ch.manifestations, [opts[0]])
+
+
+class Rest2024Tests(unittest.TestCase):
+    def test_paladin_and_ranger_swap_one_spell(self):
+        for cls in ("Paladin", "Rôdeur"):
+            eng = sheet(cls, 5, edition="2024")
+            info = eng.rest_prepare_info(cls)
+            self.assertEqual(info["remplacements"], 1)
+            names = [s["nom"] for s in info["candidats"]][:info["maximum"]]
+            self.assertTrue(eng.rest_set_prepared(cls, names)[0])        # quota vide : on remplit librement
+            info = eng.rest_prepare_info(cls)
+            others = [s["nom"] for s in info["candidats"] if s["nom"] not in info["prepares"]]
+            self.assertFalse(eng.rest_set_prepared(cls, info["prepares"][2:] + others[:2])[0])
+            self.assertTrue(eng.rest_set_prepared(cls, info["prepares"][1:] + others[:1])[0])
+        self.assertIsNone(sheet("Rôdeur", 5).rest_prepare_info("Rôdeur"))   # 2014 : sorts connus
+        self.assertIsNone(sheet("Clerc", 5, edition="2024").rest_prepare_info("Clerc")["remplacements"])
+
+
 class RealQtDiceTests(unittest.TestCase):
     """Fenêtres de dés construites avec le VRAI PyQt6 (le faux Qt des autres tests ne voit pas ces erreurs)."""
 

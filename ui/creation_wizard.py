@@ -21,7 +21,7 @@ import html
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import (QComboBox, QDialog, QFileDialog, QFrame, QGraphicsDropShadowEffect, QGridLayout,
+from PyQt6.QtWidgets import (QComboBox, QDialog, QFileDialog, QFrame, QGraphicsDropShadowEffect, QGridLayout, QGroupBox,
                              QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton,
                              QScrollArea, QSizeGrip, QStackedWidget, QTextBrowser, QVBoxLayout, QWidget)
 
@@ -215,15 +215,44 @@ class CreationWizard(QDialog):
         from .race_tab import RaceTab
         from .skills_tab import SkillsTab
         # 1. race
+        from .class_options import OptionSetsPanel
         self.race_panel = RaceTab(self.host)
         self.race_panel.bg_box.setVisible(False)
         self.race_panel.lang_box.setVisible(False)
-        self.pages.addWidget(self._scroll(self.race_panel))      # v50 : défilement en fenêtre réduite
+        w, lay = self._page()                             # v52 : + choix de l'espèce (couleur du dragon, don)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.addWidget(self.race_panel)
+        self.race_choices = QGroupBox("Choix de l'espèce")
+        rc = QVBoxLayout(self.race_choices)
+        self.race_color_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys={"ascendance_raciale"})
+        rc.addWidget(self.race_color_panel)
+        self.race_feat_row = QHBoxLayout()
+        self.race_feat_label = make_label("", "head")
+        self.race_feat_combo = QComboBox()
+        self.race_feat_combo.setMinimumWidth(320)
+        self.race_feat_combo.activated.connect(lambda _=0: self.set_race_feat(self.race_feat_combo.currentText()))
+        self.race_feat_row.addWidget(self.race_feat_label)
+        self.race_feat_row.addWidget(self.race_feat_combo, 1)
+        rc.addLayout(self.race_feat_row)
+        self.race_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
+                                               keys=lambda: self._feat_keys(self._race_feat()))
+        rc.addWidget(self.race_feat_panel)
+        self.race_panel.race_box.layout().insertWidget(1, self.race_choices)   # juste sous le choix de la race
+        self.pages.addWidget(self._scroll(w))             # v50 : défilement en fenêtre réduite
         # 2. historique
         self.bg_panel = RaceTab(self.host)
         self.bg_panel.race_box.setVisible(False)
         self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
-        self.pages.addWidget(self._scroll(self.bg_panel))
+        w, lay = self._page()                             # v52 : + choix du don d'origine (2024)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.addWidget(self.bg_panel)
+        self.bg_choices = QGroupBox("Choix du don d'origine")
+        bc = QVBoxLayout(self.bg_choices)
+        self.bg_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
+                                             keys=lambda: self._feat_keys(self.engine.origin_feat()))
+        bc.addWidget(self.bg_feat_panel)
+        lay.addWidget(self.bg_choices)
+        self.pages.addWidget(self._scroll(w))
         # 3. classe (après l'historique)
         w, lay = self._page()
         row = QHBoxLayout()
@@ -242,7 +271,9 @@ class CreationWizard(QDialog):
         from .class_options import OptionSetsPanel           # v52 : Ordre divin, Ordre primitif… du niveau 1
         self.options_head = make_label("✦ Choix de classe", "head")
         lay.addWidget(self.options_head)
-        self.options_panel = OptionSetsPanel(lambda: self.engine, self.host.changed)
+        self.options_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys=lambda: {
+            s["key"] for s in self.engine.option_sets() if not s["key"].startswith("don:")
+            and s["key"] != "ascendance_raciale"})       # couleur du Drakéide : étape Race
         lay.addWidget(self.options_panel)
         self.style_desc = make_label("", "muted", wrap=True)   # v52 : texte du style de combat choisi
         lay.addWidget(self.style_desc)
@@ -400,7 +431,15 @@ class CreationWizard(QDialog):
                                                                  ("classes", "Options de classe")))
         skills_ok = none(lambda m: (m["onglet"], m["encart"]) == ("caracteristiques", "Compétences")) and \
             not self.engine.skill_choice_errors()
-        return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok, skills_ok,
+        race_feat = self._feat_keys(self._race_feat())
+        race_ok = bool(self.ch.race) and none(lambda m: m["onglet"] == "race" and m["encart"] != "Langues" or
+                                              (m["onglet"], m["encart"]) == ("progression", "Emplacements débloqués"))
+        race_ok = race_ok and not any(len(s["chosen"]) < s["total"] for s in self.engine.option_sets()
+                                      if s["key"] in race_feat)
+        bg_ok = none(lambda m: (m["onglet"], m["encart"]) == ("race", "Langues")) and not any(
+            len(s["chosen"]) < s["total"] for s in self.engine.option_sets()
+            if s["key"] in self._feat_keys(self.engine.origin_feat()))
+        return [race_ok, bg_ok, class_ok, skills_ok,
                 none(lambda m: m["onglet"] == "caracteristiques" and m["encart"] != "Compétences"),
                 none(lambda m: m["onglet"] == "magie"),
                 self.equip_mode == "paquetage" or self.engine.cart_total(self.cart) <= self.budget(),
@@ -408,7 +447,7 @@ class CreationWizard(QDialog):
 
     def refresh(self) -> None:
         """Rafraîchit la page visible, les pastilles et le résumé."""
-        refreshers = [self.race_panel.refresh, self.bg_panel.refresh, self._refresh_class, self._refresh_skills,
+        refreshers = [self._refresh_race, self._refresh_background, self._refresh_class, self._refresh_skills,
                       self.abilities_panel.refresh, self._build_spells, self._refresh_equipment,
                       self._refresh_identity]
         refreshers[self.step]()
@@ -417,6 +456,58 @@ class CreationWizard(QDialog):
         errors = self.engine.skill_choice_errors() if self.step == STEPS.index("Compétences") else []
         self.next_btn.setEnabled(self.step < len(STEPS) - 1 and not errors)   # v52 : compétences hors classe
         self.refresh_summary()
+
+    # ------------------------------------------------------------------ v52 : choix de l'espèce et du don d'origine
+    def _feat_keys(self, feat: str) -> set:
+        """Clés des choix d'un don (Initié à la magie, Doué…) : libellés « Nom du don : … »."""
+        if not feat:
+            return set()
+        return {s["key"] for s in self.engine.option_sets() if s["key"].startswith("don:")
+                and s["label"].startswith(feat + " :")}
+
+    def _race_slot(self) -> dict | None:
+        return next((s for s in self.engine.asi_slots() if s.get("classe") == "Race"), None)   # Humain variant
+
+    def _race_feat(self) -> str:
+        slot = self._race_slot()
+        return (self.ch.ameliorations.get(slot["id"]) or {}).get("don", "") if slot else ""
+
+    def set_race_feat(self, name: str) -> None:
+        slot = self._race_slot()
+        if slot is None:
+            return
+        name = name.lstrip("✔⚠ ").strip()
+        if name == NO_CHOICE or not name:
+            self.ch.ameliorations.pop(slot["id"], None)
+        else:
+            self.ch.ameliorations[slot["id"]] = {"mode": "don", "don": name}
+        self.host.changed()
+
+    def _refresh_race(self) -> None:
+        self.race_panel.refresh()
+        eng = self.engine
+        self.race_color_panel.refresh()
+        slot = self._race_slot()
+        for w in (self.race_feat_label, self.race_feat_combo):
+            w.setVisible(slot is not None)
+        if slot is not None:
+            self.race_feat_label.setText("✦ " + slot["label"])
+            feats = sorted(eng.feat_options(), key=lambda n: (eng.feat_status(n)[0] != "ok", n))
+            labels = ["{} {}".format("✔" if eng.feat_status(n)[0] == "ok" else "⚠", n) for n in feats]
+            cur = self._race_feat()
+            fill_combo(self.race_feat_combo, [NO_CHOICE] + labels,
+                       next((lab for lab, n in zip(labels, feats) if n == cur), NO_CHOICE),
+                       {lab: rich_tip(n, (eng.db.feats.get(n) or {}).get("description", ""))
+                        for lab, n in zip(labels, feats)})
+        self.race_feat_panel.refresh()
+        self.race_choices.setVisible(bool(self.race_color_panel.sets()) or slot is not None)
+
+    def _refresh_background(self) -> None:
+        self.bg_panel.refresh()
+        self.bg_feat_panel.refresh()
+        self.bg_choices.setVisible(bool(self.bg_feat_panel.sets()))
+        feat = self.engine.origin_feat()
+        self.bg_choices.setTitle("Choix du don d'origine — {}".format(feat) if feat else "Choix du don d'origine")
 
     def _refresh_step_list(self) -> None:
         done = self.step_done()
@@ -636,9 +727,37 @@ class CreationWizard(QDialog):
             lay.addWidget(make_label("{} {} [Sort Racial] — {}{} ({})".format(
                 "✦" if r["debloque"] else "🔒", r["nom"], r["usage"], "" if r["debloque"] else
                 " — à partir du niveau {}".format(r["niveau_requis"]), r["source"]), "", wrap=True))
-        if not plan and not slots and not racial:
+        # v52 : manifestations occultes du niveau 1 (Occultiste 2024)
+        total = eng.manifestation_slots()["total"]
+        if total:
+            lay.addWidget(make_label("✦ Manifestations occultes — {} / {}".format(len(self.ch.manifestations), total),
+                                     "head"))
+            for i in range(total):
+                cur = self.ch.manifestations[i] if i < len(self.ch.manifestations) else ""
+                opts = [m["nom"] for m in eng.level_invocation_options(eng)]
+                names = ([cur] if cur else []) + [n for n in opts if n != cur]
+                combo = QComboBox()
+                fill_combo(combo, [NO_CHOICE] + names, cur or NO_CHOICE,
+                           {n: rich_tip(n, (eng.db.manifestations.get(n) or {}).get("description", ""))
+                            for n in names})
+                combo.activated.connect(lambda _=0, idx=i, c=combo: self.set_manifestation(idx, c.currentText()))
+                lay.addWidget(combo)
+        if not plan and not slots and not racial and not total:
             lay.addWidget(make_label("Aucun sort à choisir : passez à l'étape suivante.", "muted"))
         lay.addStretch(1)
+
+    def set_manifestation(self, index: int, name: str) -> None:
+        """v52 : manifestation occulte choisie à la création (une seule fois chacune)."""
+        cur = list(self.ch.manifestations)
+        while len(cur) <= index:
+            cur.append("")
+        cur[index] = "" if name == NO_CHOICE else name
+        seen = []
+        for x in cur:
+            if x and x not in seen:
+                seen.append(x)
+        self.ch.manifestations = seen
+        self.host.changed()
 
     def inspect(self, name: str) -> str:
         """Clic simple : fiche détaillée du sort (école, incantation, portée, composantes, durée, texte)."""

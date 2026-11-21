@@ -43,9 +43,10 @@ class OptionSetsPanel(QWidget):
         self.combos: dict[tuple[str, int], QComboBox] = {}
 
     def sets(self) -> list[dict]:
-        if self.keys is None:                            # par défaut : choix de classe (sans les dons)
+        keys = self.keys() if callable(self.keys) else self.keys    # clés fixes ou calculées à chaque rafraîchissement
+        if keys is None:                                 # par défaut : choix de classe (sans les dons)
             return class_option_sets(self._engine())
-        return [s for s in self._engine().option_sets() if s["key"] in self.keys]   # clés données : dons compris
+        return [s for s in self._engine().option_sets() if s["key"] in keys]   # clés données : dons compris
 
     def refresh(self) -> None:
         sets = self.sets()
