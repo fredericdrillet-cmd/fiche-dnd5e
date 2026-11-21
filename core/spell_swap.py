@@ -172,6 +172,9 @@ class SpellSwapMixin:
         spell = self.db.find_spell(name)
         if spell is None or self.caster("Magicien") is None or not int(spell.get("niveau") or 0):
             return False, "Seul un sort de niveau 1 ou plus se recopie dans le grimoire du Magicien."
+        if not self.can_learn("Magicien", spell["nom"]):   # liste du Magicien, niveau d'emplacement disponible
+            return False, "« {} » : seul un sort de magicien d'un niveau dont vous avez des emplacements se " \
+                          "recopie.".format(spell["nom"])
         lst = self.ch.sorts.setdefault("Magicien", [])
         if any(s["nom"] == spell["nom"] for s in lst):
             return False, "« {} » est déjà dans votre grimoire.".format(spell["nom"])

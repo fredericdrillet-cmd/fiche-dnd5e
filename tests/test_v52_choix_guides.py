@@ -118,6 +118,26 @@ class Spells2024Tests(unittest.TestCase):
         other = next(sp["nom"] for sp in eng.available_spells("Magicien") if sp["niveau"] == 1
                      and not any(s["nom"] == sp["nom"] for s in eng.ch.sorts.get("Magicien", [])))
         self.assertFalse(eng.scribe_spell(other)[0])                # 20 po < 50 po
+        eng.ch.pieces["po"] = 9999
+        high = next(sp["nom"] for sp in DB.spells.values() if sp.get("niveau") == 9
+                    and "Magicien" in sp.get("classes", []))
+        self.assertFalse(eng.scribe_spell(high)[0])                 # pas d'emplacement de niveau 9 au niveau 3
+
+
+class GuidedAbilitiesTests(unittest.TestCase):
+    def test_no_reroll_in_guided_mode(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        win.settings["mode_libre"] = False
+        win.engine.ch.methode = "des"
+        win.engine.ch.des_tirages = [{"total": 12, "des": [4, 4, 4, 1]}] * 6
+        win.engine.normalize()
+        enabled = {}
+        win.abilities_tab.roll_btn.setEnabled = lambda on: enabled.__setitem__("roll", on)
+        win.abilities_tab._apply_guided_locks()
+        self.assertFalse(enabled["roll"])
 
 
 class GuidedLockTests(unittest.TestCase):

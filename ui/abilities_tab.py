@@ -164,8 +164,10 @@ class AbilitiesTab(BaseTab):
         rolls_open = not guided or self.engine.missing_in("caracteristiques", "Caractéristiques") > 0
         picks_open = not guided or self.engine.missing_in("caracteristiques", "Bonus raciaux de caractéristiques") > 0
         tip = self.GUIDED_TIP if guided else ""
+        no_rolls = not self.ch.des_tirages               # Mode guidé : lancer une seule fois, jamais relancer
         for w in (self.method, self.roll_btn, self.auto_btn, self.reset_btn):
-            w.setEnabled(not guided or (w is not self.method and w is not self.reset_btn and rolls_open))
+            open_ = (w is self.roll_btn and rolls_open and no_rolls) or (w is self.auto_btn and rolls_open)
+            w.setEnabled(not guided or open_)
             w.setToolTip(tip)
         for row in self.rows.values():
             for k in ("minus", "plus", "manual"):
