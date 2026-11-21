@@ -2,7 +2,8 @@
 Montée de niveau guidée (v29) et frise de progression 1 → 20 — logique pure.
 
 L'assistant travaille sur une COPIE du personnage (`simulate_level_up`) : le joueur choisit la classe, les PV,
-les choix du niveau (sous-classe, amélioration ou don, style de combat, faveur de pacte) ; le récapitulatif
+les choix du niveau (sous-classe, amélioration ou don, style de combat, faveur de pacte ; v52 : options de
+classe, compétences et expertises, langues, choix des dons) ; le récapitulatif
 avant / après se calcule sur la copie ; rien ne touche la vraie fiche tant que « Confirmer » n'est pas cliqué
 (la copie remplace alors le personnage).
 """
@@ -13,7 +14,7 @@ from typing import Optional
 from . import rules as R
 from .character import Character
 from .data_loader import PACTS
-from .rules import ABILITIES
+from .rules import ABILITIES, norm
 
 SCHOOLS = ["Abjuration", "Divination", "Enchantement", "Évocation", "Illusion", "Invocation", "Nécromancie",
            "Transmutation"]
@@ -42,7 +43,10 @@ def filter_spells(spells: list[dict], niveau=None, ecole: str = "", rituel: bool
 # choix faits DANS l'assistant (bloquent « Confirmer ») : (onglet, encart) de missing_choices()
 INLINE = {("classes", "Sous-classe"): "sous_classe", ("progression", "Emplacements débloqués"): "amelioration",
           ("combat", "Style de combat"): "style", ("magie", "Pacte"): "pacte",
-          ("classes", "Options de classe"): "options"}     # v52 : manœuvres, runes, Métamagie… au niveau gagné
+          ("classes", "Options de classe"): "options",     # v52 : manœuvres, runes, Métamagie… au niveau gagné
+          ("caracteristiques", "Compétences"): "competences",   # v52 : compétences et expertises gagnées
+          ("race", "Langues"): "langues",                       # v52 : langues accordées (dons, aptitudes)
+          ("progression", "Choix des dons"): "dons"}            # v52 : sous-choix d'un don pris à ce niveau
 
 
 class LevelUpMixin:
@@ -117,6 +121,53 @@ class LevelUpMixin:
         return {s["key"] for s in sim.option_sets() if not s["key"].startswith("don:")
                 and s["total"] > before.get(s["key"], 0)}
 
+    def level_feat_keys(self, sim) -> set:
+        """v52 : choix des dons pris à ce niveau (Doué, Initié à la magie, Expert…), ou encore incomplets."""
+        before = {s["key"] for s in self.option_sets() if s["key"].startswith("don:")}
+        return {s["key"] for s in sim.option_sets() if s["key"].startswith("don:")
+                and (s["key"] not in before or len(s["chosen"]) < s["total"])}
+
+    @staticmethod
+    def level_set_skill(sim, name: str, field: str, on: bool) -> bool:
+        """v52 : maîtrise ou expertise cochée dans l'assistant, dans la limite de ce qui est accordé. Les
+        compétences de l'historique ne se décochent pas ici ; l'expertise exige la maîtrise."""
+        st = dict(sim.ch.competences.get(name) or {"maitrise": False, "expertise": False})
+        if bool(st.get(field)) == on:
+            return True
+        if field == "maitrise":
+            if not on and name in sim.ch.competences_historique:
+                return False
+            if on and sim.skills_missing() <= 0:
+                return False
+            st["maitrise"] = on
+            if not on:
+                st["expertise"] = False
+        else:
+            if on and (not st.get("maitrise") or sim.expertise_missing() <= 0):
+                return False
+            st["expertise"] = on
+        sim.ch.competences[name] = st
+        sim.normalize()
+        return True
+
+    @staticmethod
+    def level_language_options(sim) -> list[str]:
+        """Langues proposées : toutes, sauf celles déjà acquises d'office (espèce, historique)."""
+        fixed = sim.languages_fixed()
+        return [n for n in sim.db.language_names() if norm(n) not in fixed]
+
+    @staticmethod
+    def level_set_language(sim, name: str, on: bool) -> bool:
+        have = list(sim.ch.langues_liste)
+        if (name in have) == on:
+            return True
+        if on and sim.languages_missing() <= 0:
+            return False
+        have = have + [name] if on else [x for x in have if x != name]
+        sim.ch.langues_liste = [n for n in sim.db.language_names() if n in have]
+        sim.normalize()
+        return True
+
     def level_up_report(self, sim, class_name: str) -> dict:
         """Aptitudes gagnées, choix du niveau (dans l'assistant / à faire ensuite), récapitulatif avant / après."""
         entry = sim.ch.find_class(class_name)
@@ -150,7 +201,7 @@ class LevelUpMixin:
         """Choix de l'assistant lié à la classe montée : préfixe « Classe : » / « Classe — », style « (Classe) »,
         pacte et manifestations pour l'Occultiste ; les échanges de sorts sont toujours ceux de la classe montée."""
         kind, msg = m.get("kind", ""), m.get("message", "")
-        if m.get("echange") or kind == "options":
+        if m.get("echange") or kind in ("options", "competences", "langues", "dons"):
             return True
         if kind in ("pacte", "manifestations"):
             return class_name == "Occultiste" or "Occultiste" not in msg and kind == "manifestations"

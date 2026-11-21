@@ -113,6 +113,43 @@ class LevelUpChoiceTests(unittest.TestCase):
         self.assertIsNotNone(eng.superior_technique_action())
 
 
+class LevelUpSkillsLanguagesFeatsTests(unittest.TestCase):
+    def test_rogue_expertise_in_level_up(self):
+        eng = sheet("Roublard", 5)
+        sim = eng.simulate_level_up("Roublard")                     # niveau 6 : deux expertises
+        rep = eng.level_up_report(sim, "Roublard")
+        self.assertIn("competences", {m["kind"] for m in rep["dans_assistant"]})
+        prof = [n for n, s in sim.ch.competences.items() if s.get("maitrise") and not s.get("expertise")]
+        if len(prof) < 2:                                           # fiche nue : deux maîtrises pour le test
+            for n in DB.skill_names[:2]:
+                sim.ch.competences[n] = {"maitrise": True, "expertise": False}
+            prof = DB.skill_names[:2]
+        missing = sim.expertise_missing()
+        for n in prof[:missing]:
+            self.assertTrue(eng.level_set_skill(sim, n, "expertise", True))
+        self.assertFalse(eng.level_set_skill(sim, prof[-1] if len(prof) > missing else "Arcanes", "expertise", True))
+        self.assertNotIn("competences", {m["kind"] for m in eng.level_up_report(sim, "Roublard")["dans_assistant"]})
+
+    def test_feat_choices_and_languages(self):
+        eng = sheet("Guerrier", 3)
+        sim = eng.simulate_level_up("Guerrier")
+        sid = sim.asi_slots()[-1]["id"]
+        sim.ch.ameliorations[sid] = {"mode": "don", "don": "Linguiste"}
+        sim.normalize()
+        kinds = {m["kind"] for m in eng.level_up_report(sim, "Guerrier")["dans_assistant"]}
+        self.assertIn("langues", kinds)
+        for name in eng.level_language_options(sim):
+            if sim.languages_missing() <= 0:
+                self.assertFalse(eng.level_set_language(sim, name, True))      # pas au-delà de ce qui est accordé
+                break
+            eng.level_set_language(sim, name, True)
+        self.assertNotIn("langues", {m["kind"] for m in eng.level_up_report(sim, "Guerrier")["dans_assistant"]})
+        sim.ch.ameliorations[sid] = {"mode": "don", "don": "Doué"}
+        sim.normalize()
+        self.assertTrue(any(k.startswith("don:") for k in eng.level_feat_keys(sim)))
+        self.assertIn("dons", {m["kind"] for m in eng.level_up_report(sim, "Guerrier")["dans_assistant"]})
+
+
 class RealQtDiceTests(unittest.TestCase):
     """Fenêtres de dés construites avec le VRAI PyQt6 (le faux Qt des autres tests ne voit pas ces erreurs)."""
 
