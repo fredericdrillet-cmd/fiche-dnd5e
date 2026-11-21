@@ -268,7 +268,10 @@ class ExtrasMixin:
         out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
-            m = M.item_mech(entry.get("nom", ""))
+            m = dict(M.item_mech(entry.get("nom", "")))
+            for k, v in self.item_passive_mech(entry, item).items():   # v52 : résistances, immunités, JS lus
+                if k not in m and k != "etats_immunises":
+                    m[k] = v
             if m and entry.get("equipe", True) and not entry.get("detruit") and (
                     entry.get("harmonise") or not item.get("lien")):
                 out.append(("Objet : " + entry["nom"], m))

@@ -87,3 +87,61 @@ class TypedTotalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ItemPassiveTests(unittest.TestCase):
+    def attuned(self, eng, name):
+        eng.add_magic_item(name)
+        entry = eng.ch.objets_magiques[-1]
+        entry["harmonise"] = True
+        return entry
+
+    def test_official_passives(self):
+        for ed in ("2014", "2024"):
+            eng = sheet(ed)
+            ca, js = eng.armor_class()[0], eng.save_spec("Sagesse").flat
+            self.attuned(eng, "Anneau de protection")
+            self.assertEqual((eng.armor_class()[0], eng.save_spec("Sagesse").flat), (ca + 1, js + 1), ed)
+            self.attuned(eng, "Anneau de résistance au poison")
+            self.assertIn("poison", [r for r, _ in eng.defenses()["resistances"]])
+            self.attuned(eng, "Amulette de protection contre le poison")
+            self.assertIn("poison", [r for r, _ in eng.defenses()["immunites"]])
+            self.assertIn("empoisonne", eng.condition_immunities())
+            self.assertFalse(eng.add_effect("empoisonne"))
+
+    def test_not_attuned_no_effect(self):
+        eng = sheet()
+        eng.add_magic_item("Anneau de protection")
+        ca = eng.armor_class()[0]
+        self.assertEqual(eng.armor_class()[0], ca)
+        self.assertEqual(eng.item_passive_mech(eng.ch.objets_magiques[-1],
+                                               eng.magic_item("Anneau de protection")), {})
+
+    def test_no_false_positives(self):
+        eng = sheet()
+        for name in ("Épée vorpale", "Hache des seigneurs nains", "Anneau de contrôle des élémentaires"):
+            self.assertEqual(eng.item_passive_mech({"nom": name}, eng.magic_item(name)), {}, name)
+        self.assertEqual(eng.item_passive_mech({"nom": "Broche de défense"}, eng.magic_item("Broche de défense")),
+                         {"resistances": ["force"]})
+
+    def test_chosen_resistance(self):
+        eng = sheet()
+        entry = self.attuned(eng, "Anneau de résistance")
+        self.assertNotIn("feu", [r for r, _ in eng.defenses()["resistances"]])
+        entry["resistance_choisie"] = "feu"
+        self.assertIn("feu", [r for r, _ in eng.defenses()["resistances"]])
+        self.assertIn("(feu)", eng.magic_display_name(entry))
+
+    def test_custom_powers_and_spell(self):
+        eng = sheet()
+        name = eng.add_custom_magic_item("Talisman ardent", "Objet merveilleux", "rare", True, "", 0, 0,
+                                         resistances=["feu"], immunites_etats=["charme"], js_bonus=1,
+                                         sort="Boule de feu", charges=3)
+        entry = eng.ch.objets_magiques[-1]
+        self.assertEqual(eng.magic_item_powers(), [])                 # pas encore harmonisé
+        entry["harmonise"] = True
+        self.assertIn("feu", [r for r, _ in eng.defenses()["resistances"]])
+        self.assertIn("charme", eng.condition_immunities())
+        p = eng.magic_item_powers()[0]
+        self.assertEqual((p["sort"], p["charges"], p["cout"]), ("Boule de feu", 3, 1))
+        self.assertIn("Boule de feu", eng.magic_item(name)["description"])

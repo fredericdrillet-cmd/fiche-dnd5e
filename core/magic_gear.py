@@ -156,7 +156,8 @@ class MagicGearMixin:
         if entry.get("base"):
             item = self.magic_item(name) or {"nom": name}
             return self._gear_display(name, entry["base"], self.magic_gear_tier(item, entry))
-        return name.replace("+1, +2 ou +3", "+{}".format(entry["bonus"])) if entry.get("bonus") else name
+        name = name.replace("+1, +2 ou +3", "+{}".format(entry["bonus"])) if entry.get("bonus") else name
+        return name + (" ({})".format(entry["resistance_choisie"]) if entry.get("resistance_choisie") else "")
 
     # ------------------------------------------------------------------ ajout
     def _new_uid(self) -> str:
@@ -369,6 +370,11 @@ class MagicGearMixin:
             if rules["elements"] and e.get("elements") is not None:   # v52 : perles… comptées comme des charges
                 charges = int(e["elements"])
             spells = self._item_spells(desc)
+            if item.get("sort_perso"):                   # v52 : objet sur mesure — sort choisi dans la liste
+                sp = self.db.find_spell(item["sort_perso"])
+                spells = [sp] if sp else []
+                charges = int(item.get("charges") or 0)
+                economy = ""
             label = self.magic_display_name(e)
             key = e.get("uid") or "i{}".format(i)
             if not (economy or charges or spells):
@@ -381,7 +387,8 @@ class MagicGearMixin:
                                  "nom": "Utiliser — " + label, "type": kind, "sort": "", "charges": charges,
                                  "cout": 1 if charges else 0, "description": desc}, **extra))
             for sp in spells:
-                cost = self._spell_charge_cost(desc, sp["nom"]) if charges else 0
+                cost = (1 if charges else 0) if item.get("sort_perso") else \
+                    (self._spell_charge_cost(desc, sp["nom"]) if charges else 0)
                 out.append(dict({"id": "objet:{}:sort:{}".format(key, sp["nom"]), "entree": i, "objet": label,
                                  "nom": "{} — {}".format(sp["nom"], label), "type": kind if economy else
                                  self._spell_economy_label(sp), "sort": sp["nom"],

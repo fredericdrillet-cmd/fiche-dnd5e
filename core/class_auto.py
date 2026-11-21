@@ -422,6 +422,8 @@ class ClassAutoMixin:
         if self._has("rage aveugle") and "rage" in self.active_effect_keys():
             out.setdefault("charme", "Rage aveugle (en rage)")
             out.setdefault("effraye", "Rage aveugle (en rage)")
+        for k, v in self.item_condition_immunities().items():   # v52 : objets magiques portés
+            out.setdefault(k, v)
         return out
 
     def effect_blocked(self, key: str) -> str:

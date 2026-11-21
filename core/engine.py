@@ -117,6 +117,7 @@ from .search import SearchMixin  # noqa: E402
 from .counterspell import CounterspellMixin  # noqa: E402
 from .light import LightMixin  # noqa: E402
 from .journal import JournalMixin  # noqa: E402
+from .item_passives import ItemPassivesMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -143,7 +144,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              RememberMixin, MasteryFlowMixin, ExhaustionMixin,
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
-             LightMixin, JournalMixin):
+             LightMixin, JournalMixin, ItemPassivesMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -2216,7 +2217,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
 
     def add_custom_magic_item(self, nom: str, type_: str = "Objet merveilleux", rarete: str = "peu commun",
                               lien: bool = False, description: str = "", poids: float = 0.0, ca: int = 0,
-                              base: str = "", bonus: int = 0, degats_sup: Optional[list] = None) -> str:
+                              base: str = "", bonus: int = 0, degats_sup: Optional[list] = None,
+                              resistances: Optional[list] = None, immunites: Optional[list] = None,
+                              immunites_etats: Optional[list] = None, js_bonus: int = 0, sort: str = "",
+                              charges: int = 0) -> str:
         """Objet sur mesure : fiche enregistrée avec le personnage puis ajoutée à l'équipement. Renvoie son nom
         (suffixé « (sur mesure) » s'il porte le nom d'un objet officiel), ou « » si le nom est vide."""
         nom = (nom or "").strip()
@@ -2229,7 +2233,24 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             "precision": "", "rarete": rarete or "peu commun", "lien": bool(lien), "condition": "",
             "description": (description or "").strip() or "Objet sur mesure.", "variable": False,
             "ca_variable": False, "ca": max(0, int(ca or 0)), "js": 0, "source": "Objet sur mesure",
-            "poids": max(0.0, float(poids or 0)), "perso": True}
+            "poids": max(0.0, float(poids or 0)), "perso": True,
+            # v52 : pouvoirs passifs et sort de l'objet sur mesure
+            "resistances": list(resistances or []), "immunites": list(immunites or []),
+            "immunites_etats": list(immunites_etats or []), "js_bonus": max(0, int(js_bonus or 0)),
+            "sort_perso": sort or "", "charges": max(0, int(charges or 0))}
+        powers = []
+        if resistances:
+            powers.append("résistance : " + ", ".join(resistances))
+        if immunites or immunites_etats:
+            powers.append("immunité : " + ", ".join(list(immunites or []) + [e.replace("_1", "") for e in
+                                                                               immunites_etats or []]))
+        if js_bonus:
+            powers.append("+{} aux jets de sauvegarde".format(js_bonus))
+        if sort:
+            powers.append("lancer le sort {} ({})".format(sort, "{} charge(s), regagnées à l'aube".format(charges)
+                                                          if charges else "à volonté"))
+        if powers and not (description or "").strip():
+            self.ch.objets_perso[nom]["description"] = "Objet sur mesure : " + " ; ".join(powers) + "."
         if type_ == "Arme" and base in self.db.weapons:   # v52 : arme sur mesure (arme de base, bonus, dégâts en plus)
             extras = [d for d in (degats_sup or []) if d.get("des")]
             self.ch.objets_perso[nom].update(bonus_fixe=max(0, min(3, int(bonus or 0))), degats_sup=extras)

@@ -87,7 +87,74 @@ def _weapon_fields(weapon_names: list[str]) -> tuple[QWidget, dict]:
     return box, f
 
 
-def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = None) -> dict | None:
+CONDITION_CHOICES = [("charme", "Charmé"), ("effraye", "Effrayé"), ("empoisonne", "Empoisonné"),
+                     ("paralyse", "Paralysé"), ("etourdi", "Étourdi"), ("malade", "Malade"),
+                     ("epuisement_1", "Épuisement")]
+SPELL_USES = [("", "À volonté"), ("1", "1 fois par jour (aube)"), ("n", "Charges (regagnées à l'aube)")]
+
+
+def _power_fields(spell_names: list[str]) -> tuple[QWidget, dict]:
+    """v52 : pouvoirs d'un objet sur mesure — résistances, immunités (dégâts et états), bonus aux JS, un sort."""
+    from PyQt6.QtWidgets import QListWidget, QListWidgetItem
+    from core.engine_extras import ExtrasMixin
+    box = QWidget()
+    g = QGridLayout(box)
+    g.setContentsMargins(0, 0, 0, 0)
+    f = {}
+
+    def checklist(rows):
+        lst = QListWidget()
+        lst.setMaximumHeight(110)
+        for key, label in rows:
+            it = QListWidgetItem(label)
+            it.setData(Qt.ItemDataRole.UserRole, key)
+            it.setFlags(it.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            it.setCheckState(Qt.CheckState.Unchecked)
+            lst.addItem(it)
+        return lst
+    damage = [(t, t.capitalize()) for t in ExtrasMixin.DAMAGE_TYPES]
+    f["res"] = checklist(damage)
+    f["imm"] = checklist(damage + [("etat:" + k, "État " + label) for k, label in CONDITION_CHOICES])
+    g.addWidget(QLabel("Résistances"), 0, 0)
+    g.addWidget(QLabel("Immunités (dégâts, états)"), 0, 1)
+    g.addWidget(f["res"], 1, 0)
+    g.addWidget(f["imm"], 1, 1)
+    f["js"] = QSpinBox()
+    f["js"].setRange(0, 3)
+    f["js"].setPrefix("Bonus aux jets de sauvegarde +")
+    g.addWidget(f["js"], 2, 0, 1, 2)
+    f["spell"] = QComboBox()
+    f["spell"].setEditable(True)
+    f["spell"].addItems(["— aucun sort —"] + spell_names)
+    f["spell"].setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+    if f["spell"].completer() is not None:
+        f["spell"].completer().setFilterMode(Qt.MatchFlag.MatchContains)
+        f["spell"].completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+    f["use"] = QComboBox()
+    for _k, label in SPELL_USES:
+        f["use"].addItem(label)
+    f["charges"] = QSpinBox()
+    f["charges"].setRange(1, 50)
+    f["charges"].setValue(3)
+    f["charges"].setPrefix("Charges : ")
+    f["charges"].setVisible(False)
+    f["use"].currentIndexChanged.connect(lambda i: f["charges"].setVisible(SPELL_USES[i][0] == "n"))
+    g.addWidget(QLabel("Sort lançable"), 3, 0, 1, 2)
+    row = QHBoxLayout()
+    row.addWidget(f["spell"], 2)
+    row.addWidget(f["use"], 1)
+    row.addWidget(f["charges"])
+    g.addLayout(row, 4, 0, 1, 2)
+    return box, f
+
+
+def _checked(lst) -> list[str]:
+    return [lst.item(i).data(Qt.ItemDataRole.UserRole) for i in range(lst.count())
+            if lst.item(i).checkState() == Qt.CheckState.Checked]
+
+
+def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = None,
+                    spell_names: list[str] | None = None) -> dict | None:
     """Formulaire « Objet sur mesure » en une fenêtre : nom, type, rareté (peu commun par défaut), case
     « Harmonisation requise », description courte, poids, bonus de CA. Renvoie le dictionnaire ou None."""
     from .dialogs import BlurBackdrop, ConfirmDialog
@@ -132,6 +199,10 @@ def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = Non
         lay.insertWidget(pos + 5, wbox)
     wbox.setVisible(w["type"].currentText() == "Arme")
     w["type"].currentTextChanged.connect(lambda t: wbox.setVisible(t == "Arme"))
+    pbox, pf = _power_fields(spell_names or [])                  # v52 : pouvoirs (tous types d'objets)
+    if lay is not None:
+        lay.insertWidget(pos + 6, QLabel("<b>Pouvoirs de l'objet</b> (facultatif)"))
+        lay.insertWidget(pos + 7, pbox)
     try:
         if dialog.exec() != 1 or not w["nom"].text().strip():
             return None
@@ -141,6 +212,13 @@ def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = Non
     data = {"nom": w["nom"].text().strip(), "type_": w["type"].currentText(), "rarete": w["rarete"].currentText(),
             "lien": w["lien"].isChecked(), "description": w["description"].text(), "poids": w["poids"].value(),
             "ca": w["ca"].value()}
+    imm = _checked(pf["imm"])
+    use = SPELL_USES[pf["use"].currentIndex()][0]
+    spell = pf["spell"].currentText().strip()
+    data.update(resistances=_checked(pf["res"]), immunites=[k for k in imm if not k.startswith("etat:")],
+                immunites_etats=[k[5:] for k in imm if k.startswith("etat:")], js_bonus=pf["js"].value(),
+                sort=spell if spell in (spell_names or []) else "",
+                charges=pf["charges"].value() if use == "n" else 1 if use == "1" else 0)
     if data["type_"] == "Arme" and weapon_names:
         extras = []
         for dice, kind, when, note in wf["extras"]:
@@ -177,6 +255,13 @@ def add_catalog_item(win, engine, item: dict, bonus: int = 0) -> str:
         return engine.add_magic_gear(item["nom"], base, bonus) if base else ""
     if not engine.add_magic_item(item["nom"], bonus):
         return ""
+    from core.item_passives import needs_resistance_choice, DAMAGE_TYPES
+    if needs_resistance_choice(item) and engine.ch.objets_magiques:   # v52 : type choisi par le MD
+        from .dialogs import ask_choice
+        picked = ask_choice(win, item["nom"], "Résistance à quel type de dégâts (choisi par le MD ou tiré au "
+                            "hasard) ?", [t.capitalize() for t in DAMAGE_TYPES])
+        if picked:
+            engine.ch.objets_magiques[-1]["resistance_choisie"] = picked.lower()
     elements = engine.item_rules(item)["elements"]
     entry = engine.ch.objets_magiques[-1] if engine.ch.objets_magiques else {}
     if elements and entry.get("nom") == item["nom"]:     # v52 : nombre de perles… indiqué par le joueur
@@ -429,7 +514,10 @@ class MagicItemsPanel(BaseTab):
 
     def _on_custom(self, name: str = "") -> None:
         weapons = sorted((n for n in self.db.weapons if n != "Mains nues"), key=norm)
-        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons)
+        spells = sorted((n for n, sp in self.db.spells.items()
+                         if (self.engine.sheet_edition == 2024) == ("(2024)" in n or sp.get("edition") == 2024)),
+                        key=norm)
+        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons, spell_names=spells)
         if not data:
             return
         real = self.engine.add_custom_magic_item(**data)
