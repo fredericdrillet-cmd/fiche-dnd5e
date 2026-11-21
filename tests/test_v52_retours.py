@@ -259,3 +259,22 @@ class InventoryTests(unittest.TestCase):
             panel._fill_library()
         rc.assert_not_called()
         self.assertEqual(panel._lib_key, key)
+
+
+class BeastSkillTests(unittest.TestCase):
+    """Forme sauvage : FOR/DEX/CON de la bête, INT/SAG/CHA et maîtrises du druide, meilleur bonus des deux.
+    Métamorphose : tout vient de la bête."""
+
+    def test_wild_shape_uses_beast_dex_and_best_bonus(self):
+        eng = sheet("Druide", 4)
+        eng.assume_form("Chat")
+        self.assertEqual(eng.skill_bonus("Acrobaties"), 2)        # DEX 15 du chat
+        self.assertEqual(eng.skill_bonus("Discrétion"), 4)        # bonus du chat (+4) > le sien
+        self.assertEqual(eng.beast_skills().get("perception"), 3)
+
+    def test_polymorph_takes_beast_mental_stats(self):
+        eng = sheet("Magicien", 7)
+        eng.ch.sorts = {"Magicien": [{"nom": "Métamorphose", "prepare": True}]}
+        eng.cast_polymorph("Chat", True)
+        self.assertEqual(eng.skill_bonus("Arcanes"), -4)          # INT 3 du chat
+        self.assertEqual(eng.skill_bonus("Discrétion"), 4)
