@@ -31,22 +31,42 @@ def _count_word(text: str) -> int:
     return 1
 
 
+def race_skill_rule(description: str, skill_names) -> tuple[int, list[str]]:
+    """v52 — compétences d'un trait d'espèce : (nombre à choisir, compétences acquises d'office).
+    « deux compétences au choix / parmi… », « maîtrise au choix de A, B ou C », « A, B ou C » : un choix ;
+    « maîtrise de la Perception », « des compétences Représentation et Persuasion » : acquises d'office.
+    Écartés : maîtrise temporaire (change à chaque repos long), « bonus de maîtrise » sur un test (Savoir de
+    l'artificier, Connaissance de la pierre), compétence citée dans un DD (Mimétisme), option à choisir (Kobold)."""
+    d = norm(description)
+    d = re.sub(r"bonus de maitrise|comme maitrisant|perception des vibrations", " ", d)
+    if "maitris" not in d or ("repos long" in d and ("jusqu" in d or "chaque repos" in d)):
+        return 0, []
+    if "choisissez une option" in d:
+        return 0, []
+    names = {norm(n): n for n in skill_names}
+    found = [names[k] for k in names if re.search(r"\b" + re.escape(k) + r"\b", d)]
+    m = re.search(r"(\d+|une|un|deux|trois|quatre) competences? (?:de votre choix|au choix|parmi)", d)
+    if m:
+        return _count_word(m.group(1)), []
+    if re.search(r"maitrise au choix|competence au choix|competence de votre choix", d):
+        return 1, []
+    keys = [k for k in names if re.search(r"\b" + re.escape(k) + r"\b", d)]
+    if len(keys) >= 2 and re.search(r"(?:{}) ou (?:{})".format("|".join(map(re.escape, keys)),
+                                                             "|".join(map(re.escape, keys))), d):
+        return 1, []                                     # « Intuition, Perception ou Survie »
+    if "test" in d and not re.search(r"maitrise (?:de|des|du)|maitrisez", d):
+        return 0, []                                     # compétence seulement citée dans un test / un DD
+    return 0, found
+
+
 class MissingChoicesMixin:
     """Mélangé à Engine."""
 
     # ------------------------------------------------------------------ compétences
     def race_skill_picks(self) -> int:
         """Compétences au choix accordées par l'espèce (Demi-elfe : 2, Humain variant : 1, Kenku : 2…)."""
-        total = 0
-        for c in self.race_capacities():
-            d = norm(c.get("description", ""))
-            if "competence" not in d or not ("au choix" in d or "de votre choix" in d):
-                continue
-            if "maitrise" not in d and "maitrisez" not in d:
-                continue
-            m = re.search(r"(\d+|une|un|deux|trois|quatre) competences?", d)
-            total += _count_word(m.group(1)) if m else 1
-        return total
+        return sum(race_skill_rule(c.get("description", ""), self.db.skill_names)[0]
+                   for c in self.race_capacities())
 
     def skills_missing(self) -> int:
         """Maîtrises de compétences encore à cocher : classe + choix de l'espèce, hors historique et race fixes."""

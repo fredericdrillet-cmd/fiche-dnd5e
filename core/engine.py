@@ -971,14 +971,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return out
 
     def _race_skill_names(self) -> list[str]:
-        """Compétences nommées explicitement par les traits de la race (« Sens aiguisés » : Perception)."""
+        """Compétences acquises d'office par les traits de l'espèce (« Sens aiguisés » : Perception) — v52 : même
+        lecture que les compétences au choix (core.missing.race_skill_rule)."""
+        from .missing import race_skill_rule
         out = []
-        names = {norm(s): s for s in self.db.skill_names}
         for c in self.race_capacities():
-            d = norm(c.get("description", ""))
-            if "maitrise" not in d or "au choix" in d or "de votre choix" in d or "parmi" in d:
-                continue
-            out += [skill for key, skill in names.items() if re.search(r"\b" + re.escape(key) + r"\b", d)]
+            out += race_skill_rule(c.get("description", ""), self.db.skill_names)[1]
         return list(dict.fromkeys(out))
 
     def apply_race_skills(self) -> list[str]:

@@ -124,6 +124,51 @@ class Spells2024Tests(unittest.TestCase):
         self.assertFalse(eng.scribe_spell(high)[0])                 # pas d'emplacement de niveau 9 au niveau 3
 
 
+class SpeciesSkillsTests(unittest.TestCase):
+    """Compétences des espèces : choix et maîtrises d'office lus correctement (retours d'essai v52)."""
+
+    def _race(self, race, edition="2014"):
+        eng = sheet("Guerrier", 1, edition=edition)
+        eng.ch.race = race
+        eng.normalize()
+        return eng
+
+    def test_picks_and_fixed(self):
+        cases = {"Satyre": (0, ["Persuasion", "Représentation"]), "Elfe astral": (0, ["Perception"]),
+                 "Githyanki": (0, []), "Centaure": (1, []), "Changelin": (2, []), "Demi-elfe": (2, []),
+                 "Gnome des roches": (0, []), "Nain des collines": (0, []), "Kenku": (2, []),
+                 "Tabaxi": (0, ["Discrétion", "Perception"])}
+        for race, (picks, fixed) in cases.items():
+            eng = self._race(race)
+            self.assertEqual((eng.race_skill_picks(), sorted(eng._race_skill_names())), (picks, fixed), race)
+        for race, picks in (("Elfe (2024)", 1), ("Humain (2024)", 1), ("Nain", 0)):
+            eng = self._race(race, "2024")
+            self.assertEqual((eng.race_skill_picks(), eng._race_skill_names()), (picks, []), race)
+
+    def test_class_counts(self):
+        expected = {"Barde": 3, "Rôdeur": 3, "Roublard": 4}
+        for edition in ("2014", "2024"):
+            base = sheet("Guerrier", 1, edition=edition)
+            for cls in base.db.class_names():
+                eng = sheet(cls, 1, edition=edition)
+                eng.ch.race = "Humain" if edition == "2014" else "Nain"   # aucune compétence d'espèce
+                eng.normalize()
+                self.assertEqual(eng.skills_missing(), expected.get(cls, 2), (edition, cls))
+
+
+class ExhaustionDeathTests(unittest.TestCase):
+    def test_level_6_kills_without_raising_max_hp(self):
+        for edition in ("2014", "2024"):
+            eng = sheet("Guerrier", 5, edition=edition)
+            eng.ch.pv_actuels = 30
+            eng.set_exhaustion(5)
+            eng.normalize()
+            hp_max = eng.hp_max()
+            eng.set_exhaustion(6)
+            eng.normalize()
+            self.assertEqual((eng.ch.pv_actuels, eng.hp_max(), eng.ch.mort_echecs), (0, hp_max, 3), edition)
+
+
 class GuidedAbilitiesTests(unittest.TestCase):
     def test_no_reroll_in_guided_mode(self):
         import qt_stub

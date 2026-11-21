@@ -33,9 +33,18 @@ class ExhaustionMixin:
 
     def set_exhaustion(self, level: int) -> str:
         level = max(0, min(6, int(level)))
+        was_dead = self.exhaustion_level() >= 6
         self.ch.effets_actifs = [k for k in self.ch.effets_actifs if not k.startswith("epuisement_")]
         if level:
             self.ch.effets_actifs.append("epuisement_{}".format(level))
+        if level >= 6:                                   # v52 : le personnage meurt — 0 PV, PV maximum inchangés
+            if getattr(self.ch, "forme_active", ""):
+                self.end_form()
+            self.ch.pv_actuels = 0
+            self.ch.pv_temporaires = 0
+            self.ch.mort_echecs = 3
+        elif was_dead:                                   # correction (niveau 6 retiré) : la mort est annulée,
+            self.ch.mort_echecs = self.ch.mort_reussites = 0   # les PV restent à 0 (soins nécessaires)
         return self.exhaustion_text()
 
     def exhaustion_text(self) -> str:

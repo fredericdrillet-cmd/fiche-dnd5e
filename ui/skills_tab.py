@@ -121,8 +121,10 @@ class SkillsTab(BaseTab):
         if col == self.SAVE_ROLL_COL:
             roll_dice(self.win, self.engine.save_spec(ABILITIES[row]))
             return
-        if self.guided:                                  # v52 : maîtrises de sauvegarde fixées par la classe
-            self.guided_refuse("la maîtrise des jets de sauvegarde")
+        if self.guided or getattr(self.win, "no_dice", False) is True:   # v52 : fixées par la classe (création,
+            self.win.statusBar().showMessage(                             # Mode guidé)
+                "Les jets de sauvegarde maîtrisés sont ceux de votre classe de départ : ils ne se choisissent pas.",
+                8000)
             return
         ab = ABILITIES[row]
         if ab in self.engine.resilient_saves():         # maîtrise imposée par un don : non modifiable
@@ -159,6 +161,8 @@ class SkillsTab(BaseTab):
         self.mark_box(self.skills_box, "Compétences", "caracteristiques", "Compétences")
         for w in (self.table, self.saves):               # v52 : Mode guidé
             w.setToolTip(self.GUIDED_TIP if self.guided else "")
+        if getattr(self.win, "no_dice", False) is True:   # assistant de création : sauvegardes de la classe
+            self.saves.setToolTip("Jets de sauvegarde maîtrisés : ceux de votre classe de départ (non modifiables).")
         eng, t = self.engine, theme.current()
         rows = eng.skill_rows()
         self.table.setUpdatesEnabled(False)
