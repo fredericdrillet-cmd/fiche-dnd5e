@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QCompleter
 
 from core.rules import norm
 from . import theme
-from .common import BaseTab, cell, check_item, fill_combo, make_label, rich_tip, style_table
+from .common import BaseTab, bulk_fill, cell, check_item, fill_combo, make_label, rich_tip, style_table
 from .game_widgets import use_consumable
 from .orbs import OrbBar
 
@@ -270,23 +270,29 @@ class MagicItemsPanel(BaseTab):
         return style_table(t, stretch_col=stretch, row_h=38)
 
     # ------------------------------------------------------------------ catalogue
-    def _fill_library(self):
+    def _fill_library(self, force: bool = False):
         t = theme.current()
         kind, rar, text = self.type_combo.currentText(), self.rarity_combo.currentText(), norm(self.search.text())
+        key = (kind, rar, text, self.attune_only.isChecked(), t.key, len(self.db.magic_items))
+        if not force and key == getattr(self, "_lib_key", None):
+            return                                        # v52 : catalogue inchangé — pas de reconstruction
+        self._lib_key = key
         items = [i for i in self.db.magic_items.values()
                  if (kind == ALL_TYPES or i["type"] == kind) and (rar == ALL_RARITIES or rarity_group(i["rarete"]) == rar)
                  and (not self.attune_only.isChecked() or i["lien"]) and text in norm(i["nom"])]
         self._lib_rows = [i["nom"] for i in items]
-        self.library.setRowCount(len(items))
-        for r, i in enumerate(items):
-            tip = rich_tip(i["nom"], i["description"][:700])
-            kind_txt = i["type"] + (" ({})".format(i["precision"]) if i["precision"] else "")
-            self.library.setItem(r, 0, cell(i["nom"], "left", tip))
-            self.library.setItem(r, 1, cell(kind_txt, "center", tip))
-            self.library.setItem(r, 2, cell(i["rarete"], "center", tip))
-            self.library.setItem(r, 3, cell("✦" if i["lien"] else "—", "center",
-                                            i["condition"] or ("Harmonisation requise" if i["lien"] else "Aucune harmonisation"),
-                                            t.accent_text if i["lien"] else None, bold=i["lien"]))
+        with bulk_fill(self.library):
+            self.library.setRowCount(len(items))
+            for r, i in enumerate(items):
+                tip = "{} — {}".format(i["nom"], i["description"][:300])   # le détail complet est dans le panneau
+                kind_txt = i["type"] + (" ({})".format(i["precision"]) if i["precision"] else "")
+                self.library.setItem(r, 0, cell(i["nom"], "left", tip))
+                self.library.setItem(r, 1, cell(kind_txt, "center", tip))
+                self.library.setItem(r, 2, cell(i["rarete"], "center", tip))
+                self.library.setItem(r, 3, cell("✦" if i["lien"] else "—", "center",
+                                                i["condition"] or ("Harmonisation requise" if i["lien"] else
+                                                                   "Aucune harmonisation"),
+                                                t.accent_text if i["lien"] else None, bold=i["lien"]))
 
     def _selected_library_item(self) -> dict | None:
         r = self.library.currentRow()

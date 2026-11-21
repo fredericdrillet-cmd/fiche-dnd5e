@@ -159,3 +159,37 @@ class WizardTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class InventoryTests(unittest.TestCase):
+    def test_weapon_settings_and_actions_tiles(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        eng = win.engine
+        eng.ch.equipement += [{"nom": "Épée longue", "qte": 1}]
+        eng.ch.armes_cac[0] = {"nom": "Épée longue", "bonus": 0, "maitrise": None}
+        win.changed()
+        inv = win.inventory_tab
+        inv._set_weapon("armes_cac", 0, "bonus", 2)
+        self.assertEqual(eng.ch.armes_cac[0]["bonus"], 2)
+        inv._set_weapon("armes_cac", 0, "maitrise", False)
+        self.assertFalse(eng.weapon_stats(eng.ch.armes_cac[0])["maitrise"])
+        rows = win.combat_tab._weapon_action_rows()
+        win.combat_tab.refresh()
+        for key, i, row, _w in rows:
+            self.assertIn("arme_action:{}:{}:{}".format(key, i, row["cle"]), win.combat_tab.turn_tiles)
+
+    def test_magic_library_not_rebuilt(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        panel = win.inventory_tab.magic_items
+        panel._fill_library(force=True)
+        key = panel._lib_key
+        with mock.patch.object(panel.library, "setRowCount") as rc:
+            panel._fill_library()
+        rc.assert_not_called()
+        self.assertEqual(panel._lib_key, key)

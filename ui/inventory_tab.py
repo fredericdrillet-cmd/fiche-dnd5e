@@ -117,7 +117,7 @@ class InventoryTab(BaseTab):
 
         # =============================== colonne droite : outils, richesse, notes
         right = QVBoxLayout()
-        wbox = QGroupBox("Armes et compétences d'arme — survolez une compétence pour ses règles")
+        wbox = QGroupBox("Armes équipées — réglages (bonus magique, maîtrise, munition) et compétences d'arme")
         self.weapons_grid = QGridLayout(wbox)
         self._weapons_key = None
         right.addWidget(wbox)
@@ -362,6 +362,52 @@ class InventoryTab(BaseTab):
         self.win.mark_dirty()
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _equipped_slot(self, name: str):
+        for key in ("armes_cac", "armes_distance"):
+            for i, sl in enumerate(getattr(self.ch, key)):
+                if sl.get("nom") == name:
+                    return key, i, sl
+        return None
+
+    def _weapon_settings(self, r: int, name: str) -> None:
+        """v52 : bonus magique, maîtrise forcée et munition de l'arme équipée (anciennement dans « En partie »)."""
+        found = self._equipped_slot(name)
+        if found is None:
+            self.weapons_grid.addWidget(make_label("non équipée", "muted"), r, 2)
+            return
+        key, i, slot = found
+        box = QWidget()
+        hl = QHBoxLayout(box)
+        hl.setContentsMargins(0, 0, 0, 0)
+        hl.setSpacing(4)
+        magic = QComboBox()
+        magic.addItems(["+0", "+1", "+2", "+3"])
+        magic.setCurrentIndex(max(0, min(3, int(slot.get("bonus", 0) or 0))))
+        magic.setToolTip(rich_tip("Bonus magique", "Arme +1, +2 ou +3 : s'ajoute au toucher et aux dégâts."))
+        magic.activated.connect(lambda idx, k=key, n=i: self._set_weapon(k, n, "bonus", idx))
+        prof = QCheckBox("Maîtrisée")
+        st = self.engine.weapon_stats(slot) or {}
+        prof.setChecked(bool(st.get("maitrise", slot.get("maitrise"))))
+        prof.setToolTip(rich_tip("Maîtrise de l'arme", "Cochée : votre bonus de maîtrise s'ajoute au toucher. "
+                                 "Détectée automatiquement ; décochez ou cochez pour forcer (décision du MJ)."))
+        prof.toggled.connect(lambda on, k=key, n=i: self._set_weapon(k, n, "maitrise", bool(on)))
+        hl.addWidget(magic)
+        hl.addWidget(prof)
+        if key == "armes_distance" and self.engine.ammo_kind(self.db.weapons.get(name, {})):
+            ammo = QComboBox()
+            ammo.addItem("— munition ordinaire —", "")
+            for a in self.engine.ammo_options(slot):
+                ammo.addItem("{}{} ({})".format(a["nom"], " ✦" if a["magique"] else "", a["qte"]), a["nom"])
+            ammo.setCurrentIndex(max(0, ammo.findData(slot.get("munition", ""))))
+            ammo.activated.connect(lambda _i, k=key, n=i, c=ammo: self._set_weapon(k, n, "munition",
+                                                                                    c.currentData() or ""))
+            hl.addWidget(ammo)
+        self.weapons_grid.addWidget(box, r, 2)
+
+    def _set_weapon(self, key: str, i: int, field: str, value) -> None:
+        getattr(self.ch, key)[i][field] = value
+        self.changed()
+
     def _refresh_weapons(self):
         """Armes de l'inventaire et des emplacements de combat, avec dégâts et compétences d'arme (style BG3)."""
         eng = self.engine
@@ -376,7 +422,9 @@ class InventoryTab(BaseTab):
             if st:
                 rows.append((n, st, eng.weapon_actions(slot)))
         key = tuple((n, st["attaque"], st["degats"], tuple((a["cle"], a["dd"]) for a in acts)) for n, st, acts in rows)
-        key += (theme.current().key,)
+        key += (theme.current().key, repr([(s.get("nom"), s.get("bonus"), s.get("maitrise"), s.get("munition"))
+                                           for s in self.ch.armes_cac + self.ch.armes_distance]),
+                repr([(i["nom"], i.get("qte")) for i in self.ch.equipement]))
         if key == self._weapons_key:
             return
         self._weapons_key = key
@@ -385,10 +433,12 @@ class InventoryTab(BaseTab):
             self.weapons_grid.addWidget(make_label("Aucune arme : équipez-en une dans l'onglet Combat ou ajoutez-la "
                                                    "à l'inventaire.", "muted", wrap=True), 0, 0)
             return
-        for r, (n, st, acts) in enumerate(rows):
+        for k, (n, st, acts) in enumerate(rows):
+            r = 2 * k                                     # v52 : réglages sur la ligne, compétences dessous
             self.weapons_grid.addWidget(make_label(n, "head"), r, 0)
             self.weapons_grid.addWidget(make_label("{} · {} {}".format(R.fmt_bonus(st["attaque"]), st["degats"],
                                                                          st["type_degats"]), "muted"), r, 1)
+            self._weapon_settings(r, n)                  # v52 : réglages de l'arme équipée
             chips = QWidget()
             cl = QHBoxLayout(chips)
             cl.setContentsMargins(0, 0, 0, 0)
@@ -397,7 +447,7 @@ class InventoryTab(BaseTab):
                 label = a["nom"] + (" (DD {})".format(a["dd"]) if a["dd"] else "")
                 cl.addWidget(ActionChip(a["icone"], label, WA.tooltip_html(a, theme.current().accent_text)))
             cl.addStretch(1)
-            self.weapons_grid.addWidget(chips, r, 2)
+            self.weapons_grid.addWidget(chips, r + 1, 0, 1, 4)
         self.weapons_grid.setColumnStretch(2, 1)
 
     def refresh(self):
@@ -421,13 +471,17 @@ class InventoryTab(BaseTab):
                 tip = rich_tip("⚠ " + it["nom"], warn)
             self.table.setItem(r, 0, cell(("⚠ " if warn else "") + it["nom"], "left", tip,
                                           theme.current().warn if warn else None))
-            spin = QSpinBox()
-            spin.setRange(1, 999)
-            spin.setValue(it["qte"])
-            spin.setAlignment(Qt.AlignmentFlag.AlignCenter)       # v46 : quantités centrées (comme les objets magiques)
-            spin.setObjectName("qtySpin")
-            spin.valueChanged.connect(lambda v, row=r: self._set_qty(row, v))
-            self.table.setCellWidget(r, 1, spin)
+            spin = self.table.cellWidget(r, 1)            # v52 : case de quantité réutilisée (pas de case fantôme)
+            if not isinstance(spin, QSpinBox) or spin.objectName() != "qtySpin":
+                spin = QSpinBox()
+                spin.setRange(1, 999)
+                spin.setAlignment(Qt.AlignmentFlag.AlignCenter)   # v46 : quantités centrées
+                spin.setObjectName("qtySpin")
+                spin.valueChanged.connect(lambda v, s=spin: self._set_qty(s.property("row"), v))
+                self.table.setCellWidget(r, 1, spin)
+            spin.setProperty("row", r)
+            with blocked(spin):
+                spin.setValue(it["qte"])
             w = (info["poids"] * it["qte"]) if info else 0.0
             self.table.setItem(r, 2, cell(("{} kg".format(R.fmt_meters(w)) if w else "—"), "center", tip))
             self.table.setItem(r, 3, cell(info["categorie"] if info else "Divers", "center", tip))

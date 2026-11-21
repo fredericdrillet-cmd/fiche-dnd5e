@@ -627,11 +627,16 @@ class CombatTab(BaseTab):
             score = make_label("", "")
             self.ab_labels[ab] = score
             cell_w = self.save_cells[ab]["label"].parentWidget()
+            cl = cell_w.layout()
+            if cl is not None and hasattr(cl, "setStretch"):
+                cl.setStretch(0, 0)                       # le dé juste à côté du bonus
+                cl.addStretch(1)
+            self.save_cells[ab]["label"].setMinimumWidth(80)
             g.addWidget(name, r, 0)
             g.addWidget(score, r, 1)
             g.addWidget(make_label("JS", "muted"), r, 2)
             g.addWidget(cell_w, r, 3)
-        g.setColumnStretch(4, 1)
+        g.setColumnStretch(3, 1)
         return box
 
     def _refresh_header(self) -> None:
@@ -871,7 +876,8 @@ class CombatTab(BaseTab):
                     for x in shown) + \
             (self.turn_filter, t.key)
         spheres = self._tile_spheres()
-        key = key + (tuple(sorted(spheres.items())),)
+        key = key + (tuple(sorted(spheres.items())),
+                     tuple((k, i, r["cle"], r.get("dd")) for k, i, r, _w in self._weapon_action_rows()))
         if key != self._turn_key:
             self._turn_key = key
             self._render_turn_columns(shown, spheres)
@@ -978,11 +984,26 @@ class CombatTab(BaseTab):
         main = [x for x in items if self._tile_cat(x) != "commune"]
         common = [x for x in items if self._tile_cat(x) == "commune"]
         cols = self.FLOW_COLS
+        n = -1
         for n, x in enumerate(main):
             b = self._make_tile(x, spheres)
             self._color_tile(b, colors[self._tile_cat(x)])
             self.turn_flow.addWidget(b, n // cols, n % cols)
-        row0 = (len(main) + cols - 1) // cols
+        if self.turn_filter in ("Tout", "Action"):        # v52 : actions d'arme (bottes, actions BG3) en tuiles
+            for key, i, row, weapon in self._weapon_action_rows():
+                n += 1
+                label = row["nom"] + (" (DD {})".format(row["dd"]) if row.get("dd") else "")
+                b = QPushButton("{} {}\n{}".format(row.get("icone", "⚔"), label, weapon))
+                b.setMinimumHeight(46)
+                b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+                b.setCursor(Qt.CursorShape.PointingHandCursor)
+                b.setToolTip(WA.tooltip_html(row, theme.current().accent_text) +
+                             "<p style='color:gray'><i>🎲 Clic : jet d'attaque avec cette arme.</i></p>")
+                b.clicked.connect(lambda _=False, k=key, idx=i, r=row: self._on_weapon_action(k, idx, r))
+                self._color_tile(b, colors["attaque"])
+                self.turn_tiles["arme_action:{}:{}:{}".format(key, i, row["cle"])] = b
+                self.turn_flow.addWidget(b, n // cols, n % cols)
+        row0 = (n + 1 + cols - 1) // cols
         self._common_cells = {}
         for n, x in enumerate(common):                    # actions communes : deux petites tuiles par case
             b = self._make_tile(x, spheres, compact=True)
@@ -993,6 +1014,19 @@ class CombatTab(BaseTab):
         present = {self._tile_cat(x) for x in items}
         self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=c, l=l)
                                            for k, l, c in self.TILE_CATS if k in present))
+
+    def _weapon_action_rows(self) -> list:
+        """Actions d'arme des armes équipées (main principale, distance) : [(clé de liste, indice, action, arme)]."""
+        out = []
+        for key in ("armes_cac", "armes_distance"):
+            for i, slot in enumerate(getattr(self.ch, key)):
+                if key == "armes_cac" and i > 0 or not slot.get("nom"):
+                    continue
+                if not self.engine.weapon_stats(slot):
+                    continue
+                for row in self.engine.weapon_actions(slot):
+                    out.append((key, i, row, slot["nom"]))
+        return out
 
     def _common_grid_add(self, b, row0: int, n: int) -> None:
         """Actions communes en fin de grille : deux par case de tuile normale (plus compact)."""

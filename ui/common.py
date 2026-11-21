@@ -237,6 +237,35 @@ def check_item(checked: bool, enabled: bool = True, tip: str = "") -> QTableWidg
     return it
 
 
+class bulk_fill:
+    """v52 : remplissage rapide d'un grand tableau — pas de redessin ni de recalcul des largeurs de colonnes à chaque
+    case (sans cela, 1 500 cases « ResizeToContents » coûtent plusieurs secondes)."""
+
+    def __init__(self, table: QTableWidget):
+        self.table = table
+        self.modes: list = []
+
+    def __enter__(self):
+        t = self.table
+        t.setUpdatesEnabled(False)
+        hh = t.horizontalHeader()
+        try:
+            self.modes = [hh.sectionResizeMode(c) for c in range(t.columnCount())]
+            for c in range(t.columnCount()):
+                hh.setSectionResizeMode(c, QHeaderView.ResizeMode.Fixed)
+        except (TypeError, AttributeError):                # interface factice des tests
+            self.modes = []
+        return t
+
+    def __exit__(self, *exc):
+        t = self.table
+        hh = t.horizontalHeader()
+        for c, m in enumerate(self.modes):
+            hh.setSectionResizeMode(c, m)
+        t.setUpdatesEnabled(True)
+        return False
+
+
 def style_table(table: QTableWidget, stretch_col: Optional[int] = 0, row_h: int = 32) -> QTableWidget:
     """Réglages communs : en-têtes centrés, lignes alternées, hauteur uniforme, pas d'édition directe."""
     hh = table.horizontalHeader()
