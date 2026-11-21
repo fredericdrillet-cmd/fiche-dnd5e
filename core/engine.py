@@ -2215,7 +2215,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return list(self.db.magic_items) + [n for n in (self.ch.objets_perso or {}) if n not in self.db.magic_items]
 
     def add_custom_magic_item(self, nom: str, type_: str = "Objet merveilleux", rarete: str = "peu commun",
-                              lien: bool = False, description: str = "", poids: float = 0.0, ca: int = 0) -> str:
+                              lien: bool = False, description: str = "", poids: float = 0.0, ca: int = 0,
+                              base: str = "", bonus: int = 0, degats_sup: Optional[list] = None) -> str:
         """Objet sur mesure : fiche enregistrée avec le personnage puis ajoutée à l'équipement. Renvoie son nom
         (suffixé « (sur mesure) » s'il porte le nom d'un objet officiel), ou « » si le nom est vide."""
         nom = (nom or "").strip()
@@ -2229,6 +2230,17 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             "description": (description or "").strip() or "Objet sur mesure.", "variable": False,
             "ca_variable": False, "ca": max(0, int(ca or 0)), "js": 0, "source": "Objet sur mesure",
             "poids": max(0.0, float(poids or 0)), "perso": True}
+        if type_ == "Arme" and base in self.db.weapons:   # v52 : arme sur mesure (arme de base, bonus, dégâts en plus)
+            extras = [d for d in (degats_sup or []) if d.get("des")]
+            self.ch.objets_perso[nom].update(bonus_fixe=max(0, min(3, int(bonus or 0))), degats_sup=extras)
+            if not (description or "").strip():          # description lisible par défaut
+                self.ch.objets_perso[nom]["description"] = "{}{}{}.".format(
+                    base, " +{}".format(bonus) if bonus else "", "".join(
+                        " ; +{} {}{}".format(d["des"], d.get("type", ""), "" if d.get("condition", "toujours") ==
+                                             "toujours" else " ({})".format(d.get("note") or d["condition"]))
+                        for d in extras))
+            self.add_magic_gear(nom, base)
+            return nom
         self.add_magic_item(nom)
         return nom
 

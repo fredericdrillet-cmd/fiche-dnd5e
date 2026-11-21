@@ -2171,6 +2171,7 @@ class CombatTab(BaseTab):
             return False
         spec = D.DamageSpec(damage_spec.title, damage_spec.formula, damage_spec.damage_type, damage_spec.note,
                             damage_spec.kind)
+        spec.parts = list(getattr(damage_spec, "parts", []) or [])   # v52 : dégâts par type
         # v52 : « Quand vous touchez » — une fenêtre de cases (rien coché d'office) au lieu de questions successives
         from .on_hit_dialog import ask_on_hit
         options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
@@ -2183,10 +2184,15 @@ class CombatTab(BaseTab):
         for label, dice in self.engine.apply_on_hit(options, chosen):
             spec.formula += "+" + dice
             spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
+            if spec.parts:
+                kind = D.damage_type_in(label) or ("radiants" if "chatiment" in R.norm(label) else spec.damage_type)
+                spec.parts.append((dice, kind))
         if crit:
+            parts = [(D.critical_formula(p), t) for p, t in spec.parts]
             spec = D.DamageSpec(spec.title + " (critique)", D.critical_formula(spec.formula),
                                 spec.damage_type, "Coup critique : dés doublés." + (" " + spec.note if spec.note else ""),
                                 spec.kind)
+            spec.parts = parts
         roll_damage_dialog(win, spec)
         return True
 

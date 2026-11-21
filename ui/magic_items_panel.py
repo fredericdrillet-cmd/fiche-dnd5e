@@ -12,7 +12,8 @@ import html
 
 from PyQt6.QtCore import QStringListModel, Qt, QTimer
 from PyQt6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QCompleter, QDoubleSpinBox, QFrame, QGroupBox,
-                             QHBoxLayout, QLineEdit, QPushButton, QSpinBox, QTableWidget, QTextBrowser, QVBoxLayout)
+                             QGridLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpinBox, QTableWidget, QTextBrowser,
+                             QVBoxLayout, QWidget)
 
 from core.rules import norm
 from . import theme
@@ -43,7 +44,50 @@ def quick_matches(names, text: str, limit: int = 40) -> list[str]:
     return hits[:limit]
 
 
-def ask_custom_item(parent, name: str = "") -> dict | None:
+EXTRA_TYPES = ["acide", "contondants", "feu", "foudre", "force", "froid", "nécrotiques", "perforants", "poison",
+               "psychiques", "radiants", "tonnerre", "tranchants"]
+EXTRA_WHEN = [("toujours", "À chaque coup"), ("cible", "Contre une créature"), ("activation", "Si activée")]
+
+
+def _weapon_fields(weapon_names: list[str]) -> tuple[QWidget, dict]:
+    """v52 : champs d'une arme sur mesure — arme de base, bonus magique, deux dégâts supplémentaires."""
+    box = QWidget()
+    g = QGridLayout(box)
+    g.setContentsMargins(0, 0, 0, 0)
+    f = {"base": QComboBox(), "bonus": QComboBox(), "extras": []}
+    f["base"].addItems(weapon_names)
+    f["bonus"].addItems(["+0", "+1", "+2", "+3"])
+    g.addWidget(QLabel("Arme de base"), 0, 0)
+    g.addWidget(f["base"], 0, 1)
+    g.addWidget(QLabel("Bonus magique"), 0, 2)
+    g.addWidget(f["bonus"], 0, 3)
+    g.addWidget(QLabel("Dégâts en plus"), 1, 0)
+    g.addWidget(QLabel("Type"), 1, 1)
+    g.addWidget(QLabel("Quand"), 1, 2)
+    g.addWidget(QLabel("Précision"), 1, 3)
+    for r in range(1, 3):
+        dice = QLineEdit()
+        dice.setPlaceholderText("ex. 1d4")
+        dice.setMinimumWidth(90)
+        kind = QComboBox()
+        kind.addItems(EXTRA_TYPES)
+        when = QComboBox()
+        for _k, label in EXTRA_WHEN:
+            when.addItem(label)
+        note = QLineEdit()
+        note.setPlaceholderText("ex. morts-vivants")
+        note.setMinimumWidth(180)
+        when.setToolTip("« À chaque coup » : ajouté d'office. Les deux autres : case à cocher avant le jet de dégâts.")
+        g.addWidget(dice, r + 1, 0)
+        g.addWidget(kind, r + 1, 1)
+        g.addWidget(when, r + 1, 2)
+        g.addWidget(note, r + 1, 3)
+        f["extras"].append((dice, kind, when, note))
+    g.setColumnStretch(3, 1)
+    return box, f
+
+
+def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = None) -> dict | None:
     """Formulaire « Objet sur mesure » en une fenêtre : nom, type, rareté (peu commun par défaut), case
     « Harmonisation requise », description courte, poids, bonus de CA. Renvoie le dictionnaire ou None."""
     from .dialogs import BlurBackdrop, ConfirmDialog
@@ -82,15 +126,30 @@ def ask_custom_item(parent, name: str = "") -> dict | None:
         lay.insertWidget(pos + 2, w["description"])
         lay.insertLayout(pos + 3, row2)
         lay.insertWidget(pos + 4, w["lien"])                     # sur sa propre ligne : impossible à manquer
+    wbox, wf = _weapon_fields(weapon_names or [])                # v52 : arme sur mesure
+    dialog.setMinimumWidth(720)
+    if lay is not None:
+        lay.insertWidget(pos + 5, wbox)
+    wbox.setVisible(w["type"].currentText() == "Arme")
+    w["type"].currentTextChanged.connect(lambda t: wbox.setVisible(t == "Arme"))
     try:
         if dialog.exec() != 1 or not w["nom"].text().strip():
             return None
     finally:
         if backdrop is not None:
             backdrop.dispose()
-    return {"nom": w["nom"].text().strip(), "type_": w["type"].currentText(), "rarete": w["rarete"].currentText(),
+    data = {"nom": w["nom"].text().strip(), "type_": w["type"].currentText(), "rarete": w["rarete"].currentText(),
             "lien": w["lien"].isChecked(), "description": w["description"].text(), "poids": w["poids"].value(),
             "ca": w["ca"].value()}
+    if data["type_"] == "Arme" and weapon_names:
+        extras = []
+        for dice, kind, when, note in wf["extras"]:
+            d = dice.text().strip().lower().replace(" ", "")
+            if d:
+                extras.append({"des": d, "type": kind.currentText(), "condition": EXTRA_WHEN[when.currentIndex()][0],
+                               "note": note.text().strip()})
+        data.update(base=wf["base"].currentText(), bonus=wf["bonus"].currentIndex(), degats_sup=extras)
+    return data
 
 
 def ask_gear_base(win, engine, item: dict) -> str:
@@ -369,7 +428,8 @@ class MagicItemsPanel(BaseTab):
         self.changed()
 
     def _on_custom(self, name: str = "") -> None:
-        data = ask_custom_item(self.win, name.strip())
+        weapons = sorted((n for n in self.db.weapons if n != "Mains nues"), key=norm)
+        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons)
         if not data:
             return
         real = self.engine.add_custom_magic_item(**data)

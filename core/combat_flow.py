@@ -139,14 +139,25 @@ class CombatFlowMixin:
         cls_always, cls_once = self.class_weapon_riders(slot)       # v52 : Frappes radiantes, Frappe divine…
         always, conditional = always + cls_always, conditional + cls_once + self.subclass_weapon_riders() + \
             self.subclass24_riders()
+        item_always, item_cond = self.item_damage_riders(slot)       # v52 : Épée ardente, arme sur mesure…
+        wtype = st.get("type_degats", "")
+        parts = [(st["degats"], wtype)]
         formula = st["degats"]
         notes = []
         for label, dice in always:
             formula += "+" + dice
             notes.append("{} : +{}".format(label, dice))
+            parts.append((dice, D.damage_type_in(label) or wtype))
+        for label, dice, dtype in item_always:
+            formula += "+" + dice
+            notes.append(label)
+            parts.append((dice, dtype or wtype))
+            always = always + [(label.split(" : ")[0] + " ({})".format(dtype) if dtype else label, dice)]
+        conditional = list(conditional) + [(label, dice) for label, dice, _t in item_cond]
         if extra:
             formula += "+" + extra
             notes.append("{} : +{}".format(extra_label or "Bonus", extra))
+            parts.append((extra, D.damage_type_in(extra_label) or wtype))
         if offhand:
             notes.append(next((n for n in st["styles"] if n.startswith("Main secondaire")), ""))
         grip = " ({})".format(st["prise"]) if st.get("prise") else ""
@@ -162,6 +173,7 @@ class CombatFlowMixin:
         spec.flat_labels = [(label, v) for label, v in st.get("bonus_degats", []) if v]
         spec.calcul = calc                                # affiché par la fenêtre de dés (v46)
         spec.options = list(conditional)
+        spec.parts = parts                                # v52 : total par type de dégâts après le jet
         return spec
 
     # ------------------------------------------------------------------ Maître de guerre : manœuvres

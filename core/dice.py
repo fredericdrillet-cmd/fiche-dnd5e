@@ -157,6 +157,7 @@ class DamageSpec:
     kind: str = "degats"                      # degats | soins | de (dé de supériorité, d'inspiration...)
     flat_labels: list[tuple[str, int]] = field(default_factory=list)   # provenance du bonus fixe (affichage)
     options: list[tuple[str, str]] = field(default_factory=list)       # v39 : bonus conditionnels (source, dés)
+    parts: list[tuple[str, str]] = field(default_factory=list)         # v52 : [(morceau de formule, type)] dans l'ordre
     calcul: str = ""                          # v46 : détail lisible « 1d8 - 1 (Mod. FOR) + 3 (…) = 1d8 + 2 »
 
 
@@ -210,6 +211,41 @@ def parse_damage(formula: str) -> tuple[list[tuple[int, int, int]], int]:
 def critical_formula(formula: str) -> str:
     """Coup critique : nombre de dés doublé, bonus fixe inchangé (« 1d8+3 » -> « 2d8+3 »)."""
     return re.sub(r"(\d*)d(\d+)", lambda m: "{}d{}".format(2 * int(m.group(1) or 1), m.group(2)), formula or "")
+
+
+DAMAGE_WORDS = {"acide": "acide", "contondant": "contondants", "feu": "feu", "foudre": "foudre", "force": "force",
+                "froid": "froid", "necrotique": "nécrotiques", "perforant": "perforants", "poison": "poison",
+                "psychique": "psychiques", "radiant": "radiants", "tonnerre": "tonnerre", "tranchant": "tranchants"}
+
+
+def damage_type_in(text: str) -> str:
+    """Type de dégâts cité dans un texte (« 2d6 feu », « Frappe divine (radiants) ») ; '' sinon."""
+    import unicodedata
+    t = "".join(c for c in unicodedata.normalize("NFD", (text or "").lower()) if unicodedata.category(c) != "Mn")
+    for word, label in DAMAGE_WORDS.items():
+        if re.search(r"\b{}s?\b".format(word), t):
+            return label
+    return ""
+
+
+def typed_totals(parts: list, result) -> list[tuple[str, int]]:
+    """v52 : total de chaque type de dégâts, en suivant l'ordre des morceaux de formule et des dés tirés."""
+    values = list(getattr(result, "dice", []) or [])
+    out: dict[str, int] = {}
+    pos = 0
+    for piece, dtype in parts:
+        groups, flat = parse_damage(piece)
+        n = sum(count for _s, count, _f in groups)
+        total = flat + sum(sign * v for _f, v, sign in values[pos:pos + n])
+        pos += n
+        key = dtype or "autres"
+        out[key] = out.get(key, 0) + total
+    return [(k, max(0, v)) for k, v in out.items()]
+
+
+def typed_text(parts: list, result) -> str:
+    totals = typed_totals(parts, result)
+    return " + ".join("{} {}".format(v, k) for k, v in totals) if len(totals) > 1 else ""
 
 
 def has_dice(formula: str) -> bool:

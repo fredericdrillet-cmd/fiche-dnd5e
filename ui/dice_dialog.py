@@ -772,9 +772,11 @@ class DamageRollDialog(QDialog):
             self.flat_label.setText("<b style='color:{}'>✔ {}</b>".format(self._accent, html.escape(
                 flat_text(self.spec, r.flat))))
         word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires"}.get(self.spec.kind, "dégâts")
-        self.total.setText("Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
-                                                  "dégâts" + (" " + self.spec.damage_type if self.spec.damage_type
-                                                              else "")).rstrip())
+        typed = D.typed_text(getattr(self.spec, "parts", []) or [], r)     # v52 : « 9 tranchants + 3 poison »
+        self.total.setText(("Total : {} dégâts — {}".format(r.total, typed) if typed else
+                            "Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
+                                                   "dégâts" + (" " + self.spec.damage_type if self.spec.damage_type
+                                                               else ""))).rstrip())
         self.phase = "done"
         if self.timer.isActive():
             self.timer.stop()
@@ -813,7 +815,9 @@ def roll_damage_dialog(win, spec) -> "D.DamageResult | None":
         eng.record_roll(spec.title, spec.kind, r.total, "{} → {} {}".format(
             spec.formula, r.total, word if spec.kind != "degats" else ("dégâts " + spec.damage_type).strip()),
             "", [v for _, v, _ in r.dice])
-    win.statusBar().showMessage("🎲 {} : {} → {} {}".format(spec.title, spec.formula, r.total, word).strip(), 8000)
+    typed = D.typed_text(getattr(spec, "parts", []) or [], r)
+    win.statusBar().showMessage("🎲 {} : {} → {} {}".format(spec.title, spec.formula, r.total,
+                                                          "(" + typed + ")" if typed else word).strip(), 12000)
     return r
 
 

@@ -42,6 +42,11 @@ DESTROY = re.compile(r"derni[èe]re charge.{0,80}?d20.{0,40}?\b1\b,?\s*([^.]*)",
 MULTI = re.compile(r"(?:1|une)\s+(?:ou plus|ou plusieurs)\s+(?:de\s+)?(?:ses\s+)?charges?", re.I)
 ELEMENTS = re.compile(r"(\d+d\d+(?:\s*\+\s*\d+)?)\s+(perles?|haricots?|graines?|baies?|plumes?|fruits?|billes?)\b", re.I)
 PER_ELEMENT = re.compile(r"augmente\w*\s+le niveau[^.]*pour chaque", re.I)
+EXTRA_DAMAGE = re.compile(r"(\d+d\d+)\s+(?:points de )?d[ée]g[âa]ts\s+(?:de |d['’])?([a-zéèêàç]+)\s+suppl[ée]mentaires",
+                          re.I)
+CONDITIONAL_HINTS = ("quand vous frappez un", "quand vous frappez une", "lorsque vous touchez un", "lorsque vous touchez "
+                     "une", "fielon", "mort-vivant", "mort vivant", "ennemi jure", "tant que", "en feu", "enflamm",
+                     "dragon", "geant", "si la cible", "contre ")
 AS_SPELL = re.compile(r"comme (?:une?|le sort)\s+([^,.;(]{3,40}?)\s+de niveau (\d)", re.I)
 
 
@@ -104,6 +109,8 @@ class MagicGearMixin:
 
     def magic_gear_tier(self, item: dict, entry: Optional[dict] = None) -> int:
         """Bonus +X de l'objet : palier du nom (« Arme +2 »), bonus choisi (+1, +2 ou +3) ou bonus de CA indiqué."""
+        if item.get("bonus_fixe"):                       # v52 : arme sur mesure
+            return int(item["bonus_fixe"])
         m = GEAR_TIER.match(item.get("nom", ""))
         if m:
             return int(m.group(2))
@@ -240,6 +247,45 @@ class MagicGearMixin:
                 holder = ch.armes_cac[1]
             if holder is not None:
                 holder.update(nom=entry["base"], bonus=bonus, objet=entry["uid"], affichage=label)
+
+    # ------------------------------------------------------------------ v52 : dégâts supplémentaires des armes
+    def item_damage_riders(self, slot: dict) -> tuple[list, list]:
+        """Dégâts supplémentaires de l'arme magique tenue : ([(libellé, dés, type)] toujours appliqués,
+        [(libellé, dés, type)] à cocher avant le jet — créature visée, arme activée…).
+        Armes sur mesure : champ `degats_sup` ; armes officielles : « 2d6 dégâts de feu supplémentaires »."""
+        always, conditional = [], []
+        entry = self.gear_entry((slot or {}).get("objet", "")) if slot else None
+        if entry is None:
+            return always, conditional
+        item = self.magic_item(entry.get("nom", "")) or {}
+        if item.get("lien") and not entry.get("harmonise"):
+            return always, conditional                    # pas harmonisée : aucun pouvoir
+        name = self.magic_display_name(entry)
+        for d in item.get("degats_sup") or []:
+            dice, dtype = str(d.get("des", "")).strip(), str(d.get("type", "")).strip()
+            if not re.fullmatch(r"\d*d\d+(?:\s*\+\s*\d+)?", dice):
+                continue
+            cond = d.get("condition", "toujours")
+            label = "{} : +{} {}".format(name, dice, dtype).strip()
+            if cond != "toujours":
+                label += " ({})".format(d.get("note") or ("créature visée" if cond == "cible" else "arme activée"))
+            (always if cond == "toujours" else conditional).append((label, dice, dtype))
+        if item.get("degats_sup"):
+            return always, conditional
+        desc = item.get("description", "") or ""
+        for sentence in re.split(r"(?<=[.!?])\s+", desc):
+            for m in EXTRA_DAMAGE.finditer(sentence):
+                dice = m.group(1)
+                from . import dice as D
+                dtype = D.damage_type_in(m.group(2)) or m.group(2)
+                n = norm(sentence[:m.start()])
+                cond = any(h in n for h in CONDITIONAL_HINTS)
+                label = "{} : +{} {}".format(name, dice, dtype)
+                if cond:
+                    hint = re.sub(r"\s+", " ", sentence[:m.start()]).strip().rstrip(",")
+                    label += " ({})".format(hint[:70] + ("…" if len(hint) > 70 else ""))
+                (conditional if cond else always).append((label, dice, dtype))
+        return always, conditional
 
     def sync_magic_gear(self) -> None:
         """Cohérence cases <-> objets : lien rompu si l'objet a disparu ou si la case a changé d'objet ; bonus et
