@@ -18,7 +18,7 @@ python -m unittest tests.test_web.ServiceTests.test_new_character   # one test
 python build_executable.py --simulation   # show the PyInstaller command (real build is Windows-only)
 ```
 
-Production: `gunicorn app:app` (Procfile, render.yaml with `/healthz`, Dockerfile). CI (`.github/workflows/build-exe.yml`) runs `build_executable.py` on Windows on every push: it runs the tests, then builds `dist/Fiche_Personnage_DnD5E.exe` — failing tests block the build.
+Production: `gunicorn app:app` (Procfile, render.yaml with `/healthz`, Dockerfile). CI (`.github/workflows/build-exe.yml`) runs `build_executable.py` on Windows when triggered manually (`workflow_dispatch`, only when the user asks for an exe): it runs the tests, then builds `dist/Fiche_Personnage_DnD5E.exe` — failing tests block the build.
 
 ## Architecture
 
