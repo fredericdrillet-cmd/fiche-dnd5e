@@ -148,6 +148,9 @@ class SubclassFeaturesMixin:
         if bm:
             out.append(bm)
         out += self.draconic_option_sets()               # v52 : couleur du dragon (Drakéide, Ensorceleur)
+        masteries = self.mastery_option_set()            # v52 : bottes d'arme (maîtrise des armes 2024)
+        if masteries:
+            out.append(masteries)
         if self.superior_technique():                    # v52 : manœuvre du style Technique supérieure
             tech = self.ch.technique_manoeuvre
             out.append({"key": "technique_superieure", "label": "Technique supérieure (style de combat)", "total": 1,
@@ -199,10 +202,48 @@ class SubclassFeaturesMixin:
                         "options": opts, "chosen": [c] if c in DRACONIC else []})
         return out
 
+    def mastery_option_set(self) -> Optional[dict]:
+        """v52 : bottes d'arme 2024 — choisies à la création et quand leur nombre augmente ; une se change au repos
+        long. Rangées dans `bottes_choisies`."""
+        count = self.mastery_count()
+        if not count:
+            return None
+        cands = self.mastery_candidates()
+        opts = {n: "Botte : {} — {}".format(self.db.weapons[n].get("botte", ""),
+                                             self.db.weapons[n].get("botte_desc", "")) for n in cands}
+        chosen = [n for n in dict.fromkeys(self.ch.bottes_choisies) if n in opts][:count]
+        return {"key": "bottes", "label": "Bottes d'arme (maîtrise des armes)", "total": count, "options": opts,
+                "chosen": chosen}
+
+    # v52 : échanges permis au repos long (règles 2024) — une botte d'arme, une forme connue du Druide
+    REST_SWAPS = {"bottes": "Changer une botte d'arme", "formes_connues": "Remplacer une forme connue"}
+
+    def rest_option_swaps(self) -> list[dict]:
+        """Ensembles dont UN choix peut être remplacé à la fin d'un repos long : [{key, titre, set}]."""
+        sets = {s["key"]: s for s in self.option_sets()}
+        return [{"key": k, "titre": t, "set": sets[k]} for k, t in self.REST_SWAPS.items()
+                if k in sets and sets[k]["chosen"] and len(sets[k]["options"]) > len(sets[k]["chosen"])]
+
+    def rest_swap_option(self, key: str, old: str, new: str) -> tuple[bool, str]:
+        st = next((x["set"] for x in self.rest_option_swaps() if x["key"] == key), None)
+        if st is None or old not in st["chosen"] or new not in st["options"] or new in st["chosen"]:
+            return False, "Échange impossible."
+        self.set_class_option(key, st["chosen"].index(old), new)
+        return True, "{} : {} → {}.".format(self.REST_SWAPS[key], old, new)
+
     FIELD_OPTIONS = {"technique_superieure": "technique_manoeuvre", "ascendance_raciale": "ascendance_raciale",
                      "ascendance_ensorceleur": "ascendance_ensorceleur"}   # v52 : choix rangés dans leur champ
 
     def set_class_option(self, key: str, index: int, name: str) -> None:
+        if key == "bottes":                              # v52 : liste rangée dans bottes_choisies
+            st = self.mastery_option_set() or {"chosen": []}
+            chosen = list(st["chosen"])
+            while len(chosen) <= index:
+                chosen.append("")
+            chosen[index] = name
+            self.ch.bottes_choisies = [c for c in dict.fromkeys(chosen) if c]
+            self.normalize()
+            return
         if key in self.FIELD_OPTIONS:
             setattr(self.ch, self.FIELD_OPTIONS[key], name)
             self.normalize()

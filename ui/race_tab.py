@@ -162,6 +162,14 @@ class RaceTab(BaseTab):
 
     def _on_lang_item(self, item: QListWidgetItem):
         name = item.data(Qt.ItemDataRole.UserRole)
+        if self.guided:                                  # v52 : seulement ajouter une langue manquante
+            on = item.checkState() == Qt.CheckState.Checked
+            if not on or self.engine.languages_missing() <= 0:
+                with blocked(self.lang_list):
+                    item.setCheckState(Qt.CheckState.Checked if name in self.ch.langues_liste
+                                       else Qt.CheckState.Unchecked)
+                self.guided_refuse("la langue")
+                return
         langs = [x for x in self.ch.langues_liste if x != name]
         if item.checkState() == Qt.CheckState.Checked:
             langs.append(name)
@@ -175,7 +183,15 @@ class RaceTab(BaseTab):
         self.win.mark_dirty()
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _apply_guided_locks(self) -> None:
+        """v52 : Mode guidé — espèce, sous-race et historique fixés à la création."""
+        for w in (self.race, self.sub, self.bg):
+            w.setEnabled(not self.guided)
+            w.setToolTip(self.GUIDED_TIP if self.guided else "")
+        self.langs.setReadOnly(self.guided and self.engine.languages_missing() <= 0)
+
     def refresh(self):
+        self._apply_guided_locks()
         self.mark_box(self.lang_box, "Langues", "race", "Langues")
         self._refresh_lang_count()
         from .common import indicator_qss

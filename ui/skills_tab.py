@@ -86,6 +86,15 @@ class SkillsTab(BaseTab):
             roll_dice(self.win, self.engine.skill_spec(names[row]))
             return
         st = self.ch.competences.setdefault(names[row], {"maitrise": False, "expertise": False})
+        if self.guided:                                  # v52 : seulement compléter un choix manquant
+            eng = self.engine
+            if col == 1:
+                ok = st.get("maitrise") and not st.get("expertise") and eng.expertise_missing() > 0
+            else:
+                ok = not st.get("maitrise") and eng.skills_missing() > 0
+            if not ok:
+                self.guided_refuse("la maîtrise ou l'expertise")
+                return
         if col == 1:
             if not st.get("maitrise"):
                 return                                   # l'expertise exige la maîtrise
@@ -111,6 +120,9 @@ class SkillsTab(BaseTab):
             return
         if col == self.SAVE_ROLL_COL:
             roll_dice(self.win, self.engine.save_spec(ABILITIES[row]))
+            return
+        if self.guided:                                  # v52 : maîtrises de sauvegarde fixées par la classe
+            self.guided_refuse("la maîtrise des jets de sauvegarde")
             return
         ab = ABILITIES[row]
         if ab in self.engine.resilient_saves():         # maîtrise imposée par un don : non modifiable
@@ -145,6 +157,8 @@ class SkillsTab(BaseTab):
 
     def refresh(self):
         self.mark_box(self.skills_box, "Compétences", "caracteristiques", "Compétences")
+        for w in (self.table, self.saves):               # v52 : Mode guidé
+            w.setToolTip(self.GUIDED_TIP if self.guided else "")
         eng, t = self.engine, theme.current()
         rows = eng.skill_rows()
         self.table.setUpdatesEnabled(False)

@@ -2418,7 +2418,11 @@ class CombatTab(BaseTab):
         eng = self.engine
         count = eng.mastery_count()
         self.mastery_box.setVisible(count is None or count > 0)
-        self.mastery_btn.setVisible(count is not None and count > 0)
+        self.mastery_btn.setVisible(False)              # v52 : choisies à la création / montée de niveau, une
+        #                                                 se change au repos long
+        self.mastery_label.setToolTip(rich_tip("Bottes d'arme", "Choisies à la création et à la montée de niveau "
+                                               "(rappel dans l'onglet Classes) ; une botte se change à la fin d'un "
+                                               "repos long.") if count else "")
         if count is None:
             self.mastery_label.setText("Règle de la table : la botte de chaque arme maîtrisée s'applique.")
         elif count:

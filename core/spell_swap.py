@@ -44,7 +44,8 @@ class SpellSwapMixin:
         if class_name not in SWAP_CLASSES:
             return False
         c, before = sim.caster(class_name), self.caster(class_name)
-        if c is None or before is None or c.get("mode") != "known":
+        list_2024 = self.sheet_edition == 2024 and class_name in ("Barde", "Ensorceleur", "Occultiste")
+        if c is None or before is None or (c.get("mode") != "known" and not list_2024):   # v52 : listes 2024
             return False
         return bool(self.level_swap_candidates(sim, class_name)) or class_name in _swaps(sim)
 
@@ -137,6 +138,57 @@ class SpellSwapMixin:
         return base
 
     # ================================================================ 2. repos long
+    # ================================================================ v52 : Mode guidé (onglet Magie)
+    FREE_PREP_2024 = ("Clerc", "Druide", "Magicien")
+
+    def free_prep_class(self, class_name: str) -> bool:
+        """Préparation quotidienne libre (onglet Magie) : Clerc, Druide, Paladin, Artificier, Magicien en 2014 ;
+        Clerc, Druide, Magicien en 2024 (Paladin et Rôdeur : un sort au repos long ; Barde, Ensorceleur,
+        Occultiste : un sort à la montée de niveau)."""
+        if self.sheet_edition == 2024:
+            return class_name in self.FREE_PREP_2024
+        return class_name in REST_PREP_CLASSES
+
+    def spell_learning_open(self, class_name: str, cantrip: bool) -> bool:
+        """Un choix de sort manquant (sort mineur, sort connu ou à préparer) : complétable en Mode guidé."""
+        c = self.caster(class_name)
+        if c is None:
+            return False
+        cnt = self.spell_counts(class_name)
+        if cantrip:
+            return cnt["mineurs"] < (c.get("mineurs_max") or 0)
+        if c.get("connus_max") is not None:
+            return cnt["sorts"] < c["connus_max"]
+        return c.get("prepares_max") is not None and cnt["prepares"] < c["prepares_max"]
+
+    @staticmethod
+    def scribe_cost(spell: dict) -> tuple[int, int]:
+        """Recopier un sort dans le grimoire : 50 po et 2 heures par niveau du sort (po, minutes)."""
+        lvl = max(1, int(spell.get("niveau") or 1))
+        return 50 * lvl, 120 * lvl
+
+    def scribe_spell(self, name: str, pay: bool = True, take_time: bool = True) -> tuple[bool, str]:
+        """v52 : le Magicien recopie un sort trouvé (parchemin, grimoire) dans son grimoire, à tout moment."""
+        spell = self.db.find_spell(name)
+        if spell is None or self.caster("Magicien") is None or not int(spell.get("niveau") or 0):
+            return False, "Seul un sort de niveau 1 ou plus se recopie dans le grimoire du Magicien."
+        lst = self.ch.sorts.setdefault("Magicien", [])
+        if any(s["nom"] == spell["nom"] for s in lst):
+            return False, "« {} » est déjà dans votre grimoire.".format(spell["nom"])
+        po, minutes = self.scribe_cost(spell)
+        if pay and self.ch.pieces.get("po", 0) < po:
+            return False, "Il faut {} po pour recopier « {} » (vous en avez {}).".format(
+                po, spell["nom"], self.ch.pieces.get("po", 0))
+        if pay:
+            self.ch.pieces["po"] = self.ch.pieces.get("po", 0) - po
+        if take_time:
+            self.advance_time(minutes)
+        lst.append({"nom": spell["nom"], "prepare": False})
+        self.normalize()
+        return True, "« {} » recopié dans le grimoire{}{}.".format(
+            spell["nom"], " (−{} po)".format(po) if pay else "", ", {} h de travail".format(minutes // 60)
+            if take_time else "")
+
     # v52 : règles 2024 — Paladin et Rôdeur ne remplacent qu'UN sort préparé par repos long
     ONE_SWAP_2024 = ("Paladin", "Rôdeur")
 
@@ -212,6 +264,9 @@ class SpellSwapMixin:
         return True, "{} : {} sort(s) préparé(s) pour la journée.".format(class_name, len(names))
 
     def cantrip_swap_available(self) -> bool:
+        """Magicien : un tour de magie au repos long — règle 2024 (Incantation), option de Tasha en 2014."""
+        if self.sheet_edition != 2024 and not self.rule_active("options_tasha"):
+            return False
         return self.caster(CANTRIP_SWAP_CLASS) is not None and bool(self.cantrip_swap_known())
 
     def cantrip_swap_known(self) -> list[dict]:

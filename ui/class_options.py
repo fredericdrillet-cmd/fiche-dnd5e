@@ -32,11 +32,13 @@ class OptionSetsPanel(QWidget):
     """Une liste déroulante par choix ; une option déjà prise est retirée des autres listes du même ensemble.
     `keys` : ne montrer que ces ensembles (None = tous) ; `on_change` est appelé après chaque choix."""
 
-    def __init__(self, engine_getter: Callable, on_change: Callable[[], None], keys: Optional[set] = None):
+    def __init__(self, engine_getter: Callable, on_change: Callable[[], None], keys=None,
+                 locked: Optional[Callable[[str], set]] = None):
         super().__init__()
         self._engine = engine_getter
         self._on_change = on_change
         self.keys = keys
+        self.locked = locked                             # v52 : choix d'avant ce niveau (non modifiables ici)
         self.grid = QGridLayout(self)
         self.grid.setContentsMargins(0, 0, 0, 0)
         self._key = None
@@ -71,6 +73,9 @@ class OptionSetsPanel(QWidget):
                 fill_combo(combo, [NO_OPTION] + names, current or NO_OPTION,
                            {n: rich_tip(n, s["options"][n]) for n in names})
                 combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self.choose(k, idx, c.currentText()))
+                if self.locked is not None and current and current in self.locked(s["key"]):
+                    combo.setEnabled(False)
+                    combo.setToolTip("Choix d'un niveau précédent (voir « Remplacer un choix » si la règle le permet).")
                 self.combos[(s["key"], i)] = combo
                 desc = make_label((s["options"].get(current, "") or "").split("\n")[0], "muted", wrap=True)
                 self.grid.addWidget(combo, row, 0)

@@ -157,6 +157,28 @@ class AbilitiesTab(BaseTab):
         for i, cb in enumerate(self.free_combos):
             cb.activated.connect(lambda _=0, k=i: self._on_free_pick(k))
 
+    def _apply_guided_locks(self) -> None:
+        """v52 : Mode guidé — valeurs de base et bonus raciaux fixés à la création ; seul un choix manquant
+        (tirage à assigner, bonus libre à attribuer) reste modifiable. Le bonus « divers » reste libre."""
+        guided = self.guided
+        rolls_open = not guided or self.engine.missing_in("caracteristiques", "Caractéristiques") > 0
+        picks_open = not guided or self.engine.missing_in("caracteristiques", "Bonus raciaux de caractéristiques") > 0
+        tip = self.GUIDED_TIP if guided else ""
+        for w in (self.method, self.roll_btn, self.auto_btn, self.reset_btn):
+            w.setEnabled(not guided or (w is not self.method and w is not self.reset_btn and rolls_open))
+            w.setToolTip(tip)
+        for row in self.rows.values():
+            for k in ("minus", "plus", "manual"):
+                if guided:
+                    row[k].setEnabled(False)
+                row[k].setToolTip(tip or row[k].toolTip())
+            row["roll"].setEnabled(rolls_open)
+        if guided:
+            self.free_chk.setEnabled(False)
+            self.alt_chk.setEnabled(picks_open)
+        for cb in self.free_combos:
+            cb.setEnabled(picks_open)
+
     # ------------------------------------------------------------------ handlers
     def _on_method(self, _=0):
         self.ch.methode = METHODS[self.method.currentText()]
@@ -350,6 +372,7 @@ class AbilitiesTab(BaseTab):
                            if (rule["libre_regle"] or ab not in rule["fixe"]) and ab not in others]
                 fill_combo(cb, ["—"] + allowed, picks[i] if picks[i] in allowed else "—")
 
+        self._apply_guided_locks()
         warns = [w for w in eng.warnings() if any(k in w for k in ("Budget", "valeurs", "bonus raciaux", "Multiclassage",
                                                                    "doit être"))]
         self.warn.setText("\n".join("⚠ " + w for w in warns))

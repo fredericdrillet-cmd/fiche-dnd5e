@@ -571,7 +571,10 @@ class MagicTab(BaseTab):
         """Bouton de la bibliothèque : « Ajouter » ou « Retirer » selon le sort sélectionné."""
         sp = self._selected_spell(self.library, self._lib_rows)
         owned = bool(sp) and any(s["nom"] == sp["nom"] for s in self.ch.sorts.get(self.current_class(), []))
-        self.add_btn.setText("Retirer de mes sorts ✖" if owned else "Ajouter à mes sorts ✚")
+        scribe = (not owned and bool(sp) and self.guided and self.current_class() == "Magicien" and
+                  int(sp.get("niveau") or 0) > 0 and not self.engine.spell_learning_open("Magicien", False))
+        self.add_btn.setText("Retirer de mes sorts ✖" if owned else
+                             "Recopier dans le grimoire ✎" if scribe else "Ajouter à mes sorts ✚")
         self.add_btn.setToolTip(rich_tip("Bibliothèque", "Double-clic ou bouton : un sort marqué ✔ (déjà appris) est "
                                          "retiré de vos sorts, un sort non appris y est ajouté."))
 
@@ -587,6 +590,19 @@ class MagicTab(BaseTab):
             return
         lst = self.ch.sorts.setdefault(name, [])
         entry = next((s for s in lst if s["nom"] == sp["nom"]), None)
+        cantrip = not int(sp.get("niveau") or 0)
+        if self.guided and not self.all_chk.isChecked():  # v52 : Mode guidé
+            eng = self.engine
+            if entry is not None and (cantrip or not eng.free_prep_class(name) or name == "Magicien"):
+                self.guided_refuse("oublier un sort")
+                return
+            if entry is None and not cantrip and name == "Magicien" and not eng.spell_learning_open(name, False):
+                self._scribe(sp)                          # recopier un sort trouvé dans le grimoire
+                return
+            if entry is None and (cantrip or not eng.free_prep_class(name)) and \
+                    not eng.spell_learning_open(name, cantrip):
+                self.guided_refuse("un nouveau sort")
+                return
         if entry is not None:
             if entry.get("accorde"):
                 self.win.statusBar().showMessage("« {} » est accordé par votre sous-classe : il ne peut pas être "
@@ -615,10 +631,33 @@ class MagicTab(BaseTab):
         self._spell_list_changed()
         self._update_lib_btn()
 
+    def _scribe(self, sp: dict) -> bool:
+        """v52 : Magicien — recopier un sort trouvé dans le grimoire (coût affiché, or et temps au choix)."""
+        po, minutes = self.engine.scribe_cost(sp)
+        opts = ["Recopier : payer {} po et passer {} h".format(po, minutes // 60),
+                "Recopier sans rien déduire (déjà réglé avec le MJ)"]
+        picked = ask_choice(self.win, "Recopier un sort dans le grimoire",
+                            "« {} » (niveau {}) : 50 po et 2 heures par niveau du sort, soit {} po et {} h.".format(
+                                sp["nom"], sp.get("niveau", 1), po, minutes // 60), opts)
+        if not picked:
+            return False
+        full = picked == opts[0]
+        ok, msg = self.engine.scribe_spell(sp["nom"], pay=full, take_time=full)
+        self.win.statusBar().showMessage(msg, 8000)
+        if ok:
+            self.engine.mark_new("sort:" + sp["nom"])
+            self._spell_list_changed()
+            self._update_lib_btn()
+        return ok
+
     def _on_remove(self):
         name = self.current_class()
         row = self._selected_spell(self.chosen, self._chosen_rows)
         if not row or row.get("domaine"):
+            return
+        if self.guided and (row.get("niveau", 1) == 0 or not self.engine.free_prep_class(name) or
+                            name == "Magicien"):         # v52 : on n'oublie pas un sort en Mode guidé
+            self.guided_refuse("oublier un sort")
             return
         self.ch.sorts[name] = [s for s in self.ch.sorts.get(name, []) if s["nom"] != row["nom"]]
         self._spell_list_changed()
@@ -854,6 +893,9 @@ class MagicTab(BaseTab):
         r = self._chosen_rows[row]
         block = self.engine.spell_block_reason()
         if r.get("separator") or r.get("domaine") or r["niveau"] == 0 or (block and block[0] == "forme"):
+            return
+        if self.guided and not self.engine.free_prep_class(self.current_class()):   # v52 : Paladin / Rôdeur 2024…
+            self.guided_refuse("la préparation de ce sort")
             return
         for sp in self.ch.sorts.get(self.current_class(), []):
             if sp["nom"] == r["nom"]:

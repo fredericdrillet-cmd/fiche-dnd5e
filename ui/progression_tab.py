@@ -141,7 +141,7 @@ class ProgressionTab(BaseTab):
         n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
         self.choice_box.setTitle("Choix des dons" + ("  — ○ {} à choisir".format(n_missing) if n_missing else ""))
         key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
-            (theme.current().key,)
+            (theme.current().key, self.guided)
         if key == self._choice_key:
             return
         self._choice_key = key
@@ -162,6 +162,9 @@ class ProgressionTab(BaseTab):
                 fill_combo(combo, [self.NO_OPTION] + names, current or self.NO_OPTION,
                            {n: rich_tip(n, s["options"][n]) for n in names if s["options"][n]})
                 combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self._on_feat_choice(k, idx, c))
+                if self.guided and current:              # v52 : choix déjà fait (montée de niveau, création)
+                    combo.setEnabled(False)
+                    combo.setToolTip(self.GUIDED_TIP)
                 self.choice_layout.addWidget(combo, row, 0)
                 self.choice_layout.addWidget(make_label((s["options"].get(current, "") or "")[:160], "muted",
                                                         wrap=True), row, 1)
@@ -276,5 +279,9 @@ class ProgressionTab(BaseTab):
                 w["state"].setText("{} {}{}".format(STATE_ICON[state], msg or "prérequis rempli", extra))
             else:
                 w["state"].setText("")
+            if self.guided and not w["mj"] and mode != "aucun":   # v52 : choix fait à la montée de niveau
+                for k in ("mode", "a1", "a2", "feat", "fa"):
+                    w[k].setEnabled(False)
+                    w[k].setToolTip(self.GUIDED_TIP)
         self._refresh_feat_choices()
         self._fill_catalog()

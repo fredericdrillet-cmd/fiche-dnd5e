@@ -364,12 +364,17 @@ class LevelUpDialog(QDialog):
             and len(s["chosen"]) < s["total"]}
         if opt_keys:                                     # v52 : manœuvres, runes, Métamagie… choisies ici
             from .class_options import OptionSetsPanel
-            panel = OptionSetsPanel(lambda: self.sim, self._changed, keys=opt_keys)
+            panel = OptionSetsPanel(lambda: self.sim, self._changed, keys=opt_keys, locked=self._locked_names)
             panel.refresh()
             grid.addWidget(make_label("✦ Choix de classe", "head"), row, 0, 1, 4)
             grid.addWidget(panel, row + 1, 0, 1, 4)
             self.choice_widgets["options"] = panel
             row += 2
+        repl_keys = [s["key"] for s in self.sim.option_sets() if not s["key"].startswith("don:")] + ["manifestations"]
+        repl_keys = [k for k in repl_keys if self.engine.level_replace_allowed(self.sim, k, self.cls)]
+        if repl_keys:                                    # v52 : remplacer UN choix d'avant (règles de la classe)
+            self._replace_card(repl_keys)
+            row += 1
         feat_keys = self.engine.level_feat_keys(self.sim)
         if feat_keys:                                    # v52 : sous-choix des dons (Doué, Initié à la magie…)
             from .class_options import OptionSetsPanel
@@ -400,6 +405,61 @@ class LevelUpDialog(QDialog):
                                                                          if hasattr(self.win, "_tab_name") else
                                                                          m["onglet"], m["message"]), "muted", wrap=True))
         self.choices_lay.addStretch(1)
+
+    # ------------------------------------------------------------------ v52 : remplacer un choix
+    def _locked_names(self, key: str) -> set:
+        """Choix d'avant ce niveau, plus celui mis à la place par un remplacement : non modifiables dans la liste."""
+        names = set(self.engine._level_chosen(self.engine, key))
+        repl = self.engine.level_replacement(self.sim, key)
+        return names | ({repl[1]} if repl else set())
+
+    def _replace_card(self, keys: list[str]) -> None:
+        lay = self._card("🔁 Remplacer un choix (facultatif — un seul par ensemble, selon les règles de la classe)")
+        labels = {s["key"]: s["label"] for s in self.sim.option_sets()}
+        labels["manifestations"] = "Manifestations occultes"
+        for key in keys:
+            before = self.engine._level_chosen(self.engine, key)
+            repl = self.engine.level_replacement(self.sim, key)
+            cur = self.engine._level_chosen(self.sim, key)
+            if key == "manifestations":
+                opts = [m["nom"] for m in self.engine.level_invocation_options(self.sim)]
+            else:
+                opts = [n for n in next(s["options"] for s in self.sim.option_sets() if s["key"] == key)
+                        if n not in cur]
+            if repl and repl[1] not in opts:
+                opts = [repl[1]] + opts
+            row = QHBoxLayout()
+            row.addWidget(make_label(labels.get(key, key) + " :"))
+            old, new = QComboBox(), QComboBox()
+            old.addItems([NO_CHOICE] + before)
+            new.addItems([NO_CHOICE] + opts)
+            if repl:
+                old.setCurrentIndex(before.index(repl[0]) + 1)
+                new.setCurrentIndex(opts.index(repl[1]) + 1)
+            for cb in (old, new):
+                cb.setMinimumWidth(240)
+                cb.activated.connect(lambda _=0, k=key, o=old, n=new: self._on_replace(k, o, n))
+            row.addWidget(make_label("remplacer"))
+            row.addWidget(old)
+            row.addWidget(make_label("par"))
+            row.addWidget(new)
+            row.addStretch(1)
+            lay.addLayout(row)
+            self.choice_widgets["remplacer:" + key] = (old, new)
+
+    def _on_replace(self, key: str, old, new) -> None:
+        a, b = old.currentText(), new.currentText()
+        if a == NO_CHOICE or b == NO_CHOICE:
+            if self.engine.level_replacement(self.sim, key) and (a == NO_CHOICE and b == NO_CHOICE):
+                self.engine.level_replace_option(self.sim, key, "", "")
+            elif not self.engine.level_replacement(self.sim, key):
+                return                                   # choix incomplet : on attend l'autre liste
+            else:
+                self.engine.level_replace_option(self.sim, key, "", "")
+        elif not self.engine.level_replace_option(self.sim, key, a, b):
+            self.win.statusBar().showMessage("Remplacement impossible.", 6000)
+        self._changed()
+        self._build_choices()
 
     # ------------------------------------------------------------------ v52 : compétences, expertises, langues
     def _check_list(self, rows: list[tuple[str, bool, bool, str]], on_toggle, cols: int = 4) -> QWidget:
@@ -890,7 +950,49 @@ class LevelUpDialog(QDialog):
             self._fill_spell_lists(cls)
             if cls == self.cls and self.engine.level_swap_allowed(self.sim, cls):     # v44 : échange facultatif
                 lay.addWidget(self._swap_card(cls))
+            if cls == self.cls and self.engine.level_cantrip_swap_allowed(self.sim, cls):   # v52 : 2024
+                lay.addWidget(self._cantrip_swap_card(cls))
         lay.addStretch(1)
+
+    def _cantrip_swap_card(self, cls: str) -> QFrame:
+        """v52 (2024) : remplacer UN tour de magie en gagnant un niveau dans la classe (facultatif)."""
+        card = QFrame()
+        card.setObjectName("opaqueBox")
+        lay = QHBoxLayout(card)
+        lay.setContentsMargins(12, 8, 12, 8)
+        eng, sim = self.engine, self.sim
+        repl = eng.level_replacement(sim, "mineur:" + cls)
+        before = eng._cantrips_of(eng, cls)
+        opts = eng.level_cantrip_options(sim, cls)
+        if repl and repl[1] not in opts:
+            opts = [repl[1]] + opts
+        old, new = QComboBox(), QComboBox()
+        old.addItems([NO_CHOICE] + before)
+        new.addItems([NO_CHOICE] + opts)
+        if repl:
+            old.setCurrentIndex(before.index(repl[0]) + 1)
+            new.setCurrentIndex(opts.index(repl[1]) + 1)
+        for cb in (old, new):
+            cb.setMinimumWidth(220)
+            cb.activated.connect(lambda _=0, o=old, n=new, c=cls: self._on_cantrip_swap(c, o, n))
+        lay.addWidget(make_label("🔁 Remplacer un tour de magie (facultatif, un seul) :", "head"))
+        lay.addWidget(old)
+        lay.addWidget(make_label("par"))
+        lay.addWidget(new)
+        lay.addStretch(1)
+        self.choice_widgets["mineur:" + cls] = (old, new)
+        return card
+
+    def _on_cantrip_swap(self, cls: str, old, new) -> None:
+        a, b = old.currentText(), new.currentText()
+        if a == NO_CHOICE or b == NO_CHOICE:
+            if not self.engine.level_replacement(self.sim, "mineur:" + cls):
+                return
+            self.engine.level_cantrip_swap(self.sim, cls, "", "")
+        elif not self.engine.level_cantrip_swap(self.sim, cls, a, b):
+            self.win.statusBar().showMessage("Remplacement impossible.", 6000)
+        self._changed()
+        self._build_spells()
 
     # ------------------------------------------------------------------ v44 : remplacer un sort connu
     def _swap_card(self, cls: str) -> QFrame:

@@ -93,10 +93,12 @@ class RestDialog(QDialog):
         self.pending_prep: dict[str, list[str]] = {}     # v44 : sorts préparés choisis, appliqués à la fin du repos
         self.spell_messages: list[str] = []
         self.pending_cantrip = None                      # v44 : (ancien, nouveau) tour de magie du Magicien
+        self.pending_swaps: dict[str, tuple[str, str]] = {}   # v52 : botte d'arme, forme connue (un échange)
         self.prep_labels: dict[str, object] = {}
         self.cantrip_label = None
         if long_rest:
             self._build_spell_section(lay)
+            self._build_swap_section(lay)
 
         self.ration = None
         self.starving = None
@@ -155,8 +157,8 @@ class RestDialog(QDialog):
             row += 1
         if cantrip:
             btn = QPushButton("[ Changer un tour de magie ]")
-            btn.setToolTip("Magicien — Formules de sorts mineurs (Tasha) : remplacer un tour de magie connu par un "
-                           "autre tour de magie de la liste du Magicien.")
+            btn.setToolTip("Magicien — remplacer un tour de magie connu par un autre tour de magie de la liste du "
+                           "Magicien (règle 2024 ; option de Tasha « Formules de sorts mineurs » en 2014).")
             btn.clicked.connect(lambda _=False: self.open_cantrip())
             self.cantrip_label = make_label("", "muted", wrap=True)
             grid.addWidget(btn, row, 0)
@@ -213,8 +215,45 @@ class RestDialog(QDialog):
         self._update_spell_labels()
         return True
 
+    # ------------------------------------------------------------------ v52 : un échange au repos long (2024)
+    def _build_swap_section(self, lay) -> None:
+        swaps = self.win.engine.rest_option_swaps()
+        if not swaps:
+            return
+        lay.addWidget(make_label("🔁 Un échange permis par ce repos long :", "head"))
+        self.swap_labels = {}
+        for sw in swaps:
+            row = QHBoxLayout()
+            btn = QPushButton("[ {} ]".format(sw["titre"]))
+            btn.clicked.connect(lambda _=False, k=sw["key"]: self.open_swap(k))
+            label = make_label("Inchangé", "muted", wrap=True)
+            row.addWidget(btn)
+            row.addWidget(label, 1)
+            lay.addLayout(row)
+            self.swap_labels[sw["key"]] = label
+
+    def open_swap(self, key: str) -> bool:
+        from .dialogs import ask_choice
+        sw = next((x for x in self.win.engine.rest_option_swaps() if x["key"] == key), None)
+        if sw is None:
+            return False
+        old = ask_choice(self, sw["titre"], "Quel choix remplacer ?", list(sw["set"]["chosen"]))
+        if not old:
+            return False
+        new = ask_choice(self, sw["titre"], "Par quoi remplacer {} ?".format(old),
+                         [n for n in sw["set"]["options"] if n not in sw["set"]["chosen"]])
+        return bool(new) and self.set_swap_choice(key, old, new)
+
+    def set_swap_choice(self, key: str, old: str, new: str) -> bool:
+        self.pending_swaps[key] = (old, new)
+        if key in getattr(self, "swap_labels", {}):
+            self.swap_labels[key].setText("🔁 {} → {} (appliqué à la fin du repos)".format(old, new))
+        return True
+
     def _apply_spell_changes(self) -> list[str]:
         eng, out = self.win.engine, []
+        for key, (old, new) in self.pending_swaps.items():
+            out.append(eng.rest_swap_option(key, old, new)[1])
         if self.pending_cantrip:
             ok, msg = eng.swap_cantrip(*self.pending_cantrip)
             out.append(msg)

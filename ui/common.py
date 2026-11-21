@@ -340,6 +340,24 @@ class BaseTab(QWidget):
     def engine(self):
         return self.win.engine
 
+    # v52 : Mode guidé — les choix de construction se font à la création ou dans « Niveau supérieur »
+    GUIDED_TIP = ("Mode guidé : se choisit à la création ou dans « ▲ Niveau supérieur ». Seul un choix encore "
+                  "manquant (○) se complète ici. Le Mode libre (Options) permet de tout corriger.")
+
+    @property
+    def guided(self) -> bool:
+        return getattr(self.win, "free_mode", True) is False
+
+    def guided_refuse(self, what: str = "") -> bool:
+        """Refus d'une modification en Mode guidé (message dans la barre d'état). Renvoie True (= refusé)."""
+        try:
+            self.win.statusBar().showMessage("Mode guidé : {}se choisit à la création ou dans « Niveau "
+                                             "supérieur » (Mode libre dans Options pour corriger).".format(
+                                                 what + " " if what else ""), 8000)
+        except (AttributeError, TypeError):
+            pass
+        return True
+
     def mark_box(self, box, base: str, tab: str, encart: str) -> int:
         """Titre d'encart suivi du reste à faire (« Compétences — 2 à choisir ») — v28, choix manquants."""
         n = self.engine.missing_in(tab, encart)

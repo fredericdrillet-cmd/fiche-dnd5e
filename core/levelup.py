@@ -121,11 +121,116 @@ class LevelUpMixin:
         return {s["key"] for s in sim.option_sets() if not s["key"].startswith("don:")
                 and s["total"] > before.get(s["key"], 0)}
 
+    # ------------------------------------------------------------------ v52 : remplacer UN choix au niveau gagné
+    def level_replace_allowed(self, sim, key: str, class_name: str) -> bool:
+        """Règles : manœuvres (2014 : quand on en apprend ; 2024 : à chaque niveau de Guerrier), manifestations (à
+        chaque niveau d'Occultiste), runes et Tirs arcaniques (quand on en apprend), Métamagie 2024 (quand on en
+        gagne)."""
+        if key == "manifestations":
+            return class_name == "Occultiste" and bool(self.ch.manifestations)
+        before = {s["key"]: s for s in self.option_sets()}
+        after = {s["key"]: s for s in sim.option_sets()}
+        if key not in before or key not in after or not before[key]["chosen"]:
+            return False
+        grew = after[key]["total"] > before[key]["total"]
+        if key == "manoeuvres":
+            return class_name == "Guerrier" and (grew or self.sheet_edition == 2024)
+        if key in ("runes", "tirs"):
+            return grew
+        if key == "metamagie":
+            return grew and self.sheet_edition == 2024
+        return False
+
+    def _level_chosen(self, eng, key: str) -> list[str]:
+        if key == "manifestations":
+            return list(eng.ch.manifestations)
+        return list(next((s["chosen"] for s in eng.option_sets() if s["key"] == key), []))
+
+    @staticmethod
+    def level_replacement(sim, key: str) -> Optional[tuple[str, str]]:
+        return (sim.__dict__.get("_level_repl") or {}).get(key)
+
+    def level_replace_option(self, sim, key: str, old: str, new: str) -> bool:
+        """Remplace `old` (choix d'avant ce niveau) par `new` ; un seul remplacement par ensemble. old/new vides :
+        annule le remplacement en cours."""
+        repl = sim.__dict__.setdefault("_level_repl", {})
+
+        def put(a: str, b: str) -> None:                 # remplace a par b dans la copie
+            if key == "manifestations":
+                sim.ch.manifestations = [b if x == a else x for x in sim.ch.manifestations]
+                sim.normalize()
+            else:
+                cur = self._level_chosen(sim, key)
+                sim.set_class_option(key, cur.index(a), b)
+        prev = repl.pop(key, None)
+        if prev and prev[1] in self._level_chosen(sim, key):
+            put(prev[1], prev[0])
+        if not old or not new:
+            return True
+        if not self.level_replace_allowed(sim, key, self._level_class_of(sim)):
+            return False
+        before, cur = self._level_chosen(self, key), self._level_chosen(sim, key)
+        if old not in before or old not in cur or new in cur:
+            return False
+        if key == "manifestations":
+            if not any(m["nom"] == new for m in self.level_invocation_options(sim)):
+                return False
+        elif new not in next((s["options"] for s in sim.option_sets() if s["key"] == key), {}):
+            return False
+        put(old, new)
+        repl[key] = (old, new)
+        return True
+
+    def _level_class_of(self, sim) -> str:
+        """Classe montée sur la copie : celle dont le niveau a augmenté."""
+        for e in sim.ch.classes:
+            old = self.ch.find_class(e["nom"])
+            if old is None or e["niveau"] > old["niveau"]:
+                return e["nom"]
+        return ""
+
+    # v52 : 2024 — remplacer un tour de magie en gagnant un niveau (texte d'Incantation / Magie de pacte)
+    CANTRIP_SWAP_2024 = ("Barde", "Clerc", "Druide", "Ensorceleur", "Occultiste")
+
+    def _cantrips_of(self, eng, class_name: str) -> list[str]:
+        return [s["nom"] for s in eng.ch.sorts.get(class_name, [])
+                if int((eng.db.find_spell(s["nom"]) or {}).get("niveau", 1) or 0) == 0 and not s.get("accorde")]
+
+    def level_cantrip_swap_allowed(self, sim, class_name: str) -> bool:
+        return (self.sheet_edition == 2024 and class_name in self.CANTRIP_SWAP_2024
+                and self._level_class_of(sim) == class_name and bool(self._cantrips_of(self, class_name)))
+
+    def level_cantrip_options(self, sim, class_name: str) -> list[str]:
+        owned = {x["nom"] for x in sim.ch.sorts.get(class_name, [])}     # quota plein : liste dédiée
+        return [sp["nom"] for sp in sim.available_spells(class_name)
+                if not int(sp.get("niveau") or 0) and sp["nom"] not in owned and not sp.get("hors_corpus")]
+
+    def level_cantrip_swap(self, sim, class_name: str, old: str, new: str) -> bool:
+        """Remplace le tour de magie `old` (connu avant ce niveau) par `new` ; un seul. Vides : annule."""
+        repl = sim.__dict__.setdefault("_level_repl", {})
+        key = "mineur:" + class_name
+
+        def put(a: str, b: str) -> None:
+            for s in sim.ch.sorts.get(class_name, []):
+                if s["nom"] == a:
+                    s["nom"] = b
+            sim.normalize()
+        prev = repl.pop(key, None)
+        if prev:
+            put(prev[1], prev[0])
+        if not old or not new:
+            return True
+        if not self.level_cantrip_swap_allowed(sim, class_name) or old not in self._cantrips_of(self, class_name) \
+                or new not in self.level_cantrip_options(sim, class_name):
+            return False
+        put(old, new)
+        repl[key] = (old, new)
+        return True
+
     def level_feat_keys(self, sim) -> set:
-        """v52 : choix des dons pris à ce niveau (Doué, Initié à la magie, Expert…), ou encore incomplets."""
+        """v52 : choix des dons pris à ce niveau (Doué, Initié à la magie, Expert…)."""
         before = {s["key"] for s in self.option_sets() if s["key"].startswith("don:")}
-        return {s["key"] for s in sim.option_sets() if s["key"].startswith("don:")
-                and (s["key"] not in before or len(s["chosen"]) < s["total"])}
+        return {s["key"] for s in sim.option_sets() if s["key"].startswith("don:") and s["key"] not in before}
 
     @staticmethod
     def level_set_skill(sim, name: str, field: str, on: bool) -> bool:
@@ -312,7 +417,7 @@ class LevelUpMixin:
         for k in sorted(set(sa) | set(sb)):
             a, b = sa.get(k, {}), sb.get(k, {})
             learned += [tag(n, k) for n in b if n not in a]
-            forgot += ["{} ({})".format(n, k) for n in a if n not in b]
+            forgot += [tag(n, k) for n in a if n not in b]
             prepared += ["{} ({})".format(n, k) for n in b if b[n] and n in a and not a[n]]
         ca = {c["nom"] for c in a_ch.sorts_mineurs if c.get("nom")}
         learned = ["{} (sort mineur)".format(c["nom"]) for c in b_ch.sorts_mineurs if c.get("nom") and
