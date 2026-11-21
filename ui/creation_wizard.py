@@ -239,6 +239,11 @@ class CreationWizard(QDialog):
         lay.addWidget(self.guide)
         self.choice_grid = QGridLayout()
         lay.addLayout(self.choice_grid)
+        from .class_options import OptionSetsPanel           # v52 : Ordre divin, Ordre primitif… du niveau 1
+        self.options_head = make_label("✦ Choix de classe", "head")
+        lay.addWidget(self.options_head)
+        self.options_panel = OptionSetsPanel(lambda: self.engine, self.host.changed)
+        lay.addWidget(self.options_panel)
         self.style_desc = make_label("", "muted", wrap=True)   # v52 : texte du style de combat choisi
         lay.addWidget(self.style_desc)
         lay.addStretch(1)
@@ -391,7 +396,8 @@ class CreationWizard(QDialog):
         def none(pred) -> bool:
             return not any(pred(m) for m in miss)
         class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("combat", "Style de combat"),
-                                                                 ("classes", "Sous-classe")))
+                                                                 ("classes", "Sous-classe"),
+                                                                 ("classes", "Options de classe")))
         skills_ok = none(lambda m: (m["onglet"], m["encart"]) == ("caracteristiques", "Compétences")) and \
             not self.engine.skill_choice_errors()
         return [bool(self.ch.race), none(lambda m: m["onglet"] == "race"), class_ok, skills_ok,
@@ -479,6 +485,8 @@ class CreationWizard(QDialog):
         entry = self.ch.classes[0]
         self.guide.set_class(eng, cls, entry.get("sous_classe") or self.engine.__dict__.get("_sous_classe_visee", ""))
         clear_layout(self.choice_grid)
+        self.options_panel.refresh()
+        self.options_head.setVisible(bool(self.options_panel.sets()))
         row = 0
         if self.engine.subclass_level(cls) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
             combo = QComboBox()

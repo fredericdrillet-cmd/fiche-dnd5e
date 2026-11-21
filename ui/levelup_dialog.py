@@ -357,6 +357,17 @@ class LevelUpDialog(QDialog):
             row += 1
         if warlock:
             self._invocation_card()                      # v43 : manifestations occultes de l'Occultiste
+        opt_keys = self.engine.level_option_keys(self.sim) | {
+            s["key"] for s in self.sim.option_sets() if "options" in kinds and not s["key"].startswith("don:")
+            and len(s["chosen"]) < s["total"]}
+        if opt_keys:                                     # v52 : manœuvres, runes, Métamagie… choisies ici
+            from .class_options import OptionSetsPanel
+            panel = OptionSetsPanel(lambda: self.sim, self._changed, keys=opt_keys)
+            panel.refresh()
+            grid.addWidget(make_label("✦ Choix de classe", "head"), row, 0, 1, 4)
+            grid.addWidget(panel, row + 1, 0, 1, 4)
+            self.choice_widgets["options"] = panel
+            row += 2
         if row == 0 and not self._new_asi_slots() and not self._new_style_slots() and not (warlock and
                                                                                          self._inv_slots()):
             grid.addWidget(make_label("Aucun choix à faire dans l'assistant à ce niveau.", "muted"), 0, 0, 1, 4)

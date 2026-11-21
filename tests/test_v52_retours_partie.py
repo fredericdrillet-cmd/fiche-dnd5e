@@ -63,8 +63,9 @@ class UiTests(unittest.TestCase):
         self.win.changed()
         self.win.classes_tab.refresh()
         self.assertNotIn("options_box", vars(self.win.combat_tab))
-        self.assertIn("Options de classe", self.win.classes_tab.options_box.title())
-        self.assertIsNotNone(self.win.classes_tab._options_key)
+        tab = self.win.classes_tab
+        self.assertIn("Rappels", tab.options_box.title())
+        self.assertIn("3 à choisir", tab.options_label.text())    # rappel en bas, pas de liste à choisir
 
     def test_short_common_labels(self):
         from ui.combat_tab import CombatTab
@@ -78,6 +79,60 @@ class UiTests(unittest.TestCase):
             no_dice = True
         self.assertIsNone(roll_dice(Host(), self.win.engine.skill_spec("Acrobaties")))
         self.assertIsNone(roll_damage_dialog(Host(), D.DamageSpec("x", "1d6")))
+
+
+class LevelUpChoiceTests(unittest.TestCase):
+    def test_maneuvers_chosen_in_level_up(self):
+        eng = sheet("Guerrier", 2)
+        sim = eng.simulate_level_up("Guerrier")
+        sim.ch.find_class("Guerrier")["sous_classe"] = "Maître de guerre"
+        sim.normalize()
+        self.assertEqual(eng.level_option_keys(sim), {"manoeuvres"})
+        rep = eng.level_up_report(sim, "Guerrier")
+        self.assertIn("options", {m["kind"] for m in rep["dans_assistant"]})     # bloque « Confirmer »
+        for i, n in enumerate(list(DB.maneuvers)[:3]):
+            sim.set_class_option("manoeuvres", i, n)
+        self.assertNotIn("options", {m["kind"] for m in eng.level_up_report(sim, "Guerrier")["dans_assistant"]})
+
+    def test_more_maneuvers_at_level_7(self):
+        eng = sheet("Guerrier", 6, "Maître de guerre")
+        for i, n in enumerate(list(DB.maneuvers)[:3]):
+            eng.set_class_option("manoeuvres", i, n)
+        sim = eng.simulate_level_up("Guerrier")
+        self.assertEqual(eng.level_option_keys(sim), {"manoeuvres"})
+
+    def test_superior_technique_is_a_class_choice(self):
+        eng = sheet("Guerrier", 3, "Champion")
+        eng.ch.styles_combat = {s["id"]: "Technique supérieure" for s in eng.fighting_style_slots()}
+        eng.normalize()
+        st = next(s for s in eng.option_sets() if s["key"] == "technique_superieure")
+        self.assertEqual((st["total"], st["chosen"]), (1, []))
+        name = next(iter(DB.maneuvers))
+        eng.set_class_option("technique_superieure", 0, name)
+        self.assertEqual(eng.ch.technique_manoeuvre, name)
+        self.assertIsNotNone(eng.superior_technique_action())
+
+
+class RealQtDiceTests(unittest.TestCase):
+    """Fenêtres de dés construites avec le VRAI PyQt6 (le faux Qt des autres tests ne voit pas ces erreurs)."""
+
+    def test_dice_dialogs_build(self):
+        import os
+        import subprocess
+        code = ("import sys; sys.path.insert(0, '.')\n"
+                "from PyQt6.QtWidgets import QApplication; app = QApplication([])\n"
+                "from core.data_loader import Database; from core.engine import Engine; from core import dice as D\n"
+                "from ui.dice_dialog import DiceRollDialog, DamageRollDialog\n"
+                "db = Database('data'); eng = Engine(db, Engine.new_character(db)); eng.normalize()\n"
+                "DiceRollDialog(None, eng.skill_spec('Acrobaties'))\n"
+                "d = DamageRollDialog(None, D.DamageSpec('Épée', '1d8+2d6+3', 'tranchant')); d.finish_now()\n"
+                "print('OK')\n")
+        env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+        out = subprocess.run([sys.executable, "-c", code], cwd=str(ROOT), env=env, capture_output=True, text=True,
+                             timeout=120)
+        if "No module named 'PyQt6'" in out.stderr:     # le faux Qt des autres tests ne compte pas ici
+            self.skipTest("PyQt6 absent")
+        self.assertIn("OK", out.stdout, out.stderr[-1500:])
 
 
 if __name__ == "__main__":

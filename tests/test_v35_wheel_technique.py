@@ -149,7 +149,7 @@ def make(style="Technique supérieure", maneuver=""):
 class SuperiorTechniqueTests(unittest.TestCase):
     def test_maneuver_to_choose(self):
         eng = make()
-        self.assertIn("Technique supérieure : manœuvre à choisir",
+        self.assertIn("Technique supérieure (style de combat) : 1 à choisir",
                       [m["message"] for m in eng.missing_choices()])
         self.assertIsNone(eng.superior_technique_action())
 

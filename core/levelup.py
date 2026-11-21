@@ -41,7 +41,8 @@ def filter_spells(spells: list[dict], niveau=None, ecole: str = "", rituel: bool
 
 # choix faits DANS l'assistant (bloquent « Confirmer ») : (onglet, encart) de missing_choices()
 INLINE = {("classes", "Sous-classe"): "sous_classe", ("progression", "Emplacements débloqués"): "amelioration",
-          ("combat", "Style de combat"): "style", ("magie", "Pacte"): "pacte"}
+          ("combat", "Style de combat"): "style", ("magie", "Pacte"): "pacte",
+          ("classes", "Options de classe"): "options"}     # v52 : manœuvres, runes, Métamagie… au niveau gagné
 
 
 class LevelUpMixin:
@@ -110,6 +111,12 @@ class LevelUpMixin:
                 "mode": self.ch.pv_mode, "premier": first}
 
     # ------------------------------------------------------------------ rapport de l'assistant
+    def level_option_keys(self, sim) -> set:
+        """v52 : ensembles de choix de classe gagnés ou agrandis à ce niveau (manœuvres, runes, Métamagie…)."""
+        before = {s["key"]: s["total"] for s in self.option_sets() if not s["key"].startswith("don:")}
+        return {s["key"] for s in sim.option_sets() if not s["key"].startswith("don:")
+                and s["total"] > before.get(s["key"], 0)}
+
     def level_up_report(self, sim, class_name: str) -> dict:
         """Aptitudes gagnées, choix du niveau (dans l'assistant / à faire ensuite), récapitulatif avant / après."""
         entry = sim.ch.find_class(class_name)
@@ -143,7 +150,7 @@ class LevelUpMixin:
         """Choix de l'assistant lié à la classe montée : préfixe « Classe : » / « Classe — », style « (Classe) »,
         pacte et manifestations pour l'Occultiste ; les échanges de sorts sont toujours ceux de la classe montée."""
         kind, msg = m.get("kind", ""), m.get("message", "")
-        if m.get("echange"):
+        if m.get("echange") or kind == "options":
             return True
         if kind in ("pacte", "manifestations"):
             return class_name == "Occultiste" or "Occultiste" not in msg and kind == "manifestations"

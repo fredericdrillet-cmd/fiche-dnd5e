@@ -354,10 +354,6 @@ class DiceRollDialog(QDialog):
         lay.addWidget(box)
         self.total = make_label("Total : …", "stat", align=Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(self.total)
-        self._wrapped.append(self.total)
-        for lab in self._wrapped:                         # v52 : textes longs à la ligne plutôt que tronqués
-            lab.setWordWrap(True)
-        self._card = card
         if spec.note:
             lay.addWidget(make_label(spec.note, "muted", wrap=True, align=Qt.AlignmentFlag.AlignCenter))
         # v52 : le jet part dans le mode de l'état du personnage ; le MJ peut imposer un autre mode (relance)

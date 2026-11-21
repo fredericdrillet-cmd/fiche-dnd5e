@@ -147,6 +147,10 @@ class SubclassFeaturesMixin:
         bm = self.maneuver_option_set()                  # v39 : manœuvres du Maître de guerre
         if bm:
             out.append(bm)
+        if self.superior_technique():                    # v52 : manœuvre du style Technique supérieure
+            tech = self.ch.technique_manoeuvre
+            out.append({"key": "technique_superieure", "label": "Technique supérieure (style de combat)", "total": 1,
+                        "options": dict(self.db.maneuvers), "chosen": [tech] if tech in self.db.maneuvers else []})
         meta = self.metamagic_option_set()               # v39 : options de métamagie de l'Ensorceleur
         if meta:
             out.append(meta)
@@ -179,6 +183,10 @@ class SubclassFeaturesMixin:
         self.ch.options_classe = clean
 
     def set_class_option(self, key: str, index: int, name: str) -> None:
+        if key == "technique_superieure":                # v52 : rangée dans son champ historique
+            self.ch.technique_manoeuvre = name
+            self.normalize()
+            return
         chosen = list((self.ch.options_classe or {}).get(key, []))
         while len(chosen) <= index:
             chosen.append("")

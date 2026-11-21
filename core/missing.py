@@ -177,9 +177,7 @@ class MissingChoicesMixin:
             if st["key"].startswith("don:"):
                 add("progression", "Choix des dons", n, "{} : {} à choisir".format(st["label"], n))
             else:
-                add("combat", "Options de classe", n, "{} : {} à choisir".format(st["label"], n))
-        if self.superior_technique() and not ch.technique_manoeuvre:
-            add("combat", "Style de combat", 1, "Technique supérieure : manœuvre à choisir")
+                add("classes", "Options de classe", n, "{} : {} à choisir".format(st["label"], n))   # v52
         # magie
         for c in self.casters():
             cnt = self.spell_counts(c["classe"])
