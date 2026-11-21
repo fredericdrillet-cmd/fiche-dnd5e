@@ -21,6 +21,7 @@ import re
 from typing import Optional
 
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 RUNE_DC = "DD des runes : 8 + bonus de maîtrise + modificateur de Constitution"
 RUNES = {
@@ -121,7 +122,7 @@ class SubclassFeaturesMixin:
     def _fighter_sub(self, name: str) -> int:
         """Niveau de Guerrier si la sous-classe `name` est choisie et active (niveau 3+), sinon 0."""
         e = self.ch.find_class("Guerrier")
-        if not e or e["niveau"] < 3 or norm(e.get("sous_classe", "")) != norm(name):
+        if not e or e["niveau"] < 3 or sub_norm_of(e) != norm(name):
             return 0
         return e["niveau"]
 
@@ -146,9 +147,25 @@ class SubclassFeaturesMixin:
         bm = self.maneuver_option_set()                  # v39 : manœuvres du Maître de guerre
         if bm:
             out.append(bm)
+        out += self.draconic_option_sets()               # v52 : couleur du dragon (Drakéide, Ensorceleur)
+        if self.superior_technique():                    # v52 : manœuvre du style Technique supérieure
+            tech = self.ch.technique_manoeuvre
+            out.append({"key": "technique_superieure", "label": "Technique supérieure (style de combat)", "total": 1,
+                        "options": dict(self.db.maneuvers), "chosen": [tech] if tech in self.db.maneuvers else []})
         meta = self.metamagic_option_set()               # v39 : options de métamagie de l'Ensorceleur
         if meta:
             out.append(meta)
+        out += self.order_option_sets()                  # v52 : Ordre divin / Ordre primitif (2024)
+        out += self.class_option_sets()                  # v52 : Connaissance primitive, Frappes bénies, Fureur…
+        out += self.subclass_option_sets()               # v52 : Résistance fiélonne, Maîtrises supplémentaires
+        out += self.subclass24_option_sets()             # v52 : Cœur sauvage (2024)
+        primal = self.primal_option_set()                # v52 : compagnon primitif (Maître des bêtes 2024)
+        if primal:
+            out.append(primal)
+        forms = self.known_forms_option_set()            # v52 : formes connues (Forme sauvage 2024)
+        if forms:
+            out.append(forms)
+        out += self.feat_option_sets()                   # v52 : choix des dons (compétences, sorts, résistances…)
         return out
 
     def sanitize_class_options(self) -> None:
@@ -166,7 +183,30 @@ class SubclassFeaturesMixin:
             clean[key] = keep[:s["total"]]
         self.ch.options_classe = clean
 
+    def draconic_option_sets(self) -> list[dict]:
+        """v52 : couleur du dragon ancestral — Drakéide (souffle, résistance) et Ensorceleur de la Lignée draconique
+        (affinité élémentaire), choisie à la création ou quand la sous-classe est prise."""
+        from .engine_extras import DRACONIC
+        opts = {c: "Dégâts : {} — souffle : {} — JS de {}".format(t, z, js) for c, (t, z, js) in DRACONIC.items()}
+        out = []
+        if norm(self.ch.race).startswith("drakeide") and self.has_breath():
+            c = self.ch.ascendance_raciale
+            out.append({"key": "ascendance_raciale", "label": "Ascendance draconique ({})".format(self.ch.race),
+                        "total": 1, "options": opts, "chosen": [c] if c in DRACONIC else []})
+        if self.is_draconic_sorcerer():
+            c = self.ch.ascendance_ensorceleur
+            out.append({"key": "ascendance_ensorceleur", "label": "Ascendance draconique (Ensorceleur)", "total": 1,
+                        "options": opts, "chosen": [c] if c in DRACONIC else []})
+        return out
+
+    FIELD_OPTIONS = {"technique_superieure": "technique_manoeuvre", "ascendance_raciale": "ascendance_raciale",
+                     "ascendance_ensorceleur": "ascendance_ensorceleur"}   # v52 : choix rangés dans leur champ
+
     def set_class_option(self, key: str, index: int, name: str) -> None:
+        if key in self.FIELD_OPTIONS:
+            setattr(self.ch, self.FIELD_OPTIONS[key], name)
+            self.normalize()
+            return
         chosen = list((self.ch.options_classe or {}).get(key, []))
         while len(chosen) <= index:
             chosen.append("")
@@ -229,7 +269,7 @@ class SubclassFeaturesMixin:
         e = self.ch.find_class(class_name)
         if not e or e["niveau"] < 3:
             return None
-        schools = SCHOOL_RULES.get((class_name, norm(e.get("sous_classe", ""))))
+        schools = SCHOOL_RULES.get((class_name, sub_norm_of(e)))
         if not schools:
             return None
         free_max = sum(1 for lvl in FREE_SCHOOL_LEVELS if e["niveau"] >= lvl)
@@ -263,7 +303,7 @@ class SubclassFeaturesMixin:
     def ensure_granted_cantrips(self) -> None:
         """Arnaqueur arcanique : Main de mage connue d'office (retirée si la sous-classe est quittée)."""
         rogue = self.ch.find_class("Roublard")
-        at = bool(rogue and rogue["niveau"] >= 3 and norm(rogue.get("sous_classe", "")) in
+        at = bool(rogue and rogue["niveau"] >= 3 and sub_norm_of(rogue) in
                   ("arnaqueur arcanique", "escroc arcanique"))
         lst = self.ch.sorts.get("Roublard", [])
         if at and self.db.find_spell(MAGE_HAND) and not any(s["nom"] == MAGE_HAND for s in lst):
@@ -348,7 +388,7 @@ class SubclassFeaturesMixin:
                                      "concentrez, une attaque d'arme par une action bonus à chaque tour (gratuit une "
                                      "fois par repos long, sinon 1 dé).", niveau=18, sous_classe=sc))
         rogue = self.ch.find_class("Roublard")
-        if rogue and rogue["niveau"] >= 3 and norm(rogue.get("sous_classe", "")) in ("arnaqueur arcanique",
+        if rogue and rogue["niveau"] >= 3 and sub_norm_of(rogue) in ("arnaqueur arcanique",
                                                                                       "escroc arcanique"):
             out.append(self._act("main_arcanique", "Main de mage arcanique", "🫳", "Action bonus", {},
                                  "Passe-passe à distance : vous contrôlez votre Main de mage par une action bonus. Elle "

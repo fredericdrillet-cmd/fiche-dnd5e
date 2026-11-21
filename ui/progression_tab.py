@@ -10,7 +10,7 @@ from __future__ import annotations
 import html
 
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import (QAbstractItemView, QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit,
+from PyQt6.QtWidgets import (QAbstractItemView, QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView, QLineEdit,
                              QPushButton, QTableWidget, QTextBrowser, QVBoxLayout)
 
 from core.formulas import annotate
@@ -40,6 +40,10 @@ class ProgressionTab(BaseTab):
         self.empty = make_label("Aucune amélioration débloquée pour l'instant (niveau 4 pour la plupart des classes).",
                                 "muted")
         root.addWidget(self.empty)
+        self.choice_box = QGroupBox("Choix des dons")          # v52 : compétences, sorts, résistances… des dons
+        self.choice_layout = QGridLayout(self.choice_box)
+        root.addWidget(self.choice_box)
+        self._choice_key = None
 
         cat = QGroupBox("Catalogue des dons")
         cl = QVBoxLayout(cat)
@@ -58,7 +62,9 @@ class ProgressionTab(BaseTab):
         self.table.setHorizontalHeaderLabels(["Don", "Prérequis", "Augmentation", "État"])
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        style_table(self.table, stretch_col=0)
+        style_table(self.table, stretch_col=1)          # v52 : le nom du don entier, le prérequis s'adapte
+        self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.table.setWordWrap(False)
         self.detail = QTextBrowser()
         split.addWidget(self.table, 3)
         split.addWidget(self.detail, 2)
@@ -124,11 +130,56 @@ class ProgressionTab(BaseTab):
             "don": w["feat"].currentText(), "don_carac": w["fa"].currentText()}
         self.changed()
 
+    # ------------------------------------------------------------------ v52 : choix des dons
+    NO_OPTION = "— à choisir —"
+
+    def _refresh_feat_choices(self) -> None:
+        """Un sélecteur par choix d'un don (Doué, Initié à la magie, Faveur de résistance aux énergies…) :
+        l'effet est appliqué à la fiche dès le choix (compétences, sorts accordés, résistances)."""
+        sets = [s for s in self.engine.option_sets() if s["key"].startswith("don:")]
+        self.choice_box.setVisible(bool(sets))
+        n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
+        self.choice_box.setTitle("Choix des dons" + ("  — ○ {} à choisir".format(n_missing) if n_missing else ""))
+        key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
+            (theme.current().key,)
+        if key == self._choice_key:
+            return
+        self._choice_key = key
+        while self.choice_layout.count():
+            item = self.choice_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        row = 0
+        for s in sets:
+            self.choice_layout.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]),
+                                                    "head"), row, 0, 1, 2)
+            row += 1
+            for i in range(s["total"]):
+                current = s["chosen"][i] if i < len(s["chosen"]) else ""
+                taken = {c for j, c in enumerate(s["chosen"]) if j != i}
+                names = [n for n in s["options"] if n not in taken]
+                combo = QComboBox()
+                fill_combo(combo, [self.NO_OPTION] + names, current or self.NO_OPTION,
+                           {n: rich_tip(n, s["options"][n]) for n in names if s["options"][n]})
+                combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self._on_feat_choice(k, idx, c))
+                self.choice_layout.addWidget(combo, row, 0)
+                self.choice_layout.addWidget(make_label((s["options"].get(current, "") or "")[:160], "muted",
+                                                        wrap=True), row, 1)
+                row += 1
+        self.choice_layout.setColumnStretch(1, 1)
+
+    def _on_feat_choice(self, key: str, index: int, combo) -> None:
+        text = combo.currentText()
+        self.engine.set_class_option(key, index, "" if text == self.NO_OPTION else text)
+        self.changed()
+
     # ------------------------------------------------------------------ catalogue
     def feat_names(self) -> list[str]:
         """Dons triés par ordre alphabétique strict (accents ignorés), calculé une seule fois."""
-        if len(self._sorted) != len(self.db.feats):
-            self._sorted = sorted(self.db.feats, key=lambda n: (norm(n), n))
+        key = (len(self.db.feats), self.engine.edition_mode)          # v52 : dons de l'édition du personnage
+        if getattr(self, "_sorted_key", None) != key:
+            self._sorted = sorted(self.engine.feat_options(), key=lambda n: (norm(n), n))
+            self._sorted_key = key
         return self._sorted
 
     def _ctx_key(self) -> tuple:
@@ -209,7 +260,7 @@ class ProgressionTab(BaseTab):
                 w["a2"].setCurrentIndex(max(0, w["a2"].findText(c.get("a2", "Dextérité"))))
             fill_combo(w["feat"], names, c.get("don", "") or (names[0] if names else ""), tips)
             feat = db.feats.get(w["feat"].currentText(), {})
-            choices = feat.get("carac_choix", [])
+            choices = eng.feat_ability_options(feat["nom"]) if feat else []    # v52 : Résilient (2024)…
             fill_combo(w["fa"], choices or ["—"], c.get("don_carac", "") if c.get("don_carac") in choices
                        else (choices[0] if choices else "—"))
             w["mode"].setEnabled(not w["don_seul"])         # Humain variant / MJ : un don, rien d'autre
@@ -225,4 +276,5 @@ class ProgressionTab(BaseTab):
                 w["state"].setText("{} {}{}".format(STATE_ICON[state], msg or "prérequis rempli", extra))
             else:
                 w["state"].setText("")
+        self._refresh_feat_choices()
         self._fill_catalog()

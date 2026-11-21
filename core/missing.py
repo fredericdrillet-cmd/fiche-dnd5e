@@ -17,7 +17,6 @@ from .engine_extras import _batch_memo
 from .rules import ABILITIES, norm
 
 NUMBERS = {"un": 1, "une": 1, "deux": 2, "trois": 3, "quatre": 4}
-DRACONIC_RACES = ("drakeide",)
 
 
 def _count_word(text: str) -> int:
@@ -66,7 +65,7 @@ class MissingChoicesMixin:
             for f in self.features(e):
                 if f["debloque"] and norm(f["nom"]).startswith("expertise"):
                     n += 2
-        return n
+        return n + self.class_extra_expertise()          # v52 : Explorateur habile, Érudit (2024)
 
     def expertise_missing(self) -> int:
         have = sum(1 for s in self.ch.competences.values() if s.get("maitrise") and s.get("expertise"))
@@ -92,7 +91,7 @@ class MissingChoicesMixin:
                 out.append(("Don : " + feat, _count_word(m.group(1))))
         for e in self.ch.classes:
             for f in self.features(e):
-                m = rx.search(norm(f["description"])) if f["debloque"] else None
+                m = rx.search(norm(f["description"])) if f["debloque"] and self.feature_allowed(f["nom"]) else None
                 if m:
                     out.append(("{} : {}".format(e["nom"], f["nom"]), _count_word(m.group(1))))
         return out
@@ -158,25 +157,25 @@ class MissingChoicesMixin:
             n, "s" * (n > 1), "s" * (n > 1), "ux" if n > 1 else "l"))
         # classes
         for e in ch.classes:
-            need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
+            need = self.subclass_level(e["nom"])
             if e["niveau"] >= need and not e.get("sous_classe") and self.db.subclasses(e["nom"]):
                 add("classes", "Sous-classe", 1, "{} : sous-classe à choisir (niveau {} atteint)".format(e["nom"], need))
         # race, historique, langues
         n = self.languages_missing()
         add("race", "Langues", n, "{} langue{} au choix à ajouter".format(n, "s" * (n > 1)))
-        if any(norm(ch.race).startswith(r) for r in DRACONIC_RACES) and hasattr(self, "has_breath") \
-                and self.has_breath() and not ch.ascendance_raciale:
-            add("combat", "Capacités de combat raciales", 1, "Couleur du dragon ancestral à choisir")
         # combat : styles de combat, modèle d'armure
         for slot in self.fighting_style_slots():
             if slot["debloque"] and slot["id"] not in ch.styles_combat:
                 what = "Modèle d'armure" if slot["kind"] == "modele" else "Style de combat"
                 add("combat", "Style de combat", 1, "{} à choisir ({})".format(what, slot["classe"]))
-        for st in self.option_sets():                   # runes, options de Tir arcanique
+        for st in self.option_sets():                   # runes, options de Tir arcanique, choix des dons (v52)
             n = st["total"] - len(st["chosen"])
-            add("combat", "Options de sous-classe", n, "{} : {} à choisir".format(st["label"], n))
-        if self.superior_technique() and not ch.technique_manoeuvre:
-            add("combat", "Style de combat", 1, "Technique supérieure : manœuvre à choisir")
+            if st["key"] == "ascendance_raciale":       # v52 : choix de l'espèce (étape Race de l'assistant)
+                add("race", "Ascendance draconique", n, "Couleur du dragon ancestral à choisir")
+            elif st["key"].startswith("don:"):
+                add("progression", "Choix des dons", n, "{} : {} à choisir".format(st["label"], n))
+            else:
+                add("classes", "Options de classe", n, "{} : {} à choisir".format(st["label"], n))   # v52
         # magie
         for c in self.casters():
             cnt = self.spell_counts(c["classe"])
@@ -194,7 +193,7 @@ class MissingChoicesMixin:
                 n = min(c["prepares_max"], cnt["sorts"] if c["classe"] == "Magicien" else c["prepares_max"]) \
                     - cnt["prepares"]
                 add("magie", "Sorts", n, "{} : {} sort{} à préparer".format(c["classe"], n, "s" * (n > 1)))
-        if self.class_level("Occultiste") >= 3 and not ch.pacte:
+        if self.class_level("Occultiste") >= 3 and not ch.pacte and self.pact_available():
             add("magie", "Pacte", 1, "Occultiste : faveur de pacte à choisir")
         slots_m = self.manifestation_slots()
         n = slots_m["total"] - len(ch.manifestations)

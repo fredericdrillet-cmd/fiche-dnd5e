@@ -96,6 +96,11 @@ class Character:
     effets_actifs: list[str] = field(default_factory=list)      # clés de core/effects.py (buffs, débuffs, états)
     effets_retires: list[str] = field(default_factory=list)     # traits innés (race / classe) retirés volontairement
     effets_potions: list[str] = field(default_factory=list)     # effets venus d'un consommable (expirent au repos)
+    combat_etat: dict = field(default_factory=dict)              # v52 : instantané du début du combat
+    munitions_tirees: dict = field(default_factory=dict)         # v52 : munitions tirées pendant le combat
+    suffocation_niveaux: int = 0            # v52 : niveaux d'épuisement dus à la suffocation (2024)
+    effets_rounds: dict = field(default_factory=dict)            # v52 : rounds restants par effet (1 minute = 10)
+    effets_rounds_max: dict = field(default_factory=dict)        # v52 : durée complète (« Prolonger »)
     concentration: str = ""                 # sort dont la concentration est en cours
     concentration_cible: str = ""           # "soi" | "allie" : destinataire du sort de concentration
     concentration_effet: str = ""           # effet appliqué sur soi par ce sort (retiré quand la concentration cesse)
@@ -115,6 +120,17 @@ class Character:
     temps_minutes: int = 0                  # temps de jeu écoulé depuis le jour 1, 8 h 00
     dernier_repos_long: int = -1            # instant (minutes) du dernier repos long, -1 = jamais
     initiative_jet: int = 0                 # v45 : dernier jet d'initiative (0 = aucun)
+    inspiration: bool = False               # v52 : inspiration (règle 2014 ou inspiration héroïque 2024)
+    bottes_choisies: list[str] = field(default_factory=list)   # v52 : armes dont la botte est maîtrisée (2024)
+    journal: list[dict] = field(default_factory=list)            # v52 : journal de session (500 derniers événements)
+    historique_jets: list[dict] = field(default_factory=list)  # v52 : 50 derniers lancers (Ctrl+H)
+    tasha_remplacements: list[str] = field(default_factory=list)   # v52 : options de Tasha qui remplacent (choisies)
+    attaque_puissante: bool = False          # v52 : −5 / +10 (Tireur d'élite, Briseur d'armes lourdes, 2014)
+    nouveautes: list[str] = field(default_factory=list)       # v52 : badge « Nouveau » (act:, reac:, sort:, apt:)
+
+    # ---- Éditions et règles de la table (v52, core/editions.py et core/house_rules.py) -----------
+    edition_mode: str = "2014"              # "2014" | "2024" | "libre"
+    regles_optionnelles: dict[str, bool] = field(default_factory=dict)   # clé de règle -> active
 
     # ---- Magie ------------------------------------------------------------------------
     pacte: str = ""                         # Pacte divin de l'Occultiste (lame / chaîne / grimoire / talisman)
@@ -165,6 +181,15 @@ class Character:
                 setattr(char, key, value)
         if "multiclassage" not in data:                 # anciennes sauvegardes : déjà multiclassé = option active
             char.multiclassage = len(char.classes) > 1
+        # v52 : éditions et règles de la table. Une ancienne sauvegarde reste en 2014 et garde les règles
+        # qui étaient toujours actives (potion en action bonus, bottes et actions d'arme).
+        from . import editions as E, house_rules as HR
+        char.edition_mode = E.normalize_mode(data.get("edition_mode", E.DEFAULT_MODE))
+        char.regles_optionnelles = (HR.clean(data["regles_optionnelles"]) if "regles_optionnelles" in data
+                                    else dict(HR.LEGACY))
+        for entry in char.classes:
+            if isinstance(entry, dict):
+                entry["edition"] = E.item_edition(entry)
         # Garanties de structure
         while len(char.armes_cac) < 4:
             char.armes_cac.append(_empty_weapon())

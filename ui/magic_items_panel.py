@@ -12,11 +12,12 @@ import html
 
 from PyQt6.QtCore import QStringListModel, Qt, QTimer
 from PyQt6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QCompleter, QDoubleSpinBox, QFrame, QGroupBox,
-                             QHBoxLayout, QLineEdit, QPushButton, QSpinBox, QTableWidget, QTextBrowser, QVBoxLayout)
+                             QGridLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpinBox, QTableWidget, QTextBrowser,
+                             QVBoxLayout, QWidget)
 
 from core.rules import norm
 from . import theme
-from .common import BaseTab, cell, check_item, fill_combo, make_label, rich_tip, style_table
+from .common import BaseTab, bulk_fill, cell, check_item, fill_combo, make_label, rich_tip, style_table
 from .game_widgets import use_consumable
 from .orbs import OrbBar
 
@@ -43,7 +44,121 @@ def quick_matches(names, text: str, limit: int = 40) -> list[str]:
     return hits[:limit]
 
 
-def ask_custom_item(parent, name: str = "") -> dict | None:
+EXTRA_TYPES = ["acide", "contondants", "feu", "foudre", "force", "froid", "nécrotiques", "perforants", "poison",
+               "psychiques", "radiants", "tonnerre", "tranchants"]
+EXTRA_WHEN = [("toujours", "À chaque coup"), ("cible", "Contre une créature"), ("activation", "Si activée")]
+
+
+def _weapon_fields(weapon_names: list[str]) -> tuple[QWidget, dict]:
+    """v52 : champs d'une arme sur mesure — arme de base, bonus magique, deux dégâts supplémentaires."""
+    box = QWidget()
+    g = QGridLayout(box)
+    g.setContentsMargins(0, 0, 0, 0)
+    f = {"base": QComboBox(), "bonus": QComboBox(), "extras": []}
+    f["base"].addItems(weapon_names)
+    f["bonus"].addItems(["+0", "+1", "+2", "+3"])
+    g.addWidget(QLabel("Arme de base"), 0, 0)
+    g.addWidget(f["base"], 0, 1)
+    g.addWidget(QLabel("Bonus magique"), 0, 2)
+    g.addWidget(f["bonus"], 0, 3)
+    g.addWidget(QLabel("Dégâts en plus"), 1, 0)
+    g.addWidget(QLabel("Type"), 1, 1)
+    g.addWidget(QLabel("Quand"), 1, 2)
+    g.addWidget(QLabel("Précision"), 1, 3)
+    for r in range(1, 3):
+        dice = QLineEdit()
+        dice.setPlaceholderText("ex. 1d4")
+        dice.setMinimumWidth(90)
+        kind = QComboBox()
+        kind.addItems(EXTRA_TYPES)
+        when = QComboBox()
+        for _k, label in EXTRA_WHEN:
+            when.addItem(label)
+        note = QLineEdit()
+        note.setPlaceholderText("ex. morts-vivants")
+        note.setMinimumWidth(180)
+        when.setToolTip("« À chaque coup » : ajouté d'office. Les deux autres : case à cocher avant le jet de dégâts.")
+        g.addWidget(dice, r + 1, 0)
+        g.addWidget(kind, r + 1, 1)
+        g.addWidget(when, r + 1, 2)
+        g.addWidget(note, r + 1, 3)
+        f["extras"].append((dice, kind, when, note))
+    g.setColumnStretch(3, 1)
+    return box, f
+
+
+CONDITION_CHOICES = [("charme", "Charmé"), ("effraye", "Effrayé"), ("empoisonne", "Empoisonné"),
+                     ("paralyse", "Paralysé"), ("etourdi", "Étourdi"), ("malade", "Malade"),
+                     ("epuisement_1", "Épuisement")]
+SPELL_USES = [("", "À volonté"), ("1", "1 fois par jour (aube)"), ("n", "Charges (regagnées à l'aube)")]
+
+
+def _power_fields(spell_names: list[str]) -> tuple[QWidget, dict]:
+    """v52 : pouvoirs d'un objet sur mesure — résistances, immunités (dégâts et états), bonus aux JS, un sort."""
+    from PyQt6.QtWidgets import QListWidget, QListWidgetItem
+    from core.engine_extras import ExtrasMixin
+    box = QWidget()
+    g = QGridLayout(box)
+    g.setContentsMargins(0, 0, 0, 0)
+    f = {}
+
+    def checklist(rows):
+        lst = QListWidget()
+        lst.setMaximumHeight(110)
+        for key, label in rows:
+            it = QListWidgetItem(label)
+            it.setData(Qt.ItemDataRole.UserRole, key)
+            it.setFlags(it.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            it.setCheckState(Qt.CheckState.Unchecked)
+            lst.addItem(it)
+        from .common import indicator_qss                 # v52 : cases bien visibles quel que soit le thème
+        t = theme.current()
+        lst.setStyleSheet(indicator_qss(t, "QListWidget") + "QListWidget::item {{ padding: 3px 2px; }}"
+                          "QListWidget::item:hover {{ background: {}; }}".format(t.select_bg))
+        return lst
+    damage = [(t, t.capitalize()) for t in ExtrasMixin.DAMAGE_TYPES]
+    f["res"] = checklist(damage)
+    f["imm"] = checklist(damage + [("etat:" + k, "État " + label) for k, label in CONDITION_CHOICES])
+    g.addWidget(QLabel("Résistances"), 0, 0)
+    g.addWidget(QLabel("Immunités (dégâts, états)"), 0, 1)
+    g.addWidget(f["res"], 1, 0)
+    g.addWidget(f["imm"], 1, 1)
+    f["js"] = QSpinBox()
+    f["js"].setRange(0, 3)
+    f["js"].setPrefix("Bonus aux jets de sauvegarde +")
+    g.addWidget(f["js"], 2, 0, 1, 2)
+    f["spell"] = QComboBox()
+    f["spell"].setEditable(True)
+    f["spell"].addItems(["— aucun sort —"] + spell_names)
+    f["spell"].setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+    if f["spell"].completer() is not None:
+        f["spell"].completer().setFilterMode(Qt.MatchFlag.MatchContains)
+        f["spell"].completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+    f["use"] = QComboBox()
+    for _k, label in SPELL_USES:
+        f["use"].addItem(label)
+    f["charges"] = QSpinBox()
+    f["charges"].setRange(1, 50)
+    f["charges"].setValue(3)
+    f["charges"].setPrefix("Charges : ")
+    f["charges"].setVisible(False)
+    f["use"].currentIndexChanged.connect(lambda i: f["charges"].setVisible(SPELL_USES[i][0] == "n"))
+    g.addWidget(QLabel("Sort lançable"), 3, 0, 1, 2)
+    row = QHBoxLayout()
+    row.addWidget(f["spell"], 2)
+    row.addWidget(f["use"], 1)
+    row.addWidget(f["charges"])
+    g.addLayout(row, 4, 0, 1, 2)
+    return box, f
+
+
+def _checked(lst) -> list[str]:
+    return [lst.item(i).data(Qt.ItemDataRole.UserRole) for i in range(lst.count())
+            if lst.item(i).checkState() == Qt.CheckState.Checked]
+
+
+def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = None,
+                    spell_names: list[str] | None = None) -> dict | None:
     """Formulaire « Objet sur mesure » en une fenêtre : nom, type, rareté (peu commun par défaut), case
     « Harmonisation requise », description courte, poids, bonus de CA. Renvoie le dictionnaire ou None."""
     from .dialogs import BlurBackdrop, ConfirmDialog
@@ -82,15 +197,41 @@ def ask_custom_item(parent, name: str = "") -> dict | None:
         lay.insertWidget(pos + 2, w["description"])
         lay.insertLayout(pos + 3, row2)
         lay.insertWidget(pos + 4, w["lien"])                     # sur sa propre ligne : impossible à manquer
+    wbox, wf = _weapon_fields(weapon_names or [])                # v52 : arme sur mesure
+    dialog.setMinimumWidth(720)
+    if lay is not None:
+        lay.insertWidget(pos + 5, wbox)
+    wbox.setVisible(w["type"].currentText() == "Arme")
+    w["type"].currentTextChanged.connect(lambda t: wbox.setVisible(t == "Arme"))
+    pbox, pf = _power_fields(spell_names or [])                  # v52 : pouvoirs (tous types d'objets)
+    if lay is not None:
+        lay.insertWidget(pos + 6, QLabel("<b>Pouvoirs de l'objet</b> (facultatif)"))
+        lay.insertWidget(pos + 7, pbox)
     try:
         if dialog.exec() != 1 or not w["nom"].text().strip():
             return None
     finally:
         if backdrop is not None:
             backdrop.dispose()
-    return {"nom": w["nom"].text().strip(), "type_": w["type"].currentText(), "rarete": w["rarete"].currentText(),
+    data = {"nom": w["nom"].text().strip(), "type_": w["type"].currentText(), "rarete": w["rarete"].currentText(),
             "lien": w["lien"].isChecked(), "description": w["description"].text(), "poids": w["poids"].value(),
             "ca": w["ca"].value()}
+    imm = _checked(pf["imm"])
+    use = SPELL_USES[pf["use"].currentIndex()][0]
+    spell = pf["spell"].currentText().strip()
+    data.update(resistances=_checked(pf["res"]), immunites=[k for k in imm if not k.startswith("etat:")],
+                immunites_etats=[k[5:] for k in imm if k.startswith("etat:")], js_bonus=pf["js"].value(),
+                sort=spell if spell in (spell_names or []) else "",
+                charges=pf["charges"].value() if use == "n" else 1 if use == "1" else 0)
+    if data["type_"] == "Arme" and weapon_names:
+        extras = []
+        for dice, kind, when, note in wf["extras"]:
+            d = dice.text().strip().lower().replace(" ", "")
+            if d:
+                extras.append({"des": d, "type": kind.currentText(), "condition": EXTRA_WHEN[when.currentIndex()][0],
+                               "note": note.text().strip()})
+        data.update(base=wf["base"].currentText(), bonus=wf["bonus"].currentIndex(), degats_sup=extras)
+    return data
 
 
 def ask_gear_base(win, engine, item: dict) -> str:
@@ -116,7 +257,25 @@ def add_catalog_item(win, engine, item: dict, bonus: int = 0) -> str:
     if engine.magic_gear_kind(item):
         base = ask_gear_base(win, engine, item)
         return engine.add_magic_gear(item["nom"], base, bonus) if base else ""
-    return item["nom"] if engine.add_magic_item(item["nom"], bonus) else ""
+    if not engine.add_magic_item(item["nom"], bonus):
+        return ""
+    from core.item_passives import needs_resistance_choice, DAMAGE_TYPES
+    if needs_resistance_choice(item) and engine.ch.objets_magiques:   # v52 : type choisi par le MD
+        from .dialogs import ask_choice
+        picked = ask_choice(win, item["nom"], "Résistance à quel type de dégâts (choisi par le MD ou tiré au "
+                            "hasard) ?", [t.capitalize() for t in DAMAGE_TYPES])
+        if picked:
+            engine.ch.objets_magiques[-1]["resistance_choisie"] = picked.lower()
+    elements = engine.item_rules(item)["elements"]
+    entry = engine.ch.objets_magiques[-1] if engine.ch.objets_magiques else {}
+    if elements and entry.get("nom") == item["nom"]:     # v52 : nombre de perles… indiqué par le joueur
+        from .dialogs import ask_int
+        n = ask_int(win, item["nom"], "Nombre de {} ({} — tirage proposé : {}). Indiquez le nombre réel si le MJ "
+                    "l'a fixé.".format(elements[1], elements[0], entry.get("elements", 0)),
+                    int(entry.get("elements", 0) or 1), 0, 99)
+        if n is not None:
+            engine.set_item_elements(len(engine.ch.objets_magiques) - 1, n)
+    return item["nom"]
 
 
 def rarity_group(text: str) -> str:
@@ -259,23 +418,29 @@ class MagicItemsPanel(BaseTab):
         return style_table(t, stretch_col=stretch, row_h=38)
 
     # ------------------------------------------------------------------ catalogue
-    def _fill_library(self):
+    def _fill_library(self, force: bool = False):
         t = theme.current()
         kind, rar, text = self.type_combo.currentText(), self.rarity_combo.currentText(), norm(self.search.text())
+        key = (kind, rar, text, self.attune_only.isChecked(), t.key, len(self.db.magic_items))
+        if not force and key == getattr(self, "_lib_key", None):
+            return                                        # v52 : catalogue inchangé — pas de reconstruction
+        self._lib_key = key
         items = [i for i in self.db.magic_items.values()
                  if (kind == ALL_TYPES or i["type"] == kind) and (rar == ALL_RARITIES or rarity_group(i["rarete"]) == rar)
                  and (not self.attune_only.isChecked() or i["lien"]) and text in norm(i["nom"])]
         self._lib_rows = [i["nom"] for i in items]
-        self.library.setRowCount(len(items))
-        for r, i in enumerate(items):
-            tip = rich_tip(i["nom"], i["description"][:700])
-            kind_txt = i["type"] + (" ({})".format(i["precision"]) if i["precision"] else "")
-            self.library.setItem(r, 0, cell(i["nom"], "left", tip))
-            self.library.setItem(r, 1, cell(kind_txt, "center", tip))
-            self.library.setItem(r, 2, cell(i["rarete"], "center", tip))
-            self.library.setItem(r, 3, cell("✦" if i["lien"] else "—", "center",
-                                            i["condition"] or ("Harmonisation requise" if i["lien"] else "Aucune harmonisation"),
-                                            t.accent_text if i["lien"] else None, bold=i["lien"]))
+        with bulk_fill(self.library):
+            self.library.setRowCount(len(items))
+            for r, i in enumerate(items):
+                tip = "{} — {}".format(i["nom"], i["description"][:300])   # le détail complet est dans le panneau
+                kind_txt = i["type"] + (" ({})".format(i["precision"]) if i["precision"] else "")
+                self.library.setItem(r, 0, cell(i["nom"], "left", tip))
+                self.library.setItem(r, 1, cell(kind_txt, "center", tip))
+                self.library.setItem(r, 2, cell(i["rarete"], "center", tip))
+                self.library.setItem(r, 3, cell("✦" if i["lien"] else "—", "center",
+                                                i["condition"] or ("Harmonisation requise" if i["lien"] else
+                                                                   "Aucune harmonisation"),
+                                                t.accent_text if i["lien"] else None, bold=i["lien"]))
 
     def _selected_library_item(self) -> dict | None:
         r = self.library.currentRow()
@@ -352,7 +517,11 @@ class MagicItemsPanel(BaseTab):
         self.changed()
 
     def _on_custom(self, name: str = "") -> None:
-        data = ask_custom_item(self.win, name.strip())
+        weapons = sorted((n for n in self.db.weapons if n != "Mains nues"), key=norm)
+        spells = sorted((n for n, sp in self.db.spells.items()
+                         if (self.engine.sheet_edition == 2024) == ("(2024)" in n or sp.get("edition") == 2024)),
+                        key=norm)
+        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons, spell_names=spells)
         if not data:
             return
         real = self.engine.add_custom_magic_item(**data)

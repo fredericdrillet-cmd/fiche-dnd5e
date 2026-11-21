@@ -146,6 +146,14 @@ class ClassPanel(QWidget):
         row.addWidget(self.prof_box, 1)
         lay.addLayout(row)
 
+        # v52 : options de Tasha qui remplacent une aptitude (choix du joueur, désactivées par défaut)
+        self.tasha_box = QGroupBox("Options de Tasha qui remplacent une aptitude (avec l'accord du MJ)")
+        self.tasha_lay = QHBoxLayout(self.tasha_box)
+        self.tasha_checks: dict[str, QCheckBox] = {}
+        self._tasha_key = None
+        self.tasha_box.setVisible(False)
+        lay.addWidget(self.tasha_box)
+
         # --- aptitudes + détail + sorts associés
         split = QSplitter(Qt.Orientation.Horizontal)
         feat_box = QGroupBox("Aptitudes et capacités (survolez pour le détail)")
@@ -282,8 +290,34 @@ class ClassPanel(QWidget):
                 theme.current().accent_text, html.escape(f["nom"]), f["niveau"], html.escape(f["source"]), state, formula_html(self.tab.engine, f["description"], self.entry["nom"])))
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _refresh_tasha(self) -> None:
+        opts = self.tab.engine.tasha_replacement_options(self.entry["nom"])
+        self.tasha_box.setVisible(bool(opts))
+        key = tuple(o["cle"] for o in opts)
+        if key != self._tasha_key:
+            self._tasha_key = key
+            while self.tasha_lay.count():
+                item = self.tasha_lay.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            self.tasha_checks = {}
+            for o in opts:
+                cb = QCheckBox("{} (remplace {})".format(o["nom"], o["remplace"]))
+                cb.toggled.connect(lambda on, k=o["cle"]: self._on_tasha(k, on))
+                self.tasha_lay.addWidget(cb)
+                self.tasha_checks[o["cle"]] = cb
+            self.tasha_lay.addStretch(1)
+        for o in opts:
+            with blocked(self.tasha_checks[o["cle"]]):
+                self.tasha_checks[o["cle"]].setChecked(o["actif"])
+
+    def _on_tasha(self, cle: str, on: bool) -> None:
+        self.tab.engine.set_tasha_replacement(cle, on)
+        self.tab.changed()
+
     def refresh(self):
-        eng, db, e = self.tab.engine, self.tab.db, self.entry
+        self._refresh_tasha()
+        eng, db, e = self.tab.engine, self.tab.engine.db, self.entry      # v52 : classes de l'édition de la fiche
         owned = {c["nom"] for i, c in enumerate(self.tab.ch.classes) if i != self.index}
         fill_combo(self.class_combo, [n for n in db.class_names() if n not in owned], e["nom"])
         others = self.tab.ch.niveau_total - e["niveau"]
@@ -291,9 +325,9 @@ class ClassPanel(QWidget):
             self.level_spin.setRange(1, max(1, R.MAX_LEVEL - others))
             self.level_spin.setValue(e["niveau"])
         # sous-classe
-        need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
+        need = eng.subclass_level(e["nom"])
         subs = ["— aucune —"] + [s["nom"] for s in db.subclasses(e["nom"])]
-        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0])
+        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0], tips=db.subclass_tips(e["nom"]))
         unlocked = e["niveau"] >= need
         self.sub_combo.setEnabled(unlocked)
         todo = unlocked and not e.get("sous_classe") and len(subs) > 1
@@ -362,7 +396,8 @@ class ClassPanel(QWidget):
             self.feat_list.clear()
             for f in self._features:
                 tag = "★ " if f["sous_classe"] else ""
-                item = QListWidgetItem("Niv. {:>2} — {}{}".format(f["niveau"], tag, f["nom"]))
+                item = QListWidgetItem("Niv. {:>2} — {}{}{}".format(f["niveau"], tag, f["nom"], "  ✨ Nouveau" if
+                                                                      eng.is_new("apt:" + f["nom"]) else ""))
                 item.setToolTip(formula_tip(eng, "{} (niveau {})".format(f["nom"], f["niveau"]), f["description"], e["nom"]))
                 if not f["debloque"]:
                     item.setForeground(QBrush(QColor(theme.current().locked)))
@@ -426,6 +461,20 @@ class ClassesTab(BaseTab):
         lay.addWidget(self.info)
         self.tabs = QTabWidget()
         lay.addWidget(self.tabs, 1)
+        # v52 : rappels des choix de classe (manœuvres, runes, Tir arcanique…) — choisis pendant la montée de niveau
+        self.options_box = QGroupBox("Rappels — choix de classe")
+        ob = QHBoxLayout(self.options_box)
+        self.options_label = make_label("", wrap=True)
+        self.options_label.setTextFormat(Qt.TextFormat.RichText)
+        self.options_btn = QPushButton("Compléter les choix…")
+        self.options_btn.setToolTip(rich_tip("Choix manquants", "Ces choix se font pendant « Niveau supérieur ». "
+                                             "Pour une fiche où il en manque (ancienne sauvegarde, Mode libre), "
+                                             "complétez-les ici."))
+        self.options_btn.clicked.connect(self._on_complete_options)
+        ob.addWidget(self.options_label, 1)
+        ob.addWidget(self.options_btn)
+        self.options_box.setVisible(False)
+        lay.addWidget(self.options_box)
         self.panels: list[ClassPanel] = []
         self._key: tuple = ()
         self.add_btn.clicked.connect(self._on_add)
@@ -443,6 +492,19 @@ class ClassesTab(BaseTab):
             return
         self.engine.set_multiclass(checked)
         self.changed()
+
+    def _refresh_class_options(self) -> None:
+        from .class_options import class_option_sets, options_missing, reminders_html
+        t = theme.current()
+        sets = class_option_sets(self.engine)
+        self.options_box.setVisible(bool(sets))
+        n = options_missing(self.engine)
+        self.options_label.setText(reminders_html(self.engine, t.accent_text, t.warn))
+        self.options_btn.setVisible(n > 0)
+
+    def _on_complete_options(self) -> None:
+        from .class_options import ask_class_options
+        ask_class_options(self.win, self.engine, self.changed)
 
     def current_index(self) -> int:
         return max(0, self.tabs.currentIndex())
@@ -478,6 +540,7 @@ class ClassesTab(BaseTab):
             p.refresh()
             c = self.ch.classes[i]
             self.tabs.setTabText(i, "{} {}".format(c["nom"], c["niveau"]))
+        self._refresh_class_options()
         owned = {c["nom"] for c in self.ch.classes}
         free = [n for n in self.db.class_names() if n not in owned]
         fill_combo(self.add_combo, free, free[0] if free else "")

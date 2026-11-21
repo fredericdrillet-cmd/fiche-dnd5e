@@ -9,6 +9,7 @@ from __future__ import annotations
 import math
 import random
 import re
+import functools
 import unicodedata
 from typing import Iterable, Optional
 
@@ -86,6 +87,17 @@ def norm(text: str) -> str:
     """Normalise un texte (minuscules, sans accents, apostrophes droites) pour les comparaisons."""
     if text is None:
         return ""
+    if isinstance(text, str):
+        return _norm_cached(text)                      # v52 : appelée des dizaines de milliers de fois par écran
+    return _norm_raw(text)
+
+
+@functools.lru_cache(maxsize=1 << 16)
+def _norm_cached(text: str) -> str:
+    return _norm_raw(text)
+
+
+def _norm_raw(text) -> str:
     text = text.replace("’", "'").replace("œ", "oe").replace("Œ", "oe")
     text = unicodedata.normalize("NFD", text)
     text = "".join(c for c in text if unicodedata.category(c) != "Mn")
@@ -831,3 +843,36 @@ def parse_spell_mechanics(description: str) -> dict:
 def mod_label(ability: str) -> str:
     """« Modificateur de Force », « Modificateur d'Intelligence » (élision devant voyelle)."""
     return "Modificateur d'" + ability if norm(ability)[:1] in "aeiouy" else "Modificateur de " + ability
+
+
+# v52 : formulations des descriptions 2024 (« effectue un jet de sauvegarde de Dextérité », « récupère … égal à 2d8 plus
+# votre modificateur », « augmentent de 1d6 pour chaque niveau d'emplacement »)
+_SAVE_2024 = re.compile(r"jet de sauvegarde (?:de |d')(force|dexterite|constitution|intelligence|sagesse|charisme)")
+_SAVE_ABBR = {"force": "For", "dexterite": "Dex", "constitution": "Con", "intelligence": "Int", "sagesse": "Sag",
+              "charisme": "Cha"}
+SPELL_RULE_KEYS = ("mod", "soins", "soins_mod", "pv_temp", "sup", "sup_pas", "sup_soins", "sup_pv_temp", "sup_table",
+                   "projectiles", "sup_projectiles", "sup_texte", "echelle", "js_succes", "test", "degats",
+                   "type_degats", "rayons")
+
+
+def parse_spell_mechanics_2024(description: str) -> dict:
+    n = norm(description)
+    out = {}
+    s = _SAVE_2024.search(n)
+    if s and not re.search(r"(jet d'attaque|attaque de sort)", n[:s.start()]):
+        out["test"] = _SAVE_ABBR[s.group(1)]
+        out["js_succes"] = "moitie" if "moitie de ces degats" in n else "aucun"
+    h = re.search(r"(?:recupere|regagne)\w* (?:un nombre de )?points de vie egal a (\d+d\d+)( plus votre modificateur)?", n)
+    if h:
+        out["soins"] = h.group(1)
+        if h.group(2):
+            out["soins_mod"] = True
+    up = re.search(r"(?:degats|soins|guerison)[^.]{0,40}augmentent de (\d+d\d+) pour chaque niveau d'emplacement", n)
+    if up:
+        out["sup_soins" if ("soins" in up.group(0) or "guerison" in up.group(0)) and not out.get("degats") and h
+            else "sup"] = up.group(1)
+    if "attaque de sort au corps a corps" in n:
+        out["test"] = "AC"
+    elif "attaque de sort a distance" in n:
+        out["test"] = "A"
+    return out

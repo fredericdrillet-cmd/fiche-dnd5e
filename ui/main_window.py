@@ -34,6 +34,19 @@ from .theme_picker import make_theme_combo, theme_icon
 FILE_FILTER = "Personnage D&D (*.json);;Tous les fichiers (*)"
 
 
+RECENT_MAX = 8
+
+
+def remember_recent(settings: dict, path) -> list:
+    """v52 : Fichier > Récents — le fichier ouvert ou enregistré passe en tête (8 au plus, sans doublon)."""
+    p = str(Path(path).resolve()) if path else ""
+    if not p:
+        return list(settings.get("fichiers_recents") or [])
+    keep = [x for x in (settings.get("fichiers_recents") or []) if x != p]
+    settings["fichiers_recents"] = ([p] + keep)[:RECENT_MAX]
+    return settings["fichiers_recents"]
+
+
 class MainWindow(QMainWindow):
     def __init__(self, db: Database, settings: dict | None = None):
         super().__init__()
@@ -41,6 +54,14 @@ class MainWindow(QMainWindow):
         self.settings = settings or {"theme": theme.DEFAULT_THEME, "font_px": 14, "last_dir": ""}
         self.settings["theme"] = theme.resolve_key(self.settings["theme"])   # ancienne préférence -> thème par défaut
         self.engine = Engine(db, Engine.new_character(db))
+        from core.history import UndoHistory               # v52 : Annuler / Refaire
+        self.history = UndoHistory()
+        self._restoring = False
+        self.history.reset(self.engine.ch.to_dict())
+        from . import common as _common                   # v52 : lexique au survol, option « Aides pour débuter »
+        _common.GLOSSARY = getattr(db, "glossary", None)
+        _common.EDITION = lambda: getattr(self.engine, "sheet_edition", 0)
+        _common.BEGINNER = lambda: bool(self.settings.get("aides_debutant", False))
         self.path: Path | None = None
         self._dirty = False
         self.resize(1600, 900)                 # format 16/9
@@ -63,6 +84,11 @@ class MainWindow(QMainWindow):
         fb.addWidget(self.form_end_btn)
         self.form_banner.setVisible(False)
         lay.addWidget(self.form_banner)
+        self.help_banner = make_label("", "muted", wrap=True)      # v52 : aide de l'onglet (Aides pour débuter)
+        self.help_banner.setVisible(False)
+        self.help_banner.setTextFormat(Qt.TextFormat.RichText)     # v52 : lien « Voir le manuel »
+        self.help_banner.linkActivated.connect(lambda _href="": self.action_manual())
+        lay.addWidget(self.help_banner)
         self.form_end_btn.clicked.connect(self._on_end_form)
 
         # Rafraîchissement paresseux : seul l'onglet visible est recalculé ; les autres le seront à leur ouverture.
@@ -88,7 +114,7 @@ class MainWindow(QMainWindow):
                          ("caracteristiques", self.stats_tab, "✦ Caractéristiques, Compétences"),
                          ("race", self.race_tab, "☗ Race, Historique, Langues"),
                          ("rp", self.rp_tab, "✎ Histoire, Portrait (RP)"),
-                         ("combat", self.combat_tab, "🛡 Combat"),
+                         ("combat", self.combat_tab, "🎲 En partie"),
                          ("magie", self.magic_tab, "✧ Magie"),
                          ("druide", self.druid_tab, "🐾 Forme sauvage"),
                          ("menagerie", self.companions_tab, "🐴 Ménagerie && Montures"),
@@ -205,6 +231,8 @@ class MainWindow(QMainWindow):
                 self.init_btn = d20_button("Jet d'initiative : 1d20 + modificateur d'initiative")
                 self.init_btn.clicked.connect(self.action_roll_initiative)
                 h.addWidget(self.init_btn)
+                b.setVisible(False)                      # v52 : l'initiative est dans « En partie »
+                self.init_btn.setVisible(False)
         self.name_edit.textEdited.connect(lambda t: self._set_text("nom", t))
         self.player_edit.textEdited.connect(lambda t: self._set_text("joueur", t))
         self.xp.valueChanged.connect(self._on_xp)
@@ -241,6 +269,15 @@ class MainWindow(QMainWindow):
             act.setShortcut(key)
             act.triggered.connect(slot)
             fm.addAction(act)
+        self.recent_menu = fm.addMenu("Récents")                    # v52 : 8 derniers fichiers
+        self.recent_menu.aboutToShow.connect(self._fill_recent_menu)
+        restore_act = QAction("Restaurer une version précédente…", self)   # v52 : 10 dernières versions
+        restore_act.triggered.connect(self.action_restore_version)
+        fm.addAction(restore_act)
+        pdf_act = QAction("Exporter la fiche en PDF…", self)       # v52 : fiche imprimable
+        pdf_act.setShortcut(QKeySequence("Ctrl+P"))
+        pdf_act.triggered.connect(self.action_export_pdf)
+        fm.addAction(pdf_act)
         fm.addSeparator()
         lvl_act = QAction("▲ Niveau supérieur…", self)
         lvl_act.setShortcut(QKeySequence("Ctrl+L"))
@@ -251,6 +288,17 @@ class MainWindow(QMainWindow):
         quit_act.setShortcut(QKeySequence("Ctrl+Q"))
         quit_act.triggered.connect(self.close)
         fm.addAction(quit_act)
+
+        em = bar.addMenu("&Édition")                     # v52 : Annuler / Refaire
+        self.undo_act = QAction("Annuler", self)
+        self.undo_act.setShortcut(QKeySequence.StandardKey.Undo)
+        self.undo_act.triggered.connect(self.action_undo)
+        em.addAction(self.undo_act)
+        self.redo_act = QAction("Refaire", self)
+        self.redo_act.setShortcuts([QKeySequence.StandardKey.Redo, QKeySequence("Ctrl+Y")])
+        self.redo_act.triggered.connect(self.action_redo)
+        em.addAction(self.redo_act)
+        self._update_undo_actions()
 
         vm = bar.addMenu("&Affichage")
         full = QAction("Plein écran", self)
@@ -266,6 +314,25 @@ class MainWindow(QMainWindow):
         prefs.setShortcut(QKeySequence("Ctrl+,"))
         prefs.triggered.connect(self.action_options)
         om.addAction(prefs)
+        rules = QAction("Règles de la table… (édition 2014 / 2024 / libre, règles optionnelles)", self)
+        rules.triggered.connect(self.action_rules)
+        om.addAction(rules)
+        history = QAction("Historique des lancers et journal de session…", self)   # v52 : Ctrl+H
+        history.setShortcut(QKeySequence("Ctrl+H"))
+        history.triggered.connect(self.action_history)
+        om.addAction(history)
+        hp_entry = QAction("Saisir des dégâts ou des soins", self)       # v52 : Ctrl+D -> onglet En partie
+        hp_entry.setShortcut(QKeySequence("Ctrl+D"))
+        hp_entry.triggered.connect(self.action_hp_entry)
+        om.addAction(hp_entry)
+        search = QAction("Rechercher… (sorts, aptitudes, objets, règles)", self)   # v52 : Ctrl+F
+        search.setShortcut(QKeySequence("Ctrl+F"))
+        search.triggered.connect(self.action_search)
+        om.addAction(search)
+        free_roll = QAction("Jet de dés libre (2d6+3…)", self)           # v52 : Ctrl+R -> onglet En partie
+        free_roll.setShortcut(QKeySequence("Ctrl+R"))
+        free_roll.triggered.connect(self.action_free_roll)
+        om.addAction(free_roll)
         om.addSeparator()
         group = QActionGroup(self)
         group.setExclusive(True)
@@ -284,13 +351,156 @@ class MainWindow(QMainWindow):
             lambda _=0: self.apply_appearance(self.theme_combo.currentData(), self.settings["font_px"], save=True))
         bar.setCornerWidget(self.theme_combo)
 
+        pm = bar.addMenu("&Partie")                      # v52 : raccourcis du tour
+        for text, key, slot in (("▶ Début de mon tour", "Ctrl+T", self.action_start_turn),
+                                ("⏹ Fin de mon tour", "Ctrl+E", self.action_end_turn),
+                                ("🎲 Jet d'initiative", "Ctrl+I", self.action_roll_initiative),
+                                ("🛡 On m'attaque !", "Ctrl+A", self.action_attacked),
+                                ("🌪 Environnement…", "", self.action_environment),
+                                ("🏁 Fin du combat", "", self.action_end_combat)):
+            act = QAction(text, self)
+            if key:
+                act.setShortcut(QKeySequence(key))
+            act.triggered.connect(slot)
+            pm.addAction(act)
+
         hm = bar.addMenu("&Aide")
+        lexicon = QAction("Lexique des règles…", self)           # v52 : définitions 2014 / 2024
+        lexicon.setShortcut(QKeySequence("F1"))
+        lexicon.triggered.connect(self.action_glossary)
+        hm.addAction(lexicon)
+        manual = QAction("Manuel d'utilisation…", self)          # v52 : F2, chapitre de l'onglet affiché
+        manual.setShortcut(QKeySequence("F2"))
+        manual.triggered.connect(lambda: self.action_manual())
+        hm.addAction(manual)
+        reports = QAction("Ouvrir le dossier des rapports d'erreur", self)   # v52 : filet de sécurité
+        reports.triggered.connect(self.action_open_reports)
+        hm.addAction(reports)
+        keys = QAction("Raccourcis clavier…", self)
+        keys.triggered.connect(self.action_shortcuts)
+        hm.addAction(keys)
         about = QAction("À propos / données chargées", self)
         about.triggered.connect(self.action_about)
         hm.addAction(about)
 
     def action_options(self):
         OptionsDialog(self).exec()
+        self.refresh_help_banner()
+
+    def action_export_pdf(self):
+        name = (self.ch.nom or "personnage").strip().replace(" ", "_")
+        path, _ = QFileDialog.getSaveFileName(self, "Exporter la fiche en PDF",
+                                              str(Path(self._start_dir()) / "{}.pdf".format(name)), "PDF (*.pdf)")
+        if not path:
+            return
+        if not path.lower().endswith(".pdf"):
+            path += ".pdf"
+        from .pdf_export import export_pdf
+        cheat = ask_yes_no(self, "Aide-mémoire de combat", "Ajouter l'aide-mémoire de combat (une page de plus : "
+                           "actions, actions bonus, réactions, ressources à cocher, états courants) ?",
+                           yes="Ajouter l'aide-mémoire", no="Fiche seule",
+                           default_no=not self.settings.get("pdf_aide_memoire", False))
+        self.settings["pdf_aide_memoire"] = bool(cheat)
+        try:
+            export_pdf(self.engine, path, cheatsheet=bool(cheat))
+        except Exception as exc:                          # noqa: BLE001 — message utilisateur
+            QMessageBox.critical(self, "Export impossible", str(exc))
+            return
+        self.statusBar().showMessage("Fiche exportée : {}".format(path), 8000)
+
+    def action_glossary(self, initial: str = ""):
+        from .glossary_dialog import GlossaryDialog
+        GlossaryDialog(self, self.db.glossary, getattr(self.engine, "sheet_edition", 0), initial or "").exec()
+
+    def refresh_help_banner(self) -> None:
+        """v52 : une ligne d'explication sur l'onglet affiché, avec l'option « Aides pour débuter »."""
+        on = bool(self.settings.get("aides_debutant", False))
+        key = self._key_of.get(id(self.tabs.currentWidget())) if self.tabs.currentWidget() is not None else None
+        text = (getattr(self.db, "glossary", None).tab_help.get(key, "") if on and getattr(self.db, "glossary", None)
+                else "")
+        self.help_banner.setText("💡 {} &nbsp;— <a href='manuel'>📖 Voir le manuel</a> (F2)".format(
+            html.escape(text)) if text else "")
+        self.help_banner.setVisible(bool(text))
+
+    def action_history(self):
+        from .history_dialog import HistoryDialog
+        HistoryDialog(self).exec()
+
+    def action_hp_entry(self):
+        """Ctrl+D : onglet En partie, curseur dans la saisie rapide des PV."""
+        self.tabs.setCurrentWidget(self.combat_tab)
+        self.combat_tab.focus_hp_entry()
+
+    SHORTCUTS = [("Ctrl+N", "Nouveau personnage (assistant)"), ("Ctrl+O", "Charger"), ("Ctrl+S", "Sauvegarder"),
+                 ("Ctrl+Maj+S", "Sauvegarder sous"), ("Ctrl+P", "Exporter la fiche en PDF"),
+                 ("Ctrl+L", "Niveau supérieur"), ("Ctrl+Z / Ctrl+Y", "Annuler / Refaire"),
+                 ("Ctrl+F", "Rechercher (sorts, aptitudes, objets, règles)"), ("Ctrl+D", "Saisir des dégâts ou des soins"),
+                 ("Ctrl+R", "Jet de dés libre"), ("Ctrl+T", "Début de mon tour"), ("Ctrl+E", "Fin de mon tour"),
+                 ("Ctrl+I", "Jet d'initiative"), ("Ctrl+A", "On m'attaque ! (hors champ de saisie)"),
+                 ("Ctrl+H", "Historique des lancers et journal de session"), ("Ctrl+,", "Préférences"),
+                 ("F1", "Lexique des règles"), ("F2", "Manuel d'utilisation"), ("F11", "Plein écran"), ("Ctrl+Q", "Quitter")]
+
+    def action_manual(self, chapter_id: str = ""):
+        from .manual_dialog import ManualDialog
+        if not chapter_id:
+            key = self._key_of.get(id(self.tabs.currentWidget())) if self.tabs.currentWidget() is not None else None
+            chap = self.db.manual.chapter_for_tab(key) if getattr(self.db, "manual", None) and key else None
+            chapter_id = chap["id"] if chap else ""
+        ManualDialog(self, chapter_id).exec()
+
+    def action_open_reports(self) -> str:
+        from .crash_guard import open_reports_folder
+        folder = open_reports_folder()
+        self.statusBar().showMessage("Rapports d'erreur : " + folder, 8000)
+        return folder
+
+    def action_shortcuts(self):
+        text = "\n".join("{}  —  {}".format(k, label) for k, label in self.SHORTCUTS)
+        ask_yes_no(self, "Raccourcis clavier", text, yes="OK", no="Fermer", default_no=False)
+
+    def _combat(self):
+        self.tabs.setCurrentWidget(self.combat_tab)
+        return self.combat_tab
+
+    def action_start_turn(self):
+        self._combat()._on_new_round()
+
+    def action_end_turn(self):
+        self._combat()._on_end_turn()
+
+    def action_attacked(self):
+        self._combat().open_defense("attaque")
+
+    def action_environment(self):
+        self._combat().open_environment()
+
+    def action_end_combat(self):
+        self._combat()._on_end_combat()
+
+    def action_search(self):
+        from .search_dialog import SearchDialog
+        SearchDialog(self).exec()
+
+    def open_tab(self, key: str) -> bool:
+        """Affiche l'onglet `key` (classes, magie, combat, inventaire…), en le rendant visible s'il était masqué."""
+        entry = self._tab_by_key.get(key)
+        if entry is None:
+            return False
+        widget = entry[0]
+        if self.tabs.indexOf(widget) < 0:
+            return False
+        self.tabs.setCurrentWidget(widget)
+        return True
+
+    def action_free_roll(self):
+        """Ctrl+R : onglet En partie, curseur dans le jet libre."""
+        self.tabs.setCurrentWidget(self.combat_tab)
+        self.combat_tab.focus_free_roll()
+
+    def action_rules(self):
+        """v52 : Options > Règles de la table (édition du personnage et règles optionnelles)."""
+        from .rules_dialog import RulesDialog
+        RulesDialog(self).exec()
 
     def apply_appearance(self, key: str, font_px: int, save: bool = False) -> None:
         """Change le thème / la taille du texte à chaud (aperçu), et mémorise les préférences si `save`."""
@@ -337,8 +547,64 @@ class MainWindow(QMainWindow):
     def new_blank(self) -> None:
         """Personnage par défaut (sans assistant) — utilisé si l'assistant est fermé au premier lancement."""
         self.engine = Engine(self.db, Engine.new_character(self.db))
+        from .rules_dialog import apply_table_defaults
+        apply_table_defaults(self.engine.ch, self.settings)
         self.path, self._dirty = None, False
+        self.reset_history()
         self.refresh_all()
+
+    def reset_history(self) -> None:
+        """Nouvelle fiche ouverte : l'historique d'annulation repart de zéro."""
+        self.history.reset(self.engine.ch.to_dict())
+        self._update_undo_actions()
+
+    def _capture_history(self) -> None:
+        if self._restoring:
+            return
+        if self.history.current is not None:            # v52 : journal de session (différence avant / après)
+            self.engine.record_diff(self.history.current)
+        self.history.capture(self.engine.ch.to_dict())
+        self._update_undo_actions()
+
+    def _update_undo_actions(self) -> None:
+        undo, redo = getattr(self, "undo_act", None), getattr(self, "redo_act", None)
+        if undo is None:
+            return
+        u, r = self.history.undo_label(), self.history.redo_label()
+        undo.setText("Annuler : {}".format(u) if u else "Annuler")
+        undo.setEnabled(bool(u))
+        redo.setText("Refaire : {}".format(r) if r else "Refaire")
+        redo.setEnabled(bool(r))
+
+    def _apply_history(self, res) -> None:
+        if res is None:
+            return
+        state, label = res
+        self._restoring = True
+        try:
+            path = self.path
+            self.engine = Engine(self.db, Character.from_dict(state))
+            self.engine.normalize()
+            self.path, self._dirty = path, True
+            self._stale = {k for k, _, _ in self.tab_defs}
+            self.refresh_all()
+            self.schedule_autosave()
+        finally:
+            self._restoring = False
+        self._update_undo_actions()
+        return label
+
+    def action_undo(self):
+        res = self.history.undo()
+        if res is not None:
+            self._apply_history(res)
+            self.statusBar().showMessage("↶ Annulé : {}.".format(res[1]), 6000)
+
+    def action_redo(self):
+        res = self.history.redo()
+        if res is not None:
+            self._apply_history(res)
+            self.statusBar().showMessage("↷ Rétabli : {}.".format(res[1]), 6000)
 
     def action_open(self):
         if not self._confirm_discard():
@@ -362,8 +628,76 @@ class MainWindow(QMainWindow):
         self.path, self._dirty = path, dirty
         if path is not None:
             self.settings["dernier_fichier"] = str(path)
+            remember_recent(self.settings, path)
             save_settings(self.settings)
+        self.reset_history()
         self.refresh_all()
+
+    def action_restore_version(self) -> bool:
+        """v52 : rouvre une des 10 dernières versions enregistrées du fichier courant (la version en cours est
+        gardée d'abord)."""
+        from core.versions import list_versions, save_version, version_label
+        if self.path is None:
+            QMessageBox.information(self, "Versions", "Enregistrez d'abord la fiche : les versions sont gardées à "
+                                    "chaque enregistrement (Ctrl+S).")
+            return False
+        versions = list_versions(self.path)
+        if not versions:
+            QMessageBox.information(self, "Versions", "Aucune version enregistrée pour ce fichier.")
+            return False
+        labels = {version_label(v): v for v in versions}
+        picked = ask_choice(self, "Restaurer une version", "Version à rouvrir (la fiche actuelle est gardée comme "
+                            "version avant la restauration) :", list(labels))
+        if not picked:
+            return False
+        try:
+            char = Character.load(labels[picked]["chemin"])
+            save_version(self.path, write=self.ch.save)     # l'état actuel devient une version (fichier intact)
+        except (OSError, ValueError, KeyError) as exc:
+            QMessageBox.critical(self, "Restauration impossible", str(exc))
+            return False
+        self.load_character(char, self.path, dirty=True)
+        self.statusBar().showMessage("Version du {} restaurée — enregistrez (Ctrl+S) pour la garder.".format(
+            labels[picked]["date"]), 8000)
+        return True
+
+    def _fill_recent_menu(self) -> None:
+        menu = self.recent_menu
+        menu.clear()
+        paths = list(self.settings.get("fichiers_recents") or [])
+        if not paths:
+            act = QAction("(aucun fichier récent)", self)
+            act.setEnabled(False)
+            menu.addAction(act)
+            return
+        for i, p in enumerate(paths):
+            exists = Path(p).is_file()
+            act = QAction("&{}  {}{}".format(i + 1, Path(p).name, "" if exists else " (introuvable)"), self)
+            act.setToolTip(p)
+            act.setStatusTip(p)
+            act.setEnabled(exists)
+            act.triggered.connect(lambda _=False, path=p: self.open_recent(path))
+            menu.addAction(act)
+        menu.addSeparator()
+        clear = QAction("Vider la liste", self)
+        clear.triggered.connect(self._clear_recent)
+        menu.addAction(clear)
+
+    def _clear_recent(self) -> None:
+        self.settings["fichiers_recents"] = []
+        save_settings(self.settings)
+
+    def open_recent(self, path: str) -> bool:
+        if not self._confirm_discard():
+            return False
+        try:
+            char = Character.load(path)
+        except (OSError, ValueError, KeyError) as exc:
+            QMessageBox.critical(self, "Chargement impossible", str(exc))
+            return False
+        self.settings["last_dir"] = str(Path(path).parent)
+        self.load_character(char, Path(path))
+        return True
 
     def _start_dir(self) -> str:
         d = self.settings.get("last_dir") or ""
@@ -390,7 +724,13 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Enregistrement impossible", str(exc))
             return
         self.path, self._dirty = path, False
+        try:                                              # v52 : copie datée (10 dernières versions)
+            from core.versions import save_version
+            save_version(path)
+        except OSError:
+            pass
         self.settings["dernier_fichier"] = str(path)        # v48 : rouvert au prochain lancement
+        remember_recent(self.settings, path)
         save_settings(self.settings)
         self._update_title()
         note = self.missing_note()
@@ -545,6 +885,7 @@ class MainWindow(QMainWindow):
         key = self._key_of.get(id(self.tabs.currentWidget()))
         if key in self._stale:
             self._refresh_tab(key)
+        self.refresh_help_banner()
 
     def _refresh_tab(self, key: str) -> None:
         widget, _ = self._tab_by_key[key]
@@ -560,6 +901,7 @@ class MainWindow(QMainWindow):
         self._dirty = True
         self.refresh_all()
         self.schedule_autosave()
+        self._capture_history()                          # v52 : étape d'annulation
 
     def light_changed(self, keep_current: bool = True) -> None:
         """
@@ -570,6 +912,7 @@ class MainWindow(QMainWindow):
         current = self._key_of.get(id(self.tabs.currentWidget()))
         self._stale = {k for k, _, _ in self.tab_defs if not (keep_current and k == current)}
         self._update_title()
+        self._capture_history()                          # v52 : étape d'annulation
 
     def refresh_all(self):
         """En-tête + onglet visible (les autres sont marqués et recalculés à leur ouverture)."""
@@ -714,8 +1057,11 @@ class MainWindow(QMainWindow):
             head = ("🦋 État actif : Métamorphose ({})" if poly else "🐾 Forme active : {}").format(beast["nom"])
             conc = (" — concentration sur Métamorphose (JS de Constitution à chaque dégât)" if poly else
                     " — concentration maintenue : " + self.ch.concentration if self.ch.concentration else "")
-            self.form_label.setText("{} — PV de la bête {} / {} — CA {} — sorts indisponibles{}".format(
-                head, self.ch.forme_pv, self.engine.beast_hp_max(beast["nom"]), self.engine.beast_ac(beast), conc))
+            hp = ("vos PV {} + {} temporaires".format(self.ch.pv_actuels, self.ch.pv_temporaires)
+                  if self.engine.wild_shape_2024() else
+                  "PV de la bête {} / {}".format(self.ch.forme_pv, self.engine.beast_hp_max(beast["nom"])))
+            self.form_label.setText("{} — {} — CA {} — sorts indisponibles{}".format(
+                head, hp, self.engine.beast_ac(beast), conc))
             self.form_end_btn.setText("✕ Mettre fin à la Métamorphose" if poly else "✕ Reprendre sa forme normale")
 
     def _update_title(self):
@@ -737,6 +1083,8 @@ def run(db: Database, settings: dict | None = None) -> int:
             app.setWindowIcon(QIcon(icon_path))
             break
     win = MainWindow(db, settings)
+    from .crash_guard import install as install_crash_guard   # v52 : une erreur ne ferme plus l'application
+    install_crash_guard(win)
     win.show()
     # v48 : le dernier personnage est rouvert ; sinon (premier lancement) l'assistant de création s'ouvre
     if not win.restore_last_session() and settings.get("assistant_au_demarrage", True):

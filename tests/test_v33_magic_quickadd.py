@@ -100,7 +100,7 @@ class UiTests(unittest.TestCase):
         panel = win.inventory_tab.magic_items
         panel.quick.setText("Talisman de Zorg")
         orig = mp.ask_custom_item
-        mp.ask_custom_item = lambda parent, name="": {"nom": name, "type_": "Objet merveilleux", "rarete": "peu commun",
+        mp.ask_custom_item = lambda parent, name="", **_kw: {"nom": name, "type_": "Objet merveilleux", "rarete": "peu commun",
                                                        "lien": False, "description": "", "poids": 0.0, "ca": 0}
         try:
             panel._on_quick_add()

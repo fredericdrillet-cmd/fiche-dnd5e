@@ -2,7 +2,8 @@
 Montée de niveau guidée (v29) et frise de progression 1 → 20 — logique pure.
 
 L'assistant travaille sur une COPIE du personnage (`simulate_level_up`) : le joueur choisit la classe, les PV,
-les choix du niveau (sous-classe, amélioration ou don, style de combat, faveur de pacte) ; le récapitulatif
+les choix du niveau (sous-classe, amélioration ou don, style de combat, faveur de pacte ; v52 : options de
+classe, compétences et expertises, langues, choix des dons) ; le récapitulatif
 avant / après se calcule sur la copie ; rien ne touche la vraie fiche tant que « Confirmer » n'est pas cliqué
 (la copie remplace alors le personnage).
 """
@@ -13,7 +14,7 @@ from typing import Optional
 from . import rules as R
 from .character import Character
 from .data_loader import PACTS
-from .rules import ABILITIES
+from .rules import ABILITIES, norm
 
 SCHOOLS = ["Abjuration", "Divination", "Enchantement", "Évocation", "Illusion", "Invocation", "Nécromancie",
            "Transmutation"]
@@ -41,7 +42,11 @@ def filter_spells(spells: list[dict], niveau=None, ecole: str = "", rituel: bool
 
 # choix faits DANS l'assistant (bloquent « Confirmer ») : (onglet, encart) de missing_choices()
 INLINE = {("classes", "Sous-classe"): "sous_classe", ("progression", "Emplacements débloqués"): "amelioration",
-          ("combat", "Style de combat"): "style", ("magie", "Pacte"): "pacte"}
+          ("combat", "Style de combat"): "style", ("magie", "Pacte"): "pacte",
+          ("classes", "Options de classe"): "options",     # v52 : manœuvres, runes, Métamagie… au niveau gagné
+          ("caracteristiques", "Compétences"): "competences",   # v52 : compétences et expertises gagnées
+          ("race", "Langues"): "langues",                       # v52 : langues accordées (dons, aptitudes)
+          ("progression", "Choix des dons"): "dons"}            # v52 : sous-choix d'un don pris à ce niveau
 
 
 class LevelUpMixin:
@@ -110,6 +115,59 @@ class LevelUpMixin:
                 "mode": self.ch.pv_mode, "premier": first}
 
     # ------------------------------------------------------------------ rapport de l'assistant
+    def level_option_keys(self, sim) -> set:
+        """v52 : ensembles de choix de classe gagnés ou agrandis à ce niveau (manœuvres, runes, Métamagie…)."""
+        before = {s["key"]: s["total"] for s in self.option_sets() if not s["key"].startswith("don:")}
+        return {s["key"] for s in sim.option_sets() if not s["key"].startswith("don:")
+                and s["total"] > before.get(s["key"], 0)}
+
+    def level_feat_keys(self, sim) -> set:
+        """v52 : choix des dons pris à ce niveau (Doué, Initié à la magie, Expert…), ou encore incomplets."""
+        before = {s["key"] for s in self.option_sets() if s["key"].startswith("don:")}
+        return {s["key"] for s in sim.option_sets() if s["key"].startswith("don:")
+                and (s["key"] not in before or len(s["chosen"]) < s["total"])}
+
+    @staticmethod
+    def level_set_skill(sim, name: str, field: str, on: bool) -> bool:
+        """v52 : maîtrise ou expertise cochée dans l'assistant, dans la limite de ce qui est accordé. Les
+        compétences de l'historique ne se décochent pas ici ; l'expertise exige la maîtrise."""
+        st = dict(sim.ch.competences.get(name) or {"maitrise": False, "expertise": False})
+        if bool(st.get(field)) == on:
+            return True
+        if field == "maitrise":
+            if not on and name in sim.ch.competences_historique:
+                return False
+            if on and sim.skills_missing() <= 0:
+                return False
+            st["maitrise"] = on
+            if not on:
+                st["expertise"] = False
+        else:
+            if on and (not st.get("maitrise") or sim.expertise_missing() <= 0):
+                return False
+            st["expertise"] = on
+        sim.ch.competences[name] = st
+        sim.normalize()
+        return True
+
+    @staticmethod
+    def level_language_options(sim) -> list[str]:
+        """Langues proposées : toutes, sauf celles déjà acquises d'office (espèce, historique)."""
+        fixed = sim.languages_fixed()
+        return [n for n in sim.db.language_names() if norm(n) not in fixed]
+
+    @staticmethod
+    def level_set_language(sim, name: str, on: bool) -> bool:
+        have = list(sim.ch.langues_liste)
+        if (name in have) == on:
+            return True
+        if on and sim.languages_missing() <= 0:
+            return False
+        have = have + [name] if on else [x for x in have if x != name]
+        sim.ch.langues_liste = [n for n in sim.db.language_names() if n in have]
+        sim.normalize()
+        return True
+
     def level_up_report(self, sim, class_name: str) -> dict:
         """Aptitudes gagnées, choix du niveau (dans l'assistant / à faire ensuite), récapitulatif avant / après."""
         entry = sim.ch.find_class(class_name)
@@ -143,7 +201,7 @@ class LevelUpMixin:
         """Choix de l'assistant lié à la classe montée : préfixe « Classe : » / « Classe — », style « (Classe) »,
         pacte et manifestations pour l'Occultiste ; les échanges de sorts sont toujours ceux de la classe montée."""
         kind, msg = m.get("kind", ""), m.get("message", "")
-        if m.get("echange"):
+        if m.get("echange") or kind in ("options", "competences", "langues", "dons"):
             return True
         if kind in ("pacte", "manifestations"):
             return class_name == "Occultiste" or "Occultiste" not in msg and kind == "manifestations"
@@ -191,8 +249,100 @@ class LevelUpMixin:
         keep = {"Niveau global", "Points de vie maximum", "Bonus de maîtrise"}
         return [r for r in rows if r[0] in keep or r[1] != r[2]]
 
+    def level_up_changes(self, sim, class_name: str) -> list[tuple[str, list[str]]]:
+        """v52 : tout ce qui change entre la fiche actuelle et le niveau débloqué, par rubrique :
+        [(rubrique, [lignes])] — classe et sous-classe, aptitudes, amélioration ou don, style, choix de classe et
+        de dons, sorts appris / oubliés / préparés, compétences et expertises, langues, outils, maîtrises d'armes
+        et d'armures, résistances et immunités. Rubriques vides omises."""
+        out: list[tuple[str, list[str]]] = []
+
+        def add(title: str, lines: list[str]) -> None:
+            lines = [x for x in lines if x]
+            if lines:
+                out.append((title, lines))
+
+        a_ch, b_ch = self.ch, sim.ch
+        entry, old = b_ch.find_class(class_name) or {}, a_ch.find_class(class_name) or {}
+        lines = ["{} : niveau {} → {}".format(class_name, old.get("niveau", 0) or "—", entry.get("niveau", 0))
+                 if old else "Nouvelle classe (multiclassage) : {} niveau {}".format(class_name, entry.get("niveau", 1))]
+        if entry.get("sous_classe") and entry.get("sous_classe") != old.get("sous_classe"):
+            lines.append("Sous-classe : " + entry["sous_classe"])
+        if b_ch.pacte and b_ch.pacte != a_ch.pacte:
+            lines.append("Faveur de pacte : " + b_ch.pacte)
+        add("Classe", lines)
+        lvl = entry.get("niveau", 0)
+        add("Aptitudes gagnées", ["{}{}".format(f["nom"], " ({})".format(f["source"]) if f.get("sous_classe") else "")
+                                  for f in sim.features(entry) if f["niveau"] == lvl and f["debloque"]])
+        lines = []
+        for sid, c in b_ch.ameliorations.items():
+            if a_ch.ameliorations.get(sid) == c:
+                continue
+            mode = c.get("mode")
+            if mode == "plus2" and c.get("a1"):
+                lines.append("+2 en {}".format(c["a1"]))
+            elif mode == "plus1x2" and c.get("a1"):
+                lines.append("+1 en {}{}".format(c["a1"], " et +1 en {}".format(c["a2"]) if c.get("a2") else ""))
+            elif mode == "don" and c.get("don"):
+                lines.append("Don : {}{}".format(c["don"], " (+1 en {})".format(c["don_carac"])
+                                                  if c.get("don_carac") else ""))
+        add("Amélioration de caractéristiques ou don", lines)
+        add("Style de combat", ["{}".format(v) for k, v in b_ch.styles_combat.items() if a_ch.styles_combat.get(k) != v])
+        a_sets = {s["key"]: s for s in self.option_sets()}
+        lines, feat_lines = [], []
+        for s in sim.option_sets():
+            new = [c for c in s["chosen"] if c not in (a_sets.get(s["key"]) or {}).get("chosen", [])]
+            gone = [c for c in (a_sets.get(s["key"]) or {}).get("chosen", []) if c not in s["chosen"]]
+            if new or gone:
+                txt = "{} : {}".format(s["label"], ", ".join(new)) + (" (remplace {})".format(", ".join(gone))
+                                                                       if gone else "")
+                (feat_lines if s["key"].startswith("don:") else lines).append(txt)
+        add("Choix de classe", lines)
+        add("Choix des dons", feat_lines)
+        add("Manifestations occultes", ["+ " + m for m in b_ch.manifestations if m not in a_ch.manifestations] +
+            ["− " + m for m in a_ch.manifestations if m not in b_ch.manifestations])
+
+        def spells(ch) -> dict:
+            return {k: {s["nom"]: bool(s.get("prepare")) for s in v if s.get("nom")} for k, v in ch.sorts.items()}
+        sa, sb = spells(a_ch), spells(b_ch)
+        learned, forgot, prepared = [], [], []
+
+        def tag(n: str, k: str) -> str:
+            sp = sim.db.find_spell(n) or {}
+            return "{} ({}{})".format(n, "sort mineur, " if sp.get("niveau") == 0 else "", k)
+        for k in sorted(set(sa) | set(sb)):
+            a, b = sa.get(k, {}), sb.get(k, {})
+            learned += [tag(n, k) for n in b if n not in a]
+            forgot += ["{} ({})".format(n, k) for n in a if n not in b]
+            prepared += ["{} ({})".format(n, k) for n in b if b[n] and n in a and not a[n]]
+        ca = {c["nom"] for c in a_ch.sorts_mineurs if c.get("nom")}
+        learned = ["{} (sort mineur)".format(c["nom"]) for c in b_ch.sorts_mineurs if c.get("nom") and
+                   c["nom"] not in ca] + learned
+        add("Sorts appris", learned)
+        add("Sorts oubliés (échange)", forgot)
+        add("Sorts préparés", prepared)
+        add("Emplacements de sorts", [r[1] + " → " + r[2] for r in self.level_up_recap(sim)
+                                      if r[0] == "Emplacements de sorts"])
+        comp_a, comp_b = a_ch.competences, b_ch.competences
+        add("Compétences", ["Maîtrise : " + n for n, s in comp_b.items()
+                            if s.get("maitrise") and not (comp_a.get(n) or {}).get("maitrise")] +
+            ["Expertise : " + n for n, s in comp_b.items()
+             if s.get("expertise") and not (comp_a.get(n) or {}).get("expertise")])
+        add("Langues", [n for n in b_ch.langues_liste if n not in a_ch.langues_liste])
+        add("Outils", [n for n in b_ch.outils if n not in a_ch.outils])
+        pa, pb = self.proficiency_summary(), sim.proficiency_summary()
+        add("Maîtrises d'armes et d'armures", ["Armure : " + x for x in pb["armures"] if x not in pa["armures"]] +
+            ["Arme : " + x for x in pb["armes"] if x not in pa["armes"]])
+        da, db_ = self.defenses(), sim.defenses()
+        add("Résistances et immunités", ["{} : {}".format(label, x) for field, label in
+                                         (("resistances", "Résistance"), ("immunites", "Immunité"))
+                                         for x in dict.fromkeys(x for x, _ in db_[field])
+                                         if x not in {y for y, _ in da[field]}])
+        sava, savb = self.ch.sauvegardes, sim.ch.sauvegardes
+        add("Jets de sauvegarde", ["Maîtrise : " + ab for ab in ABILITIES if savb.get(ab) and not sava.get(ab)])
+        return out
+
     def pact_options(self) -> list[str]:
-        return list(PACTS)
+        return list(PACTS) if self.sheet_edition != 2024 else []      # 2024 : le pacte est une manifestation
 
     # ------------------------------------------------------------------ v40 : nouveaux sorts du niveau
     def level_invocation_options(self, sim) -> list[dict]:
@@ -301,7 +451,7 @@ class LevelUpMixin:
         name = entry["nom"]
         feats = self.features(entry)
         cls = self.db.classes.get(name, {})
-        sub_need = R.SUBCLASS_LEVEL.get(name, 3)
+        sub_need = self.subclass_level(name)
         cfg = R.CASTERS.get(name) or R.SUBCLASS_CASTERS.get((name, self.active_subclass(entry)))
         out = []
         for lvl in range(1, R.MAX_LEVEL + 1):

@@ -347,6 +347,50 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
   - Si le style est remplacé, la manœuvre, l'action et le dé disparaissent.
   - Description du style corrigée : il n'y a pas de « DD 14 » fixe, et le dé revient au repos court ou long.
 
+## Nouveautés v52 — éditions 2014 / 2024, règles de la table, ergonomie de table
+- **Édition choisie à la création** (2014 ou 2024), une par fiche : classes, sous-classes, espèces, historiques, dons et sorts de l'édition ; classes 2024 jouables (tables, compteurs, sous-classe au niveau 3, historique 2024 avec bonus et don d'origine, styles de combat en dons, bottes d'arme, Occultiste et Métamagie 2024, actions de combat 2024). Détails : `ARCHITECTURE_EDITIONS_v52.md`.
+- **Données complétées** (`data/editions/`) : sous-classes, dons, historiques et sorts officiels qui manquaient ; corrections de l'audit 2014 (compétences de classe, Druide, Demi-orque, armes). Audit : `AUDIT_CONFORMITE_5E2014.md`.
+- **Règles de la table** (Options) : potion en action bonus, bottes d'arme sur l'arsenal 2014, inspiration héroïque, actions d'arme BG3.
+- **Onglet « 🎲 En partie »** (ex-Combat) : bande d'emplacements de sorts et de pacte cliquable ; **saisie rapide des PV** (« 7 » ou « -7 » = dégâts, « +5 » = soins, boutons 💥 Dégâts / 💚 Soins, **Ctrl+D**).
+- **Lancers** : le jet part dans le mode de l'état du personnage ; boutons *Normal / Avantage / Désavantage* pour relancer si le MJ en décide autrement ; **historique des 50 derniers lancers** (Options > Historique des lancers, **Ctrl+H**).
+- Assistant de création : la race, puis **l'historique avant la classe**.
+- **Effets automatiques des dons et aptitudes** : un don choisi ou un niveau atteint applique ses effets (PV, vitesse, CA, compétences, expertise, JS, outils, résistances, sorts accordés avec 1 lancer gratuit, points de chance, Faveurs épiques jusqu'à 30, Dernier rempart à 0 PV, dés ajoutés aux armes, ressources rendues à l'initiative ou au repos court). Les choix (compétences, sorts…) se font dans l'onglet Progression, encart « Choix des dons ».
+- **Sous-classes 2024** : sorts toujours préparés appliqués (domaines, serments, cercles, protecteurs…), mécanismes des sous-classes renommées, critiques du Champion, résistances, initiative, soins de Disciple de la vie ; sorts 2024 avec leurs soins, JS et surclassement.
+- **Sous-classes 2024 sans équivalent 2014** : tuiles et effets de l'Arbre-Monde, du Cœur sauvage, de la Danse, des cercles de la Terre et des Mers, du Credo des Éléments, de l'Assassin, du Champion ; options de Conduit divin 2024.
+- **Lexique des règles** (`data/Lexique.json`, 67 termes, différences 2014 / 2024) : définitions ajoutées aux infobulles partout, fenêtre Aide > Lexique (**F1**) ; option **« Aides pour débuter »** (Options, désactivée par défaut) : mots de règles soulignés et une ligne d'explication par onglet et par étape de création.
+- **Début et fin de tour** : boutons « ▶ Début de mon tour » / « ⏹ Fin de mon tour » avec un bandeau de rappels (concentration, rage, jet contre la mort, capacités de début / fin de tour, action bonus non utilisée) ; rappels aussi après le jet d'initiative.
+- **Quand vous touchez** : une fenêtre de cases (Attaque sournoise, Châtiment divin, Marque du chasseur, Frappe divine…) avant de lancer les dégâts, rien coché d'office ; coûts dépensés, « une fois par tour » suivi.
+- **🛡 On m'attaque !** : jet de l'ennemi contre votre CA, réactions proposées (Bouclier, Duelliste défensif, Mots cinglants, Esquive instinctive, Parade / Déviation…), puis dégâts typés ; « Subir les dégâts » toujours possible.
+- **Avant un repos** : la fenêtre de repos liste aussi ce qui n'a pas servi (rages, Second souffle, Conduit divin, emplacements…).
+- **✨ Nouveau** : après une montée de niveau, les capacités et sorts gagnés portent un badge jusqu'à leur première utilisation (ou au repos long).
+- **📌 À ne pas oublier** : encart repliable de l'onglet « En partie » listant, par moment du tour, les capacités de situation (Attaque téméraire, Rage implacable, auras pour les alliés, traits d'espèce…).
+- **Options de Tasha** (fiches 2014, règle de la table active par défaut) : toutes les options qui s'ajoutent sont appliquées (compétences, Arme dédiée, sorts supplémentaires, tuiles Guérison accélérée, Visée stable, Exploitation du pouvoir divin…) ; celles qui remplacent une aptitude ne le sont pas.
+- **Annuler / Refaire** : menu Édition (Ctrl+Z / Ctrl+Y), 30 étapes nommées (« Annuler : PV », « Annuler : ressources »…), montée de niveau et repos compris.
+- **Jet de concentration** : proposé dès qu'on subit des dégâts en se concentrant (avantages de Mage de guerre, Esprit occulte…), sort terminé sur un échec ; à 0 PV, concentration rompue.
+- **Dons de combat** : bascule −5/+10 (Tireur d'élite, Briseur d'armes lourdes) sur la ligne d'arme et en tuile ; tuiles d'attaque bonus (talon d'arme d'hast, arbalète de poing, après un critique) et Coup de bouclier.
+- **Options de Tasha qui remplacent une aptitude** : au choix par personnage (onglet Classes) — Ennemi favori, Explorateur expert, Conscience primordiale, Voile de la nature, Frappes bénies — avec leurs effets ; l'aptitude remplacée est désactivée.
+- **Forme sauvage 2024** : formes connues, action bonus, PV du druide conservés et PV temporaires (×3 Cercle de la Lune), CA 13 + Sagesse de la Lune, limites de FP et de vol 2024.
+- **Compagnon primitif 2024** (Maître des bêtes) : choisi en un clic, créé et tenu à jour dans la Ménagerie (CA et dégâts sur votre Sagesse, deux attaques au niveau 11) ; ses attaques sont des tuiles de « Ce tour-ci ».
+- **Épuisement selon l'édition** : compteur dans « En partie », malus 2014 ou 2024 appliqués, JS d'épuisement (marche forcée, chaleur, froid, privation) avec le DD officiel, Frénésie du Berserker 2014.
+- **Durées des effets** : décompte en rounds à chaque début de tour et avec le temps qui passe (« Bénédiction : 7 rounds »), fin automatique, clic droit pour prolonger.
+- **Actions communes 2014 / 2024** : Se tenir prêt ; en 2024 Saisir / Bousculer avec le DD de la cible, Se cacher DD 15, Étudier, Influencer, Magie ; les tests se lancent depuis la tuile.
+- **Inspiration héroïque automatique** (Ingénieux de l'Humain 2024) et bouton 🌟 dans la fenêtre de jet.
+- **Jet libre** « 2d6+3 » (Ctrl+R) et **Fichier > Récents**.
+- **États 2014 / 2024** (Agrippé, Étourdi, Invisible, Neutralisé…), tuile « Se libérer », concentration rompue par un état neutralisant, Caché qui prend fin à l'attaque.
+- **Chanceux** : relance automatique des 1 du Halfelin, bouton 🍀 des points de chance (et désavantage imposé en 2024).
+- **🏁 Fin du combat** (munitions récupérées, bilan) et **🌪 Environnement** (chute, suffocation).
+- **Objets magiques** : recharge selon leur formule (dés animés), charges multiples des baguettes, d20 de destruction, perles et autres éléments comptés (Collier de boules de feu…).
+- **Recherche Ctrl+F**, **menu Partie** (Ctrl+T, Ctrl+E, Ctrl+I, Ctrl+A) et **Aide > Raccourcis clavier**.
+- **Contresort et Dissipation de la magie** calculés ; **lumière** (bougie, torche, lanternes) avec la règle de survie.
+- **Aide-mémoire de combat** en option dans l'export PDF ; **journal de session** (Ctrl+H, export texte).
+- **Versions de sauvegarde** (10 dernières, Fichier > Restaurer) et **manuel d'utilisation** (F2, export PDF).
+- **Plus rapide** : rafraîchissement des onglets deux à trois fois plus court.
+- **Composantes coûteuses** vérifiées au lancement du sort ; **abri** (+2 / +5) contre les attaques et aux JS de Dextérité.
+- **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
+- **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
+- **Jet contre la mort** : bouton à 0 PV, résultat appliqué (20 = 1 PV, 1 = deux échecs), mort instantanée.
+- **Aptitudes 2024 calculées** : Sorcellerie innée (DD +1, avantage aux attaques de sorts, 2 par repos long, Sorcellerie incarnée au niveau 7), Ordre divin du Clerc et Ordre primitif du Druide (maîtrises, tour de magie, bonus de Sagesse aux tests), prérequis des dons 2024 (Faveurs épiques au niveau 19).
+
 ## Nouveautés v51 — multiclassage sans blocage, en-tête épuré, mises en page compactes
 - **Bug corrigé — « Choix du niveau (1) » fantôme** (ex. Occultiste 1 → Paladin 1) :
   - en Mode guidé, un prérequis de multiclassage non rempli était compté comme un choix du niveau, invisible sur la page, et bloquait « Confirmer » ;

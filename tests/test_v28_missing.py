@@ -91,7 +91,7 @@ class EngineTests(unittest.TestCase):
 
     def test_draconic_color(self):
         eng = make("Drakéide", "Guerrier", 1)
-        self.assertIn("Couleur du dragon ancestral à choisir", msgs(eng, "combat"))
+        self.assertIn("Couleur du dragon ancestral à choisir", msgs(eng, "race"))
 
     def test_excess_stays_in_warnings(self):
         eng = make("Humain", "Guerrier", 1)

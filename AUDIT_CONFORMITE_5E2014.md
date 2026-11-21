@@ -464,7 +464,9 @@ Légende : ✅ ton application suit la règle 2014 · ⚠ écart · ➖ absent d
 
 ---
 
-## 13. Recommandations (rien n'a été appliqué)
+## 13. Recommandations
+
+> **Mise à jour v52** — corrigés : compétences de classe (*Discrétion* retirée du Barbare, du Guerrier, du Paladin, de l'Ensorceleur et de l'Occultiste ; doublon du Moine), armes du Druide (serpe ajoutée, arbalète légère retirée), **Demi-orque** ajouté (PHB, avec son illustration et le compteur d'Endurance implacable), armes (Lance d'arçon 1d12 sans « Lourde », Trident 1d6 / 1d8, prix de la Javeline et de la Serpe, poids du Marteau de guerre), Filet, 14 sous-classes officielles manquantes, dons, historiques et sorts manquants, 13 textes de dons faux (voir `ARCHITECTURE_EDITIONS_v52.md`). La botte d'arme et les actions BG3 sont devenues des **règles de la table** désactivables.
 
 ### Priorité 1 — règles de 2014 trahies
 1. **Retirer ou rendre optionnelle la botte d'arme** (§2.1) : désactiver `botte_arme` par défaut (drapeau de réglage « règles de 2024 »), ou la supprimer de `Armes.json`.

@@ -100,9 +100,9 @@ def run_tests() -> bool:
     t0 = time.time()
     res = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-q"], cwd=ROOT,
                          capture_output=True, text=True, encoding="utf-8", errors="replace")
-    tail = (res.stderr or res.stdout).strip().splitlines()[-3:]
-    for line in tail:
-        log("   " + line)
+    lines = (res.stderr or res.stdout).strip().splitlines()
+    for line in [x for x in lines if x.startswith(("FAIL:", "ERROR:"))][:20] + lines[-3:]:
+        log("   " + line)                                 # tests en échec nommés dans le journal
     log("Tests {} en {:.0f} s".format("réussis" if res.returncode == 0 else "EN ÉCHEC", time.time() - t0))
     return res.returncode == 0
 

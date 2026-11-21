@@ -14,6 +14,8 @@ ou si sa ressource (emplacement, sphère) est épuisée.
 """
 from __future__ import annotations
 
+from . import house_rules as HR
+
 import re
 from typing import Optional
 
@@ -21,6 +23,7 @@ from . import dice as D
 from . import rules as R
 from .rules import norm
 from .data_loader import SAVE_TESTS, save_success_text
+from .conditions import ESCAPE_DC_2024
 
 ECONOMY = ("Action", "Action bonus", "Réaction", "Gratuit")
 REACTION_MODES = {"demander": "Demander", "auto": "Automatique", "off": "Désactivée"}
@@ -50,6 +53,47 @@ COMMON_ACTIONS = [
      "Une interaction gratuite par tour : ouvrir une porte, dégainer une arme, ramasser un objet."),
     ("parler", "Parler", "💬", "Gratuit", "", "Quelques mots pendant votre tour."),
 ]
+
+# v52 : actions communes selon l'édition. 2024 : Saisir et Bousculer sont des options de la Frappe à mains nues
+# (JS de la cible), Se cacher se fait contre DD 15, Étudier / Influencer / Magie sont des actions à part entière.
+READY = ("pret", "Se tenir prêt", "⏳", "Action", "",
+         "Choisissez un déclencheur et une réaction : vous agissez (action ou déplacement) quand il se produit, "
+         "avant la fin du round. Un sort préparé ainsi demande votre concentration.")
+COMMON_2024 = {
+    "esquiver": ("Jusqu'au début de votre prochain tour : désavantage aux attaques contre vous si vous voyez "
+                 "l'attaquant, avantage à vos JS de Dextérité. Perdu si vous êtes neutralisé ou si votre vitesse "
+                 "tombe à 0."),
+    "aider": ("Aide à un test : vous maîtrisez la compétence ou l'outil, l'allié a l'avantage à son prochain test. "
+              "Aide à une attaque : l'allié a l'avantage contre une créature à 1,50 m de vous."),
+    "cacher": ("Test de Dextérité (Discrétion) DD 15, très obscurci ou derrière un abri important ou total, hors de "
+               "vue : réussite = état Invisible ; le total devient le DD pour vous trouver."),
+    "bousculer": ("Option de la Frappe à mains nues, remplace une attaque : la cible (au plus une catégorie de taille "
+                  "au-dessus) fait un JS de Force ou de Dextérité (son choix) contre DD {DD} ; échec = repoussée de "
+                  "1,50 m ou à terre."),
+    "saisir": ("Option de la Frappe à mains nues, remplace une attaque, une main libre : la cible (au plus une "
+               "catégorie de taille au-dessus) fait un JS de Force ou de Dextérité contre DD {DD} ; échec = "
+               "agrippée (s'échapper : même DD)."),
+    "chercher": "Test de Sagesse : Perspicacité, Médecine, Perception ou Survie.",
+    "objet": "Utiliser un objet non magique qui demande une action (un objet magique passe par l'action Magie).",
+}
+EXTRA_2024 = [
+    ("etudier", "Étudier", "📖", "Action", "", "Test d'Intelligence : Arcanes, Histoire, Investigation, Nature ou "
+                                              "Religion (se souvenir, examiner un indice)."),
+    ("influencer", "Influencer", "🗣️", "Action", "", "Convaincre une créature (le MJ fixe le DD, souvent 15 ou "
+                                                     "son Intelligence) : Tromperie, Intimidation, Représentation, "
+                                                     "Persuasion ou Dressage."),
+    ("magie", "Magie", "✨", "Action", "", "Lancer un sort d'une action, utiliser un objet magique ou une aptitude "
+                                          "magique : utilisez la tuile du sort ou de l'objet."),
+]
+COMMON_TESTS = {          # tuile -> (compétences proposées, DD fixe 2024 ou 0)
+    "cacher": (["Discrétion"], 15),
+    "chercher": (["Perception", "Investigation"], 0),
+    "etudier": (["Arcanes", "Histoire", "Investigation", "Nature", "Religion"], 0),
+    "influencer": (["Persuasion", "Tromperie", "Intimidation", "Représentation", "Dressage"], 0),
+}
+ESCAPE = ("liberer", "Se libérer", "🔓", "Action", "",
+          "Agrippé ou Entravé : test de Force (Athlétisme) ou de Dextérité (Acrobaties) pour vous libérer.")
+COMMON_TESTS_2024 = {"chercher": (["Perception", "Perspicacité", "Médecine", "Survie"], 0)}
 
 
 def spell_economy(spell: dict) -> str:
@@ -149,8 +193,13 @@ class TurnMixin:
             used = state.get(kind) if kind != "Gratuit" else False
             if ok and used:
                 ok, why = False, "{} déjà utilisée ce tour.".format("Réaction" if kind == "Réaction" else kind)
+            r = ref or {}
+            new = (self.is_new("act:" + r["action"]) if r.get("action") else
+                   self.is_new("sort:" + r["sort"]) if r.get("sort") else
+                   self.is_new("reac:" + r["reaction"]) if r.get("reaction") else False)   # v52 : badge
             out.append({"id": tid, "nom": nom, "icone": icone, "type": kind, "origine": origine,
-                        "description": desc, "disponible": ok, "raison": why, "cout": cost, "ref": ref or {}})
+                        "description": desc, "disponible": ok, "raison": why, "cout": cost, "ref": r,
+                        "nouveau": new})
 
         # armes équipées : l'action Attaquer permet plusieurs attaques (Attaque supplémentaire)
         n_att, done = self.attacks_per_action(), int(self.ch.tour_attaques)
@@ -316,7 +365,7 @@ class TurnMixin:
         out = [t for t in out if not (t["type"] == "Réaction" and t["id"].startswith("sort:") and
                                       self.reaction_mode("sort:" + t["nom"]) == "off")]
         # actions communes
-        for cid, nom, icone, kind, _effect, desc in COMMON_ACTIONS:
+        for cid, nom, icone, kind, _effect, desc in self.common_actions():
             tile("commune:" + cid, nom, icone, kind, "action commune", desc)
         # v45 — capacités activables des objets magiques équipés : badge « [Objet Magique : Nom] »
         for p in self.magic_item_powers():
@@ -331,13 +380,39 @@ class TurnMixin:
             tile(p["id"], p["nom"], "✨", p["type"], "[Objet Magique : {}]{}".format(p["objet"], charge_txt),
                  p["description"][:500], ok, why, "{} charge(s)".format(p["cout"]) if p["cout"] else "",
                  ref={"pouvoir": p["id"]})
+        # v52 — compagnons de classe actifs (Maître des bêtes…) : une tuile par attaque, sur votre ordre
+        for inst in self.ch.menagerie:
+            ent = self.entity(inst.get("id", "")) or {}
+            if ent.get("entity_type") != "class_companion" or inst.get("statut", "Actif") != "Actif":
+                continue
+            sheet = self.entity_sheet(inst)
+            for i, a in enumerate(sheet["actions"]):
+                if a.get("attack_type") in (None, "none"):
+                    continue
+                tile("compagnon:{}:{}".format(inst["uid"], i), "{} : {}".format(sheet["nom"], a["name"]), "🐾",
+                     "Action bonus", "Compagnon", "Ordre à votre compagnon (action bonus, ou à la place d'une de vos "
+                     "attaques) : +{} au toucher, {} {}.{}".format(a.get("attack_bonus", 0), a.get("damage_dice", ""),
+                                                                 a.get("damage_type", ""), " Deux attaques (Fureur "
+                                                                 "bestiale)." if sheet.get("attaques_multiples") == 2
+                                                                 else ""),
+                     ref={"compagnon": inst["uid"], "attaque": i})
         # v40 — règle optionnelle : boire soi-même une potion de son inventaire par une action bonus
-        drinks = self.drinkable_potions()
-        tile("potion:boire", "Boire une potion (Action bonus)", "🧪", "Action bonus", "règle optionnelle",
-             "Vous buvez vous-même une potion de votre inventaire ({}). Administrer une potion à un allié reste une "
-             "action (« Utiliser un objet »).".format(", ".join("{} ×{}".format(p["nom"], p["qte"]) for p in drinks)
-                                                       if drinks else "aucune potion"),
-             bool(drinks), "" if drinks else "Aucune potion dans l'inventaire.", "1 potion")
+        drinks = self.drinkable_potions() if self.rule_active("potion_action_bonus") else []
+        if self.rule_active("potion_action_bonus"):
+            tile("potion:boire", "Boire une potion (Action bonus)", "🧪", "Action bonus", "règle optionnelle",
+                 "Vous buvez vous-même une potion de votre inventaire ({}). Administrer une potion à un allié reste "
+                 "une action (« Utiliser un objet »).".format(
+                     ", ".join("{} ×{}".format(p["nom"], p["qte"]) for p in drinks) if drinks else "aucune potion"),
+                 bool(drinks), "" if drinks else "Aucune potion dans l'inventaire.", "1 potion")
+        # v52 — inspiration : règle 2014 ou inspiration héroïque 2024 (règle de la table)
+        heroic = self.rule_active("inspiration_heroique")
+        if self.ch.inspiration:
+            tile("inspiration:utiliser", "Utiliser l'inspiration", "🌟", "Gratuit",
+                 "Inspiration héroïque (2024)" if heroic else "Inspiration (2014)", HR.inspiration_text(heroic))
+        else:
+            tile("inspiration:recevoir", "Recevoir l'inspiration (MJ)", "🌟", "Gratuit",
+                 "Inspiration héroïque (2024)" if heroic else "Inspiration (2014)",
+                 "Le MJ vous accorde l'inspiration. " + HR.inspiration_text(heroic))
         order = {k: i for i, k in enumerate(ECONOMY)}
         actions = {a["id"]: a for a in self.class_actions()}
         for t in out:                                     # v41 : groupe d'affichage de l'onglet Combat
@@ -387,7 +462,7 @@ class TurnMixin:
         return counts
 
     # ------------------------------------------------------------------ utilisation d'une tuile
-    def use_turn_action(self, tile_id: str) -> dict:
+    def use_turn_action(self, tile_id: str, count: int = 0) -> dict:
         """Dépense l'économie d'action et renvoie ce qu'il faut animer :
         {ok, message, attaque (RollSpec|None), degats (DamageSpec|None), soin, sort (nom à lancer via l'onglet Magie)}."""
         t = next((x for x in self.turn_actions() if x["id"] == tile_id), None)
@@ -412,6 +487,7 @@ class TurnMixin:
             self.ch.tour_attaques = int(self.ch.tour_attaques) + 1
             self.spend_economy(kind)
             n = self.attacks_per_action()
+            res["slot"] = slot                           # v52 : munitions consommées au jet
             res["degats"] = self.weapon_damage_spec(slot)
             res.update(ok=True, attaque=self.weapon_attack_spec(slot), message="{} : attaque {} / {}.".format(
                 t["nom"], self.ch.tour_attaques, n) if n > 1 else "{} : attaque.".format(t["nom"]))
@@ -426,12 +502,25 @@ class TurnMixin:
             res.update(ok=True, attaque=self.beast_attack_spec(a),
                        degats=D.DamageSpec("{} — {}".format(self.ch.forme_active, a["nom"]), a["degats"], a["type"]),
                        message="{} : attaque.".format(t["nom"]))
+        elif tile_id.startswith("compagnon:"):            # v52 : attaque du compagnon sur votre ordre
+            inst = self.menagerie_get(ref["compagnon"])
+            sheet = self.entity_sheet(inst) if inst else None
+            a = sheet["actions"][ref["attaque"]] if sheet and ref["attaque"] < len(sheet["actions"]) else None
+            if a is None:
+                res["message"] = "Compagnon indisponible."
+                return res
+            self.spend_economy(kind)
+            res.update(ok=True, attaque=self.entity_attack_spec(inst, a),
+                       degats=D.DamageSpec("{} — {}".format(sheet["nom"], a["name"]), a.get("damage_dice", ""),
+                                           (a.get("damage_type") or "").lower()),
+                       message="{} : attaque sur votre ordre.".format(sheet["nom"]))
         elif tile_id.startswith("objet:"):                # v45 : capacité d'un objet magique
-            out = self.use_item_power(ref["pouvoir"])
+            out = self.use_item_power(ref["pouvoir"], count)   # v52 : charges / perles choisies
             if out["ok"]:
                 self.spend_economy(kind)
             res.update(ok=out["ok"], message=out["message"], objet=out if out["ok"] else None,
-                       objet_sort=out.get("sort", ""), objet_niveau=out.get("niveau", 0))
+                       objet_sort=out.get("sort", ""), objet_niveau=out.get("niveau", 0),
+                       destruction=out.get("destruction", False), entree=out.get("entree"))
         elif tile_id.startswith("sort:"):
             res.update(ok=True, sort=ref["sort"], message="{} : lancement.".format(t["nom"]),
                        emplacement=ref.get("emplacement", True), limite=ref.get("limite", ""),
@@ -446,16 +535,88 @@ class TurnMixin:
         elif tile_id.startswith("reaction:"):
             self.ch.reaction_utilisee = ref["reaction"]
             res.update(ok=True, message="{} : réaction du round utilisée.".format(t["nom"].lstrip("★ ")))
+        elif tile_id in ("inspiration:utiliser", "inspiration:recevoir"):
+            self.ch.inspiration = tile_id == "inspiration:recevoir"
+            res.update(ok=True, message="Inspiration {}.".format("reçue" if self.ch.inspiration else "utilisée"))
         elif tile_id == "potion:boire":                    # le choix et l'effet de la potion se font dans l'interface
             self.spend_economy("Action bonus")
             res.update(ok=True, potion=True, message="Boire une potion : action bonus.")
         elif tile_id.startswith("commune:"):
-            effect = next((c[4] for c in COMMON_ACTIONS if "commune:" + c[0] == tile_id), "")
-            if effect:
+            cid = tile_id.split(":", 1)[1]
+            effect = next((c[4] for c in self.common_actions() if c[0] == cid), "")
+            tests = self.common_action_tests(cid)
+            if cid in ("saisir", "bousculer"):           # remplace une attaque de l'action Attaquer
+                self.ch.tour_attaques = int(self.ch.tour_attaques) + 1
+                n = self.attacks_per_action()
+                more = " (attaque {} / {})".format(self.ch.tour_attaques, n) if n > 1 else ""
+                if self.sheet_edition == 2024:
+                    res["message"] = "{}{} : la cible fait un JS de Force ou de Dextérité DD {}.".format(
+                        t["nom"], more, self.grapple_dc())
+                else:
+                    res["message"] = "{}{} : test de Force (Athlétisme) contre Athlétisme ou Acrobaties.".format(
+                        t["nom"], more)
+                    res["tests"], res["dd"] = ["Athlétisme"], 0
+            elif cid == "liberer":                       # v52 : Agrippé / Entravé
+                res["liberer"] = self.escape_conditions()
+                res["competence"] = self.escape_skill()
+                res["dd"] = ESCAPE_DC_2024 if self.sheet_edition == 2024 else 0
+                res["message"] = "Se libérer : test de {}.".format(res["competence"])
+            elif tests:
+                res["tests"], res["dd"] = tests
+                res["message"] = "{} : test de {}.".format(t["nom"], " / ".join(tests[0]))
+            elif effect:
                 self.add_effect(effect)
             self.spend_economy(kind)
-            res.update(ok=True, message="{}{}.".format(t["nom"], " — effet actif" if effect else ""))
+            res["ok"] = True
+            res["commune"] = cid
+            res["message"] = res["message"] or "{}{}.".format(t["nom"], " — effet actif" if effect else "")
         return res
+
+    # ------------------------------------------------------------------ v52 : actions communes selon l'édition
+    def grapple_dc(self) -> int:
+        """DD de Saisir / Bousculer 2024 : 8 + modificateur de Force + bonus de maîtrise."""
+        return 8 + self.mod("Force") + self.prof
+
+    def common_actions(self) -> list[tuple]:
+        base = list(COMMON_ACTIONS)
+        base.insert(next(i for i, c in enumerate(base) if c[0] == "objet"), READY)
+        if self.sheet_edition != 2024:
+            base = [c if c[0] != "cacher" else c[:5] + ("Test de Dextérité (Discrétion) contre la Perception passive "
+                                                        "des ennemis, hors de vue : réussite = état Caché.",)
+                    for c in base]
+            return base + self._escape_action()
+        out = []
+        for c in base:
+            desc = COMMON_2024.get(c[0])
+            out.append(c[:5] + (desc.replace("{DD}", str(self.grapple_dc())),) if desc else c)
+        i = next(i for i, c in enumerate(out) if c[0] == "objet")
+        return out[:i] + EXTRA_2024 + out[i:] + self._escape_action()
+
+    def _escape_action(self) -> list[tuple]:
+        """v52 : tuile « Se libérer » quand on est agrippé ou entravé."""
+        return [ESCAPE] if self.escape_conditions() else []
+
+    def common_action_tests(self, cid: str):
+        """(compétences proposées, DD) d'une action commune qui se résout par un test ; None sinon."""
+        if self.sheet_edition == 2024 and cid in COMMON_TESTS_2024:
+            return COMMON_TESTS_2024[cid]
+        skills, dc = COMMON_TESTS.get(cid, (None, 0))
+        if skills is None:
+            return None
+        return skills, (dc if self.sheet_edition == 2024 else 0)
+
+    def resolve_common_test(self, cid: str, skill: str, total: int, dc: int = 0) -> str:
+        """Résultat du test d'une action commune (Se cacher : état Caché / Invisible sur une réussite)."""
+        if cid == "cacher":
+            if dc and total < dc:
+                return "Se cacher : {} contre DD {} — vous restez visible.".format(total, dc)
+            self.add_effect("cache")
+            return ("Se cacher : {} contre DD {} — caché (Invisible) ; DD {} pour vous trouver.".format(total, dc, total)
+                    if dc else "Se cacher : {} — caché si c'est au moins la Perception passive des ennemis."
+                    .format(total))
+        if dc:
+            return "{} : {} contre DD {} — {}.".format(skill, total, dc, "réussite" if total >= dc else "échec")
+        return "{} : {} (le MJ compare au DD ou au jet adverse).".format(skill, total)
 
     def drinkable_potions(self) -> list[dict]:
         """Potions, élixirs, philtres et antitoxines de l'inventaire (les huiles s'appliquent, elles ne se boivent pas)."""

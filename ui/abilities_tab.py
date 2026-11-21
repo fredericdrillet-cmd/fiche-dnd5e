@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QGroupBo
 from core import rules as R
 from core.rules import ABILITIES, norm
 from . import theme
-from .dice_dialog import d20_button, roll_dice
+from .dice_dialog import d20_button, retain_when_hidden, roll_dice
 from .common import CENTER, BaseTab, blocked, calc_tip, center, fill_combo, hline, make_label, rich_tip
 
 METHODS = {"Achat de points (27 points)": "achat", "Tirage de dés (4d6, on garde les 3 plus hauts)": "des",
@@ -63,6 +63,9 @@ class AbilitiesTab(BaseTab):
             w["d20"] = d20_button("Test de " + ab)
             w["d20"].clicked.connect(lambda _=False, a=ab: roll_dice(self.win, self.engine.ability_check_spec(a)))
             top_row.addWidget(w["d20"])
+            if getattr(self.win, "no_dice", False) is True:   # v52 : assistant de création — pas de jet de dés
+                retain_when_hidden(w["d20"], True)
+                w["d20"].setVisible(False)
             cl.addLayout(top_row)
             cl.addWidget(make_label(ab, "muted"))
             # v49 : badge de recommandation selon la classe / la sous-classe visée (infobulle : pourquoi)
@@ -314,9 +317,12 @@ class AbilitiesTab(BaseTab):
         rule = eng.race_rule()
         with blocked(self.free_chk):
             self.free_chk.setChecked(ch.regle_libre or rule["libre_regle"])
-        self.free_chk.setEnabled(not rule["libre_regle"] or ch.regle_libre)
+        self.free_chk.setEnabled((not rule["libre_regle"] or ch.regle_libre) and rule.get("origine") != "historique")
         sub = eng.subrace()
-        if rule["libre_regle"]:
+        if rule.get("origine") == "historique":            # v52 : règle 2024
+            txt = "Historique {} (2024) : +2 et +1 (ou +1, +1, +1) parmi {}.".format(
+                ch.historique, ", ".join(rule["choix"]))
+        elif rule["libre_regle"]:
             txt = "{} : aucun bonus fixe dans la base — répartissez +2 et +1 librement.".format(ch.race or "Race")
         else:
             fixed = ", ".join("{} {}".format(a, R.fmt_bonus(v)) for a, v in rule["fixe"].items())
@@ -340,7 +346,8 @@ class AbilitiesTab(BaseTab):
                 lab.setText(R.fmt_bonus(rule["libres"][i]))
                 # bonus libres : uniquement sur d'AUTRES caractéristiques que les bonus fixes (Demi-elfe : Cha +2 fixe)
                 others = {p for j, p in enumerate(picks[:3]) if j != i and p}   # deux caractéristiques DIFFÉRENTES
-                allowed = [ab for ab in ABILITIES if (rule["libre_regle"] or ab not in rule["fixe"]) and ab not in others]
+                allowed = [ab for ab in (rule.get("choix") or ABILITIES)          # v52 : historique 2024
+                           if (rule["libre_regle"] or ab not in rule["fixe"]) and ab not in others]
                 fill_combo(cb, ["—"] + allowed, picks[i] if picks[i] in allowed else "—")
 
         warns = [w for w in eng.warnings() if any(k in w for k in ("Budget", "valeurs", "bonus raciaux", "Multiclassage",

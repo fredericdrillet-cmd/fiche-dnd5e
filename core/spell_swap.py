@@ -137,9 +137,15 @@ class SpellSwapMixin:
         return base
 
     # ================================================================ 2. repos long
+    # v52 : règles 2024 — Paladin et Rôdeur ne remplacent qu'UN sort préparé par repos long
+    ONE_SWAP_2024 = ("Paladin", "Rôdeur")
+
+    def _rest_prep_class(self, class_name: str) -> bool:
+        return class_name in REST_PREP_CLASSES or (self.sheet_edition == 2024 and class_name in self.ONE_SWAP_2024)
+
     def rest_prepare_classes(self) -> list[str]:
         return [c["classe"] for c in self.casters()
-                if c["classe"] in REST_PREP_CLASSES and c.get("prepares_max") is not None]
+                if self._rest_prep_class(c["classe"]) and c.get("prepares_max") is not None]
 
     def _granted_names(self, class_name: str) -> list[str]:
         e = self.ch.find_class(class_name)
@@ -149,7 +155,7 @@ class SpellSwapMixin:
         """{classe, maximum, formule, toujours, candidats, prepares} pour la fenêtre « Changer les sorts préparés ».
         Candidats : toute la liste (Clerc, Druide, Paladin, Artificier) ou le grimoire (Magicien), niveau 1+."""
         c = self.caster(class_name)
-        if c is None or c.get("prepares_max") is None or class_name not in REST_PREP_CLASSES:
+        if c is None or c.get("prepares_max") is None or not self._rest_prep_class(class_name):
             return None
         granted = set(self._granted_names(class_name))
         entries = {s["nom"]: s for s in self.ch.sorts.get(class_name, [])}
@@ -164,8 +170,19 @@ class SpellSwapMixin:
         half = class_name in ("Paladin", "Artificier")
         formula = "{} {} ({}) {:+d} ({})".format("moitié du niveau de" if half else "niveau de", class_name,
                                                  c["niveau"] // 2 if half else c["niveau"], c["mod"], c["carac"])
+        if self.sheet_edition == 2024:                   # 2024 : quota de la table de classe
+            formula = "table du {} (niveau {})".format(class_name, c["niveau"])
+        swaps = 1 if self.sheet_edition == 2024 and class_name in self.ONE_SWAP_2024 else None
         return {"classe": class_name, "maximum": c["prepares_max"], "formule": formula, "toujours": sorted(granted),
-                "candidats": cands, "prepares": prepared}
+                "candidats": cands, "prepares": prepared, "remplacements": swaps}
+
+    @staticmethod
+    def rest_new_allowed(info: dict) -> Optional[int]:
+        """Nouveaux sorts permis au repos (None = libre) : 1 remplacement (Paladin, Rôdeur 2024), plus les places
+        encore libres dans le quota."""
+        if not info.get("remplacements"):
+            return None
+        return info["remplacements"] + max(0, info["maximum"] - len(info["prepares"]))
 
     def rest_set_prepared(self, class_name: str, names) -> tuple[bool, str]:
         """Applique la liste des sorts préparés (après le repos). Refuse au-delà du quota."""
@@ -176,6 +193,9 @@ class SpellSwapMixin:
         names = [n for n in dict.fromkeys(names) if n in allowed]
         if len(names) > info["maximum"]:
             return False, "Trop de sorts préparés : {} / {}.".format(len(names), info["maximum"])
+        limit = self.rest_new_allowed(info)
+        if limit is not None and len([n for n in names if n not in info["prepares"]]) > limit:
+            return False, "Règle 2024 : {} ne remplace qu'un sort préparé par repos long.".format(class_name)
         lst = self.ch.sorts.setdefault(class_name, [])
         have = {s["nom"]: s for s in lst}
         for n in names:

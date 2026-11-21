@@ -21,7 +21,7 @@ import html
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import (QComboBox, QDialog, QFileDialog, QFrame, QGraphicsDropShadowEffect, QGridLayout,
+from PyQt6.QtWidgets import (QComboBox, QDialog, QFileDialog, QFrame, QGraphicsDropShadowEffect, QGridLayout, QGroupBox,
                              QHBoxLayout, QLabel, QLineEdit, QListWidget, QListWidgetItem, QPlainTextEdit, QPushButton,
                              QScrollArea, QSizeGrip, QStackedWidget, QTextBrowser, QVBoxLayout, QWidget)
 
@@ -35,8 +35,9 @@ from .class_guide_panel import ClassGuidePanel
 from .game_widgets import clear_layout
 from .spell_inspector import make_inspector, spell_card_html
 
-STEPS = ["Race / Sous-race", "Classe", "Historique", "Caractéristiques", "Sorts et tours de magie", "Équipement",
-         "Identité"]
+# v52 : l'historique se choisit avant la classe, pour connaître ses compétences avant celles de la classe
+STEPS = ["Race / Sous-race", "Historique", "Classe", "Compétences", "Caractéristiques", "Sorts et tours de magie",
+         "Équipement", "Identité"]                       # v52 : « Compétences » séparée de « Classe »
 NO_CHOICE = "— à choisir —"
 ALL_CATS = "Toutes catégories"
 
@@ -50,6 +51,7 @@ class WizardHost:
         self.settings = win.settings
         self.lazy_refresh = False
         self.free_mode = True
+        self.no_dice = True                              # v52 : aucun jet de dés pendant la création
 
     @property
     def ch(self):
@@ -82,10 +84,14 @@ class WizardHost:
 
 
 class CreationWizard(QDialog):
-    def __init__(self, win):
+    def __init__(self, win, edition: str = ""):
         super().__init__(win)
         self.win = win
         self.engine = Engine(win.db, Engine.new_character(win.db))
+        from .rules_dialog import apply_table_defaults                 # v52 : édition et règles de la table
+        apply_table_defaults(self.engine.ch, getattr(win, "settings", {}) or {})
+        if edition:                                                    # édition choisie à la création (une par fiche)
+            self.engine.set_edition_mode(edition)
         self.host = WizardHost(self, win, self.engine)
         self.step = 0
         self.equip_mode = "paquetage"
@@ -131,7 +137,12 @@ class CreationWizard(QDialog):
         self.step_list.currentRowChanged.connect(self._on_step_clicked)
         body.addWidget(self.step_list)
         self.pages = QStackedWidget()
-        body.addWidget(self.pages, 1)
+        page_col = QVBoxLayout()                          # v52 : aide de l'étape (Aides pour débuter)
+        self.step_help = make_label("", "muted", wrap=True)
+        self.step_help.setVisible(False)
+        page_col.addWidget(self.step_help)
+        page_col.addWidget(self.pages, 1)
+        body.addLayout(page_col, 1)
         right = QVBoxLayout()
         right.addWidget(make_label("Résumé du personnage", "head"))
         self.summary = QTextBrowser()
@@ -204,11 +215,45 @@ class CreationWizard(QDialog):
         from .race_tab import RaceTab
         from .skills_tab import SkillsTab
         # 1. race
+        from .class_options import OptionSetsPanel
         self.race_panel = RaceTab(self.host)
         self.race_panel.bg_box.setVisible(False)
         self.race_panel.lang_box.setVisible(False)
-        self.pages.addWidget(self._scroll(self.race_panel))      # v50 : défilement en fenêtre réduite
-        # 2. classe
+        w, lay = self._page()                             # v52 : + choix de l'espèce (couleur du dragon, don)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.addWidget(self.race_panel)
+        self.race_choices = QGroupBox("Choix de l'espèce")
+        rc = QVBoxLayout(self.race_choices)
+        self.race_color_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys={"ascendance_raciale"})
+        rc.addWidget(self.race_color_panel)
+        self.race_feat_row = QHBoxLayout()
+        self.race_feat_label = make_label("", "head")
+        self.race_feat_combo = QComboBox()
+        self.race_feat_combo.setMinimumWidth(320)
+        self.race_feat_combo.activated.connect(lambda _=0: self.set_race_feat(self.race_feat_combo.currentText()))
+        self.race_feat_row.addWidget(self.race_feat_label)
+        self.race_feat_row.addWidget(self.race_feat_combo, 1)
+        rc.addLayout(self.race_feat_row)
+        self.race_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
+                                               keys=lambda: self._feat_keys(self._race_feat()))
+        rc.addWidget(self.race_feat_panel)
+        self.race_panel.race_box.layout().insertWidget(1, self.race_choices)   # juste sous le choix de la race
+        self.pages.addWidget(self._scroll(w))             # v50 : défilement en fenêtre réduite
+        # 2. historique
+        self.bg_panel = RaceTab(self.host)
+        self.bg_panel.race_box.setVisible(False)
+        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
+        w, lay = self._page()                             # v52 : + choix du don d'origine (2024)
+        lay.setContentsMargins(0, 0, 0, 0)
+        lay.addWidget(self.bg_panel)
+        self.bg_choices = QGroupBox("Choix du don d'origine")
+        bc = QVBoxLayout(self.bg_choices)
+        self.bg_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
+                                             keys=lambda: self._feat_keys(self.engine.origin_feat()))
+        bc.addWidget(self.bg_feat_panel)
+        lay.addWidget(self.bg_choices)
+        self.pages.addWidget(self._scroll(w))
+        # 3. classe (après l'historique)
         w, lay = self._page()
         row = QHBoxLayout()
         row.addWidget(make_label("Classe", "head"))
@@ -223,15 +268,25 @@ class CreationWizard(QDialog):
         lay.addWidget(self.guide)
         self.choice_grid = QGridLayout()
         lay.addLayout(self.choice_grid)
+        from .class_options import OptionSetsPanel           # v52 : Ordre divin, Ordre primitif… du niveau 1
+        self.options_head = make_label("✦ Choix de classe", "head")
+        lay.addWidget(self.options_head)
+        self.options_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys=lambda: {
+            s["key"] for s in self.engine.option_sets() if not s["key"].startswith("don:")
+            and s["key"] != "ascendance_raciale"})       # couleur du Drakéide : étape Race
+        lay.addWidget(self.options_panel)
+        self.style_desc = make_label("", "muted", wrap=True)   # v52 : texte du style de combat choisi
+        lay.addWidget(self.style_desc)
+        lay.addStretch(1)
+        self.pages.addWidget(self._scroll(w))
+        # 4. compétences (v52 : étape à part)
+        w, lay = self._page()
+        self.skill_errors = make_label("", "warn", wrap=True)
+        lay.addWidget(self.skill_errors)
         self.skills_panel = SkillsTab(self.host, compact=True)
         lay.addWidget(self.skills_panel)
         lay.addStretch(1)
         self.pages.addWidget(self._scroll(w))
-        # 3. historique
-        self.bg_panel = RaceTab(self.host)
-        self.bg_panel.race_box.setVisible(False)
-        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
-        self.pages.addWidget(self._scroll(self.bg_panel))
         # 4. caractéristiques
         self.abilities_panel = AbilitiesTab(self.host)
         self.pages.addWidget(self._scroll(self.abilities_panel))
@@ -352,7 +407,15 @@ class CreationWizard(QDialog):
     def go(self, step: int) -> None:
         self.step = max(0, min(len(STEPS) - 1, step))
         self.pages.setCurrentIndex(self.step)
+        self._refresh_step_help()
         self.refresh()
+
+    def _refresh_step_help(self) -> None:
+        from . import common as _common
+        glossary = _common.GLOSSARY
+        text = glossary.step_help.get(STEPS[self.step], "") if glossary and _common.BEGINNER() else ""
+        self.step_help.setText(("💡 " + text) if text else "")
+        self.step_help.setVisible(bool(text))
 
     def _on_step_clicked(self, row: int) -> None:
         if 0 <= row < len(STEPS) and row != self.step:
@@ -363,30 +426,96 @@ class CreationWizard(QDialog):
 
         def none(pred) -> bool:
             return not any(pred(m) for m in miss)
-        class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("caracteristiques", "Compétences"),
-                                                                 ("combat", "Style de combat"),
-                                                                 ("classes", "Sous-classe")))
-        return [bool(self.ch.race), class_ok, none(lambda m: m["onglet"] == "race"),
+        class_ok = none(lambda m: (m["onglet"], m["encart"]) in (("combat", "Style de combat"),
+                                                                 ("classes", "Sous-classe"),
+                                                                 ("classes", "Options de classe")))
+        skills_ok = none(lambda m: (m["onglet"], m["encart"]) == ("caracteristiques", "Compétences")) and \
+            not self.engine.skill_choice_errors()
+        race_feat = self._feat_keys(self._race_feat())
+        race_ok = bool(self.ch.race) and none(lambda m: m["onglet"] == "race" and m["encart"] != "Langues" or
+                                              (m["onglet"], m["encart"]) == ("progression", "Emplacements débloqués"))
+        race_ok = race_ok and not any(len(s["chosen"]) < s["total"] for s in self.engine.option_sets()
+                                      if s["key"] in race_feat)
+        bg_ok = none(lambda m: (m["onglet"], m["encart"]) == ("race", "Langues")) and not any(
+            len(s["chosen"]) < s["total"] for s in self.engine.option_sets()
+            if s["key"] in self._feat_keys(self.engine.origin_feat()))
+        return [race_ok, bg_ok, class_ok, skills_ok,
                 none(lambda m: m["onglet"] == "caracteristiques" and m["encart"] != "Compétences"),
                 none(lambda m: m["onglet"] == "magie"),
                 self.equip_mode == "paquetage" or self.engine.cart_total(self.cart) <= self.budget(),
-                bool(self.ch.nom.strip())]
+                bool(self.ch.nom.strip()) and bool(self.ch.joueur.strip()) and bool(self.ch.portrait)]
 
     def refresh(self) -> None:
         """Rafraîchit la page visible, les pastilles et le résumé."""
-        refreshers = [self.race_panel.refresh, self._refresh_class, self.bg_panel.refresh,
+        refreshers = [self._refresh_race, self._refresh_background, self._refresh_class, self._refresh_skills,
                       self.abilities_panel.refresh, self._build_spells, self._refresh_equipment,
                       self._refresh_identity]
         refreshers[self.step]()
+        self._refresh_step_list()
+        self.prev_btn.setEnabled(self.step > 0)
+        errors = self.engine.skill_choice_errors() if self.step == STEPS.index("Compétences") else []
+        self.next_btn.setEnabled(self.step < len(STEPS) - 1 and not errors)   # v52 : compétences hors classe
+        self.refresh_summary()
+
+    # ------------------------------------------------------------------ v52 : choix de l'espèce et du don d'origine
+    def _feat_keys(self, feat: str) -> set:
+        """Clés des choix d'un don (Initié à la magie, Doué…) : libellés « Nom du don : … »."""
+        if not feat:
+            return set()
+        return {s["key"] for s in self.engine.option_sets() if s["key"].startswith("don:")
+                and s["label"].startswith(feat + " :")}
+
+    def _race_slot(self) -> dict | None:
+        return next((s for s in self.engine.asi_slots() if s.get("classe") == "Race"), None)   # Humain variant
+
+    def _race_feat(self) -> str:
+        slot = self._race_slot()
+        return (self.ch.ameliorations.get(slot["id"]) or {}).get("don", "") if slot else ""
+
+    def set_race_feat(self, name: str) -> None:
+        slot = self._race_slot()
+        if slot is None:
+            return
+        name = name.lstrip("✔⚠ ").strip()
+        if name == NO_CHOICE or not name:
+            self.ch.ameliorations.pop(slot["id"], None)
+        else:
+            self.ch.ameliorations[slot["id"]] = {"mode": "don", "don": name}
+        self.host.changed()
+
+    def _refresh_race(self) -> None:
+        self.race_panel.refresh()
+        eng = self.engine
+        self.race_color_panel.refresh()
+        slot = self._race_slot()
+        for w in (self.race_feat_label, self.race_feat_combo):
+            w.setVisible(slot is not None)
+        if slot is not None:
+            self.race_feat_label.setText("✦ " + slot["label"])
+            feats = sorted(eng.feat_options(), key=lambda n: (eng.feat_status(n)[0] != "ok", n))
+            labels = ["{} {}".format("✔" if eng.feat_status(n)[0] == "ok" else "⚠", n) for n in feats]
+            cur = self._race_feat()
+            fill_combo(self.race_feat_combo, [NO_CHOICE] + labels,
+                       next((lab for lab, n in zip(labels, feats) if n == cur), NO_CHOICE),
+                       {lab: rich_tip(n, (eng.db.feats.get(n) or {}).get("description", ""))
+                        for lab, n in zip(labels, feats)})
+        self.race_feat_panel.refresh()
+        self.race_choices.setVisible(bool(self.race_color_panel.sets()) or slot is not None)
+
+    def _refresh_background(self) -> None:
+        self.bg_panel.refresh()
+        self.bg_feat_panel.refresh()
+        self.bg_choices.setVisible(bool(self.bg_feat_panel.sets()))
+        feat = self.engine.origin_feat()
+        self.bg_choices.setTitle("Choix du don d'origine — {}".format(feat) if feat else "Choix du don d'origine")
+
+    def _refresh_step_list(self) -> None:
         done = self.step_done()
         with blocked(self.step_list):
             self.step_list.clear()
             for i, name in enumerate(STEPS):
                 self.step_list.addItem("{} {}. {}".format("✔" if done[i] else "○", i + 1, name))
             self.step_list.setCurrentRow(self.step)
-        self.prev_btn.setEnabled(self.step > 0)
-        self.next_btn.setEnabled(self.step < len(STEPS) - 1)
-        self.refresh_summary()
 
     # ------------------------------------------------------------------ résumé dynamique
     def summary_html(self) -> str:
@@ -424,7 +553,7 @@ class CreationWizard(QDialog):
     def refresh_summary(self) -> None:
         self.summary.setHtml(self.summary_html())
 
-    # ------------------------------------------------------------------ étape 2 : classe
+    # ------------------------------------------------------------------ étape 3 : classe (v52 : après l'historique)
     def _on_class(self, name: str) -> None:
         if name and self.ch.classes and name != self.ch.classes[0]["nom"]:
             self.engine.change_class(0, name)
@@ -447,11 +576,13 @@ class CreationWizard(QDialog):
         entry = self.ch.classes[0]
         self.guide.set_class(eng, cls, entry.get("sous_classe") or self.engine.__dict__.get("_sous_classe_visee", ""))
         clear_layout(self.choice_grid)
+        self.options_panel.refresh()
+        self.options_head.setVisible(bool(self.options_panel.sets()))
         row = 0
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
+        if self.engine.subclass_level(cls) <= 1 and db.subclasses(cls):     # Clerc, Ensorceleur, Occultiste
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
-            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE)
+            fill_combo(combo, [NO_CHOICE] + subs, entry.get("sous_classe") or NO_CHOICE, tips=db.subclass_tips(cls))
             combo.activated.connect(lambda _=0, c=combo: self.set_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◆ Sous-classe (niveau 1)", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
@@ -461,12 +592,13 @@ class CreationWizard(QDialog):
                 continue
             combo = QComboBox()
             opts = eng.style_options(slot["id"])
-            fill_combo(combo, [NO_CHOICE] + opts, self.ch.styles_combat.get(slot["id"]) or NO_CHOICE)
+            fill_combo(combo, [NO_CHOICE] + opts, self.ch.styles_combat.get(slot["id"]) or NO_CHOICE,
+                       {o: rich_tip(o, db.style_description(cls, o)) for o in opts})   # v52 : texte au survol
             combo.activated.connect(lambda _=0, c=combo, sid=slot["id"]: self.set_style(sid, c.currentText()))
             self.choice_grid.addWidget(make_label("⚔ Style de combat", "head"), row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
-        if R.SUBCLASS_LEVEL.get(cls, 3) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
+        if self.engine.subclass_level(cls) > 1 and db.subclasses(cls):   # v49 : sous-classe VISÉE (aperçu)
             combo = QComboBox()
             subs = [s["nom"] for s in db.subclasses(cls)]
             target = self.engine.__dict__.get("_sous_classe_visee", "")
@@ -474,12 +606,27 @@ class CreationWizard(QDialog):
                        "— aucune pour l'instant —")
             combo.activated.connect(lambda _=0, c=combo: self.set_target_subclass(c.currentText()))
             self.choice_grid.addWidget(make_label("◇ Sous-classe visée (niveau {}) — adapte les recommandations de "
-                                                  "caractéristiques".format(R.SUBCLASS_LEVEL.get(cls, 3)), "muted"),
+                                                  "caractéristiques".format(self.engine.subclass_level(cls)), "muted"),
                                        row, 0)
             self.choice_grid.addWidget(combo, row, 1)
             row += 1
         self.choice_grid.setColumnStretch(1, 1)
+        chosen = [(s, self.ch.styles_combat.get(s["id"])) for s in eng.fighting_style_slots() if s["debloque"]]
+        texts = ["<b>⚔ {}</b> : {}".format(html.escape(name), html.escape(db.style_description(cls, name)))
+                 for _s, name in chosen if name]
+        if not texts and chosen:
+            texts = ["Choisissez un style de combat : survolez la liste pour lire chaque style. " + " · ".join(
+                "<b>{}</b>".format(html.escape(o)) for o in eng.style_options(chosen[0][0]["id"]))]
+        self.style_desc.setText("<br/>".join(texts))
+        self.style_desc.setVisible(bool(texts))
+
+    def _refresh_skills(self) -> None:
+        """v52 : étape Compétences — erreurs (hors liste de classe, trop de cases) qui bloquent « Suivant »."""
         self.skills_panel.refresh()
+        errors = self.engine.skill_choice_errors()
+        self.skill_errors.setText("<br/>".join("⚠ " + html.escape(e) for e in errors) +
+                                  ("<br/>Les compétences de l'historique ne comptent pas." if errors else ""))
+        self.skill_errors.setVisible(bool(errors))
 
     def set_target_subclass(self, name: str) -> None:
         """Sous-classe visée (choisie plus tard, au niveau requis) : sert aux recommandations ⭐ / ✦."""
@@ -487,7 +634,7 @@ class CreationWizard(QDialog):
         subs = [s["nom"] for s in self.engine.db.subclasses(cls)]
         if name and name == self.engine.__dict__.get("_sous_classe_visee") and not self.guide.sub:
             name = ""                                     # second clic : fiche repliée, sous-classe visée effacée
-        if R.SUBCLASS_LEVEL.get(cls, 3) <= 1 and name in subs:
+        if self.engine.subclass_level(cls) <= 1 and name in subs:
             self.ch.classes[0]["sous_classe"] = name       # niveau 1 : c'est le vrai choix
         self.engine.__dict__["_sous_classe_visee"] = name if name in subs else ""
         self.host.changed()
@@ -580,9 +727,37 @@ class CreationWizard(QDialog):
             lay.addWidget(make_label("{} {} [Sort Racial] — {}{} ({})".format(
                 "✦" if r["debloque"] else "🔒", r["nom"], r["usage"], "" if r["debloque"] else
                 " — à partir du niveau {}".format(r["niveau_requis"]), r["source"]), "", wrap=True))
-        if not plan and not slots and not racial:
+        # v52 : manifestations occultes du niveau 1 (Occultiste 2024)
+        total = eng.manifestation_slots()["total"]
+        if total:
+            lay.addWidget(make_label("✦ Manifestations occultes — {} / {}".format(len(self.ch.manifestations), total),
+                                     "head"))
+            for i in range(total):
+                cur = self.ch.manifestations[i] if i < len(self.ch.manifestations) else ""
+                opts = [m["nom"] for m in eng.level_invocation_options(eng)]
+                names = ([cur] if cur else []) + [n for n in opts if n != cur]
+                combo = QComboBox()
+                fill_combo(combo, [NO_CHOICE] + names, cur or NO_CHOICE,
+                           {n: rich_tip(n, (eng.db.manifestations.get(n) or {}).get("description", ""))
+                            for n in names})
+                combo.activated.connect(lambda _=0, idx=i, c=combo: self.set_manifestation(idx, c.currentText()))
+                lay.addWidget(combo)
+        if not plan and not slots and not racial and not total:
             lay.addWidget(make_label("Aucun sort à choisir : passez à l'étape suivante.", "muted"))
         lay.addStretch(1)
+
+    def set_manifestation(self, index: int, name: str) -> None:
+        """v52 : manifestation occulte choisie à la création (une seule fois chacune)."""
+        cur = list(self.ch.manifestations)
+        while len(cur) <= index:
+            cur.append("")
+        cur[index] = "" if name == NO_CHOICE else name
+        seen = []
+        for x in cur:
+            if x and x not in seen:
+                seen.append(x)
+        self.ch.manifestations = seen
+        self.host.changed()
 
     def inspect(self, name: str) -> str:
         """Clic simple : fiche détaillée du sort (école, incantation, portée, composantes, durée, texte)."""
@@ -708,6 +883,7 @@ class CreationWizard(QDialog):
     def _set_identity(self, attr: str, value: str) -> None:
         setattr(self.ch, attr, value)
         self.refresh_summary()
+        self._refresh_step_list()                         # v52 : coche de l'étape Identité tout de suite
 
     def _on_import_portrait(self) -> bool:
         from .rp_tab import IMAGE_FILTER
@@ -731,6 +907,7 @@ class CreationWizard(QDialog):
         self.ch.portrait = data or ""
         self._show_portrait()
         self.refresh_summary()
+        self._refresh_step_list()
 
     def _show_portrait(self) -> None:
         from PyQt6.QtGui import QPixmap
@@ -815,8 +992,12 @@ class CreationWizard(QDialog):
 
 def run_creation(win) -> bool:
     """Ouvre l'assistant ; « Créer le personnage » remplace la fiche (non enregistrée : à sauvegarder)."""
+    from .rules_dialog import ask_edition
+    edition = ask_edition(win)                                         # v52 : 2014 ou 2024
+    if edition is None:
+        return False
     backdrop = BlurBackdrop(win)
-    dialog = CreationWizard(win)
+    dialog = CreationWizard(win, edition)
     try:
         ok = dialog.exec() == 1
     finally:
@@ -829,6 +1010,8 @@ def run_creation(win) -> bool:
 
 def apply_creation(win, dialog: "CreationWizard") -> None:
     win.engine = dialog.engine
+    if hasattr(win, "reset_history"):                  # v52 : nouvelle fiche, historique neuf
+        win.reset_history()
     win.path, win._dirty = None, True
     win.refresh_all()
     if hasattr(win, "schedule_autosave"):

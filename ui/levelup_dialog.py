@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import html
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (QComboBox, QDialog, QFrame, QGraphicsDropShadowEffect, QGridLayout, QHBoxLayout,
                              QCheckBox, QLineEdit, QListWidget, QListWidgetItem, QProgressBar, QPushButton,
@@ -48,6 +48,7 @@ class LevelUpDialog(QDialog):
     def __init__(self, win):
         super().__init__(win)
         self.win, self.engine = win, win.engine
+        self._open_cards: set = set()                     # v52 : cartes compétences / langues ouvertes
         # v50 : vraie fenêtre (barre de titre, boutons Réduire / Agrandir / Fermer) : maximisable et redimensionnable
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowTitleHint | Qt.WindowType.WindowSystemMenuHint
                             | Qt.WindowType.WindowMinMaxButtonsHint | Qt.WindowType.WindowCloseButtonHint)
@@ -243,6 +244,7 @@ class LevelUpDialog(QDialog):
         if not opt:
             return
         self.cls = opt["classe"]
+        self._open_cards = set()                          # v52 : cartes compétences / langues déjà ouvertes
         self.sim = self.engine.simulate_level_up(self.cls)
         self.spell_added = {}
         self.title.setText("▲  Niveau supérieur — {} {} → {}".format(self.cls, opt["avant"] or "—", opt["apres"]))
@@ -318,8 +320,10 @@ class LevelUpDialog(QDialog):
             combo.activated.connect(lambda _=0, c=combo: self._set_sub(c.currentText()))
             for i, n in enumerate(subs):                 # v49 : résumé de chaque sous-classe au survol
                 summ = self.sim.subclass_summary(self.cls, n) or {}
-                combo.setItemData(i + 1, "<qt><b>{}</b><br/>{}<br/>{}</qt>".format(
-                    html.escape(n), html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
+                unofficial = self.sim.db.subclass_tips(self.cls).get(n, "")
+                combo.setItemData(i + 1, "<qt><b>{}</b>{}<br/>{}<br/>{}</qt>".format(
+                    html.escape(n), "<br/><i>{}</i>".format(html.escape(unofficial)) if unofficial else "",
+                    html.escape(" · ".join(summ.get("orientation", []))), "<br/>".join(
                         "Niv. {} — {}".format(lvl, html.escape(nm)) for lvl, nm, _ in summ.get("pouvoirs", [])[:5])),
                     Qt.ItemDataRole.ToolTipRole)
             grid.addWidget(make_label("◆ Sous-classe"), row, 0)
@@ -355,6 +359,31 @@ class LevelUpDialog(QDialog):
             row += 1
         if warlock:
             self._invocation_card()                      # v43 : manifestations occultes de l'Occultiste
+        opt_keys = self.engine.level_option_keys(self.sim) | {
+            s["key"] for s in self.sim.option_sets() if "options" in kinds and not s["key"].startswith("don:")
+            and len(s["chosen"]) < s["total"]}
+        if opt_keys:                                     # v52 : manœuvres, runes, Métamagie… choisies ici
+            from .class_options import OptionSetsPanel
+            panel = OptionSetsPanel(lambda: self.sim, self._changed, keys=opt_keys)
+            panel.refresh()
+            grid.addWidget(make_label("✦ Choix de classe", "head"), row, 0, 1, 4)
+            grid.addWidget(panel, row + 1, 0, 1, 4)
+            self.choice_widgets["options"] = panel
+            row += 2
+        feat_keys = self.engine.level_feat_keys(self.sim)
+        if feat_keys:                                    # v52 : sous-choix des dons (Doué, Initié à la magie…)
+            from .class_options import OptionSetsPanel
+            panel = OptionSetsPanel(lambda: self.sim, self._changed, keys=feat_keys)
+            panel.refresh()
+            self._card("✦ Choix des dons (après le don choisi ci-dessus)").addWidget(panel)
+            self.choice_widgets["dons"] = panel
+            row += 1
+        if "competences" in kinds or "competences" in self._open_cards:
+            self._skills_card()
+            row += 1
+        if "langues" in kinds or "langues" in self._open_cards:
+            self._languages_card()
+            row += 1
         if row == 0 and not self._new_asi_slots() and not self._new_style_slots() and not (warlock and
                                                                                          self._inv_slots()):
             grid.addWidget(make_label("Aucun choix à faire dans l'assistant à ce niveau.", "muted"), 0, 0, 1, 4)
@@ -371,6 +400,87 @@ class LevelUpDialog(QDialog):
                                                                          if hasattr(self.win, "_tab_name") else
                                                                          m["onglet"], m["message"]), "muted", wrap=True))
         self.choices_lay.addStretch(1)
+
+    # ------------------------------------------------------------------ v52 : compétences, expertises, langues
+    def _check_list(self, rows: list[tuple[str, bool, bool, str]], on_toggle, cols: int = 4) -> QWidget:
+        """Grille de cases à cocher (nom, coché, modifiable, infobulle) ; on_toggle(nom, coché) -> accepté ?"""
+        from .common import indicator_qss
+        box = QWidget()
+        box.setStyleSheet(indicator_qss(theme.current()))
+        g = QGridLayout(box)
+        g.setContentsMargins(0, 0, 0, 0)
+        g.setHorizontalSpacing(18)
+        box.checks = {}
+        for i, (name, checked, enabled, tip) in enumerate(rows):
+            cb = QCheckBox(name)
+            cb.setChecked(checked)
+            cb.setEnabled(enabled)
+            if tip:
+                cb.setToolTip(tip)
+
+            def toggled(on: bool, n=name, c=cb) -> None:
+                if not on_toggle(n, on):
+                    with blocked(c):
+                        c.setChecked(not on)
+                    return
+                self._changed()
+                self._build_choices()
+            cb.toggled.connect(toggled)
+            g.addWidget(cb, i // cols, i % cols)
+            box.checks[name] = cb
+        for c in range(cols):
+            g.setColumnStretch(c, 1)
+        return box
+
+    def _card(self, title: str) -> QVBoxLayout:
+        card = QFrame()
+        card.setObjectName("opaqueBox")
+        lay = QVBoxLayout(card)
+        lay.setContentsMargins(12, 10, 12, 10)
+        lay.setSpacing(6)
+        lay.addWidget(make_label(title, "head"))
+        self.choices_lay.addWidget(card)
+        return lay
+
+    def _skills_card(self) -> None:
+        """Compétences (multiclassage, capacités) et expertises gagnées à ce niveau : cases à cocher."""
+        self._open_cards.add("competences")              # reste visible une fois le choix fait (pour le changer)
+        sim = self.sim
+        n_prof, n_exp = sim.skills_missing(), sim.expertise_missing()
+        lay = self._card("✦ Compétences et expertises")
+        lay.addWidget(make_label("Maîtrises à choisir : {} — expertises à attribuer : {}".format(n_prof, n_exp),
+                                 "warn" if n_prof or n_exp else "muted"))
+        comp = sim.ch.competences
+        bg = set(sim.ch.competences_historique)
+        old = self.engine.ch.competences
+        if n_prof or any(s.get("maitrise") and not (old.get(k) or {}).get("maitrise") for k, s in comp.items()):
+            rows = [(n, bool((comp.get(n) or {}).get("maitrise")), n not in bg and (
+                not (old.get(n) or {}).get("maitrise")), "") for n in sim.db.skill_names]
+            lay.addWidget(make_label("Maîtrise", "muted"))
+            self.choice_widgets["maitrise"] = self._check_list(
+                rows, lambda n, on: self.engine.level_set_skill(sim, n, "maitrise", on))
+            lay.addWidget(self.choice_widgets["maitrise"])
+        rows = [(n, bool(s.get("expertise")), not (old.get(n) or {}).get("expertise"),
+                 "Bonus de maîtrise doublé pour cette compétence.")
+                for n in sim.db.skill_names for s in [comp.get(n) or {}] if s.get("maitrise")]
+        lay.addWidget(make_label("Expertise (compétences maîtrisées)", "muted"))
+        self.choice_widgets["expertise"] = self._check_list(
+            rows, lambda n, on: self.engine.level_set_skill(sim, n, "expertise", on))
+        lay.addWidget(self.choice_widgets["expertise"])
+
+    def _languages_card(self) -> None:
+        """Langues accordées à ce niveau (dons Linguiste, Prodige… ; aptitudes de classe) : cases à cocher."""
+        self._open_cards.add("langues")
+        sim = self.sim
+        n = sim.languages_missing()
+        lay = self._card("✦ Langues")
+        lay.addWidget(make_label("Langues à ajouter : {}".format(n), "warn" if n else "muted"))
+        old = set(self.engine.ch.langues_liste)
+        rows = [(name, name in sim.ch.langues_liste, name not in old, "")
+                for name in self.engine.level_language_options(sim)]
+        self.choice_widgets["langues"] = self._check_list(
+            rows, lambda name, on: self.engine.level_set_language(sim, name, on))
+        lay.addWidget(self.choice_widgets["langues"])
 
     def _new_asi_slots(self) -> list[dict]:
         old = {s["id"] for s in self.engine.asi_slots()}
@@ -453,7 +563,7 @@ class LevelUpDialog(QDialog):
         others = [ab for ab in ABILITIES if ab != c.get("a1")]
         a2.addItems([NO_CHOICE] + others)
         a2.setCurrentIndex(others.index(c["a2"]) + 1 if c.get("a2") in others else 0)
-        feats = sorted(self.sim.db.feats, key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
+        feats = sorted(self.sim.feat_options(), key=lambda n: (self.sim.feat_status(n)[0] != "ok", n))
         feat.addItems([NO_CHOICE] + ["{} {}".format("✔" if self.sim.feat_status(n)[0] == "ok" else "⚠", n)
                                      for n in feats])
         for i, n in enumerate(feats):                       # infobulle au survol de chaque don de la liste
@@ -1049,9 +1159,14 @@ class LevelUpDialog(QDialog):
         later = self.report.get("ensuite", [])
         note = ("<p style='color:{}'>○ Ensuite : {}</p>".format(t.ornament, html.escape("; ".join(
             m["message"] for m in later))) if later else "")
-        self.recap_view.setHtml("<h3 style='color:{}'>Avant / après</h3><table cellpadding='4' width='100%'>"
+        # v52 : résumé de tout ce qui change (choix, sorts, expertises, langues, maîtrises, défenses…)
+        changes = "".join("<p><b style='color:{}'>{}</b><br/>{}</p>".format(
+            t.accent_text, html.escape(title), "<br/>".join("✦ " + html.escape(x) for x in lines))
+            for title, lines in self.engine.level_up_changes(self.sim, self.cls)) if self.sim is not None else ""
+        self.recap_view.setHtml("<h3 style='color:{}'>Ce qui change</h3>{}"
+                                "<h3 style='color:{}'>Valeurs avant / après</h3><table cellpadding='4' width='100%'>"
                                 "<tr><th align='left'>Valeur</th><th>Avant</th><th></th><th>Après</th></tr>{}</table>{}"
-                                .format(t.accent_text, rows, note))
+                                .format(t.accent_text, changes, t.accent_text, rows, note))
 
     # ------------------------------------------------------------------ confirmation
     def _on_confirm(self) -> None:
@@ -1084,6 +1199,7 @@ def run_level_up(win) -> bool:
 def apply_level_up(win, sim, cls: str) -> None:
     for e in sim.ch.classes:
         e.pop("_wizard_sub", None)
+    sim.mark_new_since(win.engine.snapshot_known())     # v52 : badges « ✨ Nouveau »
     win.engine = sim
     win.changed()
     note = win.missing_note() if hasattr(win, "missing_note") else ""

@@ -79,6 +79,10 @@ class RestDialog(QDialog):
             recharges = eng.long_rest_recharges()
         lay.addWidget(make_label("Rechargé à la fin du repos :", "head"))
         lay.addWidget(make_label("<br/>".join("✔ " + html.escape(x) for x in recharges), wrap=True))
+        unused = eng.unused_before_rest("long" if long_rest else "court")      # v52 : ce qui n'a pas servi
+        if unused:
+            lay.addWidget(make_label("Pas utilisé depuis qu'il est revenu — pensez-y au prochain combat :", "head"))
+            lay.addWidget(make_label("<br/>".join("○ " + html.escape(x) for x in unused), "muted", wrap=True))
         ending = eng.effects_ending(long_rest)
         if ending:
             lay.addWidget(make_label("Effets temporaires qui prendront fin :", "head"))
@@ -95,6 +99,7 @@ class RestDialog(QDialog):
             self._build_spell_section(lay)
 
         self.ration = None
+        self.starving = None
         if long_rest:
             warn = eng.long_rest_warning()
             if warn:
@@ -109,6 +114,8 @@ class RestDialog(QDialog):
                     lay.addWidget(make_label("⚠ Aucune ration : le personnage se repose le ventre vide. Au-delà de "
                                              "3 + modificateur de Constitution jours sans manger, il subit un niveau "
                                              "d'épuisement par jour (PHB).", "warn", wrap=True))
+                    self.starving = QCheckBox("Délai dépassé : +1 niveau d'épuisement (privation de nourriture)")
+                    lay.addWidget(self.starving)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)
@@ -240,7 +247,16 @@ class RestDialog(QDialog):
     def apply(self):
         eng = self.win.engine
         if self.kind == "long":
-            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()))
+            rolls = {}                                     # v52 : recharge des objets magiques (formule, dés animés)
+            from core import dice as D
+            from .dice_dialog import roll_damage_dialog
+            for idx, name, formula in eng.pending_recharges():
+                r = roll_damage_dialog(self.win, D.DamageSpec("Recharge — " + name, formula, kind="de"))
+                if r is not None:
+                    rolls[idx] = r.total
+            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()), recharge_rolls=rolls)
+            if self.starving is not None and self.starving.isChecked():     # v52 : après la récupération du repos
+                eng.gain_exhaustion("Privation de nourriture")
             self.spell_messages = self._apply_spell_changes()
         else:
             eng.do_short_rest()

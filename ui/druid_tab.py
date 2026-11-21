@@ -208,14 +208,22 @@ class DruidTab(BaseTab):
         else:
             self.empty.setText("" if self.db.beasts else "Bestiaire introuvable : le fichier du bestiaire manque dans le dossier des données.")
             circle = "Cercle de la Lune (formes de combat)" if ws["lune"] else "Druide"
-            self.rules.setText("{} niveau {} — FP maximal {} — {} — durée {} heure(s) — vous devez avoir déjà vu la bête."
-                               .format(circle, druid, R.fmt_cr(ws["fp_max"]), ws["mouvements"], ws["duree"]))
+            extra = (" — 2024 : {} formes connues (choisies à la montée de niveau, rappel dans l'onglet Classes), action bonus, {} PV "
+                     "temporaires".format(ws["formes_connues"], ws["pv_temp"]) if ws.get("formes_connues") else
+                     " — vous devez avoir déjà vu la bête.")
+            self.rules.setText("{} niveau {} — FP maximal {} — {} — durée {} heure(s){}".format(
+                circle, druid, R.fmt_cr(ws["fp_max"]), ws["mouvements"], ws["duree"], extra))
         form = self.ch.forme_active
         if form and form in self.db.beasts:
             b = self.db.beasts[form]
-            self.active.setText("Forme actuelle : {} — CA {} — PV de la bête {} / {} (vos PV de druide sont mis de "
-                                "côté ; les dégâts excédentaires leur sont reportés à 0 PV)".format(
-                                    form, self.engine.beast_ac(b), self.ch.forme_pv, self.engine.beast_hp_max(form)))
+            if self.engine.wild_shape_2024():
+                self.active.setText("Forme actuelle : {} — CA {} — vous gardez vos PV ; PV temporaires de forme : {} "
+                                    "(2024)".format(form, self.engine.beast_ac(b), self.ch.pv_temporaires))
+            else:
+                self.active.setText("Forme actuelle : {} — CA {} — PV de la bête {} / {} (vos PV de druide sont mis "
+                                    "de côté ; les dégâts excédentaires leur sont reportés à 0 PV)".format(
+                                        form, self.engine.beast_ac(b), self.ch.forme_pv,
+                                        self.engine.beast_hp_max(form)))
         else:
             self.active.setText("Forme actuelle : aucune (forme normale)")
         self.end_btn.setEnabled(bool(form))

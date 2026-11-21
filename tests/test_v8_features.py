@@ -95,7 +95,7 @@ class UiTests(unittest.TestCase):
     def test_feats_sorted_and_progression_fast(self):
         names = self.win.progress_tab.feat_names()
         self.assertEqual(names, sorted(names, key=lambda n: (norm(n), n)))
-        self.assertEqual(list(DB.feats), names)
+        self.assertEqual([n for n, f in DB.feats.items() if f.get("edition", 2014) == 2014], names)   # v52 : mode 2014
         win = self.win
         win.ch.classes = [{"nom": "Guerrier", "niveau": 12, "sous_classe": "", "pv_jets": []}]
         win.changed()

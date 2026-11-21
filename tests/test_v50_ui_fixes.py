@@ -53,7 +53,7 @@ class IncompleteTests(unittest.TestCase):
         try:
             accepted = []
             w.accept = lambda: accepted.append(True)
-            w.go(6)
+            w.go(7)
             w._on_create()
             self.assertEqual(accepted, [])
             title, message, yes, no = asked[0]

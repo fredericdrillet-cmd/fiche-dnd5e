@@ -47,6 +47,8 @@ class InitiativeMixin:
         for frag, ab, label, minimum in ABILITY_FEATURES:
             if self.has_feature(frag):
                 terms.append(("{} ({})".format(label, ab), max(minimum, self.mod(ab))))
+        sub_terms, sub_adv = self.subclass_initiative()  # v52 : Embusqué redoutable, Athlète accompli, Assassinat
+        terms += sub_terms
         fx = self.check_mods("Dextérité")
         dice = []
         for label, val in fx["detail"]:
@@ -58,9 +60,10 @@ class InitiativeMixin:
                     terms.append((label, int(v)))
                 except ValueError:
                     pass
-        adv = list(fx["avantage"]) + [lab for frag, lab in ADVANTAGE_FEATURES if self.has_feature(frag)]
-        return {"termes": terms, "total": sum(v for _, v in terms), "des": dice, "avantage": adv,
-                "desavantage": list(fx["desavantage"])}
+        adv = list(fx["avantage"]) + [lab for frag, lab in ADVANTAGE_FEATURES if self.has_feature(frag)] + sub_adv
+        c_adv, c_dis = self.condition_initiative()       # v52 : Invisible / Neutralisé (2024)
+        return {"termes": terms, "total": sum(v for _, v in terms), "des": dice, "avantage": adv + c_adv,
+                "desavantage": list(fx["desavantage"]) + c_dis}
 
     def initiative_spec(self) -> "D.RollSpec":
         d = self.initiative_detail()
@@ -74,9 +77,14 @@ class InitiativeMixin:
         n = natural if natural is not None else random.randint(1, 20)
         total = n + d["total"]
         self.ch.initiative_jet = total
+        self.ch.ressources_utilisees.pop("don_faveur_destin", None)      # Faveur du destin : revient à l'initiative
+        self._last_initiative_msgs = self.initiative_recovery()      # v52 : Inspiration supérieure, Rage persistante…
         text = "1d20 ({}) {} = {}".format(n, " ".join("{} {}".format(R.fmt_bonus(v), lab) for lab, v in d["termes"]),
                                           total)
         return {"d20": n, "total": total, "texte": text}
 
     def record_initiative(self, total: int) -> None:
+        self.ensure_combat_started()                     # v52 : le combat commence à l'initiative
         self.ch.initiative_jet = int(total)
+        self.ch.ressources_utilisees.pop("don_faveur_destin", None)
+        self._last_initiative_msgs = self.initiative_recovery()
