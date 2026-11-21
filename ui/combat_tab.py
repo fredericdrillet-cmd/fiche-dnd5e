@@ -571,9 +571,7 @@ class CombatTab(BaseTab):
         ll.addWidget(self.form_box)
         ll.addWidget(self._abilities_box())
         ll.addWidget(self.hp_box)
-        ll.addWidget(fx_box)
         ll.addWidget(self.res_box)
-        ll.addWidget(self.remember_box)
         ll.addWidget(self.options_box)
         ll.addWidget(self.mastery_box)
         ll.addWidget(self.racial_box)
@@ -582,12 +580,16 @@ class CombatTab(BaseTab):
         main = QVBoxLayout()
         main.addWidget(self.beast_box)
         main.addWidget(turn_box)
+        under = QHBoxLayout()                             # sous les tuiles : états actifs | à ne pas oublier
+        under.addWidget(fx_box, 1)
+        under.addWidget(self.remember_box, 1)
+        main.addLayout(under)
         main.addStretch(1)
         body.addLayout(main, 1)
         self.exh_caption.setVisible(False)
         root.addLayout(body, 1)
         # Magie : emplacements de sorts en tête de la colonne
-        self.turn_cols["Magie"]["top"].addWidget(self.slots_box)
+        self.turn_slots_layout.addWidget(self.slots_box)
         self.slots_box.setTitle("Emplacements de sorts")
         # PV : PV max dans le bandeau ; actuels / temporaires / divers sur une seule ligne
         g = self.hp_box.layout()
@@ -768,40 +770,23 @@ class CombatTab(BaseTab):
             frame.hide()
         for b in self.turn_filter_btns.values():
             b.setVisible(False)
-        # v52 : quatre colonnes — Actions | Actions bonus | Réactions et gratuit | Magie (emplacements en tête)
-        cols = QHBoxLayout()
-        cols.setSpacing(10)
-        self.turn_cols: dict[str, dict] = {}
-        for key, title in (("Action", "● Actions"), ("Action bonus", "▲ Actions bonus"),
-                           ("Réaction", "◆ Réactions et gratuit"), ("Magie", "✨ Magie")):
-            frame = QFrame()
-            frame.setObjectName("turnColumn")
-            fl = QVBoxLayout(frame)
-            fl.setContentsMargins(4, 2, 4, 2)
-            fl.setSpacing(4)
-            head_lab = make_label(title, "head")
-            fl.addWidget(head_lab)
-            top_holder = QVBoxLayout()                    # Magie : emplacements de sorts
-            fl.addLayout(top_holder)
-            holder = QWidget()
-            grid = QGridLayout(holder)
-            grid.setContentsMargins(0, 0, 0, 0)
-            grid.setHorizontalSpacing(4)
-            grid.setVerticalSpacing(4)
-            fl.addWidget(holder)
-            extra_head = make_label("", "muted")
-            fl.addWidget(extra_head)
-            extra_holder = QWidget()
-            extra = QGridLayout(extra_holder)
-            extra.setContentsMargins(0, 0, 0, 0)
-            extra.setHorizontalSpacing(4)
-            extra.setVerticalSpacing(3)
-            fl.addWidget(extra_holder)
-            fl.addStretch(1)
-            cols.addWidget(frame, 1)
-            self.turn_cols[key] = {"frame": frame, "head": head_lab, "grid": grid, "top": top_holder,
-                                   "extra_head": extra_head, "extra": extra}
-        lay.addLayout(cols)
+        # v52 : une seule grille de tuiles, une couleur par type (attaque, capacité, magie, objet, action commune) ;
+        # le coût (● Action, ▲ Bonus, ◆ Réaction, ○ Gratuit) est écrit sur chaque tuile
+        top = QHBoxLayout()
+        self.turn_slots_layout = QHBoxLayout()            # emplacements de sorts (encart déplacé ici)
+        top.addLayout(self.turn_slots_layout)
+        top.addStretch(1)
+        self.turn_legend = make_label("", "")
+        self.turn_legend.setTextFormat(Qt.TextFormat.RichText)
+        top.addWidget(self.turn_legend)
+        lay.addLayout(top)
+        holder = QWidget()
+        self.turn_flow = QGridLayout(holder)
+        self.turn_flow.setContentsMargins(0, 0, 0, 0)
+        self.turn_flow.setHorizontalSpacing(5)
+        self.turn_flow.setVerticalSpacing(5)
+        lay.addWidget(holder)
+        self.turn_cols = {}                               # compatibilité
         self.turn_empty = make_label("Rien à faire dans cette catégorie.", "muted")
         lay.addWidget(self.turn_empty)
         self.turn_tiles: dict[str, QPushButton] = {}
@@ -950,7 +935,7 @@ class CombatTab(BaseTab):
                                         (res + "  " if res else "") + sub)
         b = QPushButton(text)
         b.setMinimumHeight(26 if compact else 46)
-        b.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)   # colonnes de même largeur
         b.setEnabled(x["disponible"])
         b.setCursor(Qt.CursorShape.PointingHandCursor)
         b.setToolTip(rich_tip(x["nom"], "{}{}{}{}".format(
@@ -961,42 +946,71 @@ class CombatTab(BaseTab):
         self.turn_tiles[x["id"]] = b
         return b
 
+    TILE_CATS = [("attaque", "Attaques", "#c0392b"), ("capacite", "Capacités de classe et de race", "#2e86c1"),
+                 ("magie", "Magie", "#8e44ad"), ("objet", "Objets magiques", "#b7950b"),
+                 ("reaction", "Réactions", "#16a085"), ("commune", "Actions communes", "#7f8c8d")]
+    FLOW_COLS = 6
+
+    def _tile_cat(self, x: dict) -> str:
+        if self._is_spell_tile(x):
+            return "magie"
+        g = x.get("groupe", "")
+        if g == "generiques":
+            return "commune"
+        if g == "attaques":
+            return "attaque"
+        if g == "objets":
+            return "objet"
+        if x["type"] == "Réaction":
+            return "reaction"
+        return "capacite"
+
     def _render_turn_columns(self, shown: list, spheres: dict) -> None:
+        """v52 : grille unique, tuiles regroupées et colorées par type ; les actions communes, plus petites, en fin."""
         self.turn_tiles = {}
-        groups = {"Action": [], "Action bonus": [], "Réaction": [], "Magie": []}
-        common, free = [], []
-        for x in shown:
-            if x["id"].startswith("inspiration:"):        # v52 : case « Inspiration » dans le bandeau
-                continue
-            if self._is_spell_tile(x):
-                groups["Magie"].append(x)
-            elif x.get("groupe") == "generiques" and x["type"] == "Action":
-                common.append(x)
-            elif x["type"] == "Gratuit":
-                free.append(x)
-            elif x.get("groupe") == "generiques" and x["type"] == "Action bonus":
-                groups["Action bonus"].append(x)
-            elif x["type"] in groups:
-                groups[x["type"]].append(x)
-            else:
-                groups["Action"].append(x)
-        order = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
-        groups["Magie"].sort(key=lambda x: order.get(x["type"], 4))
-        for key, col in self.turn_cols.items():
-            clear_layout(col["grid"])
-            clear_layout(col["extra"])
-            items = groups[key]
-            for n, x in enumerate(items):
-                col["grid"].addWidget(self._make_tile(x, spheres), n, 0)
-            extra = common if key == "Action" else free if key == "Réaction" else []
-            col["extra_head"].setText("Actions communes" if key == "Action" else "Gratuit" if key == "Réaction" else "")
-            col["extra_head"].setVisible(bool(extra))
-            for n, x in enumerate(extra):
-                col["extra"].addWidget(self._make_tile(x, spheres, compact=True), n // 2, n % 2)
-            count = len(items) + len(extra)
-            col["head"].setText("{}  ({})".format(col["head"].text().split("  (")[0], count))
-            if key == "Magie":
-                col["frame"].setVisible(bool(items) or self.slots_box.isVisibleTo(self))
+        clear_layout(self.turn_flow)
+        colors = {k: c for k, _l, c in self.TILE_CATS}
+        order = {k: n for n, (k, _l, _c) in enumerate(self.TILE_CATS)}
+        eco = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
+        items = [x for x in shown if not x["id"].startswith("inspiration:")]
+        items.sort(key=lambda x: (order[self._tile_cat(x)], eco.get(x["type"], 4)))
+        main = [x for x in items if self._tile_cat(x) != "commune"]
+        common = [x for x in items if self._tile_cat(x) == "commune"]
+        cols = self.FLOW_COLS
+        for n, x in enumerate(main):
+            b = self._make_tile(x, spheres)
+            self._color_tile(b, colors[self._tile_cat(x)])
+            self.turn_flow.addWidget(b, n // cols, n % cols)
+        row0 = (len(main) + cols - 1) // cols
+        self._common_cells = {}
+        for n, x in enumerate(common):                    # actions communes : deux petites tuiles par case
+            b = self._make_tile(x, spheres, compact=True)
+            self._color_tile(b, colors["commune"])
+            self._common_grid_add(b, row0, n)
+        for c in range(cols):
+            self.turn_flow.setColumnStretch(c, 1)
+        present = {self._tile_cat(x) for x in items}
+        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=c, l=l)
+                                           for k, l, c in self.TILE_CATS if k in present))
+
+    def _common_grid_add(self, b, row0: int, n: int) -> None:
+        """Actions communes en fin de grille : deux par case de tuile normale (plus compact)."""
+        r, k = divmod(n, self.FLOW_COLS * 2)
+        cell = (row0 + r, k // 2)
+        holder = self._common_cells.get(cell)
+        if holder is None:
+            w = QWidget()
+            holder = QHBoxLayout(w)
+            holder.setContentsMargins(0, 0, 0, 0)
+            holder.setSpacing(3)
+            self.turn_flow.addWidget(w, cell[0], cell[1])
+            self._common_cells[cell] = holder
+        holder.addWidget(b)
+
+    @staticmethod
+    def _color_tile(b, color: str) -> None:
+        b.setStyleSheet("QPushButton {{ border: 1px solid {c}; border-left: 6px solid {c}; border-radius: 6px; "
+                        "padding: 2px 6px; text-align: left; }}".format(c=color))
 
     def _on_roll_initiative(self) -> None:
         from .dice_dialog import roll_initiative
@@ -1763,6 +1777,7 @@ class CombatTab(BaseTab):
         while self.res_layout.count():
             item = self.res_layout.takeAt(0)
             if item.widget():
+                item.widget().setParent(None)            # retrait immédiat (pas de superposition à l'écran)
                 item.widget().deleteLater()
         self.res_rows = []
         for r, tr in enumerate(trackers):
@@ -1996,7 +2011,7 @@ class CombatTab(BaseTab):
             for n, p in enumerate(passives):
                 tip = ("<div style='max-width:380px'><p><b>{}</b> <i>— {}</i></p><p>{}</p></div>").format(
                     html.escape(p["nom"]), html.escape(p["source"]), html.escape(p["description"]))
-                self.pass_layout.addWidget(ActionChip("◈", p["nom"], tip), n // 4, n % 4)
+                self.pass_layout.addWidget(ActionChip("◈", p["nom"], tip), n // 2, n % 2)   # colonne étroite
             self.pass_layout.setColumnStretch(4, 1)
         self.pass_title.setVisible(bool(passives))
         return passives
