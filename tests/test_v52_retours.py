@@ -107,6 +107,17 @@ class UiTests(unittest.TestCase):
         self.assertNotIn("inspiration:recevoir", tab.turn_tiles)
         self.assertIn("❤", tab.hp_big.text())
 
+    def test_magic_common_action_hidden(self):
+        tab, eng = self.win.combat_tab, self.win.engine
+        eng.set_edition_mode("2024")
+        eng.normalize()
+        self.win.changed()
+        self.assertIn("commune:etudier", tab.turn_tiles)
+        self.assertNotIn("commune:magie", tab.turn_tiles)
+        eng.set_edition_mode("2014")
+        eng.normalize()
+        self.win.changed()
+
 
 class WizardTests(unittest.TestCase):
     def test_skills_step_and_identity(self):

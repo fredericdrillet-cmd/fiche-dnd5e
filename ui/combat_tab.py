@@ -972,7 +972,8 @@ class CombatTab(BaseTab):
         colors = {k: c for k, _l, c in self.TILE_CATS}
         order = {k: n for n, (k, _l, _c) in enumerate(self.TILE_CATS)}
         eco = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
-        items = [x for x in shown if not x["id"].startswith("inspiration:")]
+        items = [x for x in shown if not x["id"].startswith("inspiration:")
+                 and x["id"] != "commune:magie"]          # v52 : sorts et objets ont déjà leurs tuiles
         items.sort(key=lambda x: (order[self._tile_cat(x)], eco.get(x["type"], 4)))
         main = [x for x in items if self._tile_cat(x) != "commune"]
         common = [x for x in items if self._tile_cat(x) == "commune"]
