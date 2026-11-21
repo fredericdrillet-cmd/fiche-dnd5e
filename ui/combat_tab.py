@@ -89,16 +89,19 @@ class CombatTab(BaseTab):
                                           "pour regagner 1d8 PV par niveau de l'emplacement (sur les PV de la bête)."))
         self.form_end = QPushButton("Reprendre sa forme normale")
         self.form_end.setProperty("role", "ghost")
-        fg.addWidget(self.form_info, 0, 0, 1, 6)
+        self.form_info.setWordWrap(True)                  # v52 : mis en page pour la colonne de gauche
+        fg.addWidget(self.form_info, 0, 0, 1, 3)
         fg.addWidget(make_label("PV de la bête"), 1, 0)
-        fg.addWidget(self.form_hp, 1, 1)
-        fg.addWidget(make_label("Dégâts"), 1, 2)
-        fg.addWidget(self.form_dmg, 1, 3)
-        fg.addWidget(self.form_dmg_btn, 1, 4)
-        fg.addWidget(self.form_end, 1, 5)
-        fg.addWidget(make_label("Emplacement"), 2, 0)
-        fg.addWidget(self.moon_lvl, 2, 1)
-        fg.addWidget(self.moon_btn, 2, 2, 1, 3)
+        fg.addWidget(self.form_hp, 1, 1, 1, 2)
+        fg.addWidget(make_label("Dégâts"), 2, 0)
+        fg.addWidget(self.form_dmg, 2, 1)
+        fg.addWidget(self.form_dmg_btn, 2, 2)
+        self.moon_caption = make_label("Emplacement")
+        fg.addWidget(self.moon_caption, 3, 0)
+        fg.addWidget(self.moon_lvl, 3, 1)
+        fg.addWidget(self.moon_btn, 3, 2)
+        fg.addWidget(self.form_end, 4, 0, 1, 3)
+        fg.setColumnStretch(2, 1)
         self.form_box.setVisible(False)
         root.addWidget(self.form_box)
         self.form_hp.valueChanged.connect(self._on_form_hp)
@@ -578,7 +581,7 @@ class CombatTab(BaseTab):
         ll.addStretch(1)
         body.addWidget(left)
         main = QVBoxLayout()
-        main.addWidget(self.beast_box)
+        park.addWidget(self.beast_box)                    # v52 : les attaques de la bête sont des tuiles
         main.addWidget(turn_box)
         under = QHBoxLayout()                             # sous les tuiles : états actifs | à ne pas oublier
         under.addWidget(fx_box, 1)
@@ -643,8 +646,13 @@ class CombatTab(BaseTab):
         eng, ch = self.engine, self.ch
         hp_max = eng.hp_max()
         cur = ch.pv_actuels if ch.pv_actuels >= 0 else hp_max
-        self.hp_big.setText("❤ {} / {}{}".format(cur, hp_max, "  (+{} temp.)".format(ch.pv_temporaires)
-                                                if ch.pv_temporaires else ""))
+        form = eng.form_status()
+        if form and ch.forme_active and not eng.wild_shape_2024():   # PV de la bête (vos PV sont mis de côté)
+            self.hp_big.setText("{} {} / {}  (vos PV : {} / {})".format(form["icone"], ch.forme_pv, form["pv_max"],
+                                                                     cur, hp_max))
+        else:
+            self.hp_big.setText("❤ {} / {}{}".format(cur, hp_max, "  (+{} temp.)".format(ch.pv_temporaires)
+                                                    if ch.pv_temporaires else ""))
         for ab, lab in self.ab_labels.items():
             lab.setText("{} ({})".format(eng.score(ab), R.fmt_bonus(eng.mod(ab))))
         with blocked(self.insp_check):
@@ -1684,7 +1692,7 @@ class CombatTab(BaseTab):
         moon = eng.moon_heal_available()
         levels = eng.moon_heal_levels() if moon else []
         fill_combo(self.moon_lvl, ["Niveau {}".format(n) for n in levels], self.moon_lvl.currentText())
-        for w in (self.moon_lvl, self.moon_btn):
+        for w in (self.moon_lvl, self.moon_btn, self.moon_caption):
             w.setVisible(moon)
         self.moon_btn.setEnabled(bool(levels) and ch.forme_pv < hp_max)
         attacks = eng.beast_attacks()
@@ -1861,7 +1869,7 @@ class CombatTab(BaseTab):
         racial = any(a.get("origine") == "race" for a in actions)
         self.res_box.setTitle("Ressources")              # v52 : les actions sont des tuiles ; ici, les compteurs
         self.res_sep.setVisible(bool(trackers) and bool(actions))
-        self.res_box.setVisible(bool(trackers) or bool(actions) or bool(passives))
+        self.res_box.setVisible(bool(trackers) or bool(passives))   # v52 : les actions sont des tuiles
         for tr, w in zip(trackers, self.res_rows):
             if tr["total"] is None:
                 w["left"].setText("")

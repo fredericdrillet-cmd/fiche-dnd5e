@@ -161,6 +161,30 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class FormTilesTests(unittest.TestCase):
+    def test_wild_shape_and_polymorph_tiles(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        eng = win.engine
+        eng.ch.classes = [{"nom": "Druide", "niveau": 4, "sous_classe": "", "pv_jets": []}]
+        eng.normalize()
+        self.assertTrue(eng.assume_form("Loup"))
+        win.changed()
+        tab = win.combat_tab
+        self.assertIn("bete:0", tab.turn_tiles)
+        self.assertIn("vos PV", tab.hp_big.text())               # PV de la bête en tête
+        eng.end_form()
+        eng.ch.classes = [{"nom": "Magicien", "niveau": 7, "sous_classe": "", "pv_jets": []}]
+        eng.ch.sorts = {"Magicien": [{"nom": "Métamorphose", "prepare": True}]}
+        eng.normalize()
+        self.assertTrue(eng.cast_polymorph("Ours brun", True)["ok"])
+        win.changed()
+        self.assertIn("bete:1", tab.turn_tiles)
+        self.assertIn("vos PV", tab.hp_big.text())
+
+
 class InventoryTests(unittest.TestCase):
     def test_weapon_settings_and_actions_tiles(self):
         import qt_stub
