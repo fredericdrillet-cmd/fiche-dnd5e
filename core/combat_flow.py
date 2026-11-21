@@ -356,7 +356,28 @@ class CombatFlowMixin:
             out["mode"] = "soins"
         elif dmg is not None:
             out["mode"] = "automatique"
+        pool = self.hp_pool_spec(spell, slot_level)
+        if pool is not None:                              # v52 : Sommeil, Couleurs dansantes (2014)
+            out.update(mode="reserve", reserve=pool)
         return out
+
+    # v52 : sorts 2014 qui affectent une réserve de PV (créatures par PV actuels croissants) : (dés, dés par niveau sup.)
+    HP_POOL_SPELLS = {"sommeil": ("5d8", 2), "couleurs dansantes": ("6d10", 2)}
+
+    def hp_pool_spec(self, spell: dict, slot_level: int = 0) -> Optional["D.DamageSpec"]:
+        """Réserve de PV d'un sort 2014 (Sommeil : 5d8 + 2d8 par niveau d'emplacement au-delà du 1er)."""
+        base = self.HP_POOL_SPELLS.get(norm(spell["nom"]))
+        if base is None or " pv" not in " " + norm(spell.get("description", "")):   # Sommeil 2024 : un JS, pas de réserve
+            return None
+        dice, per = base
+        n, faces = dice.split("d")
+        lvl = int(spell["niveau"])
+        up = max(0, int(slot_level or lvl) - lvl)
+        formula = "{}d{}".format(int(n) + per * up, faces)
+        title = "{} — PV de créatures affectés{}".format(spell["nom"], " (niveau {})".format(slot_level) if up else "")
+        return D.DamageSpec(title, formula, "", "Les créatures sont affectées par ordre croissant de PV actuels, "
+                            "tant que le total le permet (une créature n'est affectée que si ses PV n'excèdent pas "
+                            "ce qui reste).", "reserve")
 
 
 class OnHitMixin:

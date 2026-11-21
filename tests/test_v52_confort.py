@@ -232,7 +232,7 @@ class ExhaustionUiTests(unittest.TestCase):
         tab._on_exhaustion(1)
         tab.refresh()
         self.assertEqual(self.win.engine.exhaustion_level(), 2)
-        self.assertIn("◆◆◇◇◇◇", tab.exh_label.text())
+        self.assertEqual("Niveau 2", tab.exh_label.text())
         tab._on_exhaustion(-1)
         self.assertEqual(self.win.engine.exhaustion_level(), 1)
 

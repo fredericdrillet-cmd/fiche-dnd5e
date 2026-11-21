@@ -51,6 +51,7 @@ class WizardHost:
         self.settings = win.settings
         self.lazy_refresh = False
         self.free_mode = True
+        self.no_dice = True                              # v52 : aucun jet de dés pendant la création
 
     @property
     def ch(self):

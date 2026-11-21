@@ -5,13 +5,14 @@ import html
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QListWidget, QListWidgetItem,
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QListWidget, QListWidgetItem,
                              QPushButton, QSpinBox, QSplitter, QTabWidget, QTextBrowser, QVBoxLayout, QWidget)
 
 from core import rules as R
 from . import theme
 from .common import BaseTab, blocked, fill_combo, formula_html, formula_tip, make_label, rich_tip
 from .dialogs import ask_yes_no
+from .game_widgets import clear_layout
 
 
 def text_width(widget, text: str, bold: bool = False) -> int:
@@ -459,6 +460,12 @@ class ClassesTab(BaseTab):
         lay.addLayout(top)
         self.info = make_label("", "muted", wrap=True)
         lay.addWidget(self.info)
+        # v52 : choix des options de classe (manœuvres, runes, Tir arcanique…) — ici plutôt qu'en partie
+        self.options_box = QGroupBox("Options de classe")
+        self.options_layout = QGridLayout(self.options_box)
+        self._options_key = None
+        self.options_box.setVisible(False)
+        lay.addWidget(self.options_box)
         self.tabs = QTabWidget()
         lay.addWidget(self.tabs, 1)
         self.panels: list[ClassPanel] = []
@@ -478,6 +485,48 @@ class ClassesTab(BaseTab):
             return
         self.engine.set_multiclass(checked)
         self.changed()
+
+    NO_OPTION = "— à choisir —"
+
+    def _refresh_class_options(self) -> None:
+        """v52 : manœuvres, runes, options de Tir arcanique… (déplacées depuis « En partie ») : une liste par choix, description en infobulle ;
+        chaque option déjà prise ailleurs est retirée des autres listes."""
+        sets = [s for s in self.engine.option_sets() if not s["key"].startswith("don:")]   # dons : onglet Progression
+        self.options_box.setVisible(bool(sets))
+        n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
+        self.options_box.setTitle("Options de classe" + ("  — ○ {} à choisir".format(n_missing) if n_missing
+                                                               else ""))
+        key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
+            (theme.current().key,)
+        if key == self._options_key:
+            return
+        self._options_key = key
+        clear_layout(self.options_layout)
+        row = 0
+        for s in sets:
+            self.options_layout.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]),
+                                                     "head"), row, 0, 1, 2)
+            row += 1
+            for i in range(s["total"]):
+                current = s["chosen"][i] if i < len(s["chosen"]) else ""
+                taken = {c for j, c in enumerate(s["chosen"]) if j != i}
+                names = [n for n in s["options"] if n not in taken]
+                combo = QComboBox()
+                combo.setMinimumWidth(280)
+                fill_combo(combo, [self.NO_OPTION] + names, current or self.NO_OPTION,
+                           {n: rich_tip(n, s["options"][n]) for n in names})
+                combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self._on_class_option(k, idx, c))
+                desc = make_label((s["options"].get(current, "") or "").split("\n")[0], "muted", wrap=True)
+                self.options_layout.addWidget(combo, row, 0)
+                self.options_layout.addWidget(desc, row, 1)
+                row += 1
+        self.options_layout.setColumnStretch(1, 1)
+
+    def _on_class_option(self, key: str, index: int, combo) -> None:
+        text = combo.currentText()
+        self.engine.set_class_option(key, index, "" if text == self.NO_OPTION else text)
+        self.changed()
+
 
     def current_index(self) -> int:
         return max(0, self.tabs.currentIndex())
@@ -513,6 +562,7 @@ class ClassesTab(BaseTab):
             p.refresh()
             c = self.ch.classes[i]
             self.tabs.setTabText(i, "{} {}".format(c["nom"], c["niveau"]))
+        self._refresh_class_options()
         owned = {c["nom"] for c in self.ch.classes}
         free = [n for n in self.db.class_names() if n not in owned]
         fill_combo(self.add_combo, free, free[0] if free else "")

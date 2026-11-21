@@ -354,6 +354,10 @@ class DiceRollDialog(QDialog):
         lay.addWidget(box)
         self.total = make_label("Total : …", "stat", align=Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(self.total)
+        self._wrapped.append(self.total)
+        for lab in self._wrapped:                         # v52 : textes longs à la ligne plutôt que tronqués
+            lab.setWordWrap(True)
+        self._card = card
         if spec.note:
             lay.addWidget(make_label(spec.note, "muted", wrap=True, align=Qt.AlignmentFlag.AlignCenter))
         # v52 : le jet part dans le mode de l'état du personnage ; le MJ peut imposer un autre mode (relance)
@@ -572,9 +576,14 @@ def mode_text(spec, result) -> str:
     return spec.mode
 
 
+def dice_blocked(win) -> bool:
+    """v52 : pas de jet de dés dans l'assistant de création (la fiche n'est pas encore créée)."""
+    return getattr(win, "no_dice", False) is True
+
+
 def roll_dice(win, spec) -> "D.RollResult | None":
     """Ouvre la fenêtre de lancer (fond flouté semi-transparent) et renvoie le résultat."""
-    if spec is None:
+    if spec is None or dice_blocked(win):
         return None
     eng = getattr(win, "engine", None)
     if eng is not None and hasattr(eng, "prepare_d20_spec"):
@@ -691,11 +700,15 @@ class DamageRollDialog(QDialog):
         lay.setSpacing(10)
         card.setMinimumWidth(420)
         outer.addWidget(card)
-        icon = {"soins": "💚", "de": "🎲", "pv_temp": "🛡"}.get(spec.kind, "💥")
-        lay.addWidget(make_label("{}  {}".format(icon, spec.title), "title", align=Qt.AlignmentFlag.AlignCenter))
-        kind_txt = {"soins": "Soins", "de": "Dé", "pv_temp": "PV temporaires"}.get(spec.kind, "Dégâts")
-        lay.addWidget(make_label("{} : {}{}".format(kind_txt, spec.formula, " " + spec.damage_type if spec.damage_type
-                                                    else ""), "head", align=Qt.AlignmentFlag.AlignCenter))
+        icon = {"soins": "💚", "de": "🎲", "pv_temp": "🛡", "reserve": "💤"}.get(spec.kind, "💥")
+        self._wrapped = [make_label("{}  {}".format(icon, spec.title), "title", align=Qt.AlignmentFlag.AlignCenter)]
+        lay.addWidget(self._wrapped[0])
+        kind_txt = {"soins": "Soins", "de": "Dé", "pv_temp": "PV temporaires",
+                    "reserve": "Réserve de PV"}.get(spec.kind, "Dégâts")
+        self._wrapped.append(make_label("{} : {}{}".format(kind_txt, spec.formula, " " + spec.damage_type
+                                                           if spec.damage_type else ""), "head",
+                                        align=Qt.AlignmentFlag.AlignCenter))
+        lay.addWidget(self._wrapped[1])
         # un dé animé par dé de la formule — taille adaptée au nombre de dés, 6 par ligne au plus
         n = len(self.result.dice)
         size = 120 if n <= 3 else 92 if n <= 6 else 70
@@ -723,6 +736,10 @@ class DamageRollDialog(QDialog):
         lay.addWidget(self.flat_label)
         self.total = make_label("Total : …", "stat", align=Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(self.total)
+        self._wrapped.append(self.total)
+        for lab in self._wrapped:                         # v52 : textes longs à la ligne plutôt que tronqués
+            lab.setWordWrap(True)
+        self._card = card
         if spec.note:
             lay.addWidget(make_label(spec.note, "muted", wrap=True, align=Qt.AlignmentFlag.AlignCenter))
         buttons = QHBoxLayout()
@@ -771,7 +788,8 @@ class DamageRollDialog(QDialog):
         if r.flat or getattr(self.spec, "calcul", ""):
             self.flat_label.setText("<b style='color:{}'>✔ {}</b>".format(self._accent, html.escape(
                 flat_text(self.spec, r.flat))))
-        word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires"}.get(self.spec.kind, "dégâts")
+        word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires",
+                "reserve": "PV de créatures affectés"}.get(self.spec.kind, "dégâts")
         typed = D.typed_text(getattr(self.spec, "parts", []) or [], r)     # v52 : « 9 tranchants + 3 poison »
         self.total.setText(("Total : {} dégâts — {}".format(r.total, typed) if typed else
                             "Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
@@ -783,6 +801,21 @@ class DamageRollDialog(QDialog):
         self.close_btn.setEnabled(True)
         self.close_btn.setFocus()
         self.skip_btn.setEnabled(False)
+        self._fit_text()
+
+    def _fit_text(self) -> None:
+        """v52 : la fenêtre s'élargit pour le total détaillé (plusieurs dés et types de dégâts), sans rien tronquer."""
+        try:
+            fm = self.total.fontMetrics()
+            need = max(fm.horizontalAdvance(self.total.text()), 0) + 80
+            screen = self.screen().availableGeometry().width() if self.screen() is not None else 1400
+            self._card.setMinimumWidth(int(min(max(420, need), screen * 0.8)))
+            self.adjustSize()
+            parent = self.parentWidget()
+            if parent is not None:
+                self.move(parent.frameGeometry().center() - self.rect().center())
+        except (AttributeError, TypeError):
+            pass
 
     def finish_now(self) -> None:
         if self.phase == "roll":
@@ -799,7 +832,7 @@ class DamageRollDialog(QDialog):
 
 def roll_damage_dialog(win, spec) -> "D.DamageResult | None":
     """Ouvre l'animation multi-dés (fond flouté) et renvoie le résultat ; None si la formule n'a pas de dé."""
-    if spec is None or not D.has_dice(spec.formula):
+    if spec is None or not D.has_dice(spec.formula) or dice_blocked(win):
         return None
     backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
     dialog = DamageRollDialog(win, spec)
@@ -809,7 +842,8 @@ def roll_damage_dialog(win, spec) -> "D.DamageResult | None":
         backdrop.dispose()
     dialog.finish_now()
     r = dialog.result
-    word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires"}.get(spec.kind, "dégâts")
+    word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires",
+                "reserve": "PV de créatures affectés"}.get(spec.kind, "dégâts")
     eng = getattr(win, "engine", None)
     if eng is not None and hasattr(eng, "record_roll"):    # v52 : historique des lancers (Ctrl+H)
         eng.record_roll(spec.title, spec.kind, r.total, "{} → {} {}".format(

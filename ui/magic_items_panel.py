@@ -111,6 +111,10 @@ def _power_fields(spell_names: list[str]) -> tuple[QWidget, dict]:
             it.setFlags(it.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             it.setCheckState(Qt.CheckState.Unchecked)
             lst.addItem(it)
+        from .common import indicator_qss                 # v52 : cases bien visibles quel que soit le thème
+        t = theme.current()
+        lst.setStyleSheet(indicator_qss(t, "QListWidget") + "QListWidget::item {{ padding: 3px 2px; }}"
+                          "QListWidget::item:hover {{ background: {}; }}".format(t.select_bg))
         return lst
     damage = [(t, t.capitalize()) for t in ExtrasMixin.DAMAGE_TYPES]
     f["res"] = checklist(damage)

@@ -68,6 +68,10 @@ class SkillsTab(BaseTab):
             self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise · « Jet » : d20.")
         right.addWidget(pbox, 2)
         root.addLayout(right, 2)
+        if getattr(win, "no_dice", False) is True:        # v52 : assistant de création — pas de jet de dés
+            self.table.setColumnHidden(self.ROLL_COL, True)
+            self.saves.setColumnHidden(self.SAVE_ROLL_COL, True)
+            self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise.")
 
     # ------------------------------------------------------------------ handlers
     def _on_skill_click(self, row: int, col: int):

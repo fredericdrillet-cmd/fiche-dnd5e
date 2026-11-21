@@ -250,12 +250,6 @@ class CombatTab(BaseTab):
         mb.addWidget(self.mastery_label, 1)
         mb.addWidget(self.mastery_btn)
         right_col.addWidget(self.mastery_box)
-        # v36 : options de sous-classe (runes du Chevalier runique, options de Tir arcanique)
-        self.options_box = QGroupBox("Options de classe")
-        self.options_layout = QGridLayout(self.options_box)
-        self._options_key = None
-        self.options_box.setVisible(False)
-        right_col.addWidget(self.options_box)
         # v52 : « À ne pas oublier » — capacités de situation, une ligne chacune, repliable
         self.remember_box = QGroupBox("📌 À ne pas oublier")
         rl = QVBoxLayout(self.remember_box)
@@ -551,11 +545,11 @@ class CombatTab(BaseTab):
         self.style_badge = make_label("", "muted")
         hl.addWidget(self.style_badge)
         hl.addStretch(1)
-        self.exh_minus.setText("▼")
-        self.exh_plus.setText("▲")
+        self.exh_minus.setText("−")                       # v52 : − / + bien lisibles
+        self.exh_plus.setText("+")
         self.exh_roll.setText("🎲 JS")
         for b in (self.exh_minus, self.exh_plus):
-            b.setFixedWidth(30)
+            b.setFixedSize(30, 26)
         hl.addWidget(make_label("Épuisement", "muted"))
         hl.addWidget(self.exh_minus)
         hl.addWidget(self.exh_label)
@@ -574,14 +568,13 @@ class CombatTab(BaseTab):
         ll.addWidget(self.form_box)
         ll.addWidget(self._abilities_box())
         ll.addWidget(self.hp_box)
-        ll.addWidget(self.res_box)
-        ll.addWidget(self.options_box)
         ll.addWidget(self.mastery_box)
         ll.addWidget(self.racial_box)
         ll.addStretch(1)
         body.addWidget(left)
         main = QVBoxLayout()
         park.addWidget(self.beast_box)                    # v52 : les attaques de la bête sont des tuiles
+        park.addWidget(self.res_box)                      # v52 : les ressources sont affichées sur les tuiles
         main.addWidget(turn_box)
         under = QHBoxLayout()                             # sous les tuiles : états actifs | à ne pas oublier
         under.addWidget(fx_box, 1)
@@ -946,11 +939,15 @@ class CombatTab(BaseTab):
     def _is_spell_tile(x: dict) -> bool:
         return x["id"].startswith("sort:") or x.get("groupe") == "magie"
 
+    # v52 : libellés courts des petites tuiles d'actions communes (le nom complet reste dans l'infobulle)
+    SHORT_COMMON = {"Se désengager": "Désengager", "Se cacher": "Cacher", "Se tenir prêt": "Prêt",
+                    "Utiliser un objet": "Objet", "Boire une potion (Action bonus)": "Potion", "Influencer": "Influence"}
+
     def _make_tile(self, x: dict, spheres: dict, compact: bool = False) -> QPushButton:
         res = spheres.get(x["id"], "")
         x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
         if compact:
-            text = "{} {}".format(x["icone"], x["nom"])
+            text = "{} {}".format(x["icone"], self.SHORT_COMMON.get(x["nom"], x["nom"]))
         else:
             sub = x["origine"] if x["origine"] not in ("action commune",) else ""
             if self._is_spell_tile(x):
@@ -959,6 +956,7 @@ class CombatTab(BaseTab):
                                         (res + "  " if res else "") + sub)
         b = QPushButton(text)
         b.setMinimumHeight(26 if compact else 46)
+
         b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)   # colonnes de même largeur
         b.setEnabled(x["disponible"])
         b.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -970,9 +968,8 @@ class CombatTab(BaseTab):
         self.turn_tiles[x["id"]] = b
         return b
 
-    TILE_CATS = [("attaque", "Attaques", "#c0392b"), ("capacite", "Capacités de classe et de race", "#2e86c1"),
-                 ("magie", "Magie", "#8e44ad"), ("objet", "Objets magiques", "#b7950b"),
-                 ("reaction", "Réactions", "#16a085"), ("commune", "Actions communes", "#7f8c8d")]
+    TILE_CATS = [("attaque", "Attaques"), ("capacite", "Capacités de classe et de race"), ("magie", "Magie"),
+                 ("objet", "Objets magiques"), ("reaction", "Réactions"), ("commune", "Actions communes")]
     FLOW_COLS = 6
 
     def _tile_cat(self, x: dict) -> str:
@@ -993,8 +990,8 @@ class CombatTab(BaseTab):
         """v52 : grille unique, tuiles regroupées et colorées par type ; les actions communes, plus petites, en fin."""
         self.turn_tiles = {}
         clear_layout(self.turn_flow)
-        colors = {k: c for k, _l, c in self.TILE_CATS}
-        order = {k: n for n, (k, _l, _c) in enumerate(self.TILE_CATS)}
+        colors = theme.tile_palette(theme.current())      # v52 : couleurs accordées au thème choisi
+        order = {k: n for n, (k, _l) in enumerate(self.TILE_CATS)}
         eco = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
         items = [x for x in shown if not x["id"].startswith("inspiration:")
                  and x["id"] != "commune:magie"]          # v52 : sorts et objets ont déjà leurs tuiles
@@ -1025,13 +1022,13 @@ class CombatTab(BaseTab):
         self._common_cells = {}
         for n, x in enumerate(common):                    # actions communes : deux petites tuiles par case
             b = self._make_tile(x, spheres, compact=True)
-            self._color_tile(b, colors["commune"])
+            self._color_tile(b, colors["commune"], compact=True)
             self._common_grid_add(b, row0, n)
         for c in range(cols):
             self.turn_flow.setColumnStretch(c, 1)
         present = {self._tile_cat(x) for x in items}
-        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=c, l=l)
-                                           for k, l, c in self.TILE_CATS if k in present))
+        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=colors[k], l=l)
+                                           for k, l in self.TILE_CATS if k in present))
 
     def _weapon_action_rows(self) -> list:
         """Actions d'arme des armes équipées (main principale, distance) : [(clé de liste, indice, action, arme)]."""
@@ -1061,9 +1058,11 @@ class CombatTab(BaseTab):
         holder.addWidget(b)
 
     @staticmethod
-    def _color_tile(b, color: str) -> None:
+    def _color_tile(b, color: str, compact: bool = False) -> None:
+        # petites tuiles : texte réduit et marges serrées, pour que le libellé ne soit jamais tronqué
+        extra = "font-size: 11px; padding: 1px 3px; border-left-width: 4px;" if compact else "padding: 2px 6px;"
         b.setStyleSheet("QPushButton {{ border: 1px solid {c}; border-left: 6px solid {c}; border-radius: 6px; "
-                        "padding: 2px 6px; text-align: left; }}".format(c=color))
+                        "text-align: left; {e} }}".format(c=color, e=extra))
 
     def _on_roll_initiative(self) -> None:
         from .dice_dialog import roll_initiative
@@ -1582,7 +1581,15 @@ class CombatTab(BaseTab):
         self.fx_defenses.setToolTip(rich_tip("Résistances et immunités", "\n".join(
             "{} — {}".format(x, src) for field in ("resistances", "immunites") for x, src in d[field])) if parts else "")
         n = eng.exhaustion_level()
-        self.exh_label.setText("{}  {}".format("◆" * n + "◇" * (6 - n), eng.exhaustion_text()))
+        self.exh_label.setText("Niveau {}".format(n) if n else "aucun")   # v52 : l'effet est dans l'infobulle
+        tip = rich_tip("Épuisement — niveau {} / 6".format(n), eng.exhaustion_text() if n else
+                       "Aucun niveau d'épuisement.")
+        for w in (self.exh_label, self.exh_minus, self.exh_plus):
+            w.setToolTip(tip)
+        t = theme.current()
+        for b in (self.exh_minus, self.exh_plus):         # suit le thème choisi
+            b.setStyleSheet("QPushButton {{ padding: 0px; font-weight: bold; font-size: 17px; color: {}; }}"
+                            "QPushButton:disabled {{ color: {}; }}".format(t.accent_text, t.locked))
         self.exh_minus.setEnabled(n > 0)
         self.exh_plus.setEnabled(n < 6)
         lines = eng.effect_summary_lines()
@@ -2262,41 +2269,6 @@ class CombatTab(BaseTab):
         self.style_layout.setColumnStretch(1, 1)
         self.style_layout.setColumnStretch(2, 1)
 
-    NO_OPTION = "— à choisir —"
-
-    def _refresh_class_options(self) -> None:
-        """Runes (Chevalier runique) et options de Tir arcanique : une liste par choix, description en infobulle ;
-        chaque option déjà prise ailleurs est retirée des autres listes."""
-        sets = [s for s in self.engine.option_sets() if not s["key"].startswith("don:")]   # dons : onglet Progression
-        self.options_box.setVisible(bool(sets))
-        n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
-        self.options_box.setTitle("Options de classe" + ("  — ○ {} à choisir".format(n_missing) if n_missing
-                                                               else ""))
-        key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
-            (theme.current().key,)
-        if key == self._options_key:
-            return
-        self._options_key = key
-        clear_layout(self.options_layout)
-        row = 0
-        for s in sets:
-            self.options_layout.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]),
-                                                     "head"), row, 0, 1, 2)
-            row += 1
-            for i in range(s["total"]):
-                current = s["chosen"][i] if i < len(s["chosen"]) else ""
-                taken = {c for j, c in enumerate(s["chosen"]) if j != i}
-                names = [n for n in s["options"] if n not in taken]
-                combo = QComboBox()
-                fill_combo(combo, [self.NO_OPTION] + names, current or self.NO_OPTION,
-                           {n: rich_tip(n, s["options"][n]) for n in names})
-                combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self._on_class_option(k, idx, c))
-                desc = make_label((s["options"].get(current, "") or "").split("\n")[0], "muted", wrap=True)
-                self.options_layout.addWidget(combo, row, 0)
-                self.options_layout.addWidget(desc, row, 1)
-                row += 1
-        self.options_layout.setColumnStretch(1, 1)
-
     def _on_power(self, checked: bool) -> None:
         self.ch.attaque_puissante = bool(checked)
         self.changed()
@@ -2314,11 +2286,6 @@ class CombatTab(BaseTab):
         self.remember_text.setVisible(self._remember_open)
         self.remember_text.setText("".join("<b>{}</b><br/>{}<br/>".format(
             html.escape(m), "<br/>".join("• " + html.escape(x) for x in lines)) for m, lines in groups.items()))
-
-    def _on_class_option(self, key: str, index: int, combo) -> None:
-        text = combo.currentText()
-        self.engine.set_class_option(key, index, "" if text == self.NO_OPTION else text)
-        self.changed()
 
     NO_MANEUVER = "— choisir une manœuvre —"
 
@@ -2602,7 +2569,6 @@ class CombatTab(BaseTab):
         self._refresh_styles()
         self._refresh_masteries()
         self._refresh_slot_strip()
-        self._refresh_class_options()
         self._refresh_remember()                         # v52 : À ne pas oublier
         self._refresh_resources()
         self._refresh_saves()

@@ -79,6 +79,12 @@ def resolve_spell(win, engine, name: str, level: int, class_name: str = "",
     if not res:
         return ""
     mode = res["mode"]
+    if mode == "reserve":                                 # v52 : Sommeil, Couleurs dansantes (2014)
+        r = roll_damage_dialog(win, res["reserve"])
+        if r is not None:
+            win.statusBar().showMessage("{} : {} PV de créatures affectés, par PV actuels croissants.".format(
+                res["nom"], r.total), 12000)
+        return mode
     if mode == "attaque" and res["attaque"] is not None:
         if attack_flow is None:
             return mode

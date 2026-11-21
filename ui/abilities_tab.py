@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QFrame, QGridLayout, QGroupBo
 from core import rules as R
 from core.rules import ABILITIES, norm
 from . import theme
-from .dice_dialog import d20_button, roll_dice
+from .dice_dialog import d20_button, retain_when_hidden, roll_dice
 from .common import CENTER, BaseTab, blocked, calc_tip, center, fill_combo, hline, make_label, rich_tip
 
 METHODS = {"Achat de points (27 points)": "achat", "Tirage de dés (4d6, on garde les 3 plus hauts)": "des",
@@ -63,6 +63,9 @@ class AbilitiesTab(BaseTab):
             w["d20"] = d20_button("Test de " + ab)
             w["d20"].clicked.connect(lambda _=False, a=ab: roll_dice(self.win, self.engine.ability_check_spec(a)))
             top_row.addWidget(w["d20"])
+            if getattr(self.win, "no_dice", False) is True:   # v52 : assistant de création — pas de jet de dés
+                retain_when_hidden(w["d20"], True)
+                w["d20"].setVisible(False)
             cl.addLayout(top_row)
             cl.addWidget(make_label(ab, "muted"))
             # v49 : badge de recommandation selon la classe / la sous-classe visée (infobulle : pourquoi)
