@@ -150,6 +150,31 @@ class LevelUpSkillsLanguagesFeatsTests(unittest.TestCase):
         self.assertIn("dons", {m["kind"] for m in eng.level_up_report(sim, "Guerrier")["dans_assistant"]})
 
 
+class LevelUpSummaryTests(unittest.TestCase):
+    def test_summary_lists_every_difference(self):
+        eng = sheet("Roublard", 5, "Voleur")
+        for n in ("Discrétion", "Acrobaties", "Perception", "Tromperie"):
+            eng.ch.competences[n] = {"maitrise": True, "expertise": n in ("Discrétion", "Acrobaties")}
+        eng.normalize()
+        sim = eng.simulate_level_up("Roublard")
+        eng.level_set_skill(sim, "Perception", "expertise", True)
+        changes = dict(eng.level_up_changes(sim, "Roublard"))
+        self.assertEqual(changes["Classe"], ["Roublard : niveau 5 → 6"])
+        self.assertIn("Expertise : Perception", changes["Compétences"])
+        self.assertIn("Aptitudes gagnées", changes)
+
+    def test_summary_spells_and_feat(self):
+        eng = sheet("Magicien", 3)
+        sim = eng.simulate_level_up("Magicien")
+        name = next(o["nom"] for o in eng.level_spell_options(sim, "Magicien") if o.get("niveau"))
+        self.assertTrue(eng.level_learn_spell(sim, "Magicien", name))
+        sim.ch.ameliorations[sim.asi_slots()[-1]["id"]] = {"mode": "plus2", "a1": "Intelligence"}
+        sim.normalize()
+        changes = dict(eng.level_up_changes(sim, "Magicien"))
+        self.assertIn("{} (Magicien)".format(name), changes["Sorts appris"])
+        self.assertEqual(changes["Amélioration de caractéristiques ou don"], ["+2 en Intelligence"])
+
+
 class RealQtDiceTests(unittest.TestCase):
     """Fenêtres de dés construites avec le VRAI PyQt6 (le faux Qt des autres tests ne voit pas ces erreurs)."""
 

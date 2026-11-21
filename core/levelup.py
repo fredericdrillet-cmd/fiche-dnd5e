@@ -249,6 +249,98 @@ class LevelUpMixin:
         keep = {"Niveau global", "Points de vie maximum", "Bonus de maîtrise"}
         return [r for r in rows if r[0] in keep or r[1] != r[2]]
 
+    def level_up_changes(self, sim, class_name: str) -> list[tuple[str, list[str]]]:
+        """v52 : tout ce qui change entre la fiche actuelle et le niveau débloqué, par rubrique :
+        [(rubrique, [lignes])] — classe et sous-classe, aptitudes, amélioration ou don, style, choix de classe et
+        de dons, sorts appris / oubliés / préparés, compétences et expertises, langues, outils, maîtrises d'armes
+        et d'armures, résistances et immunités. Rubriques vides omises."""
+        out: list[tuple[str, list[str]]] = []
+
+        def add(title: str, lines: list[str]) -> None:
+            lines = [x for x in lines if x]
+            if lines:
+                out.append((title, lines))
+
+        a_ch, b_ch = self.ch, sim.ch
+        entry, old = b_ch.find_class(class_name) or {}, a_ch.find_class(class_name) or {}
+        lines = ["{} : niveau {} → {}".format(class_name, old.get("niveau", 0) or "—", entry.get("niveau", 0))
+                 if old else "Nouvelle classe (multiclassage) : {} niveau {}".format(class_name, entry.get("niveau", 1))]
+        if entry.get("sous_classe") and entry.get("sous_classe") != old.get("sous_classe"):
+            lines.append("Sous-classe : " + entry["sous_classe"])
+        if b_ch.pacte and b_ch.pacte != a_ch.pacte:
+            lines.append("Faveur de pacte : " + b_ch.pacte)
+        add("Classe", lines)
+        lvl = entry.get("niveau", 0)
+        add("Aptitudes gagnées", ["{}{}".format(f["nom"], " ({})".format(f["source"]) if f.get("sous_classe") else "")
+                                  for f in sim.features(entry) if f["niveau"] == lvl and f["debloque"]])
+        lines = []
+        for sid, c in b_ch.ameliorations.items():
+            if a_ch.ameliorations.get(sid) == c:
+                continue
+            mode = c.get("mode")
+            if mode == "plus2" and c.get("a1"):
+                lines.append("+2 en {}".format(c["a1"]))
+            elif mode == "plus1x2" and c.get("a1"):
+                lines.append("+1 en {}{}".format(c["a1"], " et +1 en {}".format(c["a2"]) if c.get("a2") else ""))
+            elif mode == "don" and c.get("don"):
+                lines.append("Don : {}{}".format(c["don"], " (+1 en {})".format(c["don_carac"])
+                                                  if c.get("don_carac") else ""))
+        add("Amélioration de caractéristiques ou don", lines)
+        add("Style de combat", ["{}".format(v) for k, v in b_ch.styles_combat.items() if a_ch.styles_combat.get(k) != v])
+        a_sets = {s["key"]: s for s in self.option_sets()}
+        lines, feat_lines = [], []
+        for s in sim.option_sets():
+            new = [c for c in s["chosen"] if c not in (a_sets.get(s["key"]) or {}).get("chosen", [])]
+            gone = [c for c in (a_sets.get(s["key"]) or {}).get("chosen", []) if c not in s["chosen"]]
+            if new or gone:
+                txt = "{} : {}".format(s["label"], ", ".join(new)) + (" (remplace {})".format(", ".join(gone))
+                                                                       if gone else "")
+                (feat_lines if s["key"].startswith("don:") else lines).append(txt)
+        add("Choix de classe", lines)
+        add("Choix des dons", feat_lines)
+        add("Manifestations occultes", ["+ " + m for m in b_ch.manifestations if m not in a_ch.manifestations] +
+            ["− " + m for m in a_ch.manifestations if m not in b_ch.manifestations])
+
+        def spells(ch) -> dict:
+            return {k: {s["nom"]: bool(s.get("prepare")) for s in v if s.get("nom")} for k, v in ch.sorts.items()}
+        sa, sb = spells(a_ch), spells(b_ch)
+        learned, forgot, prepared = [], [], []
+
+        def tag(n: str, k: str) -> str:
+            sp = sim.db.find_spell(n) or {}
+            return "{} ({}{})".format(n, "sort mineur, " if sp.get("niveau") == 0 else "", k)
+        for k in sorted(set(sa) | set(sb)):
+            a, b = sa.get(k, {}), sb.get(k, {})
+            learned += [tag(n, k) for n in b if n not in a]
+            forgot += ["{} ({})".format(n, k) for n in a if n not in b]
+            prepared += ["{} ({})".format(n, k) for n in b if b[n] and n in a and not a[n]]
+        ca = {c["nom"] for c in a_ch.sorts_mineurs if c.get("nom")}
+        learned = ["{} (sort mineur)".format(c["nom"]) for c in b_ch.sorts_mineurs if c.get("nom") and
+                   c["nom"] not in ca] + learned
+        add("Sorts appris", learned)
+        add("Sorts oubliés (échange)", forgot)
+        add("Sorts préparés", prepared)
+        add("Emplacements de sorts", [r[1] + " → " + r[2] for r in self.level_up_recap(sim)
+                                      if r[0] == "Emplacements de sorts"])
+        comp_a, comp_b = a_ch.competences, b_ch.competences
+        add("Compétences", ["Maîtrise : " + n for n, s in comp_b.items()
+                            if s.get("maitrise") and not (comp_a.get(n) or {}).get("maitrise")] +
+            ["Expertise : " + n for n, s in comp_b.items()
+             if s.get("expertise") and not (comp_a.get(n) or {}).get("expertise")])
+        add("Langues", [n for n in b_ch.langues_liste if n not in a_ch.langues_liste])
+        add("Outils", [n for n in b_ch.outils if n not in a_ch.outils])
+        pa, pb = self.proficiency_summary(), sim.proficiency_summary()
+        add("Maîtrises d'armes et d'armures", ["Armure : " + x for x in pb["armures"] if x not in pa["armures"]] +
+            ["Arme : " + x for x in pb["armes"] if x not in pa["armes"]])
+        da, db_ = self.defenses(), sim.defenses()
+        add("Résistances et immunités", ["{} : {}".format(label, x) for field, label in
+                                         (("resistances", "Résistance"), ("immunites", "Immunité"))
+                                         for x in dict.fromkeys(x for x, _ in db_[field])
+                                         if x not in {y for y, _ in da[field]}])
+        sava, savb = self.ch.sauvegardes, sim.ch.sauvegardes
+        add("Jets de sauvegarde", ["Maîtrise : " + ab for ab in ABILITIES if savb.get(ab) and not sava.get(ab)])
+        return out
+
     def pact_options(self) -> list[str]:
         return list(PACTS) if self.sheet_edition != 2024 else []      # 2024 : le pacte est une manifestation
 

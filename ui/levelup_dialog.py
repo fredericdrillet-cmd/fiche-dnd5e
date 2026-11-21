@@ -1159,9 +1159,14 @@ class LevelUpDialog(QDialog):
         later = self.report.get("ensuite", [])
         note = ("<p style='color:{}'>○ Ensuite : {}</p>".format(t.ornament, html.escape("; ".join(
             m["message"] for m in later))) if later else "")
-        self.recap_view.setHtml("<h3 style='color:{}'>Avant / après</h3><table cellpadding='4' width='100%'>"
+        # v52 : résumé de tout ce qui change (choix, sorts, expertises, langues, maîtrises, défenses…)
+        changes = "".join("<p><b style='color:{}'>{}</b><br/>{}</p>".format(
+            t.accent_text, html.escape(title), "<br/>".join("✦ " + html.escape(x) for x in lines))
+            for title, lines in self.engine.level_up_changes(self.sim, self.cls)) if self.sim is not None else ""
+        self.recap_view.setHtml("<h3 style='color:{}'>Ce qui change</h3>{}"
+                                "<h3 style='color:{}'>Valeurs avant / après</h3><table cellpadding='4' width='100%'>"
                                 "<tr><th align='left'>Valeur</th><th>Avant</th><th></th><th>Après</th></tr>{}</table>{}"
-                                .format(t.accent_text, rows, note))
+                                .format(t.accent_text, changes, t.accent_text, rows, note))
 
     # ------------------------------------------------------------------ confirmation
     def _on_confirm(self) -> None:
