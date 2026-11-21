@@ -185,6 +185,48 @@ class FormTilesTests(unittest.TestCase):
         self.assertIn("vos PV", tab.hp_big.text())
 
 
+class FormEndTests(unittest.TestCase):
+    def test_beast_drops_to_zero(self):
+        eng = sheet("Druide", 4)
+        eng.ch.pv_actuels = 20
+        eng.assume_form("Loup")
+        eng.take_damage(eng.ch.forme_pv + 4)
+        self.assertEqual(eng.ch.forme_active, "")
+        self.assertEqual(eng.ch.pv_actuels, 16)
+        self.assertIn("forme normale", eng.form_ended_message)
+        self.assertIn("16 / ", eng.form_ended_message)
+
+    def test_polymorph_overflow_knocks_out(self):
+        eng = sheet("Magicien", 7)
+        eng.ch.sorts = {"Magicien": [{"nom": "Métamorphose", "prepare": True}]}
+        eng.ch.pv_actuels = 10
+        eng.cast_polymorph("Loup", True)
+        eng.take_damage(eng.ch.forme_pv + 12)
+        self.assertEqual((eng.ch.forme_active, eng.ch.pv_actuels, eng.ch.concentration), ("", 0, ""))
+        self.assertIn("inconscient", eng.ch.effets_actifs)
+        self.assertTrue(eng.dropped_to_zero)
+        self.assertIn("Métamorphose prend fin", eng.form_ended_message)
+
+    def test_ui_message_then_zero(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui import combat_tab as CT
+        win = MainWindow(DB)
+        eng = win.engine
+        eng.ch.classes = [{"nom": "Druide", "niveau": 4, "sous_classe": "", "pv_jets": []}]
+        eng.normalize()
+        eng.ch.pv_actuels = 3
+        eng.assume_form("Loup")
+        win.changed()
+        with mock.patch.object(CT, "ask_yes_no", return_value=False) as ask:
+            win.combat_tab.apply_damage(eng.ch.forme_pv + 5)
+        titles = [c[0][1] for c in ask.call_args_list]
+        self.assertEqual(titles[0], "Fin de la transformation")
+        self.assertIn("0 PV — inconscient", titles)
+        self.assertFalse(win.combat_tab.form_box.isVisibleTo(win.combat_tab) and eng.ch.forme_active)
+
+
 class InventoryTests(unittest.TestCase):
     def test_weapon_settings_and_actions_tiles(self):
         import qt_stub

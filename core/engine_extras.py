@@ -1368,14 +1368,19 @@ class ExtrasMixin:
             return msg
         overflow = -self.ch.forme_pv
         name = self.ch.forme_active
-        label = "la Métamorphose prend fin" if self.ch.forme_type == "metamorphose" else "forme normale reprise"
-        self.end_form(overflow)
-        msg = "{} tombe à 0 PV : {}, {} dégât(s) excédentaire(s) reportés sur vos PV ({}).".format(
-            name, label, overflow, self.ch.pv_actuels)
-        if self.ch.pv_actuels <= 0:
-            self.add_effect("inconscient")
-            msg += " Vous tombez inconscient (jets contre la mort)."
+        poly = self.ch.forme_type == "metamorphose"
+        self.end_form()                                   # statistiques du personnage restaurées
+        msg = "{} tombe à 0 PV : {}.".format(name, "la Métamorphose prend fin" if poly else
+                                             "vous reprenez votre forme normale")
+        if overflow > 0:                                  # v52 : excédent = dégâts normaux (PV temp., concentration,
+            msg += " Les {} dégâts restants vous atteignent : {} Il vous reste {} / {} PV.".format(   # 0 PV, mort
+                overflow, self.take_damage(overflow), self.ch.pv_actuels, self.hp_max())  # instantanée)
+        else:
+            msg += " Vos PV sont intacts ({} / {}).".format(self.ch.pv_actuels, self.hp_max())
+        self.form_ended_message = msg                     # l'interface affiche une fenêtre
         return msg
+
+    form_ended_message = ""                              # v52 : fin de transformation à 0 PV (fenêtre)
 
     def heal_form(self, amount: int) -> None:
         if self.ch.forme_active:

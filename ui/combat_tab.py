@@ -710,8 +710,18 @@ class CombatTab(BaseTab):
         self.changed()
         return True
 
+    def maybe_form_ended(self) -> None:
+        """v52 : la bête tombe à 0 PV — fenêtre « fin de la transformation » (puis 0 PV éventuel)."""
+        eng = self.engine
+        msg = getattr(eng, "form_ended_message", "")
+        if not msg:
+            return
+        eng.form_ended_message = ""
+        ask_yes_no(self.win, "Fin de la transformation", msg, yes="Compris", no="Fermer", default_no=False)
+
     def maybe_zero_hp(self) -> None:
         """v52 : à 0 PV, message et jet contre la mort proposé."""
+        self.maybe_form_ended()
         eng = self.engine
         if not getattr(eng, "dropped_to_zero", False):
             return
@@ -1643,6 +1653,8 @@ class CombatTab(BaseTab):
         self._message(self.engine.damage_form(self.form_dmg.value()))
         self.form_dmg.setValue(0)
         self.changed()
+        self.maybe_concentration_save()
+        self.maybe_zero_hp()                              # v52 : fin de transformation, puis 0 PV éventuel
 
     def _on_moon_heal(self):
         text = self.moon_lvl.currentText()
