@@ -65,7 +65,7 @@ class ModifierTests(unittest.TestCase):
         eng = make([("Guerrier", 3, "")], Force=14)
         eng.add_magic_item("Ceinturon de force de géant du givre")
         self.assertEqual(eng.score("Force"), 14)                          # harmonisation requise
-        eng.ch.objets_magiques[-1]["harmonise"] = True
+        eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)   # v53 : équipé = harmonisé
         eng.normalize()
         self.assertEqual(eng.score("Force"), 23)
         eng.add_magic_item("Bottes elfiques")

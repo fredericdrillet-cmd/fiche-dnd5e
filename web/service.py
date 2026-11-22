@@ -690,11 +690,19 @@ class Controller:
         self.eng.remove_magic_item(_int(idx))
 
     def op_magic_equip(self, idx: int, value: bool) -> None:
+        blocked = self.eng.attune_blocked(_int(idx)) if value else ""
+        if blocked:                                      # v53 : équipé = harmonisé (limite d'emplacements)
+            raise ActionError(blocked)
         self.eng.set_equipped(_int(idx), bool(value))
 
     def op_magic_attune(self, idx: int, value: bool) -> None:
         if not self.eng.set_attuned(_int(idx), bool(value)):
             raise ActionError("Harmonisation impossible (limite atteinte, objet sans lien ou prérequis non rempli).")
+
+
+def _rarity_key(text: str) -> str:
+    from ui.theme import rarity_key                      # module pur Python (aucune dépendance Qt)
+    return rarity_key(text)
 
 
 OPS: dict[str, Callable] = {name[3:]: fn for name, fn in vars(Controller).items() if name.startswith("op_")}
@@ -969,6 +977,7 @@ def build_sheet(eng: Engine) -> dict:
             magic.append({"index": i, "nom": e["nom"], "equipe": e.get("equipe", True),
                           "harmonise": e.get("harmonise", False), "lien": bool(item.get("lien")),
                           "rarete": item.get("rarete", ""), "type": item.get("type", ""),
+                          "rarete_cle": _rarity_key(item.get("rarete", "")).replace(" ", "-"),
                           "description": item.get("description", ""), "prerequis": state, "condition": cond})
         effects = []
         for key in eng.active_effect_keys():

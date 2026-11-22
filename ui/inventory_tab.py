@@ -40,7 +40,7 @@ class InventoryTab(BaseTab):
         page.setMinimumSize(1000, 620)
         page_scroll.setWidget(page)
         self.sub.addTab(page_scroll, "🎒 Équipement")
-        self.sub.addTab(self.magic_items, "✦ Équipement, objets magiques")
+        self.sub.addTab(self.magic_items, "✦ Objets magiques (catalogue)")   # v53 : chercheur ; l'objet va au sac
 
         # =============================== colonne gauche : inventaire
         left = QVBoxLayout()
@@ -73,9 +73,19 @@ class InventoryTab(BaseTab):
         self.catalog_dialog.setWindowTitle("🛒 Catalogue d'équipement")
         QVBoxLayout(self.catalog_dialog).addWidget(add)
         self.catalog_dialog.resize(640, 260)
-        self.catalog_btn = QPushButton("🛒 Catalogue… (ajouter un objet)")
+        self.catalog_btn = QPushButton("🛒 Catalogue…")
+        self.catalog_btn.setToolTip(rich_tip("Catalogue d'équipement", "Ajouter un objet courant, une arme, une armure, "
+                                             "un outil ou un paquetage au sac."))
         self.catalog_btn.clicked.connect(self.catalog_dialog.show)
-        left.addWidget(self.catalog_btn)
+        self.magic_btn = QPushButton("✦ Objets magiques…")
+        self.magic_btn.setToolTip(rich_tip("Objets magiques", "Ouvre le sous-onglet « Objets magiques » : cherchez "
+                                           "un objet officiel ou créez-en un sur mesure ; il arrive ici, dans le sac."))
+        self.magic_btn.clicked.connect(lambda: self.sub.setCurrentIndex(1))
+        cat_row = QHBoxLayout()
+        cat_row.addWidget(self.catalog_btn)
+        cat_row.addWidget(self.magic_btn)
+        no_truncate(self.catalog_btn, self.magic_btn)
+        left.addLayout(cat_row)
 
         inv = QGroupBox("Équipement porté")
         il = QVBoxLayout(inv)
@@ -351,11 +361,19 @@ class InventoryTab(BaseTab):
             return False
         entry = self.ch.objets_magiques[m]
         on = not entry.get("equipe")
+        blocked = self.engine.attune_blocked(m) if on else ""
+        if blocked:                                      # v53 : plus d'emplacement d'harmonisation
+            self.win.statusBar().showMessage(blocked, 8000)
+            return False
         if entry.get("base") and on:
             msg = self.engine.equip_magic_gear(m)
         else:
             self.engine.set_equipped(m, on)
             msg = "{} : {}.".format(self.engine.magic_display_name(entry), "équipé" if on else "rangé")
+        if self.engine.needs_attunement(entry):          # v53 : équipé = harmonisé
+            msg += " Harmonisation : {} / {}{}.".format(self.engine.attuned_count(),
+                                                         self.engine.attunement_limit(),
+                                                         " (◉ harmonisé)" if on else " (emplacement libéré)")
         self.win.statusBar().showMessage(msg, 6000)
         self.changed()
         return True
@@ -535,14 +553,15 @@ class InventoryTab(BaseTab):
                 label += " ({} {})".format(left, (rules["elements"] or ("", "éléments"))[1])
             state = ("équipé" + (" — {}".format(entry.get("emplacement", "").replace("_", " "))
                                  if entry.get("emplacement") else "")) if entry.get("equipe") else "non équipé"
-            if item.get("lien"):
-                state += ", harmonisé" if entry.get("harmonise") else ", à harmoniser"
+            if item.get("lien"):                          # v53 : équipé = harmonisé
+                state += ", ◉ harmonisé" if entry.get("harmonise") else ", harmonisation à l'équipement"
             warn = eng.item_proficiency_warning(label) if entry.get("equipe") else ""
             tip = rich_tip(("⚠ " if warn else "✨ ") + label, "{}{}\n{} — {} ({})".format(
                 warn + "\n" if warn else "", item.get("description", "")[:500], item.get("type", "Objet magique"),
                 item.get("rarete", ""), state))
             name_cell = cell(("⚠ " if warn else "") + "✨ " + label + (" — " + gone if gone else ""), "left", tip,
-                             t.warn if warn else (t.muted if gone else t.accent_text), bold=not gone)
+                             t.warn if warn else (t.muted if gone else theme.rarity_color(item.get("rarete", ""), t, theme.table_bgs(t))),
+                             bold=not gone)
             if gone:
                 f = name_cell.font()
                 f.setStrikeOut(True)

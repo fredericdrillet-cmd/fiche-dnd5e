@@ -18,7 +18,7 @@ from .common import blocked
 
 MIME_ITEM = "application/x-dnd5e-objet"
 MIME_SLOT = "application/x-dnd5e-case"
-RARITY = {"commun": "#A8A8A8", "peu commun": "#4CB050", "rare": "#3B82E0", "tres rare": "#A057D6",
+RARITY = {"commun": "#A8A8A8", "peu commun": "#4CB050", "rare": "#3B82E0", "tres rare": "#A057D6",  # bordures
           "legendaire": "#F0A030", "artefact": "#E2533F"}
 TILE = 60
 KEY_ROLE = 0x0100 + 77                                   # Qt.UserRole + 77 : nom de l'objet (clé)
@@ -46,13 +46,14 @@ def item_body(name: str, category: str = "") -> str:
 
 
 def tile_pixmap(name: str, category: str, rarity: str, qty: int, equipped: bool, magic: bool, dim: bool = False):
-    pix = IC._render(item_body(name, category), "objet" if magic else "commune", TILE, theme.current().key, dim)
+    cat = theme.rarity_category(rarity) if magic else "commune"      # v53 : fond de la couleur de la rareté
+    pix = IC._render(item_body(name, category), cat, TILE, theme.current().key, dim)
     if not IC.HAS_SVG:
         return pix
     pix = pix.copy()
     p = QPainter(pix)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
-    color = RARITY.get(norm(rarity))
+    color = RARITY.get(theme.rarity_key(rarity))
     if color:                                            # bordure de rareté, épaisse
         path = QPainterPath()
         path.addRoundedRect(2, 2, TILE - 4, TILE - 4, TILE * 0.14, TILE * 0.14)
@@ -87,7 +88,7 @@ class InventoryGrid(QListWidget):
         super().__init__()
         self.tab = tab
         self._key = None
-        IC.card_grid(self, TILE, (118, 110))
+        IC.card_grid(self, TILE, (124, 128))           # nom sur trois lignes
         try:
             self.setMinimumHeight(260)
             self.setDragEnabled(True)
@@ -118,6 +119,11 @@ class InventoryGrid(QListWidget):
                     it.setIcon(QIcon(tile_pixmap(r["nom"], r["categorie"], r["rarete"], r["qte"], r["equipe"],
                                                  r["magique"], r.get("epuise", False))))
                 it.setToolTip(r["tip"])
+                if r.get("magique") and r.get("rarete"):        # v53 : nom de la couleur de la rareté
+                    try:
+                        it.setForeground(QColor(theme.rarity_color(r["rarete"], bg=theme.table_bgs())))
+                    except (AttributeError, TypeError):      # faux Qt des tests
+                        pass
                 self.addItem(it)
             if 0 <= cur < self.count():
                 self.setCurrentRow(cur)

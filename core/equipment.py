@@ -94,9 +94,12 @@ class EquipmentMixin:
         if not 0 <= idx < len(self.ch.objets_magiques):
             return ""
         entry = self.ch.objets_magiques[idx]
+        if self.attune_blocked(idx, slot):               # v53 : plus d'emplacement d'harmonisation
+            return ""
         kind = self.magic_slot_kind(entry["nom"])
         options = slots_for(kind)
         entry["equipe"] = True
+        self._attune_now(entry)
         if not options:
             return ""
         occupied = {e.get("emplacement"): e for e in self.ch.objets_magiques if e is not entry and e.get("equipe")}
@@ -105,7 +108,7 @@ class EquipmentMixin:
         replaced = ""
         prev = occupied.get(slot)
         if prev is not None:
-            prev["equipe"], prev["emplacement"] = False, ""
+            prev["equipe"], prev["emplacement"], prev["harmonise"] = False, "", False
             replaced = prev["nom"]
         entry["emplacement"] = slot
         return replaced
@@ -204,6 +207,9 @@ class EquipmentMixin:
         if choice.get("kind") == "magique_arme":         # v45 : arme / armure magique liée à son objet de base
             return self.equip_magic_gear(choice["index"], slot)
         if choice.get("kind") == "magique":
+            blocked = self.attune_blocked(choice["index"], slot)
+            if blocked:
+                return blocked
             replaced = self.equip_magic_item(choice["index"], slot)
             return "{} : {}{}.".format(SLOT_LABELS.get(slot, slot), choice["nom"],
                                        " (remplace {})".format(replaced) if replaced else "")
@@ -282,12 +288,18 @@ class EquipmentMixin:
         for key, uid in bound.items():                    # v45 : arme / armure magique dans la case
             if uid and key in out:
                 out[key]["magique"] = True
+                entry = self.gear_entry(uid)
+                item = self.magic_item(entry["nom"]) if entry else None
+                if item:                                  # v53 : rareté et harmonisation de l'objet de la case
+                    out[key].update(rarete=item.get("rarete", ""), lien=bool(item.get("lien")),
+                                    harmonise=bool(entry.get("harmonise")))
         for i, e in enumerate(ch.objets_magiques):
             slot = e.get("emplacement", "")
             if e.get("equipe") and slot in MAGIC_SLOTS:
                 item = self.magic_item(e["nom"]) or {}
                 out[slot] = {"nom": e["nom"], "source": "objet", "index": i, "harmonise": bool(e.get("harmonise")),
-                             "lien": bool(item.get("lien")), "detail": item.get("rarete", "")}
+                             "lien": bool(item.get("lien")), "detail": item.get("rarete", ""),
+                             "rarete": item.get("rarete", "")}
         return out
 
     def slot_candidates(self, slot: str) -> list[tuple[int, str]]:

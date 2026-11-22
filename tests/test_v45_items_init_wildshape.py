@@ -253,7 +253,7 @@ class MagicPowerTests(unittest.TestCase):
     def test_wand_charges(self):
         eng = make("Magicien", 5)
         eng.add_magic_item("Baguette de boules de feu")
-        eng.ch.objets_magiques[-1]["harmonise"] = True
+        eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)   # v53 : équipé = harmonisé
         eng.normalize()
         tile = next(t for t in eng.turn_actions() if t["id"].startswith("objet:") and "Boule de feu" in t["nom"])
         res = eng.use_turn_action(tile["id"])
@@ -267,7 +267,7 @@ class MagicPowerTests(unittest.TestCase):
     def test_staff_spell_costs(self):
         eng = make("Magicien", 9)
         eng.add_magic_item("Bâton de feu")
-        eng.ch.objets_magiques[-1]["harmonise"] = True
+        eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)   # v53 : équipé = harmonisé
         eng.normalize()
         costs = {p["sort"]: p["cout"] for p in eng.magic_item_powers()}
         self.assertEqual(costs.get("Boule de feu"), 3)

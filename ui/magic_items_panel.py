@@ -1,25 +1,23 @@
 """
-Sous-onglet « Équipement & objets magiques » de l'Inventaire.
+Sous-onglet « Objets magiques » de l'Inventaire (v53 : un chercheur).
 
-    - catalogue : objets chargés depuis data/objets_magiques.json (filtres type / rareté / harmonisation, recherche) ;
-    - équipement porté : objets ajoutés, avec case « équipé », badge interactif d'harmonisation (3 objets maximum,
-      davantage avec les aptitudes de l'Artificier), bonus et prérequis vérifiés ;
-    - les bonus automatiques (CA, jets de sauvegarde) ne s'appliquent que si l'objet est équipé ET harmonisé (si requis).
+    - catalogue : objets chargés depuis data/objets_magiques.json (filtres type / rareté / harmonisation, recherche),
+      ajout rapide et objet sur mesure, fiche de l'objet ;
+    - l'objet ajouté arrive dans l'inventaire (sous-onglet « Équipement ») : on l'y équipe ; un objet qui exige
+      l'harmonisation est harmonisé tant qu'il est équipé (jauge sous le mannequin).
 """
 from __future__ import annotations
 
 import html
 
-from PyQt6.QtCore import QStringListModel, Qt, QTimer
+from PyQt6.QtCore import QStringListModel, Qt
 from PyQt6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QCompleter, QDoubleSpinBox, QFrame, QGroupBox,
                              QGridLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSpinBox, QTableWidget, QTextBrowser,
                              QVBoxLayout, QWidget)
 
 from core.rules import norm
 from . import theme
-from .common import BaseTab, bulk_fill, cell, check_item, fill_combo, make_label, rich_tip, style_table
-from .game_widgets import use_consumable
-from .orbs import OrbBar
+from .common import BaseTab, bulk_fill, cell, fill_combo, make_label, rich_tip, style_table
 
 ALL_TYPES, ALL_RARITIES = "Tous les types", "Toutes les raretés"
 RARITY_ORDER = ["commun", "peu commun", "rare", "très rare", "légendaire", "artefact", "variable", "autre"]
@@ -361,7 +359,7 @@ class MagicItemsPanel(BaseTab):
         self.bonus_label = make_label("Bonus :")
         self.bonus_combo = QComboBox()
         self.bonus_combo.addItems(["+1", "+2", "+3"])
-        self.add_btn = QPushButton("Ajouter à l'équipement ▶")
+        self.add_btn = QPushButton("Ajouter à l'inventaire ▶")
         add.addWidget(self.bonus_label)
         add.addWidget(self.bonus_combo)
         add.addStretch(1)
@@ -369,40 +367,19 @@ class MagicItemsPanel(BaseTab):
         ll.addLayout(add)
         root.addWidget(lib, 3)
 
-        # ---------------- droite : équipement magique porté + harmonisation
+        # ---------------- droite : fiche de l'objet (v53 : l'objet ajouté va dans l'inventaire, sous-onglet
+        # « Équipement » — c'est là qu'on l'équipe ; l'harmonisation se lit sous le mannequin)
         right = QVBoxLayout()
-        worn = QGroupBox("Équipement, objets magiques")
-        wl = QVBoxLayout(worn)
-        att = QHBoxLayout()
-        att.addWidget(make_label("Harmonisation", "head"))
-        # affichage seul : sphères pleines = emplacements libres ; on (dés)harmonise avec les badges du tableau
-        self.attune_orbs = OrbBar("harmonisation", per_row=6, interactive=False)
-        self.attune_left = make_label("", "stat")
-        att.addWidget(self.attune_orbs)
-        att.addWidget(self.attune_left)
-        att.addStretch(1)
-        wl.addLayout(att)
-        self.table = self._table(["Équipé", "Objet", "Bonus", "Harmonisation", "Condition"], stretch=1)
-        wl.addWidget(self.table)
-        self.effects = make_label("", "head", wrap=True)
-        wl.addWidget(self.effects)
-        self.remove_btn = QPushButton("Retirer l'objet sélectionné")
-        self.remove_btn.setProperty("role", "danger")
-        self.use_btn = QPushButton("🧪 Boire / utiliser")
-        self.use_btn.setToolTip(rich_tip("Utiliser un consommable", "Potions, huiles, élixirs : l'effet officiel "
-                                         "s'applique immédiatement (soins, Force de géant, Hâte, purge du poison…) "
-                                         "et l'objet est consommé."))
-        row_btns = QHBoxLayout()
-        row_btns.addWidget(self.use_btn)
-        row_btns.addWidget(self.remove_btn)
-        wl.addLayout(row_btns)
-        right.addWidget(worn, 3)
+        self.where = make_label("Les objets ajoutés arrivent dans l'inventaire (sous-onglet « 🎒 Équipement ») : "
+                                "équipez-les depuis le sac ou le mannequin. Un objet qui exige l'harmonisation "
+                                "prend un emplacement d'harmonisation dès qu'il est équipé.", "muted", wrap=True)
+        right.addWidget(self.where)
         det = QGroupBox("Détail de l'objet")
         dl = QVBoxLayout(det)
         self.detail = QTextBrowser()
         dl.addWidget(self.detail)
-        right.addWidget(det, 2)
-        root.addLayout(right, 4)
+        right.addWidget(det, 1)
+        root.addLayout(right, 2)
 
         self.type_combo.activated.connect(lambda _=0: self._fill_library())
         self.rarity_combo.activated.connect(lambda _=0: self._fill_library())
@@ -411,15 +388,11 @@ class MagicItemsPanel(BaseTab):
         self.library.currentCellChanged.connect(lambda r, c, pr, pc: self._on_library_select(r))
         self.library.cellDoubleClicked.connect(lambda r, c: self._on_add())
         self.add_btn.clicked.connect(self._on_add)
-        self.remove_btn.clicked.connect(self._on_remove)
         self.quick.textEdited.connect(self._on_quick_text)
         self.quick.returnPressed.connect(self._on_quick_add)
         self.completer.activated.connect(self._on_quick_pick)
         self.quick_add.clicked.connect(self._on_quick_add)
         self.custom_btn.clicked.connect(lambda: self._on_custom(self.quick.text()))
-        self.use_btn.clicked.connect(lambda: use_consumable(self.win, "objet", self.table.currentRow()))
-        self.table.currentCellChanged.connect(lambda r, c, pr, pc: self._show_worn(r))
-        self.table.cellClicked.connect(self._on_table_click)
         self._lib_rows: list[str] = []
         self.bonus_label.setVisible(False)
         self.bonus_combo.setVisible(False)
@@ -449,9 +422,10 @@ class MagicItemsPanel(BaseTab):
             for r, i in enumerate(items):
                 tip = "{} — {}".format(i["nom"], i["description"][:300])   # le détail complet est dans le panneau
                 kind_txt = i["type"] + (" ({})".format(i["precision"]) if i["precision"] else "")
-                self.library.setItem(r, 0, cell(i["nom"], "left", tip))
+                rc = theme.rarity_color(i["rarete"], t, theme.table_bgs(t))             # v53 : couleur de la rareté
+                self.library.setItem(r, 0, cell(i["nom"], "left", tip, rc, bold=True))
                 self.library.setItem(r, 1, cell(kind_txt, "center", tip))
-                self.library.setItem(r, 2, cell(i["rarete"], "center", tip))
+                self.library.setItem(r, 2, cell(i["rarete"], "center", tip, rc))
                 self.library.setItem(r, 3, cell("✦" if i["lien"] else "—", "center",
                                                 i["condition"] or ("Harmonisation requise" if i["lien"] else
                                                                    "Aucune harmonisation"),
@@ -546,40 +520,6 @@ class MagicItemsPanel(BaseTab):
             self.quick.clear()
             self.changed()
 
-    # ------------------------------------------------------------------ équipement porté
-    def _on_remove(self):
-        self.engine.remove_magic_item(self.table.currentRow())
-        self.changed()
-
-    def _toggle_equipped(self, idx: int, checked: bool):
-        msg = ""
-        if 0 <= idx < len(self.ch.objets_magiques) and self.ch.objets_magiques[idx].get("base") and checked:
-            msg = self.engine.equip_magic_gear(idx)      # v45 : arme / armure -> case du mannequin
-        else:
-            self.engine.set_equipped(idx, checked)
-        if msg:
-            self.win.statusBar().showMessage(msg, 6000)
-        self.changed()
-
-    def _on_table_click(self, row: int, col: int):
-        """Toute la cellule « Équipé » est cliquable."""
-        if col == 0 and 0 <= row < len(self.ch.objets_magiques):
-            self._toggle_equipped(row, not self.ch.objets_magiques[row].get("equipe", True))
-
-    def _toggle_attune(self, idx: int, checked: bool):
-        self.engine.set_attuned(idx, checked)     # refusé si limite atteinte : le rafraîchissement rétablit l'état
-        QTimer.singleShot(0, self.changed)
-
-    def _show_worn(self, row: int):
-        from core import mechanics as M
-        self.use_btn.setEnabled(0 <= row < len(self.ch.objets_magiques)
-                                and M.is_consumable(self.ch.objets_magiques[row]["nom"]))
-        if 0 <= row < len(self.ch.objets_magiques):
-            entry = self.ch.objets_magiques[row]
-            item = self.engine.magic_item(entry["nom"])
-            if item:
-                self._show_item(item, entry)
-
     def _show_item(self, item: dict, entry: dict | None):
         state, _ = self.engine.attune_status(item["nom"])
         if item["lien"]:
@@ -594,7 +534,7 @@ class MagicItemsPanel(BaseTab):
             bonus.append("+{} à la CA".format(item["ca"]) + (" et aux jets de sauvegarde" if item["js"] else ""))
         self.detail.setHtml(
             "<h3 style='color:{}'>{}</h3><p><i>{}{} — {} — {}</i></p><p><b>Harmonisation :</b> {}</p>{}<p>{}</p>".format(
-                theme.current().accent_text, html.escape(self.engine.magic_display_name(entry) if entry else item["nom"]),
+                theme.rarity_color(item["rarete"]), html.escape(self.engine.magic_display_name(entry) if entry else item["nom"]),
                 html.escape(item["type"]), " ({})".format(html.escape(item["precision"])) if item["precision"] else "",
                 html.escape(item["rarete"]), html.escape(SOURCE_FR.get(item["source"], item["source"]) or "source inconnue")
                 + (" — {:g} kg".format(item["poids"]).replace(".", ",") if item.get("poids") else ""), attune,
@@ -603,7 +543,7 @@ class MagicItemsPanel(BaseTab):
 
     # ------------------------------------------------------------------ rafraîchissement
     def refresh(self):
-        eng, db, ch, t = self.engine, self.db, self.ch, theme.current()
+        db = self.db
         types = [ALL_TYPES] + sorted({i["type"] for i in db.magic_items.values() if i["type"]})
         rarities = [ALL_RARITIES] + [r for r in RARITY_ORDER
                                      if any(rarity_group(i["rarete"]) == r for i in db.magic_items.values())]
@@ -613,54 +553,4 @@ class MagicItemsPanel(BaseTab):
                    self.rarity_combo.currentText() if self.rarity_combo.currentText() in rarities else ALL_RARITIES)
         self._fill_library()
 
-        # jauge d'harmonisation : sphères pleines = emplacements libres, vides = occupés par un objet harmonisé
-        limit, used = eng.attunement_limit(), eng.attuned_count()
-        self.attune_orbs.set_state(limit, used)
-        self.attune_left.setText("{} / {}".format(used, limit))
-        self.attune_orbs.setToolTip(rich_tip("Harmonisation", "{} objet(s) harmonisé(s) sur {} possibles. Les aptitudes "
-                                             "de l'Artificier (niv. 10, 14, 18) augmentent ce maximum.".format(used, limit)))
 
-        full = used >= limit
-        self.table.setRowCount(len(ch.objets_magiques))
-        for r, entry in enumerate(ch.objets_magiques):
-            item = eng.magic_item(entry["nom"])
-            label = eng.magic_display_name(entry)
-            tip = rich_tip("✨ " + label, (item or {}).get("description", "Objet absent du catalogue actuel.")[:600])
-            self.table.setItem(r, 0, check_item(entry.get("equipe", True), True, "Objet porté / équipé — cliquez"))
-            self.table.setItem(r, 1, cell("✨ " + label, "left", tip, t.accent_text, bold=bool(entry.get("equipe"))))
-            tier = eng.magic_gear_tier(item, entry) if item and entry.get("base") else 0
-            kind = eng.magic_gear_kind(item) if item and entry.get("base") else ""
-            bonus = ("+{} {}".format(tier, "toucher / dégâts" if kind == "arme" else "CA") if tier else
-                     "+{}".format(entry["bonus"]) if entry.get("bonus") else
-                     "+{} CA".format(item["ca"]) if item and item["ca"] else "—")
-            self.table.setItem(r, 2, cell(bonus, "center", tip, t.accent_text if bonus != "—" else None,
-                                          bold=bonus != "—"))
-            if item and item["lien"]:
-                # badge interactif : « ◇ Harmoniser » / « ✦ Harmonisé » (bouton à bascule stylé par le thème)
-                badge = QPushButton("✦ Harmonisé" if entry.get("harmonise") else "◇ Non harmonisé")
-                badge.setProperty("role", "attune")
-                badge.setCheckable(True)
-                badge.setChecked(bool(entry.get("harmonise")))
-                badge.setEnabled(bool(entry.get("harmonise")) or not full)
-                badge.setToolTip("Clic : {} cet objet ({} / {} objets harmonisés).".format(
-                    "déharmoniser" if entry.get("harmonise") else "harmoniser", used, limit) if badge.isEnabled() else
-                    "Maximum d'objets harmonisés atteint ({} / {}) : déharmonisez d'abord un autre objet.".format(
-                        used, limit))
-                badge.clicked.connect(lambda checked, i=r: self._toggle_attune(i, checked))
-                self.table.setCellWidget(r, 3, badge)
-            else:
-                self.table.removeCellWidget(r, 3)
-                self.table.setItem(r, 3, cell("—", "center", "Aucune harmonisation requise"))
-            state, _ = eng.attune_status(entry["nom"])
-            color = t.warn if state == "ko" else (t.muted if state == "?" else t.good)
-            cond = item["condition"] if item else ""
-            self.table.setItem(r, 4, cell("{} {}".format(STATE_ICON[state], cond) if cond else "—", "left", tip,
-                                          color if cond else None))
-        b = eng.magic_item_bonuses()
-        if b["ca"] or b["js"]:
-            self.effects.setText("Bonus actifs des objets (équipés et harmonisés) : CA {:+d} — jets de sauvegarde {:+d}"
-                                 .format(b["ca"], b["js"]))
-        else:
-            self.effects.setText("Aucun bonus de CA ni de jet de sauvegarde actif : un objet doit être équipé "
-                                 "(et harmonisé s'il l'exige).")
-        self.remove_btn.setEnabled(bool(ch.objets_magiques))

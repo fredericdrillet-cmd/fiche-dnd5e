@@ -114,8 +114,13 @@ class UiTests(unittest.TestCase):
         win = window(eng)
         panel = win.inventory_tab.magic_items
         panel.refresh()
-        src = (ROOT / "ui" / "magic_items_panel.py").read_text(encoding="utf-8")
-        self.assertIn("◇ Non harmonisé", src)
+        # v53 : plus de badge dans le catalogue — l'harmonisation se lit sous le mannequin (équipé = harmonisé)
+        doll = win.inventory_tab.paperdoll
+        doll.refresh()
+        self.assertIn("Aucun objet harmonisé", doll.attuned.text())
+        eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)
+        doll.refresh()
+        self.assertIn("◉", doll.attuned.text())
 
     def test_traits_moved_to_rp_tab(self):
         win = window(make())

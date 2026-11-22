@@ -203,9 +203,13 @@ class MagicGearMixin:
         if not entry.get("base"):
             return ""
         slot = slot or self.gear_default_slot(entry)
+        blocked = self.attune_blocked(idx, slot)         # v53 : objet lié = un emplacement d'harmonisation
+        if blocked:
+            return blocked
         msg = self.equip_slot(slot, {"nom": entry["base"], "kind": "objet"})
         if msg.startswith("Main secondaire indisponible"):
             return msg
+        self._attune_now(entry)
         self._bind_slot(slot, entry)
         self.sync_magic_gear()
         return msg.replace(entry["base"], self.magic_display_name(entry), 1)

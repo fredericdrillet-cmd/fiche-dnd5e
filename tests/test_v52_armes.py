@@ -29,8 +29,7 @@ def equip(eng, name, base=None):
     base = base or eng.magic_base_options(name)[0]
     eng.add_magic_gear(name, base)
     i = len(eng.ch.objets_magiques) - 1
-    eng.ch.objets_magiques[i]["harmonise"] = True
-    eng.equip_magic_gear(i, "main_principale")
+    eng.equip_magic_gear(i, "main_principale")         # v53 : équipé = harmonisé
     return eng.ch.armes_cac[0]
 
 
@@ -71,8 +70,15 @@ class OfficialWeaponTests(unittest.TestCase):
         name = "Épée ardente"
         eng.add_magic_gear(name, eng.magic_base_options(name)[0])
         i = len(eng.ch.objets_magiques) - 1
-        eng.equip_magic_gear(i, "main_principale")
+        for n in ("Anneau de protection", "Cape de protection", "Bottes ailées"):   # 3 / 3 harmonisations
+            eng.add_magic_item(n)
+            eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)
+        self.assertIn("Harmonisation : 3 / 3", eng.equip_magic_gear(i, "main_principale"))   # v53 : refusé
         self.assertEqual(eng.item_damage_riders(eng.ch.armes_cac[0]), ([], []))
+        eng.set_equipped(len(eng.ch.objets_magiques) - 1, False)             # une place se libère
+        eng.equip_magic_gear(i, "main_principale")
+        self.assertTrue(eng.ch.objets_magiques[i]["harmonise"])
+        self.assertTrue(eng.item_damage_riders(eng.ch.armes_cac[0])[1])
 
 
 class TypedTotalTests(unittest.TestCase):
@@ -93,7 +99,7 @@ class ItemPassiveTests(unittest.TestCase):
     def attuned(self, eng, name):
         eng.add_magic_item(name)
         entry = eng.ch.objets_magiques[-1]
-        entry["harmonise"] = True
+        eng.set_attuned(len(eng.ch.objets_magiques) - 1, True)       # v53 : équipé = harmonisé
         return entry
 
     def test_official_passives(self):
@@ -138,8 +144,8 @@ class ItemPassiveTests(unittest.TestCase):
                                          resistances=["feu"], immunites_etats=["charme"], js_bonus=1,
                                          sort="Boule de feu", charges=3)
         entry = eng.ch.objets_magiques[-1]
-        self.assertEqual(eng.magic_item_powers(), [])                 # pas encore harmonisé
-        entry["harmonise"] = True
+        self.assertEqual(eng.magic_item_powers(), [])                 # dans le sac : pas encore harmonisé
+        self.assertTrue(eng.set_attuned(len(eng.ch.objets_magiques) - 1, True))   # v53 : équipé = harmonisé
         self.assertIn("feu", [r for r, _ in eng.defenses()["resistances"]])
         self.assertIn("charme", eng.condition_immunities())
         p = eng.magic_item_powers()[0]

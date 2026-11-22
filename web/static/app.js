@@ -581,9 +581,9 @@ TABS.sac = () => {
     <div class="grid2"><button class="btn small" data-act="item-add">＋ Objet</button><button class="btn small" data-act="pack-add">＋ Paquetage</button></div>`);
   const magic = card("Objets magiques", `<div class="${inv.harmonises > inv.harmonisation_max ? "banner warn" : "muted"}">Harmonisation : <b>${inv.harmonises} / ${inv.harmonisation_max}</b></div>
     ${inv.magiques.length ? `<div class="list">${inv.magiques.map((o) => `<div class="li" style="flex-wrap:wrap">
-      <button class="name tap" style="border:0;background:none;text-align:left;padding:4px 0" data-act="magic" data-i="${o.index}">${esc(o.nom)} <span class="badge acc">${esc(o.rarete)}</span>${o.prerequis === "ko" ? '<span class="badge warn">prérequis</span>' : ""}<small>${esc(o.type)}${o.lien ? " · harmonisation" : ""}</small></button>
+      <button class="name tap" style="border:0;background:none;text-align:left;padding:4px 0" data-act="magic" data-i="${o.index}">${esc(o.nom)} <span class="badge rar-${o.rarete_cle || "aucune"}">${esc(o.rarete)}</span>${o.prerequis === "ko" ? '<span class="badge warn">prérequis</span>' : ""}<small>${esc(o.type)}${o.lien ? " · harmonisation" : ""}</small></button>
       <label class="chip ${o.equipe ? "on" : ""}"><input type="checkbox" hidden data-change="magic_equip" data-i="${o.index}" ${o.equipe ? "checked" : ""}>Équipé</label>
-      ${o.lien ? `<label class="chip ${o.harmonise ? "on" : ""}"><input type="checkbox" hidden data-change="magic_attune" data-i="${o.index}" ${o.harmonise ? "checked" : ""}>Lié</label>` : ""}</div>`).join("")}</div>` : '<div class="empty">Aucun objet magique.</div>'}
+      ${o.lien ? `<span class="badge ${o.harmonise ? "acc" : ""}" title="Équipé = harmonisé">${o.harmonise ? "◉ harmonisé" : "✦ à l'équipement"}</span>` : ""}</div>`).join("")}</div>` : '<div class="empty">Aucun objet magique.</div>'}
     <div class="grid2"><button class="btn small" data-act="magic-add">＋ Objet magique</button><button class="btn small" data-act="custom-magic">✎ Sur mesure</button></div>`);
   const notes = fold("Notes d'inventaire", `<textarea data-field="inventaire" rows="5">${esc(ch.inventaire)}</textarea>`, !!ch.inventaire);
   return purse + load + items + magic + notes;

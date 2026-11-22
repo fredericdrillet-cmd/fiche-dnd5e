@@ -111,8 +111,8 @@ class MagicItemTests(unittest.TestCase):
 
     def test_attunement_limit_three_then_artificer(self):
         eng = make([("Guerrier", 1, "")])
-        for _ in range(4):
-            eng.add_magic_item("Anneau de protection")
+        for n in ("Anneau de protection", "Cape de protection", "Bottes ailées", "Chapeau de magicien"):
+            eng.add_magic_item(n)                        # v53 : harmoniser = équiper (une case par objet)
         self.assertEqual([eng.set_attuned(i, True) for i in range(4)], [True, True, True, False])
         self.assertEqual(eng.attuned_count(), 3)
         self.assertEqual(make([("Artificier", 10, "")]).attunement_limit(), 4)
@@ -157,12 +157,17 @@ class UiSmokeV5(unittest.TestCase):
         panel = win.inventory_tab.magic_items
         panel._lib_rows = ["Anneau de protection"]
         panel.library._st["row"] = 0
-        panel._on_add()
-        panel._toggle_attune(0, True)
+        panel._on_add()                                  # v53 : l'objet arrive dans le sac, non équipé
+        self.assertFalse(eng.ch.objets_magiques[0]["equipe"])
+        inv = win.inventory_tab
+        row = len(eng.ch.equipement)                     # première ligne magique du sac
+        inv.table.selectRow(row)
+        inv.table._st["row"] = row
+        self.assertTrue(inv._on_equip_magic())           # équipé = harmonisé
         self.assertTrue(eng.ch.objets_magiques[0]["harmonise"])
-        panel._toggle_equipped(0, False)
-        panel.table._st["row"] = 0
-        panel._on_remove()
+        inv._on_equip_magic()
+        self.assertFalse(eng.ch.objets_magiques[0]["harmonise"])
+        inv._on_del_item()
         self.assertEqual(eng.ch.objets_magiques, [])
 
 

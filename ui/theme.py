@@ -104,6 +104,59 @@ ICON_HUES = {"attaque": (2, 0.72), "magie": (218, 0.70), "soins": (128, 0.58), "
              "ecole_abjuration": (210, 0.72), "ecole_divination": (200, 0.30), "ecole_enchantement": (328, 0.62),
              "ecole_evocation": (24, 0.85), "ecole_illusion": (248, 0.55), "ecole_invocation": (52, 0.80),
              "ecole_necromancie": (92, 0.45), "ecole_transmutation": (174, 0.66)}
+# v53 : rareté des objets magiques, façon MMO — commun gris, peu commun vert, rare bleu, très rare violet,
+# légendaire orange, artefact rouge (fond des tuiles du sac, nom des objets, cases du mannequin)
+RARITY_HUES = {"commun": (0, 0.0), "peu commun": (122, 0.62), "rare": (212, 0.80), "tres rare": (282, 0.62),
+               "legendaire": (30, 0.92), "artefact": (2, 0.80)}
+ICON_HUES.update({"rarete_" + k.replace(" ", "_"): v for k, v in RARITY_HUES.items()})
+
+
+def rarity_key(text: str) -> str:
+    """« rare (+2) ou très rare (+3) » -> « rare » (première rareté citée) ; « » si aucune."""
+    import re
+    import unicodedata
+    n = "".join(c for c in unicodedata.normalize("NFD", (text or "").lower()) if unicodedata.category(c) != "Mn")
+    hits = [(m.start(), k) for k in ("tres rare", "peu commun", "legendaire", "artefact")
+            for m in [re.search(k, n)] if m]
+    for k in ("rare", "commun"):                         # « rare » / « commun » seuls (pas dans « très rare »…)
+        m = re.search(r"(?<!tres )(?<!peu )\b" + k + r"\b", n)
+        if m:
+            hits.append((m.start(), k))
+    return min(hits)[1] if hits else ""
+
+
+def rarity_category(text: str) -> str:
+    """Catégorie d'icône (`icon_palette`) de la rareté, « objet » (doré) si inconnue."""
+    k = rarity_key(text)
+    return "rarete_" + k.replace(" ", "_") if k else "objet"
+
+
+def rarity_color(text: str, t: "Theme | None" = None, bg="") -> str:
+    """Couleur de texte de la rareté, lisible (contraste ≥ 4,5:1) sur `bg` — une couleur ou plusieurs (tuple : fond
+    des lignes et lignes alternées) ; fond des panneaux par défaut."""
+    import colorsys
+    t = t or current()
+    bgs = tuple(bg) if isinstance(bg, (tuple, list)) else (bg or t.panel,)
+    k = rarity_key(text)
+    if not k:
+        return t.accent_text
+    hue, sat = RARITY_HUES[k]
+    dark = sum(luminance(b) for b in bgs) / len(bgs) < 0.2
+    light = 0.70 if dark else 0.36
+    for _ in range(40):
+        c = "#" + "".join(f"{round(x * 255):02X}" for x in colorsys.hls_to_rgb(hue / 360, light, sat))
+        if min(contrast_ratio(c, b) for b in bgs) >= 4.5:
+            return c
+        light = min(0.98, light + 0.02) if dark else max(0.02, light - 0.02)
+    return best_text(*bgs)
+
+
+def table_bgs(t: "Theme | None" = None) -> tuple:
+    """Fonds des tableaux et listes (lignes, lignes alternées)."""
+    t = t or current()
+    return (t.input_bg, t.row_alt)
+
+
 SCHOOL_KEYS = {"abjuration": "ecole_abjuration", "divination": "ecole_divination", "enchantement": "ecole_enchantement",
                "evocation": "ecole_evocation", "illusion": "ecole_illusion", "invocation": "ecole_invocation",
                "necromancie": "ecole_necromancie", "transmutation": "ecole_transmutation"}

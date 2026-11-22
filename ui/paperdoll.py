@@ -115,6 +115,21 @@ class PaperdollPanel(QGroupBox):
         for col in range(3):
             grid.setColumnStretch(col, 1)
         lay.addLayout(grid)
+        # v53 : harmonisation — un objet qui l'exige en prend un emplacement dès qu'il est équipé
+        from PyQt6.QtWidgets import QHBoxLayout
+        from .orbs import OrbBar
+        att = QHBoxLayout()
+        att.addWidget(make_label("✦ Harmonisation", "head"))
+        self.attune_orbs = OrbBar("harmonisation", per_row=6, interactive=False)
+        self.attune_left = make_label("", "stat")
+        att.addWidget(self.attune_orbs)
+        att.addWidget(self.attune_left)
+        att.addStretch(1)
+        lay.addLayout(att)
+        self.attuned = make_label("", "muted", wrap=True)          # objets harmonisés (et portés hors case)
+        self.attuned.setTextFormat(Qt.TextFormat.RichText)
+        lay.addWidget(self.attuned)
+        lay.addStretch(1)
         self.hint = make_label("Glissez un objet du sac sur une case, ou cliquez une case pour choisir parmi les objets qui correspondent à "
                                "son rôle (armures, armes, boucliers, anneaux, capes…). Un objet par case.",
                                "muted", wrap=True)
@@ -140,7 +155,8 @@ class PaperdollPanel(QGroupBox):
                 magic = item["source"] == "objet" or item.get("magique")
                 b.setText("{} {}\n{}{}{}{}".format(icons[key], label, "⚠ " if warn else "", "✨ " if magic else "",
                                                    item["nom"], mark))
-                b.set_look(t.warn if warn else t.accent_text if magic else t.text, bold=True)
+                color = theme.rarity_color(item.get("rarete", ""), t, t.panel2) if magic else t.text
+                b.set_look(t.warn if warn else color, bold=True)          # v53 : couleur de la rareté
                 b.setToolTip(rich_tip(("⚠ " if warn else "") + item["nom"], "{}{}{}{}".format(
                     label, " — " + html.escape(item.get("detail", "")) if item.get("detail") else "",
                     "\n◉ Harmonisé" if item.get("harmonise") else
@@ -152,7 +168,35 @@ class PaperdollPanel(QGroupBox):
                     n, "s" * (n > 1), "s" * (n > 1))))
                 b.set_look(t.muted, dashed=True)
                 b.setToolTip(rich_tip(label, "Case vide." + (" Clic : choisir un objet." if n else "")))
+        self._refresh_attunement(doll)
         self._refresh_portrait()
+
+    def _refresh_attunement(self, doll: dict) -> None:
+        """v53 : jauge (sphères pleines = emplacements libres) et liste des objets harmonisés ; les objets portés
+        sans case du mannequin (baguette, bâton, pierre…) y figurent aussi."""
+        eng, t = self.engine, theme.current()
+        limit, used = eng.attunement_limit(), eng.attuned_count()
+        self.attune_orbs.set_state(limit, used)
+        self.attune_left.setText("{} / {}".format(used, limit))
+        tip = rich_tip("Harmonisation", "{} objet(s) harmonisé(s) sur {} possibles. Équiper un objet qui exige "
+                       "l'harmonisation en prend un emplacement ; le ranger le libère. Les aptitudes de l'Artificier "
+                       "(niv. 10, 14, 18) augmentent ce maximum.".format(used, limit))
+        self.attune_orbs.setToolTip(tip)
+        self.attune_left.setToolTip(tip)
+        slotted = {v.get("index") for v in doll.values() if v.get("source") == "objet"}
+        parts = []
+        for i, e in enumerate(eng.ch.objets_magiques):
+            if not e.get("equipe"):
+                continue
+            item = eng.magic_item(e["nom"]) or {}
+            hors_case = not e.get("base") and i not in slotted
+            if not (e.get("harmonise") or hors_case):
+                continue
+            parts.append("<span style='color:{}'><b>{}{}</b></span>{}".format(
+                theme.rarity_color(item.get("rarete", ""), t), "◉ " if e.get("harmonise") else "",
+                html.escape(eng.magic_display_name(e)), " <i>(porté, sans case)</i>" if hors_case else ""))
+        self.attuned.setText(" · ".join(parts) if parts else
+                             "Aucun objet harmonisé : équipez un objet ✦ (sac ou case) pour l'harmoniser.")
 
     def _refresh_portrait(self) -> None:
         """Portrait du personnage (importé dans l'onglet « Histoire, Portrait »), réduit au cadre ; sinon invitation."""
@@ -211,8 +255,8 @@ class PaperdollPanel(QGroupBox):
         if key in doll:
             labels[CLEAR] = None
         if not labels:
-            where = ("« Ajouter un objet » (sac)" if key not in MAGIC_SLOTS else
-                     "le sous-onglet « Équipement, objets magiques »")
+            where = ("le « Catalogue » du sac" if key not in MAGIC_SLOTS else
+                     "le sous-onglet « Objets magiques »")
             win.statusBar().showMessage("Aucun objet de l'inventaire ne va en « {} » : ajoutez-en via {}.".format(
                 SLOT_LABELS[key], where), 7000)
             return

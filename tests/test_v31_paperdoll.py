@@ -60,6 +60,7 @@ class EngineTests(unittest.TestCase):
         boots = of_kind("bottes", 2)
         for b in boots:
             eng.add_magic_item(b)
+            eng.ch.objets_magiques[-1]["equipe"] = True          # ancienne sauvegarde : tout « équipé »
         eng.normalize()
         self.assertEqual(eng.paperdoll()["bottes"]["nom"], boots[0])
         self.assertIn("2 objets « bottes » équipés pour 1 emplacement.", eng.warnings())
@@ -74,6 +75,7 @@ class EngineTests(unittest.TestCase):
         rings = of_kind("anneau", 3)
         for r in rings:
             eng.add_magic_item(r)
+            eng.ch.objets_magiques[-1]["equipe"] = True          # ancienne sauvegarde : tout « équipé »
         eng.normalize()
         doll = eng.paperdoll()
         self.assertEqual((doll["anneau_1"]["nom"], doll["anneau_2"]["nom"]), (rings[0], rings[1]))

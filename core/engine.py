@@ -270,6 +270,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         self.purge_natural_attacks()                     # v41 : « Mains nues » n'est pas un objet d'inventaire
         self.sync_equipment_slots()                      # v31 : une case du mannequin par objet porté
         self.sync_magic_gear()                           # v45 : armes / armures magiques liées aux cases
+        if self.sync_attunement():                       # v53 : objet lié équipé = harmonisé
+            self.sync_magic_gear()
         over = self.attuned_count() - self.attunement_limit()
         for entry in reversed(ch.objets_magiques):
             if over <= 0:
@@ -2290,7 +2292,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             else:
                 self.ch.equipement.append({"nom": name, "qte": 10})
             return True
-        entry = {"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0, "equipe": True,
+        # v53 : un objet à harmoniser arrive dans le sac (l'équiper prend un emplacement d'harmonisation)
+        entry = {"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0, "equipe": not item["lien"],
                  "harmonise": False}
         elements = self.item_rules(item)["elements"]
         if elements:                                    # v52 : perles… tirées à l'ajout (l'interface fait confirmer)
@@ -2312,22 +2315,72 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             self.ch.objets_magiques.pop(idx)
 
     def set_attuned(self, idx: int, value: bool) -> bool:
-        """(Dés)harmonise l'objet n° idx. Refusé si l'objet n'en a pas besoin ou si le maximum est atteint."""
+        """v53 : l'harmonisation suit l'équipement — harmoniser = équiper l'objet (refusé si l'objet n'en a pas
+        besoin ou si tous les emplacements d'harmonisation sont pris), déharmoniser = le ranger."""
         if not 0 <= idx < len(self.ch.objets_magiques):
             return False
         entry = self.ch.objets_magiques[idx]
         item = self.magic_item(entry["nom"])
         if not value:
+            self.set_equipped(idx, False)
             entry["harmonise"] = False
             return True
-        if not item or not item["lien"] or self.attuned_count() >= self.attunement_limit():
+        if not item or not item["lien"]:
             return False
-        entry["harmonise"] = True
-        return True
+        if not entry.get("equipe"):
+            if self.attune_blocked(idx):
+                return False
+            self.set_equipped(idx, True)
+        elif not entry.get("harmonise") and self.attuned_count() < self.attunement_limit():
+            entry["harmonise"] = True
+        return bool(entry.get("harmonise"))
+
+    def needs_attunement(self, entry: dict) -> bool:
+        return bool((self.magic_item(entry.get("nom", "")) or {}).get("lien"))
+
+    def attune_blocked(self, idx: int, slot: str = "") -> str:
+        """v53 : message si équiper l'objet n° idx dépasserait la limite d'harmonisation (« » sinon). `slot` : case
+        visée — l'objet harmonisé qui l'occupe est rangé, son emplacement se libère."""
+        if not 0 <= idx < len(self.ch.objets_magiques):
+            return ""
+        entry = self.ch.objets_magiques[idx]
+        if entry.get("equipe") or not self.needs_attunement(entry):
+            return ""
+        used, limit = self.attuned_count(), self.attunement_limit()
+        if slot and used >= limit:
+            uids = {h.get(self._uid_key(s)) for s, h in self._gear_slots() if s.startswith(slot)} - {None}
+            if any(e.get("harmonise") and (e.get("emplacement") == slot or e.get("uid") in uids)
+                   for e in self.ch.objets_magiques if e is not entry):
+                used -= 1
+        if used < limit:
+            return ""
+        return ("Harmonisation : {} / {} emplacements occupés — rangez un objet harmonisé avant d'équiper « {} »."
+                .format(used, limit, self.magic_display_name(entry)))
+
+    def sync_attunement(self) -> bool:
+        """v53 : un objet qui exige l'harmonisation est harmonisé tant qu'il est équipé, et seulement alors ; au-delà
+        de la limite (ancienne sauvegarde), les derniers objets équipés sont rangés. Renvoie True si changement."""
+        changed, used, limit = False, 0, self.attunement_limit()
+        for i, entry in enumerate(self.ch.objets_magiques):
+            want = bool(entry.get("equipe")) and self.needs_attunement(entry)
+            if want and used >= limit:
+                self.set_equipped(i, False)
+                want, changed = False, True
+            used += want
+            if bool(entry.get("harmonise")) != want:
+                entry["harmonise"] = want
+                changed = True
+        return changed
+
+    def _attune_now(self, entry: dict) -> None:
+        """Harmonisé dès l'équipement (le bonus de la case est calculé aussitôt)."""
+        entry["harmonise"] = self.needs_attunement(entry)
 
     def set_equipped(self, idx: int, value: bool) -> None:
         """Équiper un objet porté (anneau, bottes…) occupe sa case du mannequin et retire l'occupant précédent."""
         if 0 <= idx < len(self.ch.objets_magiques):
+            if value and self.attune_blocked(idx):         # v53 : plus d'emplacement d'harmonisation
+                return
             if self.ch.objets_magiques[idx].get("base"):   # v45 : arme / armure magique -> case du mannequin
                 if value:
                     self.equip_magic_gear(idx)
@@ -2339,6 +2392,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             else:
                 self.ch.objets_magiques[idx]["equipe"] = False
                 self.ch.objets_magiques[idx]["emplacement"] = ""
+                self.ch.objets_magiques[idx]["harmonise"] = False
 
     def attune_status(self, name: str) -> tuple[str, str]:
         """
