@@ -116,6 +116,19 @@ def spell_pixmap(db, spell_name: str, category: str = "", size: int = 56, dim: b
     return _render(body, category, size, theme.current().key, dim)
 
 
+def action_pixmap(name: str, category: str, size: int = 56, dim: bool = False) -> QPixmap:
+    """v53 : icône unique d'une action (capacité, manœuvre, action d'arme…), couleur de sa catégorie."""
+    from core.action_icons import action_body
+    return _render(action_body(name), category, size, theme.current().key, dim)
+
+
+def weapon_pixmap(weapon_text: str, size: int = 56, dim: bool = False) -> QPixmap:
+    """v53 : dessin propre à l'arme (épée longue, rapière, hache d'armes…), en rouge « attaque »."""
+    from core.action_icons import weapon_body
+    body = weapon_body(weapon_text) or ICONS["attaque_generique"]()
+    return _render(body, "attaque", size, theme.current().key, dim)
+
+
 def icon_file(name: str) -> str:
     return get_resource_path("data/icons/{}.svg".format(name))
 

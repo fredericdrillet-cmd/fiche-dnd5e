@@ -90,31 +90,32 @@ def _find(name: str, table) -> str:
 
 
 def tile_icon(x: dict) -> tuple[str, str, str]:
-    """(genre, nom, catégorie) de l'icône d'une tuile de `Engine.turn_actions()` (ou d'une action d'arme)."""
+    """(genre, nom, catégorie) de l'icône d'une tuile de `Engine.turn_actions()` (ou d'une action d'arme).
+    Genres : « sort » (icône unique du sort), « icone » (data/icons : actions communes), « arme » (dessin de
+    l'arme, core/action_icons.WEAPON_ART), « action » (icône unique de l'action, core/action_icons)."""
     tid, name, group = x.get("id", ""), x.get("nom", ""), x.get("groupe", "")
+    base = name.replace(" (2024)", "")
     if tid.startswith("sort:") or group == "magie" and x.get("sort"):
         return "sort", (x.get("sort") or tid[5:]), ""
-    if tid.startswith("classe:manoeuvre"):              # manœuvres du Maître de guerre
-        return "icone", "manoeuvre", "attaque"
     if tid.startswith("arme_action:"):
-        return "icone", _find(x.get("arme", name), WEAPONS) or "attaque_generique", "attaque"
-    if group == "attaques":
-        weapon = name.split("—", 1)[-1]
-        return "icone", _find(weapon, WEAPONS) or _find(name, FEATURES) or "attaque_generique", "attaque"
+        return "action", base, "attaque"
     if group == "generiques":
         return "icone", _find(name, COMMON) or "type_action", "commune"
     if group == "objets":
         return "icone", _find(name, ITEMS) or "objet", "objet"
+    if tid.startswith("classe:manoeuvre"):              # manœuvres du Maître de guerre : une icône chacune
+        return "action", base.split(" — ")[0], "attaque"
+    if group == "attaques":
+        from .action_icons import weapon_key
+        weapon = name.split("—", 1)[-1]
+        if weapon_key(weapon):
+            return "arme", weapon, "attaque"
+        return "action", base, "attaque"
     if tid.startswith("bete:"):                        # attaques de la forme de bête
-        return "icone", "forme_sauvage", "attaque"
+        return "action", base.split(" — ")[0], "attaque"
     healing = any(k in norm(name) for k in HEALING)
-    icon = _find(name, FEATURES)
     if x.get("type") == "Réaction" or group == "reactions":
-        if norm(name).startswith("attaque d'opportunite"):
-            return "icone", "attaque_opportunite", "reaction"
-        return "icone", icon or "type_reaction", "soins" if healing else "reaction"
+        return "action", base, "soins" if healing else "reaction"
     if healing:
-        return "icone", icon or "effet_soins", "soins"
-    if x.get("origine") == "race":
-        return "icone", icon or "capacite_espece", "capacite"
-    return "icone", icon or "capacite_classe", "capacite"
+        return "action", base, "soins"
+    return "action", base, "capacite"

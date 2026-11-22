@@ -956,6 +956,10 @@ class CombatTab(BaseTab):
         dim = not x.get("disponible", True)
         if kind == "sort":
             pix = IC.spell_pixmap(self.db, name, size=self.ICON_SIZE, dim=dim)
+        elif kind == "action":                           # v53 : icône unique de chaque action
+            pix = IC.action_pixmap(name, cat, self.ICON_SIZE, dim)
+        elif kind == "arme":
+            pix = IC.weapon_pixmap(name, self.ICON_SIZE, dim)
         else:
             pix = IC.icon_pixmap(name, cat, self.ICON_SIZE, dim)
         count = res.split()[-1] if res else ""

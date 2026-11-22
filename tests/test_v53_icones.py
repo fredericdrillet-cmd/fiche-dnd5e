@@ -69,8 +69,10 @@ class TileIconTests(unittest.TestCase):
                     eng.normalize()
                 for x in eng.turn_actions():
                     kind, name, cat = tile_icon(x)
+                    self.assertIn(kind, ("sort", "icone", "action", "arme"))
                     if kind == "icone":
                         self.assertIn(name, A.ICONS, (edition, cls, x["nom"]))
+                    if kind != "sort":
                         self.assertIn(cat, ("attaque", "soins", "commune", "capacite", "objet", "reaction"))
         self.assertEqual(tile_icon({"id": "generique:foncer", "nom": "Foncer", "groupe": "generiques"}),
                          ("icone", "foncer", "commune"))
@@ -96,3 +98,36 @@ class InventoryUiTests(unittest.TestCase):
         self.assertFalse(win.inventory_tab.paperdoll.drop_on_slot("armure", "Torche"))
         self.assertEqual(item_icon_name("Potion de soins"), "objet_potion")
         self.assertEqual(item_icon_name("Épée longue"), "arme_epee")
+
+
+class ActionIconTests(unittest.TestCase):
+    """Chaque action du jeu (registre data/action_icons.json, tools/build_action_icons.py) a un dessin unique."""
+
+    def test_every_action_has_a_unique_drawing(self):
+        import json
+        from core import action_icons as AI
+        reg = json.loads((ROOT / "data" / "action_icons.json").read_text(encoding="utf-8"))
+        self.assertGreater(len(reg["actions"]), 350)
+        by_body = {}
+        for n in reg["actions"]:
+            by_body.setdefault(AI.action_body(n), set()).add(AI.canonical(n))
+        shared = {b: c for b, c in by_body.items() if len(c) > 1}
+        self.assertFalse(shared, list(shared.values())[:5])
+        named = {fn() for fn in A.ICONS.values()}
+        self.assertFalse([n for n in reg["actions"] if AI.action_body(n) in named])
+
+    def test_families_are_distinct(self):
+        from core import action_icons as AI
+        for family in (["Attaque menaçante", "Attaque précise", "Croc-en-jambe", "Désarmement", "Riposte", "Parade"],
+                       ["Frappe malicieuse : Poison", "Frappe malicieuse : Repli", "Frappe malicieuse : Aveugler"],
+                       ["Métamagie : Sort prudent", "Métamagie : Sort distant", "Métamagie : Sort accéléré"],
+                       ["Déluge de coups", "Défense patiente", "Pas du vent", "Coup étourdissant"],
+                       ["Bond psi", "Frappe psionique", "Champ protecteur", "Mouvement télékinétique"]):
+            bodies = [AI.action_body(n) for n in family]
+            self.assertEqual(len(set(bodies)), len(bodies), family)
+
+    def test_each_weapon_has_its_drawing(self):
+        from core import action_icons as AI
+        bodies = {k: f() for k, f in AI.WEAPON_ART.items()}
+        self.assertEqual(len(set(bodies.values())), len(bodies))
+        self.assertNotEqual(AI.weapon_body("Rapière"), AI.weapon_body("Épée longue"))
