@@ -315,14 +315,14 @@ class InventoryTab(BaseTab):
         rows = []
         for r, it in enumerate(ch.equipement):
             info = db.catalog.get(it["nom"]) or {}
-            rows.append({"nom": it["nom"], "cle": it["nom"], "categorie": info.get("categorie", ""), "rarete": "",
+            rows.append({"nom": it["nom"], "cle": eng.bag_key(name=it["nom"]), "categorie": info.get("categorie", ""), "rarete": "",
                          "qte": int(it.get("qte", 1)), "equipe": it["nom"] in worn, "magique": False, "ligne": r,
                          "tip": self.table.item(r, 0).toolTip() if self.table.item(r, 0) else it["nom"]})
         base = len(ch.equipement)
         for i, entry in enumerate(ch.objets_magiques):
             item = eng.magic_item(entry["nom"]) or {}
             label = eng.magic_display_name(entry)
-            rows.append({"nom": label, "cle": entry["nom"], "categorie": item.get("type", ""),
+            rows.append({"nom": label, "cle": eng.bag_key(i), "categorie": item.get("type", ""),
                          "rarete": item.get("rarete", ""), "qte": 1, "equipe": bool(entry.get("equipe")),
                          "magique": True, "ligne": base + i, "epuise": bool(eng.item_state_label(entry)),
                          "tip": self.table.item(base + i, 0).toolTip() if self.table.item(base + i, 0) else label})

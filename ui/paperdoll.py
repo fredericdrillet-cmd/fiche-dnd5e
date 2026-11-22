@@ -108,7 +108,7 @@ class PaperdollPanel(QGroupBox):
             grid.addWidget(b, r, c)
             self.slot_btns[key] = b
         # au centre : le portrait DU PERSONNAGE (onglet « Histoire, Portrait »), qu'on équipe
-        self.portrait = SlotCard(self._on_portrait, 170, 230)
+        self.portrait = SlotCard(self._on_portrait, 170, 230, on_drop=self.drop_on_slot)   # dépôt : case naturelle
         self.portrait.setProperty("role", "portrait")
         self._portrait_shown = None
         grid.addWidget(self.portrait, 0, 1, 5, 1)
@@ -232,16 +232,14 @@ class PaperdollPanel(QGroupBox):
             self.win.go_to_tab("rp")
 
     # ------------------------------------------------------------------ actions
-    def drop_on_slot(self, key: str, name: str) -> bool:
-        """v53 : tuile du sac déposée sur une case : équipée si elle va dans cette case."""
-        eng, win = self.engine, self.win
-        cand = next((c for c in eng.slot_inventory(key) if c["nom"] == name or name.startswith(c["nom"])), None)
-        if cand is None:
-            win.statusBar().showMessage("« {} » ne va pas dans la case « {} ».".format(name, SLOT_LABELS[key]), 6000)
-            return False
-        win.statusBar().showMessage(eng.equip_slot(key, cand), 7000)
-        win.changed()
-        return True
+    def drop_on_slot(self, slot: str, key: str) -> bool:
+        """v53 : tuile du sac déposée sur une case (ou le portrait, `slot` vide) : équipée dans cette case si elle y
+        va, sinon dans sa case naturelle."""
+        ok, msg = self.engine.equip_from_bag(key, slot)
+        self.win.statusBar().showMessage(msg, 7000)
+        if ok:
+            self.win.changed()
+        return ok
 
     def _on_slot(self, key: str) -> None:
         """Case cliquée : objets de l'inventaire correspondant à son RÔLE (armure, arme, bouclier, anneau, cape…)."""

@@ -127,6 +127,7 @@ class Character:
     tasha_remplacements: list[str] = field(default_factory=list)   # v52 : options de Tasha qui remplacent (choisies)
     attaque_puissante: bool = False          # v52 : −5 / +10 (Tireur d'élite, Briseur d'armes lourdes, 2014)
     nouveautes: list[str] = field(default_factory=list)       # v52 : badge « Nouveau » (act:, reac:, sort:, apt:)
+    ordre_tuiles: list[str] = field(default_factory=list)     # v53 : ordre des tuiles « En partie » choisi par le joueur
 
     # ---- Éditions et règles de la table (v52, core/editions.py et core/house_rules.py) -----------
     edition_mode: str = "2014"              # "2014" | "2024" | "libre"

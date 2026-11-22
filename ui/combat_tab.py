@@ -798,7 +798,16 @@ class CombatTab(BaseTab):
         lay.addLayout(top)
         self.turn_legend = make_label("", "muted")
         self.turn_legend.setTextFormat(Qt.TextFormat.RichText)
-        lay.addWidget(self.turn_legend)
+        legend_row = QHBoxLayout()                       # v53 : légende + retour à l'ordre par défaut des tuiles
+        legend_row.addWidget(self.turn_legend, 1)
+        self.turn_order_reset = QPushButton("↺ Ordre par défaut")
+        self.turn_order_reset.setProperty("role", "ghost")
+        self.turn_order_reset.setToolTip(rich_tip("Ordre des tuiles", "Glissez une tuile sur une autre pour la "
+                                                  "placer avant ou après (ordre enregistré avec le personnage). Ce "
+                                                  "bouton rétablit l'ordre par catégorie."))
+        self.turn_order_reset.clicked.connect(self._reset_tile_order)
+        legend_row.addWidget(self.turn_order_reset)
+        lay.addLayout(legend_row)
         holder = QWidget()
         self.turn_flow = QGridLayout(holder)
         self.turn_flow.setContentsMargins(0, 0, 0, 0)
@@ -991,7 +1000,8 @@ class CombatTab(BaseTab):
         res = spheres.get(x["id"], "")
         x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
         names = bool((getattr(self.win, "settings", {}) or {}).get("icones_noms", False))
-        b = QToolButton()
+        from .tile_button import TileButton
+        b = TileButton(x["id"], self._on_tile_drop)      # v53 : déplaçable (glisser sur une autre tuile)
         b.setIcon(QIcon(self._tile_pixmap(x, res)))
         b.setIconSize(QSize(self.ICON_SIZE, self.ICON_SIZE))
         b.setAutoRaise(True)
@@ -1004,16 +1014,34 @@ class CombatTab(BaseTab):
             b.setFixedSize(self.ICON_SIZE + 6, self.ICON_SIZE + 6)
         b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; }"
                         "QToolButton:hover { background: rgba(255,255,255,0.10); border-radius: 8px; }")
-        b.setEnabled(x["disponible"])
+        b.setProperty("indisponible", not x["disponible"])   # v53 : reste déplaçable ; icône assombrie
         b.setCursor(Qt.CursorShape.PointingHandCursor)
         b.setToolTip(rich_tip("{} {}".format(x["icone"], x["nom"]), "{}{}{}{}{}".format(
             "<i>{} — {}</i>\n".format(x["type"], x["origine"]) if x.get("origine") else "<i>{}</i>\n".format(x["type"]),
             x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
             "\n<b>Restant : {}</b>".format(res) if res else "",
             "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
-        b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
+        if x["disponible"]:
+            b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
+        else:                                            # indisponible : raison dans la barre d'état
+            b.clicked.connect(lambda _=False, n=x["nom"], r=x.get("raison", ""): self.win.statusBar().showMessage(
+                "🔒 {} : {}".format(n, r or "indisponible pour le moment."), 6000))
         self.turn_tiles[x["id"]] = b
         return b
+
+    # ------------------------------------------------------------------ v53 : ordre des tuiles
+    def _on_tile_drop(self, src: str, dst: str, after: bool) -> None:
+        from PyQt6.QtCore import QTimer
+        from .tile_button import reorder
+        self.ch.ordre_tuiles = reorder(self.ch.ordre_tuiles, list(getattr(self, "_tile_ids", [])), src, dst, after)
+        self._turn_key = None
+        QTimer.singleShot(0, self.changed)               # la tuile cible est reconstruite : hors de son événement
+
+    def _reset_tile_order(self) -> None:
+        self.ch.ordre_tuiles = []
+        self._turn_key = None
+        self.win.statusBar().showMessage("Tuiles remises dans l'ordre par catégorie.", 4000)
+        self.changed()
 
     TILE_CATS = [("attaque", "Attaques"), ("capacite", "Capacités de classe et de race"), ("magie", "Magie"),
                  ("objet", "Objets magiques"), ("reaction", "Réactions"), ("commune", "Actions communes")]
@@ -1058,6 +1086,12 @@ class CombatTab(BaseTab):
                 b.clicked.connect(lambda _=False, k=key, idx=i, r=row: self._on_weapon_action(k, idx, r))
                 cells.append(b)
         common = [self._make_tile(x, spheres) for x in items if self._tile_cat(x) == "commune"]
+        from .tile_button import apply_order                # v53 : ordre choisi par le joueur
+        saved = list(self.ch.ordre_tuiles or [])
+        cells = [cells[k] for k in apply_order([b.tile_id for b in cells], saved)]
+        common = [common[k] for k in apply_order([b.tile_id for b in common], saved)]
+        self._tile_ids = [b.tile_id for b in cells + common]
+        self.turn_order_reset.setVisible(bool(saved))
         n = 0
         for b in cells:
             self.turn_flow.addWidget(b, n // cols, n % cols, Qt.AlignmentFlag.AlignLeft)

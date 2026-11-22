@@ -253,3 +253,48 @@ class HarmonisationEquipementTests(unittest.TestCase):
         e.add_magic_item("Anneau de protection")
         e.set_equipped(0, True)
         self.assertEqual(e.paperdoll()["anneau_1"]["rarete"], "rare")
+
+
+class GlisserDeposerTests(unittest.TestCase):
+    """v53 : sac -> mannequin par glisser-déposer (clé fiable) ; tuiles « En partie » réagençables."""
+
+    def test_equiper_depuis_le_sac(self):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Guerrier", "niveau": 8, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        e.add_magic_item("Anneau de protection")
+        name = "Hache du berserker"
+        e.add_magic_gear(name, e.magic_base_options(name)[0])
+        e.add_magic_item("Baguette de boules de feu")
+        ch.equipement.append({"nom": "Cotte de mailles", "qte": 1})
+        e.normalize()
+        self.assertTrue(e.equip_from_bag(e.bag_key(1), "main_principale")[0])
+        self.assertEqual(ch.armes_cac[0]["nom"], e.magic_base_options(name)[0])
+        ok, msg = e.equip_from_bag(e.bag_key(0), "tete")       # mauvaise case -> sa case naturelle
+        self.assertTrue(ok, msg)
+        self.assertEqual(ch.objets_magiques[0]["emplacement"], "anneau_1")
+        self.assertTrue(e.equip_from_bag(e.bag_key(2))[0])      # baguette : portée sans case
+        self.assertTrue(ch.objets_magiques[2]["equipe"])
+        self.assertTrue(e.equip_from_bag("Cotte de mailles", "armure")[0])
+        self.assertEqual(ch.armure["nom"], "Cotte de mailles")
+        self.assertFalse(e.equip_from_bag("#mg:99")[0])
+
+    def test_ordre_des_tuiles(self):
+        sys.path.insert(0, str(ROOT))
+        from ui.tile_button import apply_order, reorder
+        shown = ["a", "b", "c", "d"]
+        self.assertEqual(reorder([], shown, "d", "a", False), ["d", "a", "b", "c"])
+        self.assertEqual(reorder([], shown, "a", "c", True), ["b", "c", "a", "d"])
+        saved = ["x", "a", "y", "b", "c", "d"]                 # x, y masquées par un filtre : gardent leur place
+        self.assertEqual(reorder(saved, shown, "d", "a", False), ["x", "d", "y", "a", "b", "c"])
+        ids = ["c", "new", "a", "b"]
+        self.assertEqual([ids[k] for k in apply_order(ids, ["a", "b", "c"])], ["a", "b", "c", "new"])
+
+    def test_ordre_sauvegarde(self):
+        import json
+        from core.character import Character
+        ch = Engine.new_character(DB)
+        ch.ordre_tuiles = ["reaction:opportunite", "arme:mains_nues"]
+        self.assertEqual(Character.from_dict(json.loads(json.dumps(ch.to_dict()))).ordre_tuiles,
+                         ["reaction:opportunite", "arme:mains_nues"])

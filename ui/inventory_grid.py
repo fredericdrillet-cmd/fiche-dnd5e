@@ -148,16 +148,13 @@ class InventoryGrid(QListWidget):
             return
         self.equip_to_best_slot(it.data(KEY_ROLE))
 
-    def equip_to_best_slot(self, name: str) -> bool:
-        eng = self.tab.engine
-        for slot in ("armure", "main_principale", "distance", "main_secondaire"):
-            cand = next((c for c in eng.slot_inventory(slot) if c["nom"] == name), None)
-            if cand is not None:
-                self.tab.win.statusBar().showMessage(eng.equip_slot(slot, cand), 6000)
-                self.tab.changed()
-                return True
-        self.tab.win.statusBar().showMessage("« {} » ne s'équipe pas : il reste dans le sac.".format(name), 5000)
-        return False
+    def equip_to_best_slot(self, key: str) -> bool:
+        """Clé du sac (`Engine.bag_key`) -> case naturelle de l'objet."""
+        ok, msg = self.tab.engine.equip_from_bag(key)
+        self.tab.win.statusBar().showMessage(msg, 7000)
+        if ok:
+            self.tab.changed()
+        return ok
 
     def _menu(self, pos) -> None:
         it = self.itemAt(pos)

@@ -201,6 +201,47 @@ class EquipmentMixin:
                                                                         if len(ch.armes_cac) > 1 else None)}.get(slot)
         return [{"nom": n, "kind": "objet", "equipe": n == cur and not bound} for n in names] + gear
 
+    BAG_SLOTS = ("armure", "main_principale", "distance", "main_secondaire")
+
+    @staticmethod
+    def bag_key(magic_index: int = -1, name: str = "") -> str:
+        """v53 : clé d'un objet du sac pour le glisser-déposer — « #mg:<indice> » (objet magique) ou son nom."""
+        return "#mg:{}".format(magic_index) if magic_index >= 0 else name
+
+    def equip_from_bag(self, key: str, slot: str = "") -> tuple[bool, str]:
+        """v53 : équipe l'objet du sac désigné par `key` (voir `bag_key`) dans `slot` s'il y va, sinon dans sa case
+        naturelle (objet magique : sa case ou « porté » sans case). Renvoie (équipé ?, message)."""
+        magic = int(key[4:]) if key.startswith("#mg:") and key[4:].isdigit() else -1
+        if magic >= len(self.ch.objets_magiques):
+            return False, "Objet introuvable dans le sac."
+
+        def match(c: dict) -> bool:
+            if magic >= 0:
+                return c.get("kind") in ("magique", "magique_arme") and c.get("index") == magic
+            return c.get("kind") == "objet" and c["nom"] == key
+
+        if slot:
+            cand = next((c for c in self.slot_inventory(slot) if match(c)), None)
+            if cand is not None:
+                msg = self.equip_slot(slot, cand)
+                return not msg.startswith(("Harmonisation", "Main secondaire indisponible")), msg
+        if magic >= 0:
+            entry = self.ch.objets_magiques[magic]
+            blocked = self.attune_blocked(magic)
+            if blocked:
+                return False, blocked
+            if entry.get("base"):
+                msg = self.equip_magic_gear(magic)
+                return bool(entry.get("equipe")) or "Main secondaire" not in msg, msg
+            self.set_equipped(magic, True)
+            where = entry.get("emplacement", "")
+            return True, "{} : {}.".format(SLOT_LABELS.get(where, "Porté (sans case)"), self.magic_display_name(entry))
+        for s in self.BAG_SLOTS:
+            cand = next((c for c in self.slot_inventory(s) if match(c)), None)
+            if cand is not None:
+                return True, self.equip_slot(s, cand)
+        return False, "« {} » ne s'équipe pas : il reste dans le sac.".format(key)
+
     def equip_slot(self, slot: str, choice: dict) -> str:
         """Équipe l'objet choisi dans la case ; renvoie le message (objet remplacé, main libérée…)."""
         ch = self.ch
