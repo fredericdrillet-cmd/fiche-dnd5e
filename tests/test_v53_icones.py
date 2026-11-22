@@ -52,3 +52,27 @@ class PaletteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TileIconTests(unittest.TestCase):
+    def test_every_turn_tile_has_a_known_icon(self):
+        from core.engine import Engine
+        from core.tile_icons import tile_icon
+        for edition in ("2014", "2024"):
+            for cls, sub in (("Guerrier", "Maître de guerre"), ("Moine", ""), ("Paladin", ""), ("Magicien", "")):
+                ch = Engine.new_character(DB)
+                ch.classes = [{"nom": cls, "niveau": 6, "sous_classe": "", "pv_jets": []}]
+                eng = Engine(DB, ch)
+                eng.normalize()
+                if edition == "2024":
+                    eng.set_edition_mode("2024")
+                    eng.normalize()
+                for x in eng.turn_actions():
+                    kind, name, cat = tile_icon(x)
+                    if kind == "icone":
+                        self.assertIn(name, A.ICONS, (edition, cls, x["nom"]))
+                        self.assertIn(cat, ("attaque", "soins", "commune", "capacite", "objet", "reaction"))
+        self.assertEqual(tile_icon({"id": "generique:foncer", "nom": "Foncer", "groupe": "generiques"}),
+                         ("icone", "foncer", "commune"))
+        self.assertEqual(tile_icon({"id": "classe:second_souffle", "nom": "Second souffle", "groupe": "capacites",
+                                    "type": "Action bonus"})[2], "soins")

@@ -90,6 +90,15 @@ class OptionsDialog(QDialog):
                                 "cette option.", "muted", wrap=True))
         lay.addWidget(hbox)
 
+        ibox = QGroupBox("Icônes de l'onglet « En partie »")     # v53
+        il = QVBoxLayout(ibox)
+        self.icon_names = QCheckBox("Afficher le nom sous chaque icône")
+        self.icon_names.setChecked(bool(win.settings.get("icones_noms", False)))
+        il.addWidget(self.icon_names)
+        il.addWidget(make_label("Décoché (par défaut) : icônes seules, façon jeu de rôle ; le nom et les règles "
+                                "complètes s'affichent au survol.", "muted", wrap=True))
+        lay.addWidget(ibox)
+
         buttons = QHBoxLayout()
         buttons.addStretch(1)
         self.cancel_btn = QPushButton("Annuler")
@@ -136,5 +145,8 @@ class OptionsDialog(QDialog):
         self.win.settings["regle_survie"] = self.survival.isChecked()
         self.win.settings["mode_libre"] = self.free_mode.isChecked()
         self.win.settings["aides_debutant"] = self.beginner.isChecked()
+        self.win.settings["icones_noms"] = self.icon_names.isChecked()
+        if hasattr(self.win, "combat_tab"):
+            self.win.combat_tab._turn_key = None         # reconstruit les icônes du tour
         self.win.apply_appearance(self._key, self.font.value(), save=True)
         super().accept()

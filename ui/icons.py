@@ -11,6 +11,13 @@ from functools import lru_cache
 from PyQt6.QtCore import QByteArray, QPointF, QRectF, Qt
 from PyQt6.QtGui import QColor, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap, QRadialGradient
 
+try:                                                     # absent du faux Qt des tests : icônes vides
+    from PyQt6.QtSvg import QSvgRenderer
+    HAS_SVG = True
+except ImportError:                                      # pragma: no cover - dépend de l'installation
+    QSvgRenderer = None
+    HAS_SVG = False
+
 from core.icon_art import ICONS, svg_document
 from core.paths import get_resource_path
 from . import theme
@@ -23,7 +30,6 @@ def _svg_bytes(body: str) -> QByteArray:
 @lru_cache(maxsize=4096)
 def _glyph_mask(body: str, size: int) -> QImage:
     """Dessin -> masque alpha (blanc opaque = visible, noir = découpe transparente)."""
-    from PyQt6.QtSvg import QSvgRenderer
     img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
     img.fill(Qt.GlobalColor.transparent)
     p = QPainter(img)
@@ -57,6 +63,8 @@ def named_body(name: str) -> str:
 
 @lru_cache(maxsize=4096)
 def _render(body: str, category: str, size: int, theme_key: str, dim: bool) -> QPixmap:
+    if not HAS_SVG:
+        return QPixmap()
     t = theme.THEMES.get(theme_key) or theme.current()
     pal = theme.icon_palette(t).get(category) or theme.icon_palette(t)["commune"]
     img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)

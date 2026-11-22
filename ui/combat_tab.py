@@ -9,7 +9,7 @@ import re
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
-                             QScrollArea, QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
+                             QScrollArea, QSizePolicy, QSpinBox, QToolButton, QVBoxLayout, QWidget)
 
 from core.engine_extras import ExtrasMixin
 from core import effects as FX
@@ -585,9 +585,12 @@ class CombatTab(BaseTab):
         body.addLayout(main, 1)
         self.exh_caption.setVisible(False)
         root.addLayout(body, 1)
-        # Magie : emplacements de sorts en tête de la colonne
-        self.turn_slots_layout.addWidget(self.slots_box)
-        self.slots_box.setTitle("Emplacements de sorts")
+        # v53 : bandeau des ressources (cases façon jeu de rôle) au-dessus des icônes ; l'ancien encart des
+        # emplacements de sorts est rangé
+        from .resource_bar import ResourceStrip
+        self.resource_strip = ResourceStrip(self)
+        self.turn_slots_layout.addWidget(self.resource_strip, 1)
+        park.addWidget(self.slots_box)
         # PV : PV max dans le bandeau ; actuels / temporaires / divers sur une seule ligne
         g = self.hp_box.layout()
         for w in self.hp_old_labels + [self.hp_max]:
@@ -735,7 +738,7 @@ class CombatTab(BaseTab):
     TURN_ICONS = {"Action": "●", "Action bonus": "▲", "Réaction": "◆", "Gratuit": "○"}
 
     def _turn_group(self) -> QGroupBox:
-        box = QGroupBox("⚔ Ce tour-ci — cliquez une tuile pour l'utiliser (filtre par coût)")
+        box = QGroupBox("⚔ Ce tour-ci — cliquez une icône pour l'utiliser (survol : règles complètes)")
         lay = QVBoxLayout(box)
         lay.setSpacing(6)
         # v52 : bandeau de rappels (début / fin de tour, initiative) — se ferme d'un clic, jamais bloquant
@@ -790,13 +793,12 @@ class CombatTab(BaseTab):
         # v52 : une seule grille de tuiles, une couleur par type (attaque, capacité, magie, objet, action commune) ;
         # le coût (● Action, ▲ Bonus, ◆ Réaction, ○ Gratuit) est écrit sur chaque tuile
         top = QHBoxLayout()
-        self.turn_slots_layout = QHBoxLayout()            # emplacements de sorts (encart déplacé ici)
-        top.addLayout(self.turn_slots_layout)
-        top.addStretch(1)
-        self.turn_legend = make_label("", "")
-        self.turn_legend.setTextFormat(Qt.TextFormat.RichText)
-        top.addWidget(self.turn_legend)
+        self.turn_slots_layout = QHBoxLayout()            # v53 : bandeau des ressources (cases)
+        top.addLayout(self.turn_slots_layout, 1)
         lay.addLayout(top)
+        self.turn_legend = make_label("", "muted")
+        self.turn_legend.setTextFormat(Qt.TextFormat.RichText)
+        lay.addWidget(self.turn_legend)
         holder = QWidget()
         self.turn_flow = QGridLayout(holder)
         self.turn_flow.setContentsMargins(0, 0, 0, 0)
@@ -944,24 +946,64 @@ class CombatTab(BaseTab):
     SHORT_COMMON = {"Se désengager": "Désengager", "Se cacher": "Cacher", "Se tenir prêt": "Prêt",
                     "Utiliser un objet": "Objet", "Boire une potion (Action bonus)": "Potion", "Influencer": "Influence"}
 
-    def _make_tile(self, x: dict, spheres: dict, compact: bool = False) -> QPushButton:
+    ICON_SIZE = 56                                       # v53 : icônes carrées façon jeu de rôle
+
+    def _tile_pixmap(self, x: dict, res: str = ""):
+        """Icône de la tuile (core/tile_icons) dans la couleur de sa catégorie ; ressource restante en coin."""
+        from core.tile_icons import tile_icon
+        from . import icons as IC
+        kind, name, cat = tile_icon(x)
+        dim = not x.get("disponible", True)
+        if kind == "sort":
+            pix = IC.spell_pixmap(self.db, name, size=self.ICON_SIZE, dim=dim)
+        else:
+            pix = IC.icon_pixmap(name, cat, self.ICON_SIZE, dim)
+        count = res.split()[-1] if res else ""
+        if (count or x.get("nouveau")) and IC.HAS_SVG:
+            from PyQt6.QtGui import QFont, QPainter, QColor
+            pix = pix.copy()
+            p = QPainter(pix)
+            f = QFont()
+            f.setBold(True)
+            f.setPointSizeF(7.5)
+            p.setFont(f)
+            if count:                                    # « 2/3 » en bas à droite, sur pastille sombre
+                w = p.fontMetrics().horizontalAdvance(count) + 6
+                p.setBrush(QColor(0, 0, 0, 170))
+                p.setPen(Qt.PenStyle.NoPen)
+                p.drawRoundedRect(self.ICON_SIZE - w - 2, self.ICON_SIZE - 15, w, 13, 4, 4)
+                p.setPen(QColor("#FFFFFF"))
+                p.drawText(self.ICON_SIZE - w + 1, self.ICON_SIZE - 5, count)
+            if x.get("nouveau"):                         # ✨ nouvelle capacité
+                p.setPen(QColor("#FFE08A"))
+                p.drawText(4, 13, "✨")
+            p.end()
+        return pix
+
+    def _make_tile(self, x: dict, spheres: dict, compact: bool = False):
+        """v53 : tuile = icône carrée ; nom et règles complètes dans l'infobulle (option : nom sous l'icône)."""
+        from PyQt6.QtCore import QSize
+        from PyQt6.QtGui import QIcon
         res = spheres.get(x["id"], "")
         x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
-        if compact:
-            text = "{} {}".format(x["icone"], self.SHORT_COMMON.get(x["nom"], x["nom"]))
+        names = bool((getattr(self.win, "settings", {}) or {}).get("icones_noms", False))
+        b = QToolButton()
+        b.setIcon(QIcon(self._tile_pixmap(x, res)))
+        b.setIconSize(QSize(self.ICON_SIZE, self.ICON_SIZE))
+        b.setAutoRaise(True)
+        if names:
+            b.setText(self.SHORT_COMMON.get(x["nom"], x["nom"]))
+            b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+            b.setFixedSize(self.ICON_SIZE + 26, self.ICON_SIZE + 30)
         else:
-            sub = x["origine"] if x["origine"] not in ("action commune",) else ""
-            if self._is_spell_tile(x):
-                sub = "{} {}".format(self.TURN_ICONS.get(x["type"], ""), x["type"])
-            text = "{} {}{}\n{}".format(x["icone"], x["nom"], "  ✨" if x.get("nouveau") else "",
-                                        (res + "  " if res else "") + sub)
-        b = QPushButton(text)
-        b.setMinimumHeight(26 if compact else 46)
-
-        b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)   # colonnes de même largeur
+            b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+            b.setFixedSize(self.ICON_SIZE + 6, self.ICON_SIZE + 6)
+        b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; }"
+                        "QToolButton:hover { background: rgba(255,255,255,0.10); border-radius: 8px; }")
         b.setEnabled(x["disponible"])
         b.setCursor(Qt.CursorShape.PointingHandCursor)
-        b.setToolTip(rich_tip(x["nom"], "{}{}{}{}".format(
+        b.setToolTip(rich_tip("{} {}".format(x["icone"], x["nom"]), "{}{}{}{}{}".format(
+            "<i>{} — {}</i>\n".format(x["type"], x["origine"]) if x.get("origine") else "<i>{}</i>\n".format(x["type"]),
             x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
             "\n<b>Restant : {}</b>".format(res) if res else "",
             "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
@@ -971,7 +1013,6 @@ class CombatTab(BaseTab):
 
     TILE_CATS = [("attaque", "Attaques"), ("capacite", "Capacités de classe et de race"), ("magie", "Magie"),
                  ("objet", "Objets magiques"), ("reaction", "Réactions"), ("commune", "Actions communes")]
-    FLOW_COLS = 6
 
     def _tile_cat(self, x: dict) -> str:
         if self._is_spell_tile(x):
@@ -987,49 +1028,50 @@ class CombatTab(BaseTab):
             return "reaction"
         return "capacite"
 
+    ICON_COLS = 15
+
     def _render_turn_columns(self, shown: list, spheres: dict) -> None:
-        """v52 : grille unique, tuiles regroupées et colorées par type ; les actions communes, plus petites, en fin."""
+        """v53 : barre d'icônes carrées, regroupées par catégorie (attaques, capacités, magie, objets, réactions,
+        actions communes) ; une couleur par catégorie (école pour les sorts)."""
         self.turn_tiles = {}
         clear_layout(self.turn_flow)
-        colors = theme.tile_palette(theme.current())      # v52 : couleurs accordées au thème choisi
         order = {k: n for n, (k, _l) in enumerate(self.TILE_CATS)}
         eco = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
         items = [x for x in shown if not x["id"].startswith("inspiration:")
                  and x["id"] != "commune:magie"]          # v52 : sorts et objets ont déjà leurs tuiles
         items.sort(key=lambda x: (order[self._tile_cat(x)], eco.get(x["type"], 4)))
-        main = [x for x in items if self._tile_cat(x) != "commune"]
-        common = [x for x in items if self._tile_cat(x) == "commune"]
-        cols = self.FLOW_COLS
-        n = -1
-        for n, x in enumerate(main):
-            b = self._make_tile(x, spheres)
-            self._color_tile(b, colors[self._tile_cat(x)])
-            self.turn_flow.addWidget(b, n // cols, n % cols)
-        if self.turn_filter in ("Tout", "Action"):        # v52 : actions d'arme (bottes, actions BG3) en tuiles
+        cols = self.ICON_COLS
+        cells = [self._make_tile(x, spheres) for x in items if self._tile_cat(x) != "commune"]
+        if self.turn_filter in ("Tout", "Action"):        # v52 : actions d'arme (bottes, actions BG3)
             for key, i, row, weapon in self._weapon_action_rows():
-                n += 1
-                label = row["nom"] + (" (DD {})".format(row["dd"]) if row.get("dd") else "")
-                b = QPushButton("{} {}\n{}".format(row.get("icone", "⚔"), label, weapon))
-                b.setMinimumHeight(46)
-                b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
-                b.setCursor(Qt.CursorShape.PointingHandCursor)
+                fake = {"id": "arme_action:{}:{}:{}".format(key, i, row["cle"]), "nom": row["nom"], "arme": weapon,
+                        "icone": row.get("icone", "⚔"), "type": "Action", "origine": weapon, "groupe": "",
+                        "disponible": True, "description": "", "cout": "", "raison": ""}
+                b = self._make_tile(fake, {})
                 b.setToolTip(WA.tooltip_html(row, theme.current().accent_text) +
                              "<p style='color:gray'><i>🎲 Clic : jet d'attaque avec cette arme.</i></p>")
+                b.clicked.disconnect()
                 b.clicked.connect(lambda _=False, k=key, idx=i, r=row: self._on_weapon_action(k, idx, r))
-                self._color_tile(b, colors["attaque"])
-                self.turn_tiles["arme_action:{}:{}:{}".format(key, i, row["cle"])] = b
-                self.turn_flow.addWidget(b, n // cols, n % cols)
-        row0 = (n + 1 + cols - 1) // cols
-        self._common_cells = {}
-        for n, x in enumerate(common):                    # actions communes : deux petites tuiles par case
-            b = self._make_tile(x, spheres, compact=True)
-            self._color_tile(b, colors["commune"], compact=True)
-            self._common_grid_add(b, row0, n)
+                cells.append(b)
+        common = [self._make_tile(x, spheres) for x in items if self._tile_cat(x) == "commune"]
+        n = 0
+        for b in cells:
+            self.turn_flow.addWidget(b, n // cols, n % cols, Qt.AlignmentFlag.AlignLeft)
+            n += 1
+        n = (n + cols - 1) // cols * cols                 # actions communes : nouvelle rangée
+        for b in common:
+            self.turn_flow.addWidget(b, n // cols, n % cols, Qt.AlignmentFlag.AlignLeft)
+            n += 1
         for c in range(cols):
-            self.turn_flow.setColumnStretch(c, 1)
+            self.turn_flow.setColumnStretch(c, 0)
+        self.turn_flow.setColumnStretch(cols, 1)
+        pal = theme.icon_palette(theme.current())
         present = {self._tile_cat(x) for x in items}
-        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=colors[k], l=l)
-                                           for k, l in self.TILE_CATS if k in present))
+        legend = {"attaque": "attaque", "capacite": "capacite", "objet": "objet", "reaction": "reaction",
+                  "commune": "commune", "magie": "ecole_evocation"}
+        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(
+            c=pal[legend[k]]["cadre"], l=l if k != "magie" else "Magie (couleur de l'école)")
+            for k, l in self.TILE_CATS if k in present))
 
     def _weapon_action_rows(self) -> list:
         """Actions d'arme des armes équipées (main principale, distance) : [(clé de liste, indice, action, arme)]."""
@@ -1043,27 +1085,6 @@ class CombatTab(BaseTab):
                 for row in self.engine.weapon_actions(slot):
                     out.append((key, i, row, slot["nom"]))
         return out
-
-    def _common_grid_add(self, b, row0: int, n: int) -> None:
-        """Actions communes en fin de grille : deux par case de tuile normale (plus compact)."""
-        r, k = divmod(n, self.FLOW_COLS * 2)
-        cell = (row0 + r, k // 2)
-        holder = self._common_cells.get(cell)
-        if holder is None:
-            w = QWidget()
-            holder = QHBoxLayout(w)
-            holder.setContentsMargins(0, 0, 0, 0)
-            holder.setSpacing(3)
-            self.turn_flow.addWidget(w, cell[0], cell[1])
-            self._common_cells[cell] = holder
-        holder.addWidget(b)
-
-    @staticmethod
-    def _color_tile(b, color: str, compact: bool = False) -> None:
-        # petites tuiles : texte réduit et marges serrées, pour que le libellé ne soit jamais tronqué
-        extra = "font-size: 11px; padding: 1px 3px; border-left-width: 4px;" if compact else "padding: 2px 6px;"
-        b.setStyleSheet("QPushButton {{ border: 1px solid {c}; border-left: 6px solid {c}; border-radius: 6px; "
-                        "text-align: left; {e} }}".format(c=color, e=extra))
 
     def _on_roll_initiative(self) -> None:
         from .dice_dialog import roll_initiative
@@ -2574,6 +2595,8 @@ class CombatTab(BaseTab):
         self._refresh_styles()
         self._refresh_masteries()
         self._refresh_slot_strip()
+        if hasattr(self, "resource_strip"):
+            self.resource_strip.refresh()
         self._refresh_remember()                         # v52 : À ne pas oublier
         self._refresh_resources()
         self._refresh_saves()
