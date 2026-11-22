@@ -25,6 +25,9 @@ class OnHitDialog(QDialog):
                                  "Cochez ce qui s'applique à ce coup (coût dépensé à la validation) :", "muted",
                                  wrap=True))
         self.checks: dict[str, QCheckBox] = {}
+        from .common import indicator_qss                 # v53 : cases bien visibles quel que soit le thème
+        from . import theme as _theme
+        self.setStyleSheet(indicator_qss(_theme.current()))
         smites = [o for o in options if o.get("groupe") == "chatiment"]
         for o in options:
             if o.get("groupe") == "chatiment":
