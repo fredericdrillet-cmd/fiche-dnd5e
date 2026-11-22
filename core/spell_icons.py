@@ -151,23 +151,20 @@ def _shape_layer(shape: str) -> str:
 
 
 def compose(spell: dict, variant: int = 0) -> str:
+    """Effet au centre (grand), forme du sort en fond, élément reconnaissable en haut à gauche. L'école est donnée
+    par la COULEUR de l'icône (ui/icons) : pas de badge, rien de superflu. `variant` ajoute une petite marque
+    distinctive quand deux sorts tomberaient sur le même dessin."""
     t = spell_traits(spell)
     effect = EFFECT_GLYPH.get(t["effet"]) or SCHOOL_GLYPH.get(t["ecole"]) or A.sparkle
     layer = _shape_layer(t["forme"])
-    out = layer + A.place(effect(), 32, 30, 0.62 if layer else 0.74)
+    out = layer + A.place(effect(), 32, 32, 0.7 if layer else 0.82)
     motif = next((f for k, _rx, f in MOTIFS if k == t["motif"]), None)
     if motif is not None and t["motif"] != t["effet"]:
-        out += A.place(motif(), 12, 12, 0.28)
-    school = SCHOOL_GLYPH.get(t["ecole"])
-    if school is not None and school is not effect:
-        out += A.circle(54, 54, 9, True) + '<g fill="#000000" stroke="#000000">' + \
-            A.place(school(), 54, 54, 0.2).replace('fill="#FFFFFF"', 'fill="#000000"').replace(
-                'stroke="#FFFFFF"', 'stroke="#000000"') + "</g>"
-    lvl = int(spell.get("niveau") or 0)
-    if lvl:                                              # niveau du sort : petits traits en haut à droite
-        out += "".join(A.rect(60 - 4 * k, 2, 2.5, 6, 0.8) for k in range(min(lvl, 9)))
+        out += A.place(motif(), 13, 13, 0.32)
     if variant:
         out += ACCENTS[(variant - 1) % len(ACCENTS)]()
+        if variant > len(ACCENTS):                       # encore identique : seconde marque, en haut à droite
+            out += A.place(ACCENTS[(variant // len(ACCENTS)) % len(ACCENTS)](), 54, 10, 1.0)
     return out
 
 
@@ -192,10 +189,12 @@ def all_spell_icons(spells) -> dict[str, str]:
         else:
             seed = int(hashlib.md5(b.encode("utf-8")).hexdigest(), 16)
             body, v = compose(by_base[b]), 0
-            while body in seen:
+            while body in seen and v < 90:
                 v += 1
-                body = compose(by_base[b], v + seed % len(ACCENTS) * 0) if v < 50 else body + A.place(
-                    A.sparkle(), 10 + v % 5 * 4, 10, 0.1)
+                body = compose(by_base[b], v)
+            while body in seen:                          # filet de sécurité (jamais atteint en pratique)
+                body += A.circle(6 + seed % 50, 60, 1.5, True)
+                seed += 7
         seen.add(body)
         out[b] = body
     _CACHE[key] = out

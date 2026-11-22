@@ -1269,4 +1269,28 @@ SPELL_ART = {
     "Tempête de feu": firestorm,
     "Tremblement de terre": earthquake,
     "Résurrection": lambda: resurrection() + circle(32, 32, 30, False, 1.5) + sparkle(54, 54, 6),
+    # v53 : sorts courants dont l'icône composée restait peu parlante
+    "Petite hutte de Léomund": lambda: path("M6 52 C6 26 18 12 32 12 C46 12 58 26 58 52 Z", w=4) +
+        path("M26 52 V40 C26 34 38 34 38 40 V52", True) + sparkle(50, 10, 6),
+    "Portail": lambda: '<ellipse cx="32" cy="32" rx="18" ry="26" fill="none" stroke="#FFFFFF" stroke-width="5"/>' +
+        '<ellipse cx="32" cy="32" rx="10" ry="18" fill="none" stroke="#FFFFFF" stroke-width="2"/>' + sparkle(32, 32, 7),
+    "Création de nourriture et d'eau": lambda: place(bread(), 24, 40, 0.6) + place(drop(), 46, 22, 0.42),
+    "Métal brûlant": lambda: rect(12, 34, 40, 16, 3) + place(flame(), 32, 20, 0.42) +
+        '<path d="M18 42 h28" stroke="#000000" stroke-width="2"/>',
+    "Nuage nauséabond": lambda: fog() + '<g fill="#000000">' + place(skull(), 32, 38, 0.22).replace('fill="#FFFFFF"', '') + '</g>',
+    "Lévitation": lambda: circle(32, 14, 7, True) + path("M22 44 V28 C22 22 42 22 42 28 V44 Z", True) +
+        path("M14 52 C24 48 40 48 50 52 M18 58 C26 55 38 55 46 58", w=3),
+    "Communication à distance": lambda: place(bubble(), 22, 24, 0.55) + place(bubble(), 44, 44, 0.55) +
+        path("M30 38 C34 44 38 44 40 40", w=2.5),
+    "Voir l'invisible": lambda: eye() + '<path d="M8 54 h48" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="3 4"/>' +
+        sparkle(54, 10, 6),
+    "Héroïsme": lambda: place(shield(), 32, 34, 0.8) + place(arrow_up(), 32, 32, 0.35).replace('fill="#FFFFFF"', 'fill="#000000"'),
+    "Lueur d'espoir": lambda: place(bulb(), 32, 34, 0.75) + place(heart(), 32, 30, 0.25).replace('fill="#FFFFFF"', 'fill="#000000"'),
+    "Compulsion": lambda: place(spiral(), 32, 32, 1.0) + poly([(54, 8), (60, 20), (48, 16)]),
+    "Zone de vérité": lambda: circle(32, 32, 27, False, 2.5) + place(bubble(), 32, 30, 0.6) +
+        '<path d="M24 28 l5 5 l10 -10" stroke="#000000" stroke-width="3.5" fill="none" stroke-linecap="round"/>',
+    "Appel de destrier": lambda: path("M14 56 L18 34 C14 26 18 14 28 10 L32 4 L36 12 C46 14 52 22 50 30 L44 30 "
+        "L40 24 L36 30 L38 56 Z", True),
+    "Tempête de neige": lambda: fog() + place(snowflake(), 20, 54, 0.22) + place(snowflake(), 44, 54, 0.22),
+    "Mur d'eau": lambda: water_wave() + rect(6, 8, 52, 4, 2) + rect(6, 18, 52, 3, 1.5),
 }
