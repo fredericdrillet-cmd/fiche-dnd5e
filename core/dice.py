@@ -37,6 +37,12 @@ class RollSpec:
     desavantage: list[str] = field(default_factory=list)
     echec: list[str] = field(default_factory=list)
     note: str = ""                                       # ex. « Dégâts en cas de réussite : 1d8+3 tranchants »
+    crit_min: int = 20                                   # v52 : critique dès 19 ou 18 (Champion)
+    d20_min: int = 1                                     # v52 : Talent fiable (d20 de 9 ou moins = 10)
+    total_min: int = 0                                   # v52 : Puissance indomptable (total au moins la Force)
+    floor_label: str = ""                                # source du plancher (affichée)
+    reroll_ones: str = ""                                # v52 : Chanceux du Halfelin (relance des 1 naturels)
+    luck_dice: list[int] = field(default_factory=list)   # v52 : don Chanceux 2014 (d20 déjà lancés, + 1)
 
     @property
     def flat(self) -> int:
@@ -63,6 +69,7 @@ class RollResult:
     total: int
     critical: str                    # "succes" (20 naturel) | "echec" (1 naturel) | ""
     auto_fail: bool = False
+    adjust: str = ""                 # v52 : plancher appliqué (« Talent fiable : 4 → 10 »)
 
 
 def roll_die_expr(expr: str, rng) -> int:
@@ -79,12 +86,33 @@ def roll_d20(spec: RollSpec, rng=None) -> RollResult:
     rng = rng or random
     mode = spec.mode
     count = 2 if mode in ("avantage", "désavantage") else 1
-    d20s = [rng.randint(1, 20) for _ in range(count)]
-    natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+    luck = list(getattr(spec, "luck_dice", []) or [])
+    if luck:                                         # don Chanceux 2014 : un d20 de plus, on garde le meilleur
+        d20s = luck + [rng.randint(1, 20)]
+        natural = max(d20s)
+    else:
+        d20s = [rng.randint(1, 20) for _ in range(count)]
+        natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+    lucky_note = ""
+    if getattr(spec, "reroll_ones", "") and natural == 1 and not luck:   # Chanceux (halfelin) : on relance le 1
+        i = d20s.index(1) if mode != "avantage" else len(d20s) - 1 - d20s[::-1].index(1)
+        d20s[i] = rng.randint(1, 20)
+        natural = max(d20s) if mode == "avantage" else min(d20s) if mode == "désavantage" else d20s[0]
+        lucky_note = "{} : 1 relancé → {}".format(spec.reroll_ones, d20s[i])
     values = [roll_die_expr(t.dice, rng) if t.dice else t.value for t in spec.terms]
-    total = natural + sum(values)
-    crit = "succes" if natural == 20 else "echec" if natural == 1 else ""
-    return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec")
+    used = max(natural, getattr(spec, "d20_min", 1))
+    total = used + sum(values)
+    adjust = ""
+    if used != natural:
+        adjust = "{} : d20 {} → {}".format(spec.floor_label or "Plancher", natural, used)
+    floor = getattr(spec, "total_min", 0)
+    if floor and total < floor:
+        adjust = "{} : total {} → {}".format(spec.floor_label or "Plancher", total, floor)
+        total = floor
+    crit = "succes" if natural >= getattr(spec, "crit_min", 20) else "echec" if natural == 1 else ""
+    if lucky_note:
+        adjust = lucky_note + (" ; " + adjust if adjust else "")
+    return RollResult(d20s, natural, values, total, crit, auto_fail=mode == "échec", adjust=adjust)
 
 
 def mode_of(avantage: list, desavantage: list, echec: list) -> str:
@@ -129,6 +157,7 @@ class DamageSpec:
     kind: str = "degats"                      # degats | soins | de (dé de supériorité, d'inspiration...)
     flat_labels: list[tuple[str, int]] = field(default_factory=list)   # provenance du bonus fixe (affichage)
     options: list[tuple[str, str]] = field(default_factory=list)       # v39 : bonus conditionnels (source, dés)
+    parts: list[tuple[str, str]] = field(default_factory=list)         # v52 : [(morceau de formule, type)] dans l'ordre
     calcul: str = ""                          # v46 : détail lisible « 1d8 - 1 (Mod. FOR) + 3 (…) = 1d8 + 2 »
 
 
@@ -184,8 +213,56 @@ def critical_formula(formula: str) -> str:
     return re.sub(r"(\d*)d(\d+)", lambda m: "{}d{}".format(2 * int(m.group(1) or 1), m.group(2)), formula or "")
 
 
+DAMAGE_WORDS = {"acide": "acide", "contondant": "contondants", "feu": "feu", "foudre": "foudre", "force": "force",
+                "froid": "froid", "necrotique": "nécrotiques", "perforant": "perforants", "poison": "poison",
+                "psychique": "psychiques", "radiant": "radiants", "tonnerre": "tonnerre", "tranchant": "tranchants"}
+
+
+def damage_type_in(text: str) -> str:
+    """Type de dégâts cité dans un texte (« 2d6 feu », « Frappe divine (radiants) ») ; '' sinon."""
+    import unicodedata
+    t = "".join(c for c in unicodedata.normalize("NFD", (text or "").lower()) if unicodedata.category(c) != "Mn")
+    for word, label in DAMAGE_WORDS.items():
+        if re.search(r"\b{}s?\b".format(word), t):
+            return label
+    return ""
+
+
+def typed_totals(parts: list, result) -> list[tuple[str, int]]:
+    """v52 : total de chaque type de dégâts, en suivant l'ordre des morceaux de formule et des dés tirés."""
+    values = list(getattr(result, "dice", []) or [])
+    out: dict[str, int] = {}
+    pos = 0
+    for piece, dtype in parts:
+        groups, flat = parse_damage(piece)
+        n = sum(count for _s, count, _f in groups)
+        total = flat + sum(sign * v for _f, v, sign in values[pos:pos + n])
+        pos += n
+        key = dtype or "autres"
+        out[key] = out.get(key, 0) + total
+    return [(k, max(0, v)) for k, v in out.items()]
+
+
+def typed_text(parts: list, result) -> str:
+    totals = typed_totals(parts, result)
+    return " + ".join("{} {}".format(v, k) for k, v in totals) if len(totals) > 1 else ""
+
+
 def has_dice(formula: str) -> bool:
     return bool(parse_damage(formula)[0])
+
+
+def free_formula(text: str) -> str:
+    """v52 — jet libre : « d20+5 », « 2D6 + 3 », « d% » -> formule normalisée (« 1d20+5 ») ; '' si aucun dé."""
+    t = (text or "").strip().lower().replace(" ", "").replace("−", "-").replace("d%", "d100")
+    if not re.fullmatch(r"[0-9d+\-]+", t):
+        return ""
+    groups, flat = parse_damage(t)
+    if not groups or sum(n for _, n, _ in groups) > 100:
+        return ""
+    parts = ["{}{}d{}".format("-" if s < 0 else "+", n, f) for s, n, f in groups]
+    out = "".join(parts).lstrip("+")
+    return out + ("{:+d}".format(flat) if flat else "")
 
 
 def roll_damage(spec: DamageSpec, rng=None) -> DamageResult:

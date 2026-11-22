@@ -40,9 +40,46 @@ def tip_text(text: str) -> str:
     return out.replace("\n", "<br/>")
 
 
+# v52 : lexique des règles — renseigné par la fenêtre principale (core/glossary.Glossary)
+GLOSSARY = None
+EDITION: Callable[[], int] = lambda: 0                 # édition de la fiche ouverte (2014 / 2024)
+BEGINNER: Callable[[], bool] = lambda: False           # option « Aides pour débuter »
+
+
+def glossary_html(text: str, skip: str = "", limit: int = 3) -> str:
+    """Définitions (lexique) des termes trouvés dans `text`, sauf `skip` (le titre de l'infobulle)."""
+    if not GLOSSARY:
+        return ""
+    from core.rules import norm as _n
+    terms = [t for t in GLOSSARY.find(text, limit + 1) if _n(t["terme"]) != _n(skip)][:limit]
+    if not terms:
+        return ""
+    rows = "".join("<br/>• <b>{}</b> : {}".format(html.escape(t["terme"]),
+                                                  html.escape(GLOSSARY.definition(t, EDITION())))
+                   for t in terms)
+    return "<hr/><small><i>Lexique</i>{}</small>".format(rows)
+
+
+def glossify(text: str) -> str:
+    """Texte brut -> HTML avec les termes du lexique soulignés (option « Aides pour débuter »)."""
+    if not GLOSSARY or not text:
+        return html.escape(text or "")
+    out, pos = [], 0
+    for start, end, _ in GLOSSARY.spans(text):
+        if end <= start:
+            continue
+        out.append(html.escape(text[pos:start]))
+        out.append("<u>{}</u>".format(html.escape(text[start:end])))
+        pos = end
+    out.append(html.escape(text[pos:]))
+    return "".join(out).replace("\n", "<br/>")
+
+
 def rich_tip(title: str, text: str) -> str:
-    """Info-bulle HTML (retour à la ligne automatique) : titre en gras + description mise en forme."""
-    return "<qt><b>{}</b><br/>{}</qt>".format(html.escape(title), tip_text(text))
+    """Info-bulle HTML (retour à la ligne automatique) : titre en gras + description mise en forme
+    + définitions du lexique pour les mots de règles employés (v52)."""
+    return "<qt><b>{}</b><br/>{}{}</qt>".format(html.escape(title), tip_text(text),
+                                               glossary_html(title + " " + (text or ""), skip=title))
 
 
 def calc_tip(title: str, rows: list, total: str = "", notes: Optional[list] = None) -> str:
@@ -100,6 +137,9 @@ def fill_combo(combo, items: Iterable[str], current: str = "", tips: Optional[di
 
 def make_label(text: str = "", role: str = "", wrap: bool = False, align=None) -> QLabel:
     lab = QLabel(text)
+    if wrap and text and "<" not in text and BEGINNER() and GLOSSARY and GLOSSARY.find(text, 1):
+        lab.setText(glossify(text))                       # v52 : mots du lexique soulignés + définitions
+        lab.setToolTip("<qt>{}</qt>".format(glossary_html(text, limit=4)))
     if role:
         lab.setProperty("role", role)
     lab.setWordWrap(wrap)
@@ -197,6 +237,35 @@ def check_item(checked: bool, enabled: bool = True, tip: str = "") -> QTableWidg
     return it
 
 
+class bulk_fill:
+    """v52 : remplissage rapide d'un grand tableau — pas de redessin ni de recalcul des largeurs de colonnes à chaque
+    case (sans cela, 1 500 cases « ResizeToContents » coûtent plusieurs secondes)."""
+
+    def __init__(self, table: QTableWidget):
+        self.table = table
+        self.modes: list = []
+
+    def __enter__(self):
+        t = self.table
+        t.setUpdatesEnabled(False)
+        hh = t.horizontalHeader()
+        try:
+            self.modes = [hh.sectionResizeMode(c) for c in range(t.columnCount())]
+            for c in range(t.columnCount()):
+                hh.setSectionResizeMode(c, QHeaderView.ResizeMode.Fixed)
+        except (TypeError, AttributeError):                # interface factice des tests
+            self.modes = []
+        return t
+
+    def __exit__(self, *exc):
+        t = self.table
+        hh = t.horizontalHeader()
+        for c, m in enumerate(self.modes):
+            hh.setSectionResizeMode(c, m)
+        t.setUpdatesEnabled(True)
+        return False
+
+
 def style_table(table: QTableWidget, stretch_col: Optional[int] = 0, row_h: int = 32) -> QTableWidget:
     """Réglages communs : en-têtes centrés, lignes alternées, hauteur uniforme, pas d'édition directe."""
     hh = table.horizontalHeader()
@@ -271,6 +340,24 @@ class BaseTab(QWidget):
     def engine(self):
         return self.win.engine
 
+    # v52 : Mode guidé — les choix de construction se font à la création ou dans « Niveau supérieur »
+    GUIDED_TIP = ("Mode guidé : se choisit à la création ou dans « ▲ Niveau supérieur ». Seul un choix encore "
+                  "manquant (○) se complète ici. Le Mode libre (Options) permet de tout corriger.")
+
+    @property
+    def guided(self) -> bool:
+        return getattr(self.win, "free_mode", True) is False
+
+    def guided_refuse(self, what: str = "") -> bool:
+        """Refus d'une modification en Mode guidé (message dans la barre d'état). Renvoie True (= refusé)."""
+        try:
+            self.win.statusBar().showMessage("Mode guidé : {}se choisit à la création ou dans « Niveau "
+                                             "supérieur » (Mode libre dans Options pour corriger).".format(
+                                                 what + " " if what else ""), 8000)
+        except (AttributeError, TypeError):
+            pass
+        return True
+
     def mark_box(self, box, base: str, tab: str, encart: str) -> int:
         """Titre d'encart suivi du reste à faire (« Compétences — 2 à choisir ») — v28, choix manquants."""
         n = self.engine.missing_in(tab, encart)
@@ -283,7 +370,9 @@ class BaseTab(QWidget):
 
     @property
     def db(self):
-        return self.win.db
+        """Base de règles de la fiche ouverte (v52 : vue 2024 pour une fiche 2024, voir Engine.db)."""
+        eng = getattr(self.win, "engine", None)
+        return eng.db if eng is not None else self.win.db
 
     def changed(self) -> None:
         self.win.changed()

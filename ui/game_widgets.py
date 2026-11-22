@@ -79,13 +79,16 @@ class EffectBadge(InstantTip, QWidget):
     SIZE = QSize(66, 72)
 
     def __init__(self, key: str, icon: str, name: str, category: str, tip_html: str, on_remove=None,
-                 permanent: bool = False):
+                 permanent: bool = False, timer: str = "", on_extend=None):
         QWidget.__init__(self)
+        self.timer = timer                               # v52 : « 7 r », « 9 min » (durée restante)
+        self.on_extend = on_extend
         self.key, self.icon, self.name, self.category = key, icon, name, category
         self.permanent = permanent                       # trait inné (race / classe) : cadenas + liseré doré
         self.tip_html = tip_html + ("<p style='color:gray'><i>Trait permanent — clic : le retirer (confirmation "
                                     "demandée).</i></p>" if permanent else
-                                    "<p style='color:gray'><i>Clic : retirer l'effet.</i></p>")
+                                    "<p style='color:gray'><i>Clic : retirer l'effet.{}</i></p>".format(
+                                        " Clic droit : prolonger (durée complète)." if on_extend else ""))
         self.on_remove = on_remove
         self._hover = False
         self.setFixedSize(self.SIZE)
@@ -103,6 +106,10 @@ class EffectBadge(InstantTip, QWidget):
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):  # noqa: N802
+        if self.on_extend and event.button() == Qt.MouseButton.RightButton:
+            QToolTip.hideText()
+            self.on_extend(self.key)
+            return
         if self.on_remove:
             QToolTip.hideText()
             self.on_remove(self.key)
@@ -139,6 +146,17 @@ class EffectBadge(InstantTip, QWidget):
             f.setPixelSize(10)
             p.setFont(f)
             p.drawText(QRectF(4, 0, 16, 16), int(Qt.AlignmentFlag.AlignCenter), "🔒")
+        if self.timer:                                   # v52 : pastille de durée restante
+            f.setPixelSize(9)
+            f.setBold(True)
+            p.setFont(f)
+            w = max(22, 7 * len(self.timer))
+            pill = QRectF(57 - w, 38, w, 13)
+            p.setBrush(QColor(t.panel))
+            p.setPen(QPen(QColor(t.accent_text), 1.0))
+            p.drawRoundedRect(pill, 6, 6)
+            p.setPen(QColor(t.text))
+            p.drawText(pill, int(Qt.AlignmentFlag.AlignCenter), self.timer)
         if self._hover:                                  # pastille ✕ de retrait
             p.setBrush(QColor(t.warn))
             p.setPen(QPen(QColor("#ffffff"), 1.2))

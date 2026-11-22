@@ -79,6 +79,17 @@ class OptionsDialog(QDialog):
                                 "caractéristiques brutes, nom du personnage…).", "muted", wrap=True))
         lay.addWidget(mbox)
 
+        hbox = QGroupBox("Aides pour débuter")                # v52 : lexique souligné, explications par onglet
+        hl = QVBoxLayout(hbox)
+        self.beginner = QCheckBox("Activer les aides pour débuter")
+        self.beginner.setChecked(bool(win.settings.get("aides_debutant", False)))
+        hl.addWidget(self.beginner)
+        hl.addWidget(make_label("Souligne les mots de règles dans les textes (définition au survol) et affiche une "
+                                "ligne d'explication en tête de chaque onglet et de chaque étape de création. Les "
+                                "définitions au survol des infobulles et le lexique (F1) restent disponibles sans "
+                                "cette option.", "muted", wrap=True))
+        lay.addWidget(hbox)
+
         buttons = QHBoxLayout()
         buttons.addStretch(1)
         self.cancel_btn = QPushButton("Annuler")
@@ -124,5 +135,6 @@ class OptionsDialog(QDialog):
     def accept(self):
         self.win.settings["regle_survie"] = self.survival.isChecked()
         self.win.settings["mode_libre"] = self.free_mode.isChecked()
+        self.win.settings["aides_debutant"] = self.beginner.isChecked()
         self.win.apply_appearance(self._key, self.font.value(), save=True)
         super().accept()

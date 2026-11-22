@@ -1,0 +1,290 @@
+# v52 — Éditions 2014 / 2024 / libre et règles de la table
+
+Ce document décrit l'architecture retenue, ce qui est **livré dans cette étape** (étape 1) et ce qui reste à faire (étape 2), avec les décisions qui t'appartiennent. Cible : l'application **bureau** (PyQt6). Le moteur `core/` étant partagé, la version web bénéficie des mêmes règles sans interface dédiée pour l'instant.
+
+## 1. Architecture
+
+```
+data/*.json              données actuelles de l'app (2014, auditées) — inchangées, édition implicite 2014
+data/editions/*.json     nouvelles données de référence (2014 + 2024, champ `edition`, identifiants stables `id`)
+core/editions.py         modes, filtrage, badge, catalogue `EditionCatalog`, multiclassage inter-éditions
+core/house_rules.py      registre des règles de la table, valeurs par défaut par mode, résolution
+core/character.py        `edition_mode`, `regles_optionnelles`, `inspiration` ; `edition` sur chaque entrée de classe
+core/settings.py         `edition_defaut`, `regles_defaut` (valeurs des nouveaux personnages)
+ui/rules_dialog.py       fenêtre « Règles de la table » (menu Options)
+```
+
+### État : où vivent le mode et les règles
+
+| Donnée | Emplacement | Pourquoi |
+|---|---|---|
+| Mode d'édition (`"2014"`, `"2024"`, `"libre"`) | **dans le personnage** (`Character.edition_mode`) | Un personnage 2014 reste 2014 quand on en ouvre un autre ; la sauvegarde JSON est autonome (bureau et web lisent le même fichier). |
+| Règles de la table (`{clé: bool}`) | **dans le personnage** (`Character.regles_optionnelles`) | Même raison ; une clé absente prend la valeur par défaut du mode. |
+| Édition de chaque classe | **dans l'entrée de classe** (`{"nom", "niveau", …, "edition": 2024}`) | Indispensable au multiclassage inter-éditions (Guerrier 2024 + Roublard 2014). |
+| Valeurs par défaut de la table | **préférences** (`edition_defaut`, `regles_defaut`) | Appliquées à chaque nouveau personnage (assistant de création et personnage vierge). |
+
+L'équivalent d'un « store » dans cette application est le couple `Character` (état) + `Engine` (lecture et commandes). Les nouvelles commandes du moteur : `edition_mode`, `set_edition_mode()`, `house_rules()`, `rule_active(clé)`, `set_house_rule()`, `edition_problems()`.
+
+### Fonctions de filtrage (`core/editions.py`)
+
+| Fonction | Rôle |
+|---|---|
+| `normalize_mode(v)` | valeur enregistrée → `"2014"`, `"2024"` ou `"libre"` |
+| `editions_of_mode(mode)` | éditions autorisées (`{2014}`, `{2024}`, `{2014, 2024}`) |
+| `item_edition(item)` | édition d'un élément (champ `edition`, sinon 2014) |
+| `allowed(item, mode)` / `filter_items(items, mode, dedupe=True)` | filtrage ; `dedupe` retire les réimpressions (`doublon_de`) |
+| `badge(item, mode)` / `label(nom, item, mode)` | « 2024 » / « Guerrier [2024] » en mode libre seulement |
+| `EditionCatalog.list(type, mode, **filtres)` | ex. `list("sous_classes", "libre", classe="Guerrier")` |
+| `EditionCatalog.subclasses_of()`, `spells_for_class()`, `find()`, `get(id)`, `counts()` | liens et recherches |
+
+### Multiclassage inter-éditions
+
+Chaque classe compte **selon sa propre édition** (`editions.spell_slots`, utilisé par `Engine.spell_slots`) :
+
+| Cas | 2014 | 2024 |
+|---|---|---|
+| Demi-incantateur (Paladin, Rôdeur) en multiclassage | moitié des niveaux, **arrondi inférieur** | moitié des niveaux, **arrondi supérieur** |
+| Demi-incantateur seul | sorts à partir du niveau 2 | sorts **dès le niveau 1** |
+| Tiers d'incantateur (Chevalier occulte, Escroc arcanique) | tiers, arrondi inférieur | idem |
+| Artificier | moitié, arrondi supérieur | (classe absente de 2024) |
+
+Exemple testé : Paladin 5 (2024) + Magicien 3 (2014) = niveau d'incantateur 3 + 3 = 6 → 4/3/3 emplacements ; la même chose en Paladin 2014 donne 2 + 3 = 5 → 4/3/2. Les prérequis de multiclassage sont identiques dans les deux éditions (13 dans les caractéristiques de la classe d'origine et de la nouvelle classe).
+
+`validate_classes()` signale deux incohérences : une classe hors du mode actif, et **la même classe dans deux éditions** (interdit).
+
+## 2. Règles de la table
+
+| Clé | Règle | Défaut 2014 | Défaut 2024 / libre | Effet dans l'app |
+|---|---|---|---|---|
+| `potion_action_bonus` | Potion en action bonus (soi-même ; un allié reste une action) | non | oui | tuile « Boire une potion (Action bonus) » de l'onglet Combat |
+| `maitrises_armes_2014` | Bottes d'arme 2024 sur l'arsenal 2014, **si l'arme est maîtrisée** | non | oui | botte affichée sur l'arme et action « Botte d'arme » |
+| `inspiration_heroique` | Inspiration héroïque 2024 (relance d'un dé) au lieu de l'avantage 2014 | non | oui | tuiles « Recevoir / Utiliser l'inspiration », texte selon la règle |
+| `actions_arme_bg3` | Actions d'arme façon Baldur's Gate 3 (règle maison) | oui | oui | actions spéciales de chaque arme |
+
+**Anciennes sauvegardes** : elles restent en mode 2014 et gardent exactement le comportement des versions précédentes (potion en action bonus, bottes et actions d'arme actives). Un **nouveau** personnage 2014 n'a plus la potion en action bonus ni les bottes, conformément à l'audit `AUDIT_CONFORMITE_5E2014.md` (§2.1). Le registre `HR.RULES` accueille de nouvelles règles sans autre changement : la fenêtre se construit à partir de lui.
+
+**Fenêtre** : Options → *Règles de la table…* : choix du mode, alertes d'incohérence des classes, cases à cocher par catégorie avec description et origine, bouton « Valeurs par défaut du mode », case « Utiliser ces réglages pour les nouveaux personnages ».
+
+## 3. Données reçues : constats
+
+- 18 manuels, 2014 et 2024 séparés par `edition`, identifiants stables (`classe-fighter-2024-phb24`) : excellente base pour relier les éléments.
+- **Champs en texte libre** pour les bases de classe (compétences : « Choisissez-en 2 : … », armures, armes, jets de sauvegarde, équipement) : il faut un analyseur pour les transformer en listes que le moteur sait utiliser.
+- **Aptitudes de classe 2014 moins détaillées que les données actuelles** (aptitudes listées par classe ; l'app compte aussi chaque amélioration et les options de Tasha) :
+
+| Classe 2014 | Nouvelles données | App actuelle | Sous-classes nouvelles | Sous-classes officielles de l'app |
+|---|---|---|---|---|
+| Clerc | 6 | 22 | 14 | 14 |
+| Ensorceleur | 6 | 15 | 9 | 7 |
+| Magicien | 6 | 11 | 14 | 12 |
+| Guerrier | 7 | 16 | 10 | 8 |
+| Occultiste | 7 | 15 | 9 | 10 |
+| Druide | 8 | 17 | 7 | 7 |
+| Barde | 11 | 27 | 9 | 7 |
+| Rôdeur | 13 | 28 | 8 | 7 |
+| Roublard | 13 | 20 | 11 | 9 |
+| Barbare | 14 | 20 | 10 | 11 |
+| Paladin | 14 | 21 | 10 | 7 |
+| Moine | 22 | 27 | 11 | 8 |
+| Artificier (ERLW / TCE) | 20 / 13 | 17 | 7 | 4 |
+
+  En revanche, les **sous-classes 2014** des nouvelles données sont souvent plus nombreuses : elles comblent une partie des manques relevés par l'audit (§4).
+- Les 2024 ont 4 sous-classes par classe (Manuel des joueurs 2024) ; pas d'Artificier 2024.
+
+## 4. Étape 2
+
+### 4.1 Fait : fusion des données et filtrage des choix
+
+`core/edition_import.py` fusionne `data/editions/` dans la base **à chaque chargement** (aucun fichier de `data/` n'est réécrit). Bilan affiché par `stats_text()` :
+
+| Type | Ajouté | Règle |
+|---|---|---|
+| Sorts | 28 sorts 2014 manquants (*Grêle d'épines*, *Purification de nourriture et d'eau*, sorts de Wildemount, d'Acquisitions Inc., de Strixhaven…) + 391 sorts 2024 | 7 sorts 2014 ne sont que d'autres traductions de sorts déjà présents (*Piques argentées* = *Barbes argentées*…) : écartés |
+| Dons | dons 2014 manquants (dons raciaux de Xanathar, Chef inspirant, Sentinelle, Tueur de mages…) + 75 dons 2024 | les dons de Theros (piété, bénédictions), les faveurs épiques et les dons sombres sont écartés ; **13 dons de l'app au texte faux** reçoivent le texte officiel, avec leur nom d'app (audit §8.3) |
+| Historiques | 38 historiques 2014 officiels manquants (SCAG, variantes du PHB, Ravenloft…) + 16 historiques 2024 | 2024 : `caracteristiques_2024` et `don_origine` sont enregistrés |
+| Sous-classes | les **14 sous-classes 2014 officielles manquantes** de l'audit (Parjure, Couronne, Chevalier de l'Écho, Banneret, Graviturgie, Longue Mort, Dragon ascendant, L'Immortel, Le Mort-vivant, Batailleur, Voie du géant, Esprits, Sorcellerie lunaire, Gardien de drake) | les autres sous-classes des nouvelles données sont des traductions de sous-classes déjà présentes |
+| Espèces | 10 espèces 2024 (Aasimar, Drakéide, Nain, Elfe, Gnome, Goliath, Halfelin, Humain, Orc, Tieffelin) | bonus « +2/+1 ou +1/+1/+1 » au choix en attendant que l'historique 2024 les fournisse ; vitesse lue dans les données (Goliath 10,5 m) |
+| Armes | Filet | armes et armures communes aux deux éditions |
+
+**Noms** : un élément 2024 dont le nom existe déjà en 2014 prend le suffixe « (2024) » (*Boule de feu (2024)*, *Elfe (2024)*), car le moteur identifie tout par le nom.
+
+**Filtrage** (`Engine.race_options()`, `background_options()`, `feat_options()`, `available_spells()`) : espèces et historiques (onglet Race), catalogue de dons (onglet Progression), dons de « Niveau supérieur », bibliothèque de sorts. L'espèce et l'historique actuels du personnage restent toujours visibles. En mode libre, une info-bulle discrète indique l'édition et la source (`Engine.edition_tips()`).
+
+### 4.2 Fait : classes et sous-classes 2024 (une édition par fiche)
+
+Décision : **l'édition se choisit à la création du personnage** (fenêtre « Édition 2014 / Édition 2024 » avant l'assistant) et **toute la fiche reste dans cette édition**. Le mode libre existe toujours dans le moteur, mais il n'est plus proposé dans l'interface.
+
+- `edition_import.build_classes_2024()` construit les 12 classes 2024 au format du moteur : dé de vie, jets de sauvegarde, compétences au choix, armures, armes (Moine et Roublard : seulement les armes de guerre Légère / Finesse), aptitudes **niveau par niveau** d'après la table (améliorations répétées, « Faveur épique » au niveau 19 traitée comme une amélioration ou un don), 4 sous-classes par classe, table de progression.
+- `EditionView` : une fiche 2024 voit cette base (`Engine.db` est une propriété qui choisit la vue selon l'édition). Tout le code qui lit `self.db.classes`, `subclasses()`, `start_info()` obtient donc les classes 2024 sans autre changement.
+- Règles 2024 lues dans la table : **sorts préparés et sorts mineurs** pour tous les incantateurs (`casters()`), demi-incantateurs dès le niveau 1, **sous-classe au niveau 3** pour toutes les classes (`Engine.subclass_level()`), **dé d'arts martiaux** d6 → d12 (`Engine.martial_arts_die()`), **ressources** affichées (rages, Second souffle, points de concentration, Conduit divin, Formes sauvages, bottes maîtrisées…).
+- PV au niveau 1 : maximum du dé de vie. Pas d'Artificier en 2024.
+
+### 4.3 Fait : compteurs et historique 2024
+
+- **Compteurs à sphères** d'une fiche 2024 (`Engine._trackers_2024`) : rages, points de concentration (ex-ki), Formes sauvages, Second souffle, Conduit divin (Clerc et Paladin) et dé d'inspiration bardique lus dans les tables ; Sens divin retiré (c'est une option de Conduit divin en 2024) ; nouveau compteur « Ennemi juré (Marque du chasseur) » du Rôdeur.
+- **Historique 2024** : les augmentations de caractéristiques (+2/+1 ou +1/+1/+1) se font **parmi les trois caractéristiques de l'historique** (`background_abilities()`, `race_rule()["choix"]`), et le **don d'origine** est accordé d'office (`origin_feat()`, compté dans `chosen_feats()`).
+- **Passage en 2024** (`set_edition_mode`) : l'espèce et l'historique passent à leur équivalent (« Humain » → « Humain (2024) », « Acolyte » → « Acolyte (2024) »), et inversement.
+
+### 4.4 Fait : styles de combat et bottes d'arme 2024
+
+- **Styles de combat** : sur une fiche 2024, le sélecteur de l'onglet Combat propose les 10 dons « Style de combat » 2024 (`EditionView.styles_by_class`), plus *Combattant béni* (Paladin) et *Combattant druidique* (Rôdeur). Les styles de même nom gardent leurs effets (Défense, Archerie, Duel, Armes à deux mains…). *Technique supérieure* (Tasha) reste réservée au 2014.
+- **Bottes d'arme** : `mastery_count()` (table : Guerrier 3 → 6, Barbare 2 → 4 ; 2 pour Paladin, Rôdeur, Roublard ; 0 sans l'aptitude), `mastery_weapons()` (choix du joueur, ou armes équipées par défaut), `set_mastery()`, `botte_allowed()`. Encart « Bottes d'arme » et fenêtre de choix (`ui/mastery_dialog.py`) dans l'onglet Combat. Fiche 2014 : toutes les armes maîtrisées si la règle de la table est active (décision Q4).
+
+### 4.5 Fait : Occultiste et Métamagie 2024
+
+- **Manifestations 2024** (`EditionView.manifestations`, `build_manifestations_2024`) : les 28 manifestations du Manuel 2024, prérequis analysés (niveau, pacte, autre manifestation, tour de magie) ; nombre lu dans la table (1 au niveau 1 → 10 au niveau 20).
+- **Pacte** : en 2024, Pacte de la lame / de la chaîne / du grimoire sont des manifestations ; `ch.pacte` est déduit de la manifestation choisie, et il n'y a plus de choix séparé au niveau 3 (`pact_available()`, `pact_options()`, choix manquants).
+- **Métamagie 2024** (`metamagic_table()`, `metamagic_known_count()`) : les 10 options 2024 avec leur coût, 2 options au niveau 2, 4 au niveau 10, 6 au niveau 17.
+
+### 4.6 Fait : actions de classe 2024 (onglet Combat)
+
+`ClassActionsMixin._actions_2024()` transforme les tuiles d'une fiche 2024 (décision Q7) :
+- **Châtiment divin** : sort en action bonus juste après avoir touché, une fois par tour, + une tuile « Châtiment divin (gratuit) » (1 par repos long, compteur `chatiment_gratuit`) ; *Sens divin* retiré.
+- **Second souffle** (utilisations de la table, Déplacement tactique au niveau 5) ; **Fougue** (sauf l'action Magie) ; **Rage** (durée et prolongation 2024).
+- **Points de concentration** : Déluge de coups (3 frappes au niveau 10), Défense patiente et Pas du vent en version **gratuite** et à 1 point, Coup étourdissant (effet en cas de réussite), frappe à mains nues en action bonus sans condition, *Parade de projectiles* → **Déviation d'assaut**.
+- **Frappe malicieuse** (Roublard 5 : Poison, Croc-en-jambe, Repli ; niveau 14 : Hébétement, Assommer, Aveugler ; 2 effets au niveau 11), avec le DD.
+- Les autres aptitudes gardent leur mécanisme et leur nom actuels.
+
+### 4.7 Fait : version web
+
+- **Serveur** (`web/service.py`) : opérations `set_edition` (2014 / 2024 ; le mode libre est refusé), `set_house_rule`, `set_masteries` ; la fiche renvoie `edition` (mode, classes de l'édition, règles de la table avec leur état, bottes d'arme) ; le catalogue indique l'édition des espèces, historiques, dons et sorts.
+- **Interface** (`web/static/app.js`) : *Nouveau personnage* demande « Édition 2014 / 2024 » (aussi au premier lancement) ; listes d'espèces, d'historiques, de classes, de dons et de sorts (mode MJ) filtrées selon l'édition de la fiche ; menu ☰ → **⚖ Règles de la table** : changer d'édition, cocher / décocher les 4 règles, choisir les bottes d'arme.
+
+### 4.8 Fait : aptitudes 2024 calculées (`core/features_2024.py`)
+
+- **Sorcellerie innée** (Ensorceleur 1) : compteur de 2 utilisations par repos long et tuile en action bonus qui active l'effet « Sorcellerie innée » (1 minute, bascule) ; tant qu'il dure, DD des sorts d'ensorceleur +1 (`casters()`) et avantage aux attaques de sorts d'ensorceleur (`spell_attack_spec`). Niveau 7 : seconde tuile payée 2 points de sorcellerie (*Sorcellerie incarnée*).
+- **Ordre divin** (Clerc 1 : Protecteur / Thaumaturge) et **Ordre primitif** (Druide 1 : Gardien / Magicien) : ensembles de choix `ordre_divin` / `ordre_primitif` dans `option_sets()` (encart des options de l'onglet « En partie », choix manquant tant qu'il n'est pas fait, web compris). Protecteur / Gardien : maîtrises d'armures (lourdes / intermédiaires) et d'armes de guerre (`proficiency_sources`). Thaumaturge / Magicien : un tour de magie de plus et modificateur de Sagesse (minimum +1) aux tests d'Arcanes et de Religion / de Nature (`modifier_sources`).
+- **Prérequis des dons 2024** (`feat_status_2024`) : « Niveau 4+ », « Force ou Dextérité 13+ », formations aux armures et au bouclier, aptitude Style de combat, Incantation / Magie des pactes. Les **Faveurs épiques** (« Niveau 19+ ») ne sont plus proposées comme valides avant le niveau 19. Les prérequis 2014 gardent leur ancienne lecture.
+
+### 4.9 Fait : effets appliqués automatiquement (dons et aptitudes de classe)
+
+Principe : dès qu'un don est choisi ou qu'un niveau débloque une aptitude, tout ce que la fiche sait chiffrer est appliqué ; les choix du joueur passent par `option_sets()` (choix manquants comptés).
+
+- **`core/feat_effects.py`** (`FeatEffectsMixin`, registre `REG` par nom de base et édition — « Robuste (2024) » → « robuste ») :
+  - passifs : initiative (Vigilant), PV par niveau (Robuste), vitesse (Mobile, Faveur de vitesse), PV max (Faveur de vigueur), Dex max 3 des armures intermédiaires, dé d4 à mains nues (Bagarreur de tavernes), + bonus de maîtrise aux dégâts des armes lourdes (Cogneur lourd), +1 botte d'arme (Maître d'armes), avantage de concentration (Mage de guerre), réaction (Duelliste défensif), vision véritable / aveugle ;
+  - maîtrises : armures et armes (Protection…, Formation aux armes de guerre), JS (Résilient / Résistant, caractéristique choisie), compétences et expertise (Doué, Expert, Observateur, Esprit affûté, Faveur de compétence), outils (Doué, Façonneur, Musicien, Chef cuisinier, Empoisonneur — affichés dans l'onglet Équipement) ;
+  - **sorts accordés** (`granted_spells`, catégorie « Dons ») : Initié à la magie 2014 / 2024 (liste, caractéristique, 2 tours de magie, 1 sort de niveau 1), Affinité féérique, Faveur des ombres, Émissaire des fées, Adepte des ombres, Télékinésiste, Télépathe, Haute magie drow, Téléportation féerique ; lancer gratuit 1 fois par repos (compteur interne), DD et attaque avec la caractéristique du don ;
+  - compteurs et tuiles : points de chance (3 en 2014, bonus de maîtrise en 2024), Faveur du destin (2d4, revient à l'initiative), Faveur de récupération (réserve de 10 d10 ; *Dernier rempart* appliqué tout seul à 0 PV), Performance stimulante (PV temporaires appliqués), Récupération rapide (dé de vie dépensé) ;
+  - Faveurs épiques : +1 jusqu'à 30, prérequis niveau 19, résistances au choix ;
+  - choix affichés dans l'onglet **Progression** (encart « Choix des dons »).
+- **`core/class_auto.py`** (`ClassAutoMixin`, 2014 et 2024 ; les « options Tasha » ne s'appliquent jamais d'office) : maîtrise de tous les JS (Âme diamantée, Survivant discipliné), Esprit fuyant (Sag ; Sag et Cha en 2024), avantage aux JS de Dex (Sens du danger), Nomade (+3 m), Sens bestiaux, Corps et esprit (+4 Dex / Sag, max 25), Champion primitif 2024 (max 25), +1d8 radiants des armes de corps à corps (Châtiment divin amélioré / Frappes radiantes), Frappe divine 2014 (1d8 → 2d8, une fois par tour), Frappes bénies et Fureur élémentaire 2024 (choix : frappe une fois par tour ou Incantation puissante sur les tours de magie), Connaissance primitive (compétence), expertises d'Explorateur habile et d'Érudit, ressources rendues à l'initiative (Inspiration supérieure, Concentration parfaite, Yo perfectionné, Rage persistante) et au repos court (Restauration d'ensorceleur).
+
+### 4.10 Fait : sous-classes 2024, sorts 2024, jet contre la mort
+
+- **Sorts toujours préparés des sous-classes 2024** (domaines, cercles, serments, protecteurs, sorcelleries, Vagabond féerique, Traqueur des ténèbres) : tables lues dans le texte de l'aptitude « Sorts du … » quel que soit leur format (`features_2024.subclass_spells_2024`, table `SPELL_ALIASES_2024` pour les noms traduits autrement) ; Cercle de la Terre 2024 : choix de la terre (aride, polaire, tempérée, tropicale).
+- **Sous-classes renommées** : `SUBCLASS_EQUIV_2024` / `sub_norm_of()` (Âme acérée → Lame psychique, Abjurateur → École d'abjuration, Credo de l'Ombre → Voie de l'ombre…) ; les tuiles, compteurs et dés psioniques 2014 s'appliquent aux sous-classes 2024.
+- **Passifs de sous-classes** (`class_auto.py`, 2014 et 2024) : critique sur 19-20 / 18-20 (Champion, `RollSpec.crit_min`), avantage à l'initiative (Athlète accompli, Assassinat 2024), + Sagesse à l'initiative (Embuscade effrayante), Vision ombreuse, JS de Sagesse (Esprit de fer / Mental d'acier), résistances (Défenses psychiques, Bouclier mental, Âme radieuse, Résistance fiélonne au choix), Aura de célérité (+3 m), Pirouettes éblouissantes (CA 10 + Dex + Cha), Maîtrises supplémentaires du Collège du savoir (3 compétences), Instruments de miséricorde, Disciple de la vie (+2 + niveau du sort aux soins), Fureur divine du Zélote pendant la rage.
+- **Sorts 2024** : soins, jet de sauvegarde, demi-dégâts, surclassement lus dans le texte 2024 (`rules.parse_spell_mechanics_2024`), complétés par les règles auditées du sort 2014 équivalent (projectiles, modificateur…).
+- **Jet contre la mort** (onglet « En partie », bouton 🎲 à 0 PV) : 10+ réussite, 1 = deux échecs, 20 = 1 PV ; avantage avec Gaillard ; dégâts reçus à 0 PV = un échec ; mort instantanée si les dégâts restants atteignent le maximum de PV.
+
+### 4.11 Fait : sous-classes 2024 sans équivalent 2014 (`core/subclass_2024.py`)
+
+- **Tuiles** (champ `ed: 2024`, reconnues par le nom 2024 de la sous-classe) : Force vivifiante, Branches de l'Arbre, Voyage au gré de l'arbre (Arbre-Monde) ; Déplacement exaltant, Pirouettes coordonnées (Danse) ; Aval de la terre (2d6 → 4d6), Sanctuaire de dame Nature (Terre) ; Courroux des mers (effet actif) ; Lien élémentaire, Décharge élémentaire (Éléments) ; Halo de lumière (Lumière) ; Surcharge magique (Évocateur).
+- **Effets automatiques** : PV temporaires de la Vitalité de l'arbre à l'entrée en rage ; choix du Cœur sauvage (Rage du prédateur, Aspect de faune, Puissance de la faune) avec la résistance de l'Ours en rage et la vision de la Chouette ; Protégé de dame Nature (résistance selon la terre choisie) ; Enfant des tempêtes (résistances pendant le Courroux des mers seulement) ; Avatar de bataille ; dé d'inspiration aux frappes à mains nues (Danse) ; outils de l'Assassin et Frappes surprises (+ niveau de roublard, proposé aux dégâts) ; Champion : Inspiration héroïque et Ralliement héroïque au début du tour (nouveau round), jets contre la mort avec avantage et 18-20 comptés comme 20 ; Évocation améliorée.
+- **Conduit divin 2024** : les options sont les aptitudes de la sous-classe qui dépensent « une utilisation de votre Conduit divin » (Préservation de la vie, Radiance de l'aube, Frappe guidée, Arme sacrée, Vœu d'hostilité…).
+- Correctif : « tant qu'elle est active » est reconnu comme une condition, donc pas d'effet permanent (seul changement constaté sur toutes les sous-classes : Enfant des tempêtes).
+
+### 4.12 Fait : règles de jeu appliquées au lancer et aux PV (2014 et 2024)
+
+- **Type de dégâts** dans la saisie rapide des PV (onglet « En partie » : liste des types + case « magique ») : `damage_after_defenses()` applique les réductions (Maître des armures lourdes : 2014 -3 contre les attaques non magiques, 2024 - bonus de maîtrise), puis immunité, résistance (moitié, arrondi inférieur) ou vulnérabilité (double). Sans type, rien ne change.
+- **Planchers des lancers** (`RollSpec.d20_min` / `total_min`, affichés « Talent fiable : d20 3 → 10 ») : Talent fiable (Roublard 11 en 2014, 7 en 2024, compétences maîtrisées) ; Puissance indomptable (Barbare 18 : tests de Force, et JS de Force en 2024).
+- **JS de Dextérité** : rappel d'Évasion / Dérobade / Esquive totale / Esquive cavalière (réussite = aucun dégât, échec = moitié).
+- **Faveur de mémoire des sorts** : 1d4 lancé à chaque emplacement de niveau 1 à 4 dépensé (`cast_spell`) ; emplacement rendu si le dé égale le niveau.
+- **Immunités aux états** (`condition_immunities`, `effect_blocked`) : Aura de dévotion (charmé), Aura de courage (effrayé), Pureté du corps 2014 (empoisonné, malade), Protégé de dame Nature (empoisonné ; et malade en 2014), Rage aveugle en rage (charmé et effrayé, retirés à l'entrée en rage). L'état ne peut pas être ajouté ; l'interface dit pourquoi.
+- **Textes 2024 des sous-classes renommées** (`TILE_FEATURE_2024`) : sur une fiche 2024, une tuile 2014 prend le nom, le texte et le niveau de l'aptitude 2024 équivalente (Présence féerique → Foulée des fées, Moi illusoire → Double illusoire…) ; Frénésie 2024 (dés de dégâts en plus avec Attaque téméraire) remplace l'attaque en action bonus de 2014.
+
+### 4.13 Aides de jeu
+
+1. **Lexique** : `data/Lexique.json` (clé `lexique` : `termes` [terme, catégorie, définition, 2014, 2024, variantes, auto], `aides_onglets`, `aides_creation`) chargé dans `Database.glossary` (`core/glossary.py`, repérage par mots entiers, expressions longues d'abord). `ui/common.rich_tip` ajoute les définitions des termes employés (édition de la fiche) ; `ui/glossary_dialog.py` (F1) ; option `aides_debutant` : soulignement dans les étiquettes (`make_label`), bandeau d'aide par onglet (`MainWindow.refresh_help_banner`) et par étape de l'assistant.
+
+2. **Début et fin de tour** (`core/turn_reminders.py`) : « ▶ Début de mon tour » (remplace « Nouveau round » : `start_turn()` remet l'économie d'actions à zéro, applique Héros du champ d'honneur / Ralliement héroïque, rappelle concentration, jet contre la mort, rage à entretenir) et « ⏹ Fin de mon tour » (`end_turn()` : action / action bonus non utilisées, concentration). Les capacités qui se déclenchent « au début / à la fin de votre tour » ou « à l'initiative » sont repérées dans les textes (aptitudes, traits, dons, effets actifs) ; celles déjà appliquées seules (`AUTO_APPLIED`) ne sont pas rappelées. Bandeau fermable en tête de « Ce tour-ci », aussi après le jet d'initiative.
+
+3. **Quand vous touchez** (`OnHitMixin` dans `core/combat_flow.py`, `ui/on_hit_dialog.py`) : après « L'attaque touche-t-elle ? », une fenêtre de cases, rien coché d'office : bonus conditionnels (Marque du chasseur, Frappe divine…), Attaque sournoise (arme de finesse ou à distance, une fois par tour), Châtiment divin en liste (un niveau par coup ; 2024 : un par tour, action bonus dépensée), aptitudes « quand vous touchez » à dés. Les coûts sont dépensés à la validation.
+
+4. **On m'attaque !** (`core/defense.py`, `ui/defense_dialog.py`) : jet de l'ennemi contre la CA (`attack_check`), réactions avant les dégâts (Bouclier, avec son effet +5 CA jusqu'au début du tour ; Duelliste défensif ; Mots cinglants ; Illumination protectrice / Éclat protecteur), puis réactions sur les dégâts (Esquive instinctive ; Parade de projectiles 2014 contre les attaques à distance, Déviation d'assaut 2024 contre toute attaque ; manœuvre Parade au corps à corps), type de dégâts et « Subir les dégâts ». La saisie rapide des PV ouvre la même étape quand une réaction de dégâts est disponible. Les effets « jusqu'au début de votre prochain tour » prennent fin au début du tour.
+
+5. **Avant un repos** (`unused_before_rest`, fenêtre de repos) : ressources jamais dépensées depuis leur retour (repos court : celles qui reviennent au repos court ; repos long : toutes), emplacements de sort et de pacte non utilisés.
+
+6. **Badge « ✨ Nouveau »** (`core/novelty.py`, `Character.nouveautes`) : à la validation de « Niveau supérieur », différence avant / après des tuiles (`act:`), réactions (`reac:`), sorts (`sort:`), aptitudes (`apt:`) et dons ; un sort ajouté dans l'onglet Magie est aussi marqué. Badge sur les tuiles de « Ce tour-ci », la liste des sorts et la liste des aptitudes ; retiré à la première utilisation ou au repos long.
+
+7. **À ne pas oublier** (`core/remember.py`, encart repliable de l'onglet « En partie ») : capacités de situation non calculables, une ligne chacune, par moment (avant d'attaquer, quand vous touchez, en défense, pour vos alliés, déplacement, hors combat), 2014 et 2024 (Rage implacable selon l'édition, Visée stable 2024, options Tasha exclues, traits d'espèce reconnus seulement sur l'espèce).
+
+### 4.14 Options de classe du Chaudron de Tasha (fiches 2014)
+
+Règle de la table `options_tasha` (active par défaut en 2014). `ClassAutoMixin.feature_allowed()` : une aptitude « (option Tasha) » compte si elle **s'ajoute** ; celles qui **remplacent** (`TASHA_REPLACING` : Frappes bénies, Ennemi favori, Explorateur expert avec Vagabond et Infatigable, Conscience primordiale, Voile de la nature) ne s'appliquent jamais d'office. Appliquées : Connaissance primitive (1 compétence, 2 au niveau 10), Bond instinctif (message à l'entrée en rage), Arme dédiée (choix d'une arme de moine), sorts supplémentaires des listes (`tasha_extra_spells`, lus dans le texte de l'option), tuiles Guérison accélérée, Visée concentrée, Visée stable, Exploitation / Canalisation du pouvoir divin (emplacement rendu automatiquement), Compagnon sauvage, Guidage magique ; rappels « À ne pas oublier » (Attaque alimentée par le ki, Inspiration magique, Polyvalences, Formules de sorts mineurs, Focaliseur d'incantation).
+
+### 4.15 Chantier suivant
+
+1. **Récupérations 2024** : au repos court, Rage, Conduit divin, Forme sauvage et Second souffle ne rendent qu'une utilisation (`SHORT_REST_PARTIAL_2024`) ; le repos long rend tous les dés de vie (moitié en 2014) ; Métabolisme surnaturel du Moine (initiative, une fois par repos long) et Ruse magique de l'Occultiste (moitié des emplacements de pacte) appliqués.
+
+2. **Annuler / Refaire** (`core/history.py`, menu Édition, Ctrl+Z / Ctrl+Y) : instantané `Character.to_dict()` après chaque `changed()` / `light_changed()`, 30 étapes, libellé déduit des champs modifiés (« Annuler : PV »), modifications rapprochées du même champ fusionnées (2 s), journal des lancers jamais annulé ; historique remis à zéro à l'ouverture, à la création ou au chargement d'une fiche.
+
+3. **Jet de concentration** (`concentration_save_spec`, `resolve_concentration`) : après des dégâts subis en se concentrant (saisie rapide ou « On m'attaque ! »), la fiche propose le JS de Constitution — DD moitié des dégâts, minimum 10 (plafond 30 en 2024), maîtrise, effets, Mage de guerre / Lanceur de sorts, Esprit occulte ; sur un échec, le sort et ses effets prennent fin. À 0 PV, la concentration est rompue d'office (sauf Dernier rempart).
+
+4. **Bottes d'arme dans le déroulé d'attaque** (`MasteryFlowMixin`) : sur un raté (1 naturel compris), Effleurement indique les dégâts infligés malgré tout (modificateur) ; au toucher, rappel de la botte dans la fenêtre « Quand vous touchez » et la note des dégâts (Sape, Ouverture, Poussée, Ralentissement, Entaille, Coup double, Renversement avec son DD).
+
+5. **Dons de combat** : `Character.attaque_puissante` (bascule −5 / +10 de Tireur d'élite et Briseur d'armes lourdes 2014, partagée entre la case de la ligne d'arme et la tuile ; détail du jet et des dégâts) ; tuiles d'attaque en action bonus : talon d'arme d'hast (1d4 contondant, Maître des armes d'hast / Maître d'hast 2024), arbalète de poing (Expert en arbalètes), attaque après un critique ou un ennemi à 0 PV (Briseur d'armes lourdes / Cogneur lourd 2024), Coup de bouclier (Maître des boucliers 2014 / 2024, DD calculé) ; rappel du bonus de bouclier aux JS de Dextérité (2014).
+
+6. **Options de Tasha qui remplacent** (`Character.tasha_remplacements`, `TASHA_REPLACEMENTS`, encart de l'onglet Classes, désactivées par défaut) : l'aptitude remplacée disparaît des aptitudes actives (`unlocked_feature_names`, `feature_replaced`). Ennemi favori (tuile de marque au toucher, concentration, dé 1d4 → 1d8 proposé aux dégâts ; la tuile 2014 « Ennemi juré » qui appliquait déjà cette mécanique ne s'affiche plus sans ce choix), Explorateur expert (expertise, deux langues, Vagabond +1,50 m, Infatigable : PV temporaires appliqués), Conscience primordiale (sorts lancés une fois sans emplacement), Voile de la nature (invisible), Frappes bénies 2014 (1d8 radiants une fois par tour, à la place de Frappe divine / Incantation puissante).
+
+7. **Forme sauvage 2024** (`wild_shape_2024`, `known_forms_option_set`) : FP 1/4 → 1/2 → 1 (Lune : niveau ÷ 3, minimum 1), nage dès le niveau 2, vol au niveau 8, formes connues (4, 6 puis 8, choix dans « Options de classe »), action bonus, vos PV conservés + PV temporaires égaux au niveau (×3 pour la Lune), CA du Cercle de la Lune au moins 13 + Sagesse ; à 0 PV, la forme prend fin. La Métamorphose et les fiches 2014 gardent les PV de la bête.
+
+8. **Compagnon primitif 2024** (`primal_option_set`, `primal_companion_2024`, `core/companions.py`) : choix Bête de la terre / de la mer / du ciel ; le compagnon est ajouté d'office à la Ménagerie (et remplacé si le choix change) ; CA 13 + Sagesse, dégâts + Sagesse au lieu du bonus de maîtrise, deux attaques au niveau 11. Tuiles « Ce tour-ci » pour les attaques des compagnons de classe actifs (action bonus), qui passent par le déroulé d'attaque habituel.
+
+9. **Export PDF** (Fichier > Exporter la fiche en PDF, Ctrl+P ; `core/sheet_export.py` produit le HTML, `ui/pdf_export.py` l'imprime en A4 avec `QPdfWriter` et une police à empattements — Palatino Linotype / Book Antiqua / Georgia sous Windows) : style « grimoire » inspiré de Baldur's Gate 3 en noir et blanc (bandeau de titre noir, sections à bandeau et losanges, médaillons à double trait). Recto : identité et portrait, six caractéristiques, CA / initiative / vitesse / PV / maîtrise / perception / inspiration, JS, compétences, maîtrises, équipement et bourse (gauche), attaques, aptitudes (autant que la page en contient) et personnalité (droite). Verso : suite des aptitudes, histoire, grimoire (DD, attaque, emplacements à cocher, sorts par niveau), lignes de notes de campagne.
+10. **Textes des aptitudes 2024** : `FEATURE_ALIASES_2024` (edition_import) relie les noms de la table de progression aux descriptions quand la traduction diffère (Maîtrise des armes → Bottes d'arme, Talent fiable → Savoir-faire, Dérobade → Esquive totale, Indomptable → Inflexible, Nomade → Arpenteur…) : plus de texte vide ou emprunté à une autre aptitude.
+
+11. **Épuisement selon l'édition** (`core/exhaustion.py`) : 2014 = table des six niveaux (`mechanics.epuisement_N`) ; 2024 = −2 par niveau à tous les tests de d20 et −1,50 m de vitesse par niveau (`exhaustion_mech_2024`, substitué dans `modifier_sources`), mort au niveau 6. Compteur ◆◇ avec − / + dans « En partie » ; fenêtre « 🎲 JS d'épuisement » (marche forcée DD 10 + 1 par heure au-delà de 8, chaleur DD 5 + 1 par heure avec désavantage en armure intermédiaire ou lourde, froid DD 10, manque d'eau DD 15, DD libre) ; Frénésie du Berserker 2014 : un niveau à la fin de la rage ; règle de survie : niveau de privation coché au repos long ; le repos long retire un niveau.
+
+12. **Durées en rounds** (`core/durations.py`, `Character.effets_rounds` / `effets_rounds_max`) : un effet à durée chiffrée (« 1 minute », « Concentration, jusqu'à 10 minutes », « 1 heure ») — ou la durée du sort qui le pose — reçoit un compte à rebours (1 minute = 10 rounds), décrémenté à chaque « ▶ Début de mon tour » (`new_round`) et par `advance_time` (repos, temps qui passe) ; à 0 l'effet prend fin (la concentration aussi si c'était son effet). La concentration a son propre compte (`"concentration"`). Pastille sur l'icône, clic droit = prolonger.
+
+13. **Actions communes selon l'édition** (`TurnMixin.common_actions`) : Se tenir prêt ajouté ; 2024 : Saisir / Bousculer = options de la Frappe à mains nues comptées comme une attaque (JS de Force ou de Dextérité de la cible contre `grapple_dc()` = 8 + For + maîtrise), Se cacher DD 15 (réussite : état Caché / Invisible), Chercher (Sagesse), Étudier, Influencer, Magie ; 2014 : test d'Athlétisme pour Saisir / Bousculer, Se cacher contre la Perception passive. Les actions à test renvoient `tests` / `dd` et l'interface lance la compétence (`resolve_common_test`).
+
+14. **Inspiration** : Ingénieux (Humain 2024) redonne l'inspiration héroïque à chaque repos long (`resourceful`) ; Musicien 2024 rappelé à la fin des repos ; bouton « 🌟 » dans la fenêtre de jet de d20 (2024 : relance ; 2014 : avantage).
+
+15. **Confort** : jet libre « 2d6+3 » (`dice.free_formula`, champ de l'encart PV, Ctrl+R, animation et historique) ; Fichier > Récents (8 derniers fichiers, `remember_recent`, réglage `fichiers_recents`).
+
+16. **États selon l'édition** (`core/conditions.py`) : `CONDITIONS_2024` (texte et mécanique) remplace la table 2014 sur une fiche 2024 (`condition_mech` dans `modifier_sources`, `effect_tooltip`) ; avantage / désavantage à l'initiative (`condition_initiative`). Neutralisé, Étourdi, Paralysé, Inconscient, Pétrifié rompent la concentration (`incapacitation_breaks`, `last_effect_message`). Caché prend fin à l'attaque (`_attack_flow`) ou au sort (`cast_spell`). Tuile « Se libérer » (`commune:liberer`) : 2014 = test simple puis « Réussi / Raté » demandé au joueur ; 2024 = DD de la prise demandé (`ask_int`).
+
+17. **Chance** (`core/luck.py`) : Chanceux du Halfelin = `RollSpec.reroll_ones` (un 1 naturel relancé dans `roll_d20`, posé par `prepare_d20_spec` dans `roll_dice`) ; don Chanceux = bouton 🍀 (2014 : `RollSpec.luck_dice`, un d20 de plus et le meilleur de tous ; 2024 : avantage) et, en 2024, option sans réaction dans « On m'attaque ! ».
+
+18. **Combat** (`core/combat_end.py`) : `combat_etat` (instantané à l'initiative ou au premier tour, rounds), `fire_ammo` à chaque attaque avec une arme à munitions (`munitions_tirees`), `end_combat` (moitié des munitions rendue, fin de la rage et des effets de tour, états Surpris / Caché / À terre, bilan, horloge inchangée).
+
+19. **Environnement** (`core/environment.py`, `ui/environment_dialog.py`) : chute (`fall_formula`, `apply_fall` : À terre, Chute ralentie, Feuille morte) ; suffocation (effets `apnee` / `suffoque`, `on_effect_expired` appelé par `tick_effects` ; 2014 : 0 PV après Con rounds ; 2024 : épuisement en fin de tour, `suffocation_niveaux` retirés en respirant).
+
+20. **Composantes coûteuses** (`core/components.py`, `check_costly_component` dans `ui/magic_tab.py`) : texte « M (…, que le sort consomme) » des sorts 2024 (repris pour 2014, `OVERRIDES_2014`) ; objet de l'inventaire retiré après confirmation, sinon payer avec la bourse / fournie par le MJ / annuler (rien n'est dépensé).
+
+21. **Abri** : `attack_check(cover=…)` et liste « Abri » dans « On m'attaque ! » (+2, +5, total) ; boutons « Abri +2 / +5 » dans la fenêtre d'un JS de Dextérité (ajoutés au total sans relancer).
+
+22. **Objets magiques** (`core/magic_gear.py`, `item_rules`) : recharge selon le texte (`RECHARGE`, dés animés au repos long via `pending_recharges` / `do_long_rest(recharge_rolls=…)`), charges multiples (`MULTI`, `item_count_choice`, niveau du sort qui suit), destruction à la dernière charge (`DESTROY`, `resolve_item_destruction`, « transformation » seulement indiquée), éléments comptés (`ELEMENTS` : perles, haricots… demandés à l'ajout, `entry["elements"]`, « Épuisé » à 0, sans recharge) ; « comme une boule de feu de niveau 3 » reconnu (`AS_SPELL`).
+
+23. **Recherche Ctrl+F** (`core/search.py`, `ui/search_dialog.py`) : fiche d'abord (ouvre l'onglet via `MainWindow.open_tab`), puis règles de l'édition et lexique.
+
+24. **Contresort / Dissipation de la magie** (`core/counterspell.py`, `counter_flow` dans `ui/spell_flow.py`).
+
+25. **Lumière** (`core/light.py`) : onglet de la fenêtre Environnement avec la règle de survie.
+
+26. **Aide-mémoire de combat** (`sheet_export._cheatsheet`, `sheet_html(eng, cheatsheet=True)`), choix retenu dans `pdf_aide_memoire`.
+
+27. **Menu Partie** (Ctrl+T / Ctrl+E / Ctrl+I / Ctrl+A) et **Aide > Raccourcis clavier** (`MainWindow.SHORTCUTS`).
+
+28. **Journal de session** (`core/journal.py`, `Character.journal`, 500 événements, jamais annulé) : `log` explicite (sorts lancés, repos) et `record_diff` (PV, PV temporaires, emplacements, ressources, états, concentration, niveaux) appelé par `MainWindow._capture_history` ; onglet de la fenêtre Ctrl+H avec export texte et « Vider ».
+
+29. **Versions de sauvegarde** (`core/versions.py`) : copie datée à chaque enregistrement volontaire (10 au plus, `versions/<nom>/`), Fichier > Restaurer une version précédente (l'état actuel est gardé d'abord, le fichier n'est pas écrasé).
+
+30. **Manuel d'utilisation** (`data/Manuel.json`, `core/manual.py`, `ui/manual_dialog.py`) : F2 ouvre le chapitre de l'onglet affiché ; recherche, « Ouvrir l'onglet », export PDF (`pdf_export.export_html_pdf`) ; lien dans le bandeau d'aide.
+
+31. **Performance** : `rules.norm` mis en cache (`lru_cache`, 65 536 entrées) — appelée des dizaines de milliers de fois par écran. Mesure sur un Paladin 8 / Occultiste 6 / Ensorceleur 6 avec 25 objets et 7 effets : onglets 10–66 ms (au lieu de 18–83), `changed()` sur « En partie » 57 ms (au lieu de 150) ; suite de tests 2 min 20 au lieu de 4 min.
+
+### 4.16 Reste à faire
+
+- Effets sur d'autres créatures ou sur le décor (téléportation, illusions, déplacements des alliés) : la tuile rappelle l'effet, il n'y a rien à calculer sur la fiche.
+
+## 5. Décisions prises
+
+1. **Données 2014** : on garde les données actuelles, les plus complètes (classes 2014 et leurs aptitudes). Les nouvelles données ne servent qu'à **compléter** : sous-classes, dons, historiques, sorts et objets 2014 manquants, et tout le contenu 2024.
+2. **Contenu « communauté »** : les 27 sous-classes restent proposées **dans tous les modes**, avec une mention discrète « non officielle » (info-bulle des menus de sous-classe, info-bulle de « Niveau supérieur », source affichée dans la fiche pédagogique de classe). Fonctions : `Database.is_unofficial()`, `Database.subclass_tips()`.
+3. **Règles de la table** : seule l'inspiration héroïque est retenue pour la troisième règle (pas de règle de « jets de sauvegarde universels »).
+4. **Une édition par fiche** : l'édition se choisit à la création ; le mode libre est masqué.
+5. **Versions** : la v51 est conservée telle quelle sur la branche `version-51` (pull request #3 vers `main`) ; la v52 vit sur sa propre branche (pull request #2, construite au-dessus de `version-51`). Chaque branche a son propre exécutable Windows (CI à chaque envoi).
+
+Point encore à vérifier dans le livre : le texte exact du Manuel 2024 sur l'administration d'une potion à un allié (la règle de la table suit ta définition : soi-même = action bonus, allié = action).

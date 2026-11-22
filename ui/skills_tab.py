@@ -68,6 +68,10 @@ class SkillsTab(BaseTab):
             self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise · « Jet » : d20.")
         right.addWidget(pbox, 2)
         root.addLayout(right, 2)
+        if getattr(win, "no_dice", False) is True:        # v52 : assistant de création — pas de jet de dés
+            self.table.setColumnHidden(self.ROLL_COL, True)
+            self.saves.setColumnHidden(self.SAVE_ROLL_COL, True)
+            self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise.")
 
     # ------------------------------------------------------------------ handlers
     def _on_skill_click(self, row: int, col: int):
@@ -82,11 +86,30 @@ class SkillsTab(BaseTab):
             roll_dice(self.win, self.engine.skill_spec(names[row]))
             return
         st = self.ch.competences.setdefault(names[row], {"maitrise": False, "expertise": False})
+        if self.guided:                                  # v52 : seulement compléter un choix manquant
+            eng = self.engine
+            if col == 1:
+                ok = st.get("maitrise") and not st.get("expertise") and eng.expertise_missing() > 0
+            else:
+                ok = not st.get("maitrise") and eng.skills_missing() > 0
+            if not ok:
+                self.guided_refuse("la maîtrise ou l'expertise")
+                return
         if col == 1:
             if not st.get("maitrise"):
                 return                                   # l'expertise exige la maîtrise
             st["expertise"] = not st.get("expertise")
         else:
+            name = names[row]
+            if st.get("maitrise") and name in self.ch.competences_historique:   # v52 : confirmation
+                from .dialogs import ask_yes_no
+                parent = getattr(self.win, "dialog", self.win)     # assistant : fenêtre de l'assistant
+                if not ask_yes_no(parent, "Compétence d'historique",
+                                  "{} vous est accordée par votre historique ({}).\n\nLa retirer quand même ? "
+                                  "Faites-le seulement si votre MJ l'a remplacée par une autre compétence.".format(
+                                      name, self.ch.historique or "historique"),
+                                  yes="La retirer", no="La garder"):
+                    return
             st["maitrise"] = not st.get("maitrise")
             if not st["maitrise"]:
                 st["expertise"] = False
@@ -97,6 +120,11 @@ class SkillsTab(BaseTab):
             return
         if col == self.SAVE_ROLL_COL:
             roll_dice(self.win, self.engine.save_spec(ABILITIES[row]))
+            return
+        if self.guided or getattr(self.win, "no_dice", False) is True:   # v52 : fixées par la classe (création,
+            self.win.statusBar().showMessage(                             # Mode guidé)
+                "Les jets de sauvegarde maîtrisés sont ceux de votre classe de départ : ils ne se choisissent pas.",
+                8000)
             return
         ab = ABILITIES[row]
         if ab in self.engine.resilient_saves():         # maîtrise imposée par un don : non modifiable
@@ -131,6 +159,10 @@ class SkillsTab(BaseTab):
 
     def refresh(self):
         self.mark_box(self.skills_box, "Compétences", "caracteristiques", "Compétences")
+        for w in (self.table, self.saves):               # v52 : Mode guidé
+            w.setToolTip(self.GUIDED_TIP if self.guided else "")
+        if getattr(self.win, "no_dice", False) is True:   # assistant de création : sauvegardes de la classe
+            self.saves.setToolTip("Jets de sauvegarde maîtrisés : ceux de votre classe de départ (non modifiables).")
         eng, t = self.engine, theme.current()
         rows = eng.skill_rows()
         self.table.setUpdatesEnabled(False)
@@ -181,6 +213,9 @@ class SkillsTab(BaseTab):
             fit_table_height(self.saves)
         n_ok = len(st["choisies"])
         warn = "  ⚠ trop de compétences cochées" if n_ok > st["nombre"] else ""
+        off = eng.off_list_skills()                      # v52 : hors liste de classe (avertissement, sans blocage)
+        if off:
+            warn += "  ⚠ hors des compétences de {} : {}".format(eng.first_class(), ", ".join(off))
         self.status.setText("Compétences de classe ({}) : {}/{} choisies parmi {}.{}".format(
             eng.first_class(), n_ok, st["nombre"], ", ".join(st["options"]) or "—", warn))
         self.passive.setText("Perception passive : {}".format(eng.passive_perception()))

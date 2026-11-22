@@ -182,6 +182,25 @@ def ask_choice(parent: QWidget | None, title: str, message: str, options: list[s
             backdrop.dispose()
 
 
+def ask_int(parent: QWidget | None, title: str, message: str, value: int, lo: int = 1, hi: int = 40):
+    """v52 : saisie d'un nombre (même carte que ask_yes_no). Renvoie l'entier ou None si annulé."""
+    from PyQt6.QtWidgets import QSpinBox
+    backdrop = BlurBackdrop(parent) if parent is not None else None
+    dialog = ConfirmDialog(parent, title, message, yes="Valider", no="Annuler", default_no=False)
+    spin = QSpinBox()
+    spin.setRange(lo, hi)
+    spin.setValue(value)
+    card = dialog.findChild(QFrame, "dialogCard")
+    lay = card.layout() if card is not None else None
+    if lay is not None:
+        lay.insertWidget(max(0, lay.count() - 1), spin)
+    try:
+        return spin.value() if dialog.exec() == 1 else None
+    finally:
+        if backdrop is not None:
+            backdrop.dispose()
+
+
 def ask_gm_spell(parent: QWidget | None, spell_names: list[str], usages: list[str]):
     """
     Fenêtre « Ajouter un sort (Accordé par le MJ) » : recherche + sort de la bibliothèque (ou nom libre),

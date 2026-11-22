@@ -24,6 +24,7 @@ from . import dice as D
 from . import effects as FX
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 # manœuvre -> (flux, type d'action) ; flux : « attaque » (attaque d'arme + dé aux dégâts), « precise » (dé ajouté au
 # jet d'attaque), « riposte » (attaque d'arme en réaction + dé), « de » (seul le dé est lancé)
@@ -135,14 +136,28 @@ class CombatFlowMixin:
         if not st or not st.get("degats"):
             return None
         always, conditional = self.damage_riders()
+        cls_always, cls_once = self.class_weapon_riders(slot)       # v52 : Frappes radiantes, Frappe divine…
+        always, conditional = always + cls_always, conditional + cls_once + self.subclass_weapon_riders() + \
+            self.subclass24_riders()
+        item_always, item_cond = self.item_damage_riders(slot)       # v52 : Épée ardente, arme sur mesure…
+        wtype = st.get("type_degats", "")
+        parts = [(st["degats"], wtype)]
         formula = st["degats"]
         notes = []
         for label, dice in always:
             formula += "+" + dice
             notes.append("{} : +{}".format(label, dice))
+            parts.append((dice, D.damage_type_in(label) or wtype))
+        for label, dice, dtype in item_always:
+            formula += "+" + dice
+            notes.append(label)
+            parts.append((dice, dtype or wtype))
+            always = always + [(label.split(" : ")[0] + " ({})".format(dtype) if dtype else label, dice)]
+        conditional = list(conditional) + [(label, dice) for label, dice, _t in item_cond]
         if extra:
             formula += "+" + extra
             notes.append("{} : +{}".format(extra_label or "Bonus", extra))
+            parts.append((extra, D.damage_type_in(extra_label) or wtype))
         if offhand:
             notes.append(next((n for n in st["styles"] if n.startswith("Main secondaire")), ""))
         grip = " ({})".format(st["prise"]) if st.get("prise") else ""
@@ -158,12 +173,13 @@ class CombatFlowMixin:
         spec.flat_labels = [(label, v) for label, v in st.get("bonus_degats", []) if v]
         spec.calcul = calc                                # affiché par la fenêtre de dés (v46)
         spec.options = list(conditional)
+        spec.parts = parts                                # v52 : total par type de dégâts après le jet
         return spec
 
     # ------------------------------------------------------------------ Maître de guerre : manœuvres
     def battle_master_level(self) -> int:
         e = self.ch.find_class("Guerrier")
-        return e["niveau"] if e and e["niveau"] >= 3 and norm(e.get("sous_classe", "")) == "maitre de guerre" else 0
+        return e["niveau"] if e and e["niveau"] >= 3 and sub_norm_of(e) == "maitre de guerre" else 0
 
     def maneuver_option_set(self) -> Optional[dict]:
         lvl = self.battle_master_level()
@@ -252,6 +268,10 @@ class CombatFlowMixin:
         attack = self.weapon_attack_spec(slot)
         label = ("Attaque sournoise" if a.get("id") == "sournoise" else
                  "Dé de supériorité ({})".format(a["manoeuvre"]) if a.get("manoeuvre") else a["nom"])
+        if a.get("flux") == "pommeau":                              # v52 : talon d'une arme d'hast, 1d4 contondant
+            st = self.weapon_stats(slot) or {}
+            mod = self.mod(st.get("carac", "Force"))
+            return attack, D.DamageSpec("Dégâts — talon de l'arme", R.add_flat("1d4", mod), "contondant")
         if a.get("flux") == "precise" and attack is not None:      # Attaque précise : le dé s'ajoute au d20
             attack.terms.append(D.Term(label, 0, "+" + die))
             dmg = self.weapon_damage_spec(slot)
@@ -286,7 +306,8 @@ class CombatFlowMixin:
         caster = self.caster(class_name) if class_name else None
         caster = caster or next((c for c in self.casters() if c["liste"] in spell.get("classes", [])), None) or \
             (self.casters()[0] if self.casters() else None)
-        racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None)
+        racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None) or \
+            self.feat_spell(spell["nom"])                # v52 : sort accordé par un don
         dc = caster["dc"] if caster else (racial["dc"] if racial else None)
         test = spell.get("test", "")
         rays = 0
@@ -335,4 +356,123 @@ class CombatFlowMixin:
             out["mode"] = "soins"
         elif dmg is not None:
             out["mode"] = "automatique"
+        pool = self.hp_pool_spec(spell, slot_level)
+        if pool is not None:                              # v52 : Sommeil, Couleurs dansantes (2014)
+            out.update(mode="reserve", reserve=pool)
         return out
+
+    # v52 : sorts 2014 qui affectent une réserve de PV (créatures par PV actuels croissants) : (dés, dés par niveau sup.)
+    HP_POOL_SPELLS = {"sommeil": ("5d8", 2), "couleurs dansantes": ("6d10", 2)}
+
+    def hp_pool_spec(self, spell: dict, slot_level: int = 0) -> Optional["D.DamageSpec"]:
+        """Réserve de PV d'un sort 2014 (Sommeil : 5d8 + 2d8 par niveau d'emplacement au-delà du 1er)."""
+        base = self.HP_POOL_SPELLS.get(norm(spell["nom"]))
+        if base is None or " pv" not in " " + norm(spell.get("description", "")):   # Sommeil 2024 : un JS, pas de réserve
+            return None
+        dice, per = base
+        n, faces = dice.split("d")
+        lvl = int(spell["niveau"])
+        up = max(0, int(slot_level or lvl) - lvl)
+        formula = "{}d{}".format(int(n) + per * up, faces)
+        title = "{} — PV de créatures affectés{}".format(spell["nom"], " (niveau {})".format(slot_level) if up else "")
+        return D.DamageSpec(title, formula, "", "Les créatures sont affectées par ordre croissant de PV actuels, "
+                            "tant que le total le permet (une créature n'est affectée que si ses PV n'excèdent pas "
+                            "ce qui reste).", "reserve")
+
+
+class OnHitMixin:
+    """v52 — « Quand vous touchez » : bonus de dégâts à cocher avant de lancer les dégâts (rien n'est coché d'office :
+    l'Attaque sournoise dépend de l'avantage ou d'un allié, le Châtiment se décide après avoir touché)."""
+
+    _HIT_WORDS = ("quand vous touchez", "lorsque vous touchez", "si l'attaque touche", "quand l'attaque touche")
+
+    def on_hit_options(self, slot: Optional[dict] = None, riders: Optional[list] = None) -> list[dict]:
+        """[{key, label, dice, cout, action, niveau}] proposés après un coup réussi."""
+        out = [{"key": "rider:{}".format(i), "label": label, "dice": dice, "cout": "", "action": "", "niveau": 0}
+               for i, (label, dice) in enumerate(riders or [])]
+        w = self.db.weapons.get((slot or {}).get("nom", ""), {}) if slot else {}
+        props = self._props(slot) if slot else []
+        acts = {a["id"]: a for a in self.class_actions()}
+        sneak = acts.get("sournoise")
+        if sneak and not self.per_turn_used("sournoise") and slot and ("finesse" in props or w.get("type") == "distance"):
+            out.append({"key": "sournoise", "label": "Attaque sournoise (une fois par tour : avantage, ou allié à "
+                        "1,50 m de la cible)", "dice": self.sneak_attack_dice(), "cout": "1 fois par tour",
+                        "action": "sournoise_hit", "niveau": 0})
+        smite_24_used = self.sheet_edition == 2024 and (self.ch.tour_bonus or self.per_turn_used("chatiment") or
+                                                         self.per_turn_used("chatiment_gratuit"))
+        if slot and w.get("type") == "cac" and not smite_24_used:     # 2024 : sort en action bonus, 1 par tour
+            for aid in ("chatiment_gratuit", "chatiment"):
+                a = acts.get(aid)
+                if not a or not a.get("disponible"):
+                    continue
+                levels = [1] if aid == "chatiment_gratuit" else self.smite_levels()
+                for lvl in levels:
+                    out.append({"key": "{}:{}".format(aid, lvl), "label": "{} (niveau {})".format(a["nom"], lvl),
+                                "dice": self.class_action_formula(a, lvl), "cout": "gratuit" if aid ==
+                                "chatiment_gratuit" else "emplacement de niveau {}".format(lvl),
+                                "action": aid, "niveau": lvl, "groupe": "chatiment"})
+        seen = {"sournoise", "chatiment", "chatiment_gratuit"}
+        for a in acts.values():
+            if a["id"] in seen or not a.get("disponible") or a.get("attaque_arme") or not a.get("formule"):
+                continue
+            if any(x in norm(a.get("description", "")) for x in self._HIT_WORDS) and D.has_dice(a["formule"]):
+                out.append({"key": a["id"], "label": a["nom"], "dice": a["formule"],
+                            "cout": self.class_action_state(a).get("cout_txt", ""), "action": a["id"], "niveau": 0})
+        return out
+
+    def apply_on_hit(self, options: list[dict], chosen: list[str]) -> list[tuple[str, str]]:
+        """Dépense les coûts des bonus choisis et renvoie [(libellé, dés)] à ajouter aux dégâts."""
+        out, smite_done = [], False
+        for o in options:
+            if o["key"] not in chosen:
+                continue
+            if o.get("groupe") == "chatiment":
+                if smite_done:                            # un seul Châtiment par coup
+                    continue
+                smite_done = True
+            if o["action"] == "sournoise_hit":
+                self.mark_per_turn("sournoise")
+            elif o["action"]:
+                res = self.use_class_action(o["action"], o.get("niveau") or 0)
+                if not res.get("ok"):
+                    continue
+                if o.get("groupe") == "chatiment" and self.sheet_edition == 2024:
+                    self.ch.tour_bonus = True                # Châtiment divin 2024 : action bonus
+            out.append((o["label"].split(" (")[0], o["dice"]))
+        return out
+
+
+MASTERY_EFFECTS = {
+    "Coup double": "Coup double : l'attaque supplémentaire de l'arme légère fait partie de l'action Attaquer (pas "
+                   "d'action bonus), une fois par tour.",
+    "Entaille": "Entaille : attaquez une seconde créature à 1,50 m de la première (dégâts sans le modificateur), "
+                "une fois par tour.",
+    "Ouverture": "Ouverture : vous avez l'avantage à votre prochaine attaque contre cette créature avant la fin de "
+                 "votre prochain tour.",
+    "Poussée": "Poussée : repoussez la cible (taille G ou moins) de 3 m en ligne droite.",
+    "Ralentissement": "Ralentissement : la vitesse de la cible baisse de 3 m jusqu'au début de votre prochain tour.",
+    "Renversement": "Renversement : JS de Constitution DD {dd} ou la cible tombe à terre.",
+    "Sape": "Sape : la cible a le désavantage à son prochain jet d'attaque avant le début de votre prochain tour.",
+}
+
+
+class MasteryFlowMixin:
+    """v52 — bottes d'arme appliquées dans le déroulé d'attaque (rappel au toucher, Effleurement sur un raté)."""
+
+    def mastery_on_hit(self, slot: Optional[dict]) -> str:
+        st = self.weapon_stats(slot) if slot else None
+        botte = (st or {}).get("botte", "")
+        if not botte or botte == "Effleurement":
+            return ""
+        text = MASTERY_EFFECTS.get(botte, "")
+        if "{dd}" in text:
+            text = text.format(dd=8 + self.prof + self.mod(st["carac"]))
+        return "Botte d'arme — " + text if text else ""
+
+    def mastery_on_miss(self, slot: Optional[dict]) -> str:
+        st = self.weapon_stats(slot) if slot else None
+        if (st or {}).get("botte") != "Effleurement":
+            return ""
+        dmg = max(0, self.mod(st["carac"]))
+        return ("Botte d'arme — Effleurement : la cible subit quand même {} dégâts {} (modificateur de {})."
+                .format(dmg, st.get("type_degats", ""), st["carac"])) if dmg else ""

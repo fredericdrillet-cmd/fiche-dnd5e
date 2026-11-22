@@ -55,6 +55,11 @@ let busyN = 0;
 function busy(d) { busyN += d; $("#busy").hidden = busyN <= 0; }
 
 /** Envoie des opérations au moteur (en file : jamais deux requêtes concurrentes sur le même personnage). */
+/* v52 : une fiche suit une seule édition (2014 ou 2024) ; les listes de choix sont filtrées */
+function sheetMode() { return (S.sheet && S.sheet.edition && S.sheet.edition.mode) || "2014"; }
+function edOk(ed) { const m = sheetMode(); return m === "libre" || String(ed || 2014) === m; }
+function edList(names, map, current) { return names.filter((n) => edOk((map || {})[n]) || n === current); }
+
 function act(ops, opts = {}) {
   S.queue = S.queue.then(() => doAct(Array.isArray(ops) ? ops : [ops], opts)).catch((e) => toast(e.message, true));
   return S.queue;
@@ -250,13 +255,13 @@ TABS.perso = () => {
 
   const subs = s.sous_races.length ? `<label class="field">Sous-espèce<select data-change="subrace">${opt("", ch.sous_race, "—")}${options(s.sous_races, ch.sous_race)}</select></label>` : "";
   const race = card("Espèce", `
-    <label class="field">Espèce<select data-change="race">${options(cat.races, ch.race)}</select></label>${subs}
+    <label class="field">Espèce<select data-change="race">${options(edList(cat.races, cat.editions && cat.editions.races, ch.race), ch.race)}</select></label>${subs}
     <img class="race-img" src="${raceImg(ch)}" alt="" loading="lazy" onerror="this.remove()">
     <div class="list">${s.race_traits.map((t, i) => `<div class="li tap" data-act="info" data-src="trait" data-i="${i}"><div class="name">${esc(t.nom)}</div><span class="muted">›</span></div>`).join("") || '<div class="empty">Aucun trait.</div>'}</div>`);
 
   const bg = s.historique || {};
   const bgCard = card("Historique", `
-    <select data-change="background">${options(cat.historiques, ch.historique)}</select>
+    <select data-change="background">${options(edList(cat.historiques, cat.editions && cat.editions.historiques, ch.historique), ch.historique)}</select>
     <div class="muted" style="font-size:.9rem">
       ${bg.competence_1 ? `Compétences : <b>${esc([bg.competence_1, bg.competence_2].filter(Boolean).join(", "))}</b><br>` : ""}
       ${bg.langues && bg.langues !== "-" ? `Langues : ${esc(bg.langues)}<br>` : ""}
@@ -268,7 +273,7 @@ TABS.perso = () => {
   const classes = s.classes.map((c) => {
     const canSub = c.niveau >= c.niveau_sous_classe;
     return `<div class="card" style="padding:10px;background:var(--input)">
-      <div class="row"><select class="grow" data-change="class_change" data-idx="${c.index}">${options(cat.classes, c.nom)}</select>
+      <div class="row"><select class="grow" data-change="class_change" data-idx="${c.index}">${options((s.edition && s.edition.classes) || cat.classes, c.nom)}</select>
         <div class="stepper"><button data-act="lvl" data-idx="${c.index}" data-d="-1" ${c.niveau <= 1 ? "disabled" : ""} aria-label="Niveau moins">−</button><span>${c.niveau}</span><button data-act="lvl" data-idx="${c.index}" data-d="1" ${r.niveau >= 20 ? "disabled" : ""} aria-label="Niveau plus">+</button></div></div>
       <label class="field">Sous-classe ${canSub ? "" : `(niveau ${c.niveau_sous_classe})`}
         <select data-change="class_sub" data-idx="${c.index}" ${canSub ? "" : "disabled"}>${opt("", c.sous_classe, "—")}${options(c.sous_classes, c.sous_classe)}</select></label>
@@ -276,7 +281,7 @@ TABS.perso = () => {
       ${s.classes.length > 1 ? `<button class="btn small danger" data-act="class-remove" data-idx="${c.index}">Retirer ${esc(c.nom)}</button>` : ""}
     </div>`;
   }).join("");
-  const others = cat.classes.filter((n) => !s.classes.some((c) => c.nom === n));
+  const others = ((s.edition && s.edition.classes) || cat.classes).filter((n) => !s.classes.some((c) => c.nom === n));
   const clsCard = card("Classes", `<button class="btn primary block" data-act="levelup" ${s.niveau_max_atteint ? "disabled" : ""}>▲ Niveau supérieur (assistant)</button>${classes}
     ${sw("Multiclassage", ch.multiclassage, 'data-change="multiclass"')}
     ${ch.multiclassage ? `<select data-change="class_add">${opt("", "", "＋ Ajouter une classe…")}${options(others, "")}</select>` : ""}`,
@@ -717,7 +722,7 @@ function librarySheet(cls) {
     const known = new Set(c.sorts.map((s) => s.nom));
     const allowed = new Set(c.apprenables);
     const nq = norm(q);
-    const list = S.cat.sorts.filter((s) => (S.prefs.gm ? true : allowed.has(s.nom) || known.has(s.nom))
+    const list = S.cat.sorts.filter((s) => (S.prefs.gm ? edOk(s.edition) : allowed.has(s.nom) || known.has(s.nom))
       && (lvl === "" || s.niveau === +lvl) && (!nq || norm(s.nom).includes(nq)))
       .sort((a, b) => a.niveau - b.niveau || a.nom.localeCompare(b.nom, "fr"));
     const levels = [...new Set(S.cat.sorts.filter((s) => S.prefs.gm || allowed.has(s.nom)).map((s) => s.niveau))].sort((a, b) => a - b);
@@ -931,7 +936,7 @@ function luAfter() {
 }
 function luFeatPicker(slot) {
   const back = () => openSheet("▲ Niveau supérieur", luBody, { lu: true, after: luAfter });
-  openPicker("Choisir un don", S.cat.dons.map((d) => ({ value: d.nom, label: d.nom, sub: [d.prerequis && d.prerequis !== "Aucun" ? "Prérequis : " + d.prerequis : "", d.asi].filter(Boolean).join(" · ") })), async (nom) => {
+  openPicker("Choisir un don", S.cat.dons.filter((d) => edOk(d.edition)).map((d) => ({ value: d.nom, label: d.nom, sub: [d.prerequis && d.prerequis !== "Aucun" ? "Prérequis : " + d.prerequis : "", d.asi].filter(Boolean).join(" · ") })), async (nom) => {
     const sl = LU.view.choix.asi.find((x) => x.id === slot);
     const c = { a1: "Force", a2: "Dextérité", ...(sl.choix || {}) };
     const feat = S.cat.dons.find((d) => d.nom === nom);
@@ -965,7 +970,7 @@ const ACT = {
   },
   "form-end": () => act({ op: "form_end" }),
   "form-pick": () => beastPicker("Forme sauvage — quelle bête ?", S.sheet.formes.druide.betes, (n) => act({ op: "form_assume", name: n })),
-  "gm-spell-add": () => openPicker("Sort accordé par le MJ", S.cat.sorts.map((x) => ({ value: x.nom, label: x.nom, sub: (x.niveau ? "Niveau " + x.niveau : "Mineur") + " · " + x.ecole })), (nom) => {
+  "gm-spell-add": () => openPicker("Sort accordé par le MJ", S.cat.sorts.filter((x) => edOk(x.edition)).map((x) => ({ value: x.nom, label: x.nom, sub: (x.niveau ? "Niveau " + x.niveau : "Mineur") + " · " + x.ecole })), (nom) => {
     openSheet("Sort du MJ — " + nom, () => `<label class="field">Utilisation<select id="gm-usage">${options(S.cat.usages_mj, S.cat.usages_mj[0])}</select></label>
       <label class="field">Note (facultatif)<input type="text" id="gm-note" maxlength="300"></label><button class="btn primary" id="gm-ok">Accorder</button>`, {
       after: () => $("#gm-ok").addEventListener("click", () => { const u = $("#gm-usage").value, n = $("#gm-note").value; closeSheet(); act({ op: "gm_spell_add", nom, usage: u, note: n }); }),
@@ -1030,7 +1035,7 @@ const ACT = {
   "roll-skill": (el) => { const r = S.sheet.skills.find((x) => x.nom === el.dataset.n); rollD20(r.nom, r.bonus, r); },
   "pick-feat": (el) => {
     const slot = el.dataset.slot;
-    openPicker(slot ? "Choisir un don" : "Don accordé par le MJ", S.cat.dons.map((d) => ({ value: d.nom, label: d.nom, sub: [d.prerequis && d.prerequis !== "Aucun" ? "Prérequis : " + d.prerequis : "", d.asi].filter(Boolean).join(" · ") })), (nom) => {
+    openPicker(slot ? "Choisir un don" : "Don accordé par le MJ", S.cat.dons.filter((d) => edOk(d.edition)).map((d) => ({ value: d.nom, label: d.nom, sub: [d.prerequis && d.prerequis !== "Aucun" ? "Prérequis : " + d.prerequis : "", d.asi].filter(Boolean).join(" · ") })), (nom) => {
       if (!slot) return act({ op: "gm_feat_add", name: nom });
       const c = (S.sheet.asi.find((x) => x.id === slot) || {}).choix || {};
       const feat = S.cat.dons.find((d) => d.nom === nom);
@@ -1200,6 +1205,7 @@ function renderDrawer() {
       <div class="name">${id === S.store.current ? "▶ " : ""}${esc(c.character.nom || "Sans nom")}<small>${esc(c.label || "")}</small></div>
       <button class="icon-btn" style="font-size:1rem" data-d="del" data-id="${id}" aria-label="Supprimer">🗑</button></div>`).join("")}</div>
     <button class="btn primary" data-d="new">＋ Nouveau personnage</button>
+    <button class="btn" data-d="rules">⚖ Règles de la table (édition ${esc(sheetMode())})</button>
     <h3>Import / export</h3>
     <button class="btn" data-d="import">📥 Importer (.json)</button>
     <div class="grid2"><button class="btn" data-d="export-json">📤 JSON</button><button class="btn" data-d="export-txt">📄 Texte</button></div>
@@ -1269,7 +1275,8 @@ async function onDrawer(e) {
     }
     writeJSON(STORE_KEY, S.store); renderDrawer();
   }
-  if (d === "new") { await newCharacter(); closeDrawer(); }
+  if (d === "new") { closeDrawer(); await newCharacter(); }
+  if (d === "rules") { closeDrawer(); openTableRules(); }
   if (d === "import") $("#file-import").click();
   if (d === "export-json") download(fileName(".json"), charJSON(), "application/json");
   if (d === "export-all") download("personnages_dnd5e.json", JSON.stringify({ format: "dnd5e-fiche-collection", version: 1, personnages: Object.values(S.store.chars).map((c) => c.character) }, null, 2), "application/json");
@@ -1305,11 +1312,43 @@ function switchTo(id) {
   S.store.current = id; writeJSON(STORE_KEY, S.store);
   act([], { character: c.character, silent: true });
 }
-async function newCharacter() {
-  S.store.current = uid();
-  await doAct([], { character: null, silent: true });
-  S.prefs.tab = "perso"; savePrefs(); render();
-  toast("Nouveau personnage créé.");
+function newCharacter() {
+  return new Promise((resolve) => {
+    openPicker("Nouveau personnage : édition des règles", [
+      { value: "2014", label: "Édition 2014", sub: "Manuel des joueurs 2014 et suppléments (Xanathar, Tasha…)" },
+      { value: "2024", label: "Édition 2024", sub: "Manuel des joueurs 2024 : classes, espèces, historiques, dons et sorts 2024" },
+    ], async (mode) => {
+      S.store.current = uid();
+      await doAct([{ op: "set_edition", mode }], { character: null, silent: true });
+      S.prefs.tab = "perso"; savePrefs(); render();
+      toast(`Nouveau personnage créé (édition ${mode}).`);
+      resolve();
+    }, { placeholder: "2014 ou 2024" });
+  });
+}
+
+/* v52 : règles de la table (et bottes d'arme), comme la fenêtre du bureau */
+function openTableRules() {
+  const e = (S.sheet && S.sheet.edition) || { regles: [], bottes: {} };
+  const items = e.regles.map((r) => ({ value: "rule:" + r.cle, label: (r.actif ? "✔ " : "○ ") + r.nom, sub: r.description }));
+  items.unshift({ value: "edition", label: `Édition de la fiche : ${e.mode}`, sub: "Changer d'édition remplace les classes par leur version de l'autre édition (niveaux conservés)." });
+  const b = e.bottes || {};
+  if (b.nombre) items.push({ value: "bottes", label: `Bottes d'arme : ${(b.choisies || []).length} / ${b.nombre}`, sub: (b.choisies || []).join(", ") || "armes équipées par défaut" });
+  openPicker("Règles de la table", items, (v) => {
+    if (v === "edition") {
+      const other = e.mode === "2024" ? "2014" : "2024";
+      if (confirm(`Passer la fiche en édition ${other} ?`)) act([{ op: "set_edition", mode: other }]);
+    } else if (v === "bottes") {
+      openPicker(`Bottes d'arme (${b.nombre} au maximum)`, (b.candidates || []).map((n) => ({ value: n, label: ((b.choisies || []).includes(n) ? "✔ " : "○ ") + n })), (n) => {
+        const cur = [...(b.choisies || [])];
+        const next = cur.includes(n) ? cur.filter((x) => x !== n) : [...cur, n];
+        act([{ op: "set_masteries", weapons: next }]);
+      });
+    } else {
+      const r = e.regles.find((x) => "rule:" + x.cle === v);
+      if (r) act([{ op: "set_house_rule", key: r.cle, active: !r.actif }]);
+    }
+  }, { placeholder: "Filtrer les règles" });
 }
 
 /* ============================================================== portrait (redimensionné à 512 px, JPEG) */

@@ -35,6 +35,19 @@ ECONOMY_PATTERNS = [
 ]
 CHARGES = re.compile(r"(\d+)\s+charges?\b", re.I)
 NO_TILE_TYPES = ("Potion", "Parchemin")
+# v52 : recharge, destruction, charges multiples, éléments comptés (perles, haricots…)
+RECHARGE = re.compile(r"(?:regagne|r[ée]cup[èe]re)\w*\s+(\d+d\d+(?:\s*\+\s*\d+)?|\d+|toutes)\s+(?:de\s+)?(?:ses\s+|les\s+)?"
+                      r"charges?", re.I)
+DESTROY = re.compile(r"derni[èe]re charge.{0,80}?d20.{0,40}?\b1\b,?\s*([^.]*)", re.I | re.S)
+MULTI = re.compile(r"(?:1|une)\s+(?:ou plus|ou plusieurs)\s+(?:de\s+)?(?:ses\s+)?charges?", re.I)
+ELEMENTS = re.compile(r"(\d+d\d+(?:\s*\+\s*\d+)?)\s+(perles?|haricots?|graines?|baies?|plumes?|fruits?|billes?)\b", re.I)
+PER_ELEMENT = re.compile(r"augmente\w*\s+le niveau[^.]*pour chaque", re.I)
+EXTRA_DAMAGE = re.compile(r"(\d+d\d+)\s+(?:points de )?d[ée]g[âa]ts\s+(?:de |d['’])?([a-zéèêàç]+)\s+suppl[ée]mentaires",
+                          re.I)
+CONDITIONAL_HINTS = ("quand vous frappez un", "quand vous frappez une", "lorsque vous touchez un", "lorsque vous touchez "
+                     "une", "fielon", "mort-vivant", "mort vivant", "ennemi jure", "tant que", "en feu", "enflamm",
+                     "dragon", "geant", "si la cible", "contre ")
+AS_SPELL = re.compile(r"comme (?:une?|le sort)\s+([^,.;(]{3,40}?)\s+de niveau (\d)", re.I)
 
 
 SYNONYMS = {"epee": ("epee", "rapiere", "cimeterre"), "hache": ("hache", "hachette")}
@@ -96,6 +109,8 @@ class MagicGearMixin:
 
     def magic_gear_tier(self, item: dict, entry: Optional[dict] = None) -> int:
         """Bonus +X de l'objet : palier du nom (« Arme +2 »), bonus choisi (+1, +2 ou +3) ou bonus de CA indiqué."""
+        if item.get("bonus_fixe"):                       # v52 : arme sur mesure
+            return int(item["bonus_fixe"])
         m = GEAR_TIER.match(item.get("nom", ""))
         if m:
             return int(m.group(2))
@@ -141,7 +156,8 @@ class MagicGearMixin:
         if entry.get("base"):
             item = self.magic_item(name) or {"nom": name}
             return self._gear_display(name, entry["base"], self.magic_gear_tier(item, entry))
-        return name.replace("+1, +2 ou +3", "+{}".format(entry["bonus"])) if entry.get("bonus") else name
+        name = name.replace("+1, +2 ou +3", "+{}".format(entry["bonus"])) if entry.get("bonus") else name
+        return name + (" ({})".format(entry["resistance_choisie"]) if entry.get("resistance_choisie") else "")
 
     # ------------------------------------------------------------------ ajout
     def _new_uid(self) -> str:
@@ -233,6 +249,45 @@ class MagicGearMixin:
             if holder is not None:
                 holder.update(nom=entry["base"], bonus=bonus, objet=entry["uid"], affichage=label)
 
+    # ------------------------------------------------------------------ v52 : dégâts supplémentaires des armes
+    def item_damage_riders(self, slot: dict) -> tuple[list, list]:
+        """Dégâts supplémentaires de l'arme magique tenue : ([(libellé, dés, type)] toujours appliqués,
+        [(libellé, dés, type)] à cocher avant le jet — créature visée, arme activée…).
+        Armes sur mesure : champ `degats_sup` ; armes officielles : « 2d6 dégâts de feu supplémentaires »."""
+        always, conditional = [], []
+        entry = self.gear_entry((slot or {}).get("objet", "")) if slot else None
+        if entry is None:
+            return always, conditional
+        item = self.magic_item(entry.get("nom", "")) or {}
+        if item.get("lien") and not entry.get("harmonise"):
+            return always, conditional                    # pas harmonisée : aucun pouvoir
+        name = self.magic_display_name(entry)
+        for d in item.get("degats_sup") or []:
+            dice, dtype = str(d.get("des", "")).strip(), str(d.get("type", "")).strip()
+            if not re.fullmatch(r"\d*d\d+(?:\s*\+\s*\d+)?", dice):
+                continue
+            cond = d.get("condition", "toujours")
+            label = "{} : +{} {}".format(name, dice, dtype).strip()
+            if cond != "toujours":
+                label += " ({})".format(d.get("note") or ("créature visée" if cond == "cible" else "arme activée"))
+            (always if cond == "toujours" else conditional).append((label, dice, dtype))
+        if item.get("degats_sup"):
+            return always, conditional
+        desc = item.get("description", "") or ""
+        for sentence in re.split(r"(?<=[.!?])\s+", desc):
+            for m in EXTRA_DAMAGE.finditer(sentence):
+                dice = m.group(1)
+                from . import dice as D
+                dtype = D.damage_type_in(m.group(2)) or m.group(2)
+                n = norm(sentence[:m.start()])
+                cond = any(h in n for h in CONDITIONAL_HINTS)
+                label = "{} : +{} {}".format(name, dice, dtype)
+                if cond:
+                    hint = re.sub(r"\s+", " ", sentence[:m.start()]).strip().rstrip(",")
+                    label += " ({})".format(hint[:70] + ("…" if len(hint) > 70 else ""))
+                (conditional if cond else always).append((label, dice, dtype))
+        return always, conditional
+
     def sync_magic_gear(self) -> None:
         """Cohérence cases <-> objets : lien rompu si l'objet a disparu ou si la case a changé d'objet ; bonus et
         nom affiché recalculés (harmonisation) ; « équipé » des objets liés = présent dans une case."""
@@ -304,27 +359,41 @@ class MagicGearMixin:
                 continue
             if not e.get("equipe") or (item.get("lien") and not e.get("harmonise")):
                 continue
+            if e.get("detruit") or e.get("epuise"):      # v52 : objet détruit ou épuisé : plus de tuile
+                continue
             desc = item.get("description", "") or ""
             hits = [(m.start(), k) for k, rx in ECONOMY_PATTERNS for m in [rx.search(desc)] if m]
             economy = min(hits)[1] if hits else ""         # la première mention de l'économie d'action
             m = CHARGES.search(desc)
             charges = int(m.group(1)) if m else 0
+            rules = self.item_rules(item)
+            if rules["elements"] and e.get("elements") is not None:   # v52 : perles… comptées comme des charges
+                charges = int(e["elements"])
             spells = self._item_spells(desc)
+            if item.get("sort_perso"):                   # v52 : objet sur mesure — sort choisi dans la liste
+                sp = self.db.find_spell(item["sort_perso"])
+                spells = [sp] if sp else []
+                charges = int(item.get("charges") or 0)
+                economy = ""
             label = self.magic_display_name(e)
             key = e.get("uid") or "i{}".format(i)
             if not (economy or charges or spells):
                 continue
             kind = economy or "Action"
+            extra = {"multi": rules["multi"], "elements": rules["elements"][1] if rules["elements"] else "",
+                     "destruction": rules["destroy"]}
             if not spells:                                # objet à sorts : une tuile par sort suffit
-                out.append({"id": "objet:{}:effet".format(key), "entree": i, "objet": label, "nom": "Utiliser — " + label,
-                            "type": kind, "sort": "", "charges": charges, "cout": 1 if charges else 0,
-                            "description": desc})
+                out.append(dict({"id": "objet:{}:effet".format(key), "entree": i, "objet": label,
+                                 "nom": "Utiliser — " + label, "type": kind, "sort": "", "charges": charges,
+                                 "cout": 1 if charges else 0, "description": desc}, **extra))
             for sp in spells:
-                cost = self._spell_charge_cost(desc, sp["nom"]) if charges else 0
-                out.append({"id": "objet:{}:sort:{}".format(key, sp["nom"]), "entree": i, "objet": label,
-                            "nom": "{} — {}".format(sp["nom"], label), "type": kind if economy else
-                            self._spell_economy_label(sp), "sort": sp["nom"], "niveau": int(sp.get("niveau") or 0),
-                            "charges": charges, "cout": cost, "description": desc})
+                cost = (1 if charges else 0) if item.get("sort_perso") else \
+                    (self._spell_charge_cost(desc, sp["nom"]) if charges else 0)
+                out.append(dict({"id": "objet:{}:sort:{}".format(key, sp["nom"]), "entree": i, "objet": label,
+                                 "nom": "{} — {}".format(sp["nom"], label), "type": kind if economy else
+                                 self._spell_economy_label(sp), "sort": sp["nom"],
+                                 "niveau": int(sp.get("item_niveau") or sp.get("niveau") or 0),
+                                 "charges": charges, "cout": cost, "description": desc}, **extra))
         return out
 
     def _item_spells(self, desc: str) -> list[dict]:
@@ -345,6 +414,11 @@ class MagicGearMixin:
                 add(part)
         for m in re.finditer(r"(?:le sort|lancer|lancez)\s+(?:le sort\s+)?([^,.;(]{3,60})", desc, re.I):
             add(m.group(1))
+        for m in AS_SPELL.finditer(desc):                 # v52 : « explose comme une boule de feu de niveau 3 »
+            before = len(found)
+            add(m.group(1))
+            if len(found) > before:
+                found[-1] = dict(found[-1], item_niveau=int(m.group(2)))
         return found[:8]
 
     @staticmethod
@@ -364,25 +438,121 @@ class MagicGearMixin:
     def item_charges_left(self, entry: dict, total: int) -> int:
         return max(0, int(total) - int(entry.get("charges_utilisees", 0)))
 
-    def use_item_power(self, power_id: str) -> dict:
-        """Décompte les charges de la capacité ; renvoie {ok, message, sort, niveau, description, objet}."""
+    # ------------------------------------------------------------------ v52 : règles de charges de l'objet
+    def item_rules(self, item: dict) -> dict:
+        """{recharge: formule | "toutes" | None, destroy, multi, elements: (formule, nom) | None}."""
+        desc = (item or {}).get("description", "") or ""
+        m = RECHARGE.search(desc)
+        el = ELEMENTS.search(desc)
+        elements = (el.group(1).replace(" ", ""), el.group(2).lower()) if el and not CHARGES.search(desc) else None
+        d = DESTROY.search(desc)
+        consequence = d.group(1).strip() if d else ""
+        return {"recharge": (m.group(1).replace(" ", "") if m else None), "destroy": bool(d),
+                "consequence": consequence,
+                "detruit": bool(d) and bool(re.search(r"d[ée]trui|perdu|cendre|poussi[èe]re|non magique", consequence)),
+                "multi": bool(MULTI.search(desc)) or bool(elements and PER_ELEMENT.search(desc)),
+                "elements": elements}
+
+    def item_count_choice(self, power_id: str) -> Optional[dict]:
+        """Nombre de charges / d'éléments à demander avant d'utiliser la tuile : {min, max, nom} ; None sinon."""
+        p = next((x for x in self.magic_item_powers() if x["id"] == power_id), None)
+        if p is None or not p.get("charges") or not (p.get("multi") or p.get("elements")):
+            return None
+        left = self.item_charges_left(self.ch.objets_magiques[p["entree"]], p["charges"])
+        if left < max(1, p["cout"]):
+            return None
+        return {"min": max(1, p["cout"]), "max": left, "nom": p.get("elements") or "charges", "objet": p["objet"]}
+
+    def set_item_elements(self, index: int, count: int) -> None:
+        entry = self.ch.objets_magiques[index]
+        entry["elements"] = max(0, int(count))
+        entry.pop("charges_utilisees", None)
+        entry.pop("epuise", None)
+
+    def use_item_power(self, power_id: str, count: int = 0) -> dict:
+        """Décompte les charges de la capacité ; renvoie {ok, message, sort, niveau, description, objet, destruction}.
+        `count` : charges (baguette qui surclasse) ou éléments (perles) dépensés, au moins le coût de base."""
         p = next((x for x in self.magic_item_powers() if x["id"] == power_id), None)
         if p is None:
             return {"ok": False, "message": "Capacité d'objet indisponible."}
         entry = self.ch.objets_magiques[p["entree"]]
+        spent = max(int(count or 0), p["cout"]) if (p.get("multi") or p.get("elements")) else p["cout"]
+        level = p.get("niveau", 0)
         if p["cout"]:
             left = self.item_charges_left(entry, p["charges"])
-            if left < p["cout"]:
-                return {"ok": False, "message": "{} : plus assez de charges ({} / {}).".format(
-                    p["objet"], left, p["charges"])}
-            entry["charges_utilisees"] = int(entry.get("charges_utilisees", 0)) + p["cout"]
+            if left < spent:
+                return {"ok": False, "message": "{} : plus assez de {} ({} / {}).".format(
+                    p["objet"], p.get("elements") or "charges", left, p["charges"])}
+            entry["charges_utilisees"] = int(entry.get("charges_utilisees", 0)) + spent
+            if p.get("multi") and level:
+                level += spent - p["cout"]
         left = self.item_charges_left(entry, p["charges"]) if p["charges"] else None
-        msg = "[Objet Magique : {}] {}{}.".format(p["objet"], p["sort"] or "capacité utilisée",
-                                                  " — charges : {} / {}".format(left, p["charges"])
-                                                  if left is not None else "")
-        return {"ok": True, "message": msg, "sort": p["sort"], "niveau": p.get("niveau", 0),
-                "description": p["description"], "objet": p["objet"]}
+        word = p.get("elements") or "charges"
+        msg = "[Objet Magique : {}] {}{}{}.".format(p["objet"], p["sort"] or "capacité utilisée",
+                                                    " (niveau {})".format(level) if p["sort"] and spent > 1 else "",
+                                                    " — {} : {} / {}".format(word, left, p["charges"])
+                                                    if left is not None else "")
+        destroy = False
+        if left == 0 and p.get("elements"):
+            entry["epuise"] = True
+            msg += " L'objet est épuisé."
+        elif left == 0 and p.get("destruction"):
+            destroy = True
+            msg += " Dernière charge : lancez le d20 (sur un 1, l'objet est détruit)."
+        return {"ok": True, "message": msg, "sort": p["sort"], "niveau": level, "description": p["description"],
+                "objet": p["objet"], "destruction": destroy, "entree": p["entree"]}
 
-    def recharge_magic_items(self) -> None:
-        for e in self.ch.objets_magiques:
-            e.pop("charges_utilisees", None)
+    def resolve_item_destruction(self, index: int, roll: int) -> str:
+        entry = self.ch.objets_magiques[index]
+        name = self.magic_display_name(entry)
+        rules = self.item_rules(self.magic_item(entry.get("nom", "")) or {})
+        if int(roll) == 1:
+            if not rules.get("detruit"):                 # « se transforme en… » : le MJ applique le texte
+                return "d20 = 1 : {} — {}.".format(name, rules.get("consequence") or "voir la description")
+            entry["detruit"] = True
+            entry["equipe"] = False
+            return "d20 = 1 : {} est détruit ({}).".format(name, rules.get("consequence", "")).replace(" ()", "")
+        return "d20 = {} : {} tient bon.".format(roll, name)
+
+    def item_state_label(self, entry: dict) -> str:
+        return "💥 Détruit" if entry.get("detruit") else "Épuisé" if entry.get("epuise") else ""
+
+    def pending_recharges(self) -> list[tuple[int, str, str]]:
+        """Objets à recharger au repos long avec une formule de dés : [(indice, nom, formule)]."""
+        out = []
+        for i, e in enumerate(self.ch.objets_magiques):
+            if not int(e.get("charges_utilisees", 0)) or e.get("detruit") or e.get("elements") is not None:
+                continue
+            formula = self.item_rules(self.magic_item(e.get("nom", "")) or {})["recharge"]
+            if formula and "d" in formula:
+                out.append((i, self.magic_display_name(e), formula))
+        return out
+
+    def recharge_magic_items(self, rolls: Optional[dict] = None, rng=None) -> list[str]:
+        """Repos long (« à l'aube ») : formule de recharge de l'objet (dés), sinon toutes les charges.
+        Les objets à éléments comptés (perles) ne se rechargent pas. `rolls` : {indice: total} lancés par l'interface."""
+        import random as _random
+        from . import dice as D
+        rng = rng or _random
+        rolls = rolls or {}
+        msgs = []
+        for i, e in enumerate(self.ch.objets_magiques):
+            used = int(e.get("charges_utilisees", 0))
+            if not used or e.get("detruit") or e.get("elements") is not None:
+                continue
+            formula = self.item_rules(self.magic_item(e.get("nom", "")) or {})["recharge"]
+            if formula and "d" in formula:
+                if i in rolls:
+                    gain = int(rolls[i])
+                else:
+                    dice, flat = D.parse_damage(formula)
+                    gain = flat + sum(s * sum(rng.randint(1, f) for _ in range(n)) for s, n, f in dice)
+                e["charges_utilisees"] = max(0, used - gain)
+                msgs.append("{} : +{} charge(s) ({})".format(self.magic_display_name(e), min(gain, used), formula))
+            elif formula and formula.isdigit():
+                e["charges_utilisees"] = max(0, used - int(formula))
+            else:
+                e.pop("charges_utilisees", None)
+            if not e.get("charges_utilisees"):
+                e.pop("charges_utilisees", None)
+        return msgs

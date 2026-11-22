@@ -24,6 +24,7 @@ from typing import Optional
 
 from . import rules as R
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 ELDRITCH_BLAST = "Décharge occulte"
 HEX = "Maléfice"
@@ -46,7 +47,7 @@ class InvocationsMixin:
         if self.knows_spell(HEX):
             return True
         e = self.ch.find_class("Occultiste")
-        return bool(e and "lame maudite" in norm(e.get("sous_classe", "")))
+        return bool(e and "lame maudite" in sub_norm_of(e))
 
     def invocation_prereq_issue(self, m: dict) -> str:
         """Prérequis de sort ou condition spéciale non remplis : raison (vide si tout va bien)."""
@@ -54,6 +55,9 @@ class InvocationsMixin:
             return "requiert le sort mineur {}".format(m["sort_requis"])
         if m.get("special") and "malefice" in norm(m["special"]) and not self.has_curse_feature():
             return "requiert le sort Maléfice ou une aptitude de malédiction"
+        req = re.search(r"la manifestation (.+?)(?: ;|$)", m.get("special") or "")      # v52 : prérequis 2024
+        if req and req.group(1).strip() not in self.ch.manifestations:
+            return "requiert la manifestation {}".format(req.group(1).strip())
         return ""
 
     def migrate_manifestations(self) -> None:
@@ -107,7 +111,8 @@ class InvocationsMixin:
         return "attaques:2" in self.invocation_effects()
 
     def concentration_advantage(self) -> list[str]:
-        return ["Esprit occulte"] if "concentration_avantage" in self.invocation_effects() else []
+        out = ["Esprit occulte"] if "concentration_avantage" in self.invocation_effects() else []
+        return out + self.feat_flag("concentration")      # v52 : don Mage de guerre
 
     # ------------------------------------------------------------------ sorts accordés : limites d'usage
     @staticmethod
@@ -116,7 +121,8 @@ class InvocationsMixin:
 
     def granted_limit_left(self, key: str) -> Optional[int]:
         """Utilisations restantes d'un sort accordé limité (None = à volonté)."""
-        tr = next((t for t in self.invocation_trackers() if t["key"] == key), None)
+        tr = next((t for t in self.invocation_trackers() + self.feat_trackers() + self.tasha_trackers()
+                   if t["key"] == key), None)
         return None if tr is None else max(0, tr["total"] - self.resource_used(key))
 
     def spend_granted_limit(self, key: str) -> None:
@@ -379,8 +385,10 @@ class InvocationsMixin:
         if lvl == 0 and "Clerc" in spell.get("classes", []) and self.class_level("Clerc") and \
                 any(n.startswith("incantation puissante") for n in names):
             out.append(("Incantation puissante (Sagesse)", self.mod("Sagesse")))
+        elif lvl == 0:
+            out += self.class_cantrip_bonus(spell)      # v52 : Incantation puissante 2024 (Clerc, Druide)
         if norm(spell.get("ecole", "")) == "evocation" and "Magicien" in spell.get("classes", []) and \
-                any(n.startswith("evocation renforcee") for n in names):
+                any(n.startswith(("evocation renforcee", "evocation amelioree")) for n in names):     # 2014 / 2024
             out.append(("Évocation renforcée (Intelligence)", self.mod("Intelligence")))
         if self.class_level("Ensorceleur") >= 6 and any(n.startswith("affinite elementaire") for n in names):
             from .engine_extras import DRACONIC
@@ -462,6 +470,10 @@ class InvocationsMixin:
                 (self.casters()[0] if self.casters() else None)
             if caster:
                 heal = R.add_flat(heal, caster["mod"])
+        life = self.life_disciple_bonus(spell, sc["niveau"]) if heal else 0
+        if life:                                         # v52 : Disciple de la vie (+2 + niveau du sort)
+            heal = R.add_flat(heal, life)
+            bonus = list(bonus) + [("Disciple de la vie", life)]
         count, plvl = self.pact()
         return {"niveau": sc["niveau"], "base": int(spell["niveau"]), "surclasse": sc["niveau"] > int(spell["niveau"]),
                 "pacte": bool(count) and sc["niveau"] == plvl and default == plvl,

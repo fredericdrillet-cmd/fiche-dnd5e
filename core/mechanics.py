@@ -135,6 +135,9 @@ MECH: dict[str, dict] = {
                      "pv_max_moitie": True},
     "epuisement_5": {"tests": {"*": [DIS]}, "vitesse_mult": 0.0, "attaque": [DIS], "js": {"*": [DIS]},
                      "pv_max_moitie": True},
+    # v52 : niveau 6 (mort) — les effets des niveaux 1 à 5 restent (PV maximum toujours divisés par deux)
+    "epuisement_6": {"tests": {"*": [DIS]}, "vitesse_mult": 0.0, "attaque": [DIS], "js": {"*": [DIS]},
+                     "pv_max_moitie": True},
     "alcoolise": {"tests": {"Dextérité": [DIS], "Sagesse": [DIS]}},
     "malade": {"tests": {"Force": [DIS], "Constitution": [DIS]}},
     "hebete": {"js": {"Dextérité": [DIS]}},

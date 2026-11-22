@@ -102,7 +102,7 @@ class WizardTests(unittest.TestCase):
         from ui.creation_wizard import STEPS, CreationWizard, apply_creation
         win = window(make("Guerrier", 3))
         w = CreationWizard(win)
-        self.assertEqual(STEPS, ["Race / Sous-race", "Classe", "Historique", "Caractéristiques",
+        self.assertEqual(STEPS, ["Race / Sous-race", "Historique", "Classe", "Compétences", "Caractéristiques",
                                  "Sorts et tours de magie", "Équipement", "Identité"])
         for i in range(len(STEPS)):
             w.go(i)
@@ -112,7 +112,7 @@ class WizardTests(unittest.TestCase):
         w.ch.sous_race = "Haut-elfe"
         w.host.changed()
         w._on_class("Magicien")
-        w.go(4)
+        w.go(5)
         self.assertIn("mineurs", w.spell_widgets)
         cantrip = next(s["nom"] for s in w.engine.level_spell_options(w.engine, "Magicien") if s["niveau"] == 0)
         self.assertTrue(w.learn("Magicien", cantrip))

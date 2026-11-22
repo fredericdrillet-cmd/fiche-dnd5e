@@ -151,7 +151,10 @@ def _spell_classes(eng, sim, cls: str, pending: list[dict]) -> list[str]:
 def wizard(data: dict, cls: str = "", ops: list[dict] | None = None, confirm: bool = False) -> dict:
     eng, sim, cls, options, state, errors = _replay(data, cls, ops or [])
     report = eng.level_up_report(sim, cls)
-    pending = report["dans_assistant"]
+    # v52 : choix gérés dans l'assistant de l'exe mais pas encore dans l'appli web : « à faire ensuite »
+    later_kinds = ("options", "competences", "langues", "dons")
+    report["ensuite"] = list(report["ensuite"]) + [m for m in report["dans_assistant"] if m["kind"] in later_kinds]
+    pending = [m for m in report["dans_assistant"] if m["kind"] not in later_kinds]
     entry = sim.ch.find_class(cls)
 
     if confirm:
