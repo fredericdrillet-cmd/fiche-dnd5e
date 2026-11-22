@@ -67,7 +67,15 @@ class InventoryTab(BaseTab):
         ag.addWidget(self.pack_btn, 2, 3)
         ag.addWidget(self.item_info, 3, 0, 1, 4)
         ag.setColumnStretch(1, 1)
-        left.addWidget(add)
+        # v53 : l'ajout d'objets passe par la fenêtre « Catalogue » (recherche, catégories, paquetages)
+        from PyQt6.QtWidgets import QDialog as _QDialog
+        self.catalog_dialog = _QDialog(self)
+        self.catalog_dialog.setWindowTitle("🛒 Catalogue d'équipement")
+        QVBoxLayout(self.catalog_dialog).addWidget(add)
+        self.catalog_dialog.resize(640, 260)
+        self.catalog_btn = QPushButton("🛒 Catalogue… (ajouter un objet)")
+        self.catalog_btn.clicked.connect(self.catalog_dialog.show)
+        left.addWidget(self.catalog_btn)
 
         inv = QGroupBox("Équipement porté")
         il = QVBoxLayout(inv)
@@ -93,6 +101,13 @@ class InventoryTab(BaseTab):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         style_table(self.table, stretch_col=0)
         il.addWidget(self.table)
+        self.table.setVisible(False)                      # v53 : modèle caché ; affichage en tuiles
+        from .inventory_grid import InventoryGrid
+        self.grid = InventoryGrid(self)
+        il.addWidget(self.grid, 1)
+        il.addWidget(make_label("Glissez une tuile sur une case du mannequin pour l'équiper (et une case vers le sac "
+                                "pour la vider) ; double-clic : utiliser ou équiper ; clic droit : menu.", "muted",
+                                wrap=True))
         self.del_btn = QPushButton("Retirer la ligne")
         self.bg_btn = QPushButton("Équipement de l'historique")
         self.use_btn = QPushButton("🧪 Utiliser / boire")
@@ -280,6 +295,27 @@ class InventoryTab(BaseTab):
         self.weight_warn.style().polish(self.weight_warn)
 
     # v45 : les objets magiques sont listés dans l'inventaire principal, après les objets courants
+    def _refresh_grid(self) -> None:
+        """v53 : tuiles du sac (même ordre que la table : objets courants puis objets magiques)."""
+        eng, db, ch = self.engine, self.db, self.ch
+        doll = eng.paperdoll()
+        worn = {v.get("nom") for v in doll.values()}
+        rows = []
+        for r, it in enumerate(ch.equipement):
+            info = db.catalog.get(it["nom"]) or {}
+            rows.append({"nom": it["nom"], "cle": it["nom"], "categorie": info.get("categorie", ""), "rarete": "",
+                         "qte": int(it.get("qte", 1)), "equipe": it["nom"] in worn, "magique": False, "ligne": r,
+                         "tip": self.table.item(r, 0).toolTip() if self.table.item(r, 0) else it["nom"]})
+        base = len(ch.equipement)
+        for i, entry in enumerate(ch.objets_magiques):
+            item = eng.magic_item(entry["nom"]) or {}
+            label = eng.magic_display_name(entry)
+            rows.append({"nom": label, "cle": entry["nom"], "categorie": item.get("type", ""),
+                         "rarete": item.get("rarete", ""), "qte": 1, "equipe": bool(entry.get("equipe")),
+                         "magique": True, "ligne": base + i, "epuise": bool(eng.item_state_label(entry)),
+                         "tip": self.table.item(base + i, 0).toolTip() if self.table.item(base + i, 0) else label})
+        self.grid.set_rows(rows)
+
     def magic_row(self, row: int) -> int:
         """Indice de l'objet magique de la ligne (-1 = objet courant)."""
         n = len(self.ch.equipement)
@@ -517,6 +553,7 @@ class InventoryTab(BaseTab):
             self.table.setItem(r, 3, cell("Objet magique ({})".format(state), "center", tip, t.accent_text))
         if 0 <= cur < self.table.rowCount():
             self.table.selectRow(cur)
+        self._refresh_grid()
         self._refresh_encumbrance()
 
         # outils

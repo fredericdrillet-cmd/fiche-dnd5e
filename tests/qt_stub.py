@@ -99,10 +99,10 @@ def install():
     import os
     os.environ["DND_EAGER_REFRESH"] = "1"      # tests : tous les onglets sont recalculés à chaque changement
     names = {
-        "QtCore": ["Qt", "QTimer", "QStringListModel", "QEvent", "QObject", "QBuffer", "QByteArray", "QIODevice", "QSize", "QPoint", "QPointF", "QRectF", "QPropertyAnimation",
+        "QtCore": ["Qt", "QTimer", "QStringListModel", "QEvent", "QObject", "QBuffer", "QByteArray", "QIODevice", "QSize", "QPoint", "QPointF", "QRectF", "QPropertyAnimation", "QMimeData",
                    "QEasingCurve", "pyqtSignal", "QEvent"],
-        "QtGui": ["QAction", "QActionGroup", "QKeySequence", "QBrush", "QColor", "QFont", "QPalette", "QImage", "QPixmap", "QPainter", "QPen", "QLinearGradient", "QRadialGradient", "QIcon", "QPainterPath", "QCursor"],
-        "QtWidgets": ["QCompleter", "QSizeGrip", "QAbstractScrollArea", "QAbstractSlider", "QAbstractSpinBox", "QScrollBar", "QTabBar", "QToolButton", "QToolTip", "QStyle", "QStyledItemDelegate", "QProgressBar", "QSizePolicy", "QGraphicsBlurEffect", "QGraphicsDropShadowEffect", "QDialog", "QDialogButtonBox", "QAbstractItemView", "QApplication", "QCheckBox", "QComboBox", "QFileDialog", "QFrame",
+        "QtGui": ["QAction", "QActionGroup", "QKeySequence", "QBrush", "QColor", "QFont", "QPalette", "QImage", "QPixmap", "QPainter", "QPen", "QLinearGradient", "QRadialGradient", "QIcon", "QPainterPath", "QCursor", "QDrag"],
+        "QtWidgets": ["QCompleter", "QMenu", "QListView", "QSizeGrip", "QAbstractScrollArea", "QAbstractSlider", "QAbstractSpinBox", "QScrollBar", "QTabBar", "QToolButton", "QToolTip", "QStyle", "QStyledItemDelegate", "QProgressBar", "QSizePolicy", "QGraphicsBlurEffect", "QGraphicsDropShadowEffect", "QDialog", "QDialogButtonBox", "QAbstractItemView", "QApplication", "QCheckBox", "QComboBox", "QFileDialog", "QFrame",
                       "QGridLayout", "QGroupBox", "QHBoxLayout", "QHeaderView", "QLabel", "QLineEdit", "QListWidget",
                       "QListWidgetItem", "QMainWindow", "QMessageBox", "QPlainTextEdit", "QPushButton", "QScrollArea",
                       "QSpinBox", "QDoubleSpinBox", "QSplitter", "QStackedWidget", "QTabWidget", "QTableWidget", "QTableWidgetItem", "QTextBrowser",

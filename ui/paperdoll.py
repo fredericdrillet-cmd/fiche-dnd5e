@@ -31,9 +31,13 @@ CLEAR = "✖ Vider la case"
 class SlotCard(QLabel):
     """Case cliquable du mannequin : texte AVEC retour à la ligne (un QPushButton tronque les noms longs)."""
 
-    def __init__(self, on_click=None, min_w: int = 150, min_h: int = 66):
+    def __init__(self, on_click=None, min_w: int = 150, min_h: int = 66, slot: str = "", on_drop=None):
         super().__init__()
         self.on_click = on_click
+        self.slot, self.on_drop, self.filled = slot, on_drop, False      # v53 : glisser-déposer
+        self._press = None
+        if on_drop is not None:
+            self.setAcceptDrops(True)
         self.setWordWrap(True)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setMinimumSize(min_w, min_h)
@@ -41,10 +45,47 @@ class SlotCard(QLabel):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def mousePressEvent(self, event):  # noqa: N802
-        if self.on_click and event.button() == Qt.MouseButton.LeftButton:
-            self.on_click()
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._press = event.position()                # clic ou début de glisser (case remplie -> sac)
         else:
             super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):  # noqa: N802
+        if self._press is not None and self.filled and self.slot and \
+                (event.position() - self._press).manhattanLength() > 12:
+            from PyQt6.QtCore import QMimeData
+            from PyQt6.QtGui import QDrag
+            from .inventory_grid import MIME_SLOT
+            self._press = None
+            mime = QMimeData()
+            mime.setData(MIME_SLOT, self.slot.encode("utf-8"))
+            drag = QDrag(self)
+            drag.setMimeData(mime)
+            drag.setPixmap(self.grab())
+            drag.exec(Qt.DropAction.MoveAction)
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):  # noqa: N802
+        if self._press is not None and self.on_click and event.button() == Qt.MouseButton.LeftButton:
+            self._press = None
+            self.on_click()
+            return
+        self._press = None
+        super().mouseReleaseEvent(event)
+
+    def dragEnterEvent(self, e):  # noqa: N802
+        from .inventory_grid import MIME_ITEM
+        if e.mimeData().hasFormat(MIME_ITEM):
+            e.acceptProposedAction()
+        else:
+            e.ignore()
+
+    def dropEvent(self, e):  # noqa: N802
+        from .inventory_grid import MIME_ITEM
+        if e.mimeData().hasFormat(MIME_ITEM) and self.on_drop:
+            self.on_drop(self.slot, bytes(e.mimeData().data(MIME_ITEM)).decode("utf-8"))
+            e.acceptProposedAction()
 
     def set_look(self, color: str, bold: bool = False, dashed: bool = False) -> None:
         t = theme.current()
@@ -63,7 +104,7 @@ class PaperdollPanel(QGroupBox):
         grid.setSpacing(6)
         self.slot_btns: dict[str, SlotCard] = {}
         for key, (r, c) in LAYOUT.items():
-            b = SlotCard(lambda k=key: self._on_slot(k))
+            b = SlotCard(lambda k=key: self._on_slot(k), slot=key, on_drop=self.drop_on_slot)
             grid.addWidget(b, r, c)
             self.slot_btns[key] = b
         # au centre : le portrait DU PERSONNAGE (onglet « Histoire, Portrait »), qu'on équipe
@@ -74,7 +115,7 @@ class PaperdollPanel(QGroupBox):
         for col in range(3):
             grid.setColumnStretch(col, 1)
         lay.addLayout(grid)
-        self.hint = make_label("Clic sur une case : choisir parmi les objets de l'inventaire qui correspondent à "
+        self.hint = make_label("Glissez un objet du sac sur une case, ou cliquez une case pour choisir parmi les objets qui correspondent à "
                                "son rôle (armures, armes, boucliers, anneaux, capes…). Un objet par case.",
                                "muted", wrap=True)
         lay.addWidget(self.hint)
@@ -91,6 +132,7 @@ class PaperdollPanel(QGroupBox):
         for key, b in self.slot_btns.items():
             item = doll.get(key)
             label = SLOT_LABELS[key]
+            b.filled = bool(item)
             if item:
                 mark = " ◉" if item.get("harmonise") else ""
                 warn = eng.item_proficiency_warning(item["nom"]) if key in (
@@ -146,6 +188,17 @@ class PaperdollPanel(QGroupBox):
             self.win.go_to_tab("rp")
 
     # ------------------------------------------------------------------ actions
+    def drop_on_slot(self, key: str, name: str) -> bool:
+        """v53 : tuile du sac déposée sur une case : équipée si elle va dans cette case."""
+        eng, win = self.engine, self.win
+        cand = next((c for c in eng.slot_inventory(key) if c["nom"] == name or name.startswith(c["nom"])), None)
+        if cand is None:
+            win.statusBar().showMessage("« {} » ne va pas dans la case « {} ».".format(name, SLOT_LABELS[key]), 6000)
+            return False
+        win.statusBar().showMessage(eng.equip_slot(key, cand), 7000)
+        win.changed()
+        return True
+
     def _on_slot(self, key: str) -> None:
         """Case cliquée : objets de l'inventaire correspondant à son RÔLE (armure, arme, bouclier, anneau, cape…)."""
         eng, win = self.engine, self.win

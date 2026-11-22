@@ -76,3 +76,23 @@ class TileIconTests(unittest.TestCase):
                          ("icone", "foncer", "commune"))
         self.assertEqual(tile_icon({"id": "classe:second_souffle", "nom": "Second souffle", "groupe": "capacites",
                                     "type": "Action bonus"})[2], "soins")
+
+
+class InventoryUiTests(unittest.TestCase):
+    def test_grid_and_drop_on_paperdoll(self):
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.inventory_grid import item_icon_name
+        win = MainWindow(DB)
+        ch = win.engine.ch
+        ch.equipement.append({"nom": "Cotte de mailles", "qte": 1})
+        ch.equipement.append({"nom": "Torche", "qte": 3})
+        win.engine.normalize()
+        win.refresh_all()
+        self.assertTrue(win.inventory_tab.paperdoll.drop_on_slot("armure", "Cotte de mailles"))
+        self.assertEqual(ch.armure["nom"], "Cotte de mailles")
+        self.assertFalse(win.inventory_tab.paperdoll.drop_on_slot("armure", "Torche"))
+        self.assertEqual(item_icon_name("Potion de soins"), "objet_potion")
+        self.assertEqual(item_icon_name("Épée longue"), "arme_epee")
