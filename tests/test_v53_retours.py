@@ -114,3 +114,62 @@ class CreationSkillsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ArmesMagiquesAuditTests(unittest.TestCase):
+    """v53 : toute arme de base a un dessin ; armes / armures / boucliers sur mesure équipables et illustrés."""
+
+    db = DB
+
+    def fresh(self):
+        from core.engine import Engine
+        ch = Engine.new_character(self.db)
+        ch.classes = [{"nom": "Guerrier", "niveau": 10, "sous_classe": "", "pv_jets": []}]
+        e = Engine(self.db, ch)
+        e.normalize()
+        return e, ch
+
+    def test_chaque_arme_de_base_a_un_dessin(self):
+        from core.action_icons import weapon_key
+        self.assertEqual([w for w in self.db.weapons if not weapon_key(w)], [])
+        self.assertEqual(weapon_key("Hache du berserker (Hache à deux mains)"), "grande hache")
+
+    def test_flechette_n_est_pas_une_munition(self):
+        from core.engine import Engine
+        self.assertFalse(Engine.is_ammo_item({"nom": "Fléchette +1", "type": "Arme"}))
+        self.assertTrue(Engine.is_ammo_item({"nom": "Flèches +1", "type": "Arme"}))
+
+    def test_armes_sur_mesure_equipables(self):
+        from core.tile_icons import tile_icon
+        for base in ("Fléchette", "Filet", "Pistolet", "Hache à deux mains", "Serpe"):
+            e, ch = self.fresh()
+            nom = "Mon arme " + base
+            e.add_custom_magic_item(nom, "Arme", "rare", base=base, bonus=2)
+            e.normalize()
+            self.assertTrue(ch.objets_magiques, base)
+            slot = e.gear_default_slot(ch.objets_magiques[-1])
+            cand = next(c for c in e.slot_inventory(slot) if c["nom"].startswith(nom))
+            e.equip_slot(slot, cand)
+            e.normalize()
+            tile = next(x for x in e.turn_actions() if x.get("groupe") == "attaques" and nom in x["nom"])
+            self.assertEqual(tile_icon(tile)[0], "arme", base)
+
+    def test_armure_et_bouclier_sur_mesure(self):
+        for base, slot in (("Cotte de mailles", "armure"), ("Bouclier", "main_secondaire")):
+            e, ch = self.fresh()
+            ac0 = e.armor_class()[0]
+            e.add_custom_magic_item("Pièce " + base, "Armure", "rare", base=base, bonus=2)
+            e.normalize()
+            self.assertEqual(e.gear_default_slot(ch.objets_magiques[-1]), slot)
+            cand = next(c for c in e.slot_inventory(slot) if c["nom"].startswith("Pièce"))
+            e.equip_slot(slot, cand)
+            e.normalize()
+            self.assertGreater(e.armor_class()[0], ac0, base)
+
+    def test_icone_du_sac_des_armes(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.icons import named_body
+        from ui.inventory_grid import item_body
+        for n in ("Pistolet", "Mousquet", "Massue +1", "Maillet d’armes", "Hache du berserker (Hache à deux mains)"):
+            self.assertNotEqual(item_body(n, "Arme"), named_body("objet"), n)

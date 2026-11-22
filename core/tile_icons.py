@@ -19,8 +19,8 @@ COMMON = [("foncer", "foncer"), ("desengager", "desengager"), ("esquiver", "esqu
 
 WEAPONS = [("grande hache", "arme_grande_hache"), ("hache", "arme_hache"), ("epee courte", "arme_epee_courte"),
            ("cimeterre", "arme_cimeterre"), ("sabre", "arme_cimeterre"), ("rapiere", "arme_epee"),
-           ("epee", "arme_epee"), ("dague", "arme_dague"), ("marteau", "arme_marteau"), ("pic de guerre", "arme_marteau"),
-           ("masse", "arme_masse"), ("morgenstern", "arme_masse"), ("gourdin", "arme_masse"), ("fleau", "arme_fleau"),
+           ("epee", "arme_epee"), ("dague", "arme_dague"), ("marteau", "arme_marteau"), ("maillet", "arme_marteau"), ("pic de guerre", "arme_marteau"),
+           ("masse", "arme_masse"), ("morgenstern", "arme_masse"), ("gourdin", "arme_masse"), ("massue", "arme_masse"), ("fleau", "arme_fleau"),
            ("hallebarde", "arme_hallebarde"), ("coutille", "arme_hallebarde"), ("pique", "arme_hallebarde"),
            ("lance", "arme_lance"), ("trident", "arme_lance"), ("arbalete", "arme_arbalete"), ("arc", "arme_arc"),
            ("fronde", "arme_fronde"), ("baton", "arme_baton"), ("fouet", "arme_fouet"), ("javeline", "arme_javeline"),

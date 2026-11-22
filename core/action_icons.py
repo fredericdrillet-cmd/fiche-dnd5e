@@ -331,12 +331,26 @@ WEAPON_ART = {
     "fouet": A.whip, "filet": A.web, "faucille": lambda: A.path(
         "M22 58 L26 40 C46 40 54 22 44 8 C58 18 56 44 30 46 L28 58 Z", True),
     "baton": A.staff, "mains nues": A.fist, "bouclier": A.shield,
+    "pistolet": lambda: A.rot(A.rect(12, 20, 40, 9, 2) + A.path("M14 28 L26 28 L22 52 L10 52 Z", True)
+                              + A.path("M28 29 C28 38 36 38 36 29", w=2.5), -15),
+    "mousquet": lambda: A.rot(A.rect(4, 26, 46, 6, 2) + A.path("M40 26 L60 30 L60 40 L36 34 Z", True)
+                              + A.path("M30 32 C30 40 38 40 38 32", w=2.5), -35),
 }
+# v53 : armes de base aux noms sans dessin propre -> dessin le plus proche
+WEAPON_ALIASES = {"hache a deux mains": "grande hache", "serpe": "faucille", "arquebuse": "mousquet",
+                  "revolver": "pistolet", "fusil": "mousquet"}
+# famille de l'arme quand aucun nom ne correspond (arme sur mesure, homebrew…)
+WEAPON_FAMILIES = [("arbalete", "arbalete legere"), ("arc", "arc long"), ("hache", "hache d'armes"),
+                   ("epee", "epee longue"), ("sabre", "cimeterre"), ("marteau", "marteau de guerre"),
+                   ("masse", "masse d'armes"), ("lance", "lance"), ("fleau", "fleau d'armes"), ("couteau", "dague"),
+                   ("poignard", "dague")]
 
 
 def weapon_key(text: str) -> str:
     n = norm(text)
-    return next((k for k in sorted(WEAPON_ART, key=len, reverse=True) if k in n), "")
+    return (next((k for k in sorted(WEAPON_ART, key=len, reverse=True) if k in n), "")
+            or next((v for k, v in WEAPON_ALIASES.items() if k in n), "")
+            or next((v for k, v in WEAPON_FAMILIES if re.search(r"\b" + k + r"s?\b", n)), ""))
 
 
 @lru_cache(maxsize=1)

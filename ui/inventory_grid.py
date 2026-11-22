@@ -34,8 +34,19 @@ def item_icon_name(name: str, category: str = "") -> str:
     return _find(name, ITEMS) or _find(name, WEAPONS) or ("objet_outil" if "outil" in cat else "objet")
 
 
+def item_body(name: str, category: str = "") -> str:
+    """v53 : corps SVG de l'icône du sac — une arme reprend le dessin de sa tuile d'attaque (core/action_icons)."""
+    icon = item_icon_name(name, category)
+    if icon.startswith("arme_") or icon == "objet":
+        from core.action_icons import weapon_body
+        body = weapon_body(name)
+        if body:
+            return body
+    return IC.named_body(icon)
+
+
 def tile_pixmap(name: str, category: str, rarity: str, qty: int, equipped: bool, magic: bool, dim: bool = False):
-    pix = IC.icon_pixmap(item_icon_name(name, category), "objet" if magic else "commune", TILE, dim)
+    pix = IC._render(item_body(name, category), "objet" if magic else "commune", TILE, theme.current().key, dim)
     if not IC.HAS_SVG:
         return pix
     pix = pix.copy()

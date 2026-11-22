@@ -1487,7 +1487,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             notes.append("Munition {} : +{} attaque et dégâts".format(ammo["nom"], ammo["bonus"]))
         elif ammo:
             notes.append("Munition : " + ammo["nom"])
-        text = R.add_flat(die, flat) if "d" in die else str(max(0, int(die) + flat)) if flat else die
+        if "d" in die:
+            text = R.add_flat(die, flat)
+        elif flat and die.strip().isdigit():
+            text = str(max(0, int(die) + flat))
+        else:                                            # v53 : filet (« — ») : pas de dégâts, même magique
+            text = die
         if unarmed and "d" not in die:
             text = str(max(1, 1 + mod))
         calc = damage_calc(die, terms, text)
@@ -2299,7 +2304,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     @staticmethod
     def is_ammo_item(item: dict) -> bool:
         n = norm(item.get("nom", "")) + " " + norm(item.get("type", ""))
-        return bool(re.search(r"\b(munition|fleche|carreau|bille)", n))
+        return bool(re.search(r"\b(munition|fleche(?!tte)|carreau|bille)", n))
 
     def remove_magic_item(self, idx: int) -> None:
         if 0 <= idx < len(self.ch.objets_magiques):
