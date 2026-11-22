@@ -109,13 +109,15 @@ class InventoryTab(BaseTab):
                                 "pour la vider) ; double-clic : utiliser ou équiper ; clic droit : menu.", "muted",
                                 wrap=True))
         self.del_btn = QPushButton("Retirer la ligne")
-        self.bg_btn = QPushButton("Équipement de l'historique")
+        self.bg_btn = QPushButton("📜 Historique")
+        self.bg_btn.setToolTip(rich_tip("Équipement de l'historique", "Ajoute au sac l'équipement de départ de "
+                                        "votre historique."))
         self.use_btn = QPushButton("🧪 Utiliser / boire")
         self.use_btn.setToolTip(rich_tip("Utiliser un consommable", "Boit la potion (ou applique l'huile, "
                                          "l'antitoxine…) sélectionnée : son effet officiel s'applique aussitôt "
                                          "(soins, état actif dans l'onglet Combat, purge du poison…) et la quantité "
                                          "diminue de 1."))
-        self.equip_btn = QPushButton("✨ Équiper / déséquiper")
+        self.equip_btn = QPushButton("✨ (Dés)équiper")
         self.equip_btn.setToolTip(rich_tip("Objet magique", "Équipe l'objet magique sélectionné dans sa case du "
                                            "mannequin (arme : main principale ou distance, armure, bouclier : main "
                                            "secondaire, anneau, cape…) ou le retire. Le bonus +X s'applique dès que "
