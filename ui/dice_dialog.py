@@ -356,6 +356,54 @@ class DiceRollDialog(QDialog):
         lay.addWidget(self.total)
         if spec.note:
             lay.addWidget(make_label(spec.note, "muted", wrap=True, align=Qt.AlignmentFlag.AlignCenter))
+        # v52 : le jet part dans le mode de l'état du personnage ; le MJ peut imposer un autre mode (relance)
+        self.reroll_mode = None
+        modes = QHBoxLayout()
+        modes.addStretch(1)
+        self.mode_btns = {}
+        for mode, label in (("", "Normal"), ("avantage", "Avantage"), ("désavantage", "Désavantage")):
+            b = QPushButton(("● " if spec.mode == mode else "") + label)
+            b.setProperty("role", "ghost")
+            b.setToolTip("Relancer ce jet {}.".format("sans avantage ni désavantage" if not mode else "avec " + mode))
+            b.setEnabled(spec.mode != mode and spec.mode != "échec")
+            b.clicked.connect(lambda _=False, m=mode: self._reroll(m))
+            self.mode_btns[mode] = b
+            modes.addWidget(b)
+        # v52 : inspiration — 2024 : relancer le d20 et garder le nouveau ; 2014 : avantage à ce jet
+        eng = getattr(parent, "engine", None)
+        self.inspire_btn = None
+        self._eng = eng
+        if eng is not None and getattr(eng.ch, "inspiration", False) is True and spec.kind != "degats":
+            heroic = eng.rule_active("inspiration_heroique")
+            self.inspire_btn = QPushButton("🌟 " + ("Relancer (inspiration héroïque)" if heroic
+                                                   else "Avantage (inspiration)"))
+            self.inspire_btn.setToolTip("Dépense votre inspiration : " + (
+                "relancez le d20 et gardez le nouveau résultat." if heroic else "relancez ce jet avec avantage."))
+            self.inspire_btn.clicked.connect(lambda _=False, h=heroic: self._inspire(h))
+            modes.addWidget(self.inspire_btn)
+        self.cover_btns = []                              # v52 : abri sur un JS de Dextérité (sort de zone)
+        self.cover = 0
+        if spec.kind == "sauvegarde" and "Dextérité" in spec.title:
+            for value, label in ((2, "Abri important +2"), (5, "Abri supérieur +5")):
+                b = QPushButton("🧱 " + label)
+                b.setProperty("role", "ghost")
+                b.setToolTip("Abri entre vous et l'origine de l'effet : +{} au JS de Dextérité.".format(value))
+                b.clicked.connect(lambda _=False, v=value, t=label: self._apply_cover(v, t))
+                self.cover_btns.append(b)
+                modes.addWidget(b)
+        self.luck_btn = None                              # v52 : don Chanceux (points de chance)
+        if eng is not None and hasattr(eng, "luck_left") and spec.kind in ("test", "competence", "sauvegarde",
+                                                                            "attaque", "sort"):
+            left = eng.luck_left()
+            if isinstance(left, int) and left > 0:
+                old = eng.sheet_edition != 2024
+                self.luck_btn = QPushButton("🍀 Chanceux ({})".format(left))
+                self.luck_btn.setToolTip("Dépense un point de chance : " + (
+                    "lancez un d20 de plus et gardez le meilleur de tous." if old else "avantage à ce jet."))
+                self.luck_btn.clicked.connect(lambda _=False: self._luck())
+                modes.addWidget(self.luck_btn)
+        modes.addStretch(1)
+        lay.addLayout(modes)
         buttons = QHBoxLayout()
         buttons.addStretch(1)
         self.skip_btn = QPushButton("Passer l'animation")
@@ -410,7 +458,10 @@ class DiceRollDialog(QDialog):
                 die.set_choice(kept=i == kept, dimmed=i != kept)
                 self.captions[i].setText("<b style='color:{}'>✔ Retenu</b>".format(self._accent) if i == kept
                                          else "<span style='color:gray'>✖ Écarté</span>")
-        if len(r.d20s) == 2:
+        if getattr(self.spec, "luck_dice", None):        # v52 : don Chanceux 2014
+            self.other.setText("Chanceux : {} — on garde le meilleur → <b>{}</b>".format(
+                ", ".join(str(x) for x in r.d20s), r.natural))
+        elif len(r.d20s) == 2:
             rule = "on garde le meilleur" if self.spec.mode == "avantage" else "on garde le moins bon"
             self.other.setText("{} : {} et {} — {} → <b>{}</b>".format(
                 self.spec.mode.capitalize(), r.d20s[0], r.d20s[1], rule, r.natural))
@@ -449,6 +500,8 @@ class DiceRollDialog(QDialog):
             self.timer.stop()
         r = self.result
         text = "Total : {}".format(r.total)
+        if getattr(r, "adjust", ""):
+            text += "  — " + r.adjust
         if r.auto_fail:
             text += "  — échec automatique"
         self.total.setText(text)
@@ -463,6 +516,39 @@ class DiceRollDialog(QDialog):
         while self.phase == "apply":
             self._apply_next()
 
+    def _apply_cover(self, value: int, label: str) -> None:
+        """Ajoute le bonus d'abri au total déjà tiré (le d20 ne change pas)."""
+        if self.cover:
+            return
+        self.finish_now()
+        self.cover = value
+        self.result.total += value
+        self.result.adjust = (self.result.adjust + " ; " if self.result.adjust else "") + label
+        self._done()
+        for b in self.cover_btns:
+            b.setEnabled(False)
+
+    def _luck(self) -> None:
+        if not self._eng.spend_luck():
+            return
+        self.lucky = True
+        if self._eng.sheet_edition == 2024:
+            self._reroll("" if self.spec.desavantage else "avantage")
+        else:
+            self._reroll(self.spec.mode)
+
+    def _inspire(self, heroic: bool) -> None:
+        self._eng.ch.inspiration = False
+        self.inspired = True
+        self._reroll(self.spec.mode if heroic else "avantage")
+
+    def _reroll(self, mode: str) -> None:
+        """Relance demandée dans un autre mode (avantage / désavantage / normal) : décision du MJ."""
+        self.reroll_mode = mode
+        if self.timer.isActive():
+            self.timer.stop()
+        self.done(2)
+
     def showEvent(self, event):  # noqa: N802
         super().showEvent(event)
         self.adjustSize()
@@ -472,17 +558,60 @@ class DiceRollDialog(QDialog):
         self.start()
 
 
+def with_mode(spec, mode: str):
+    """Copie du jet dans le mode imposé (décision du MJ)."""
+    import dataclasses
+    label = {"": "jet normal", "avantage": "avantage", "désavantage": "désavantage"}[mode]
+    note = ((spec.note + " — ") if spec.note else "") + "Mode imposé : {}.".format(label)
+    return dataclasses.replace(spec, mode=mode, note=note)
+
+
+def mode_text(spec, result) -> str:
+    if spec.mode in ("avantage", "désavantage") and len(result.d20s) > 1:
+        return "{} ({} et {})".format(spec.mode, *result.d20s[:2])
+    return spec.mode
+
+
+def dice_blocked(win) -> bool:
+    """v52 : pas de jet de dés dans l'assistant de création (la fiche n'est pas encore créée)."""
+    return getattr(win, "no_dice", False) is True
+
+
 def roll_dice(win, spec) -> "D.RollResult | None":
     """Ouvre la fenêtre de lancer (fond flouté semi-transparent) et renvoie le résultat."""
-    if spec is None:
+    if spec is None or dice_blocked(win):
         return None
-    backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
-    dialog = DiceRollDialog(win, spec)
-    try:
-        dialog.exec()
-    finally:
-        backdrop.dispose()
+    eng = getattr(win, "engine", None)
+    if eng is not None and hasattr(eng, "prepare_d20_spec"):
+        spec = eng.prepare_d20_spec(spec)               # v52 : Chanceux du Halfelin
+    while True:
+        backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
+        dialog = DiceRollDialog(win, spec)
+        try:
+            dialog.exec()
+        finally:
+            backdrop.dispose()
+        if getattr(dialog, "reroll_mode", None) is None:
+            break
+        if getattr(dialog, "lucky", False) is True:      # v52 : don Chanceux
+            import dataclasses
+            note = ((spec.note + " — ") if spec.note else "") + "Point de chance dépensé."
+            if eng is not None and eng.sheet_edition == 2024:
+                spec = dataclasses.replace(spec, mode=dialog.reroll_mode, note=note)
+            else:                                        # 2014 : les d20 déjà lancés + 1, on garde le meilleur
+                spec = dataclasses.replace(spec, luck_dice=list(dialog.result.d20s), note=note)
+            continue
+        if getattr(dialog, "inspired", False) is True:   # v52 : relance par l'inspiration
+            import dataclasses
+            spec = dataclasses.replace(spec, mode=dialog.reroll_mode, note=((spec.note + " — ") if spec.note else "")
+                                       + "Inspiration dépensée : relance.")
+            continue
+        spec = with_mode(spec, dialog.reroll_mode)        # relance : seul le dernier jet compte
     r = dialog.result
+    if eng is not None and hasattr(eng, "record_roll"):    # v52 : historique des lancers (Ctrl+H)
+        eng.record_roll(spec.title, spec.kind, r.total, "d20 = {}{}".format(
+            r.natural, " (critique)" if r.critical == "succes" else " (échec critique)" if r.critical else ""),
+            mode_text(spec, r), list(r.d20s))
     win.statusBar().showMessage("🎲 {} : d20 = {}{} → total {}".format(
         spec.title, r.natural, " (critique !)" if r.critical == "succes" else " (échec critique)" if r.critical else "",
         r.total), 8000)
@@ -567,11 +696,15 @@ class DamageRollDialog(QDialog):
         lay.setSpacing(10)
         card.setMinimumWidth(420)
         outer.addWidget(card)
-        icon = {"soins": "💚", "de": "🎲", "pv_temp": "🛡"}.get(spec.kind, "💥")
-        lay.addWidget(make_label("{}  {}".format(icon, spec.title), "title", align=Qt.AlignmentFlag.AlignCenter))
-        kind_txt = {"soins": "Soins", "de": "Dé", "pv_temp": "PV temporaires"}.get(spec.kind, "Dégâts")
-        lay.addWidget(make_label("{} : {}{}".format(kind_txt, spec.formula, " " + spec.damage_type if spec.damage_type
-                                                    else ""), "head", align=Qt.AlignmentFlag.AlignCenter))
+        icon = {"soins": "💚", "de": "🎲", "pv_temp": "🛡", "reserve": "💤"}.get(spec.kind, "💥")
+        self._wrapped = [make_label("{}  {}".format(icon, spec.title), "title", align=Qt.AlignmentFlag.AlignCenter)]
+        lay.addWidget(self._wrapped[0])
+        kind_txt = {"soins": "Soins", "de": "Dé", "pv_temp": "PV temporaires",
+                    "reserve": "Réserve de PV"}.get(spec.kind, "Dégâts")
+        self._wrapped.append(make_label("{} : {}{}".format(kind_txt, spec.formula, " " + spec.damage_type
+                                                           if spec.damage_type else ""), "head",
+                                        align=Qt.AlignmentFlag.AlignCenter))
+        lay.addWidget(self._wrapped[1])
         # un dé animé par dé de la formule — taille adaptée au nombre de dés, 6 par ligne au plus
         n = len(self.result.dice)
         size = 120 if n <= 3 else 92 if n <= 6 else 70
@@ -599,6 +732,10 @@ class DamageRollDialog(QDialog):
         lay.addWidget(self.flat_label)
         self.total = make_label("Total : …", "stat", align=Qt.AlignmentFlag.AlignCenter)
         lay.addWidget(self.total)
+        self._wrapped.append(self.total)
+        for lab in self._wrapped:                         # v52 : textes longs à la ligne plutôt que tronqués
+            lab.setWordWrap(True)
+        self._card = card
         if spec.note:
             lay.addWidget(make_label(spec.note, "muted", wrap=True, align=Qt.AlignmentFlag.AlignCenter))
         buttons = QHBoxLayout()
@@ -647,16 +784,34 @@ class DamageRollDialog(QDialog):
         if r.flat or getattr(self.spec, "calcul", ""):
             self.flat_label.setText("<b style='color:{}'>✔ {}</b>".format(self._accent, html.escape(
                 flat_text(self.spec, r.flat))))
-        word = {"soins": "PV regagnés", "de": "Résultat", "pv_temp": "PV temporaires"}.get(self.spec.kind, "dégâts")
-        self.total.setText("Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
-                                                  "dégâts" + (" " + self.spec.damage_type if self.spec.damage_type
-                                                              else "")))
+        word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires",
+                "reserve": "PV de créatures affectés"}.get(self.spec.kind, "dégâts")
+        typed = D.typed_text(getattr(self.spec, "parts", []) or [], r)     # v52 : « 9 tranchants + 3 poison »
+        self.total.setText(("Total : {} dégâts — {}".format(r.total, typed) if typed else
+                            "Total : {} {}".format(r.total, word if self.spec.kind != "degats" else
+                                                   "dégâts" + (" " + self.spec.damage_type if self.spec.damage_type
+                                                               else ""))).rstrip())
         self.phase = "done"
         if self.timer.isActive():
             self.timer.stop()
         self.close_btn.setEnabled(True)
         self.close_btn.setFocus()
         self.skip_btn.setEnabled(False)
+        self._fit_text()
+
+    def _fit_text(self) -> None:
+        """v52 : la fenêtre s'élargit pour le total détaillé (plusieurs dés et types de dégâts), sans rien tronquer."""
+        try:
+            fm = self.total.fontMetrics()
+            need = max(fm.horizontalAdvance(self.total.text()), 0) + 80
+            screen = self.screen().availableGeometry().width() if self.screen() is not None else 1400
+            self._card.setMinimumWidth(int(min(max(420, need), screen * 0.8)))
+            self.adjustSize()
+            parent = self.parentWidget()
+            if parent is not None:
+                self.move(parent.frameGeometry().center() - self.rect().center())
+        except (AttributeError, TypeError):
+            pass
 
     def finish_now(self) -> None:
         if self.phase == "roll":
@@ -673,7 +828,7 @@ class DamageRollDialog(QDialog):
 
 def roll_damage_dialog(win, spec) -> "D.DamageResult | None":
     """Ouvre l'animation multi-dés (fond flouté) et renvoie le résultat ; None si la formule n'a pas de dé."""
-    if spec is None or not D.has_dice(spec.formula):
+    if spec is None or not D.has_dice(spec.formula) or dice_blocked(win):
         return None
     backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
     dialog = DamageRollDialog(win, spec)
@@ -683,8 +838,16 @@ def roll_damage_dialog(win, spec) -> "D.DamageResult | None":
         backdrop.dispose()
     dialog.finish_now()
     r = dialog.result
-    word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires"}.get(spec.kind, "dégâts")
-    win.statusBar().showMessage("🎲 {} : {} → {} {}".format(spec.title, spec.formula, r.total, word).strip(), 8000)
+    word = {"soins": "PV regagnés", "de": "", "pv_temp": "PV temporaires",
+                "reserve": "PV de créatures affectés"}.get(spec.kind, "dégâts")
+    eng = getattr(win, "engine", None)
+    if eng is not None and hasattr(eng, "record_roll"):    # v52 : historique des lancers (Ctrl+H)
+        eng.record_roll(spec.title, spec.kind, r.total, "{} → {} {}".format(
+            spec.formula, r.total, word if spec.kind != "degats" else ("dégâts " + spec.damage_type).strip()),
+            "", [v for _, v, _ in r.dice])
+    typed = D.typed_text(getattr(spec, "parts", []) or [], r)
+    win.statusBar().showMessage("🎲 {} : {} → {} {}".format(spec.title, spec.formula, r.total,
+                                                          "(" + typed + ")" if typed else word).strip(), 12000)
     return r
 
 
@@ -700,6 +863,10 @@ def roll_initiative(win) -> "D.RollResult | None":
     eng.record_initiative(r.total)
     detail = " ".join(t.text() for t in spec.terms)
     win.statusBar().showMessage("🎲 Initiative : d20 = {} {} = {}".format(r.natural, detail, r.total), 12000)
+    reminders = eng.initiative_reminders()               # v52 : rappels de l'initiative
+    tab = getattr(win, "combat_tab", None)
+    if reminders and tab is not None and hasattr(tab, "show_turn_banner"):
+        tab.show_turn_banner("🎲 Initiative : {}".format(r.total), ["• " + m for m in reminders])
     if hasattr(win, "changed"):
         win.changed()
     return r

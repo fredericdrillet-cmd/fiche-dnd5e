@@ -27,6 +27,7 @@ class FormUiTests(unittest.TestCase):
 
     def test_swap_and_restore(self):
         win, eng = self.win, self.win.engine
+        win.settings["mode_libre"] = True                 # v48 : caractéristiques brutes affichées en Mode libre
         druid_ca = eng.armor_class()[0]
         eng.assume_form("Ours brun")
         win.changed()

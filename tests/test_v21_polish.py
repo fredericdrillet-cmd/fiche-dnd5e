@@ -224,15 +224,16 @@ class ClassChangeTests(unittest.TestCase):
 
     def test_ui_gate(self):
         win = window("Guerrier", 3)
+        win.settings["mode_libre"] = True                 # v48 : ajout direct de classe en Mode libre seulement
         tab = win.classes_tab
         tab.refresh()
         state = {}
         tab.add_btn.setEnabled = lambda v: state.__setitem__("add", v)
         tab.refresh()
-        self.assertFalse(state["add"])
-        tab._on_multiclass(True)
+        self.assertTrue(state["add"])                   # v50 : plus d'interrupteur, ajout direct en Mode libre
+        win.settings["mode_libre"] = False
         tab.refresh()
-        self.assertTrue(state["add"])
+        self.assertFalse(state["add"])                  # Mode guidé : par « Niveau supérieur »
 
 
 if __name__ == "__main__":

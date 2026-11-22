@@ -131,6 +131,8 @@ class ReactionAndPotionTests(unittest.TestCase):
 
     def test_potion_bonus_action(self):
         eng = make("Guerrier", 3)
+        self.assertFalse(any(t["id"] == "potion:boire" for t in eng.turn_actions()))   # v52 : règle inactive
+        eng.ch.regles_optionnelles["potion_action_bonus"] = True
         tile = next(t for t in eng.turn_actions() if t["id"] == "potion:boire")
         self.assertFalse(tile["disponible"])
         eng.ch.equipement.append({"nom": "Potion de guérison", "qte": 2})

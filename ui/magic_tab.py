@@ -92,6 +92,34 @@ def dtype_label(dtype: str) -> str:
 from core.data_loader import SAVE_TESTS, save_success_text  # noqa: E402
 
 
+
+def check_costly_component(win, eng, spell_name: str) -> bool:
+    """v52 : composante coûteuse consommée — objet retiré de l'inventaire, ou choix du joueur (payer avec la
+    bourse, fournie par le MJ, annuler). Renvoie False si le sort est annulé (rien n'a été dépensé)."""
+    info = eng.costly_component(spell_name)
+    if not info:
+        return True
+    item = eng.component_item(info)
+    if item is not None:
+        if ask_yes_no(win, "Composante matérielle", "« {} » consomme : {}.\n\nRetirer « {} » de l'inventaire ?"
+                      .format(spell_name, info["texte"], item.get("nom", "")), yes="Retirer l'objet",
+                      no="Ne rien retirer", default_no=False):
+            win.statusBar().showMessage(eng.consume_component(item), 6000)
+        return True
+    pay, given, cancel = ("Payer {} po avec la bourse".format(info["cout"]), "Le MJ l'a fournie", "Annuler le sort")
+    picked = ask_choice(win, "Composante manquante", "« {} » consomme : {}.\n\nAucun objet correspondant dans "
+                        "l'inventaire. Que faites-vous ?".format(spell_name, info["texte"]), [pay, given, cancel])
+    if not picked or picked == cancel:
+        win.statusBar().showMessage("Sort annulé : aucun emplacement dépensé.", 6000)
+        return False
+    if picked == pay:
+        ok, msg = eng.pay_component(info)
+        win.statusBar().showMessage(msg, 6000)
+        if not ok:
+            return ask_yes_no(win, "Bourse insuffisante", msg + "\n\nLancer le sort quand même ?",
+                              yes="Lancer quand même", no="Annuler", default_no=True)
+    return True
+
 class MagicTab(BaseTab):
     def __init__(self, win):
         super().__init__(win)
@@ -222,9 +250,13 @@ class MagicTab(BaseTab):
         mine.addWidget(chosen)
 
         # sorts raciaux : toujours visibles, même pour une classe qui ne lance pas de sorts
-        self.racial_box = QGroupBox("Sorts raciaux")
+        self.racial_box = QGroupBox("✦ Magie raciale — [Sort Racial] (toutes classes, même non lanceuses de sorts)")
         rl = QVBoxLayout(self.racial_box)
         self.racial_info = make_label("", "muted", wrap=True)
+        # v48 : sort mineur racial au choix (Haut-elfe : liste du magicien)
+        self.racial_choice_row = QHBoxLayout()
+        rl.addLayout(self.racial_choice_row)
+        self.racial_choice_widgets: dict = {}
         self.racial = self._table(["Sort", "Niv.", "Disponible", "Utilisation", "Jet", "Trait racial"])
         self.racial.setMinimumHeight(90)
         rl.addWidget(self.racial_info)
@@ -539,7 +571,10 @@ class MagicTab(BaseTab):
         """Bouton de la bibliothèque : « Ajouter » ou « Retirer » selon le sort sélectionné."""
         sp = self._selected_spell(self.library, self._lib_rows)
         owned = bool(sp) and any(s["nom"] == sp["nom"] for s in self.ch.sorts.get(self.current_class(), []))
-        self.add_btn.setText("Retirer de mes sorts ✖" if owned else "Ajouter à mes sorts ✚")
+        scribe = (not owned and bool(sp) and self.guided and self.current_class() == "Magicien" and
+                  int(sp.get("niveau") or 0) > 0 and not self.engine.spell_learning_open("Magicien", False))
+        self.add_btn.setText("Retirer de mes sorts ✖" if owned else
+                             "Recopier dans le grimoire ✎" if scribe else "Ajouter à mes sorts ✚")
         self.add_btn.setToolTip(rich_tip("Bibliothèque", "Double-clic ou bouton : un sort marqué ✔ (déjà appris) est "
                                          "retiré de vos sorts, un sort non appris y est ajouté."))
 
@@ -555,6 +590,19 @@ class MagicTab(BaseTab):
             return
         lst = self.ch.sorts.setdefault(name, [])
         entry = next((s for s in lst if s["nom"] == sp["nom"]), None)
+        cantrip = not int(sp.get("niveau") or 0)
+        if self.guided and not self.all_chk.isChecked():  # v52 : Mode guidé
+            eng = self.engine
+            if entry is not None and (cantrip or not eng.free_prep_class(name) or name == "Magicien"):
+                self.guided_refuse("oublier un sort")
+                return
+            if entry is None and not cantrip and name == "Magicien" and not eng.spell_learning_open(name, False):
+                self._scribe(sp)                          # recopier un sort trouvé dans le grimoire
+                return
+            if entry is None and (cantrip or not eng.free_prep_class(name)) and \
+                    not eng.spell_learning_open(name, cantrip):
+                self.guided_refuse("un nouveau sort")
+                return
         if entry is not None:
             if entry.get("accorde"):
                 self.win.statusBar().showMessage("« {} » est accordé par votre sous-classe : il ne peut pas être "
@@ -579,13 +627,37 @@ class MagicTab(BaseTab):
         if why:
             self.win.statusBar().showMessage("« {} » appris comme {}".format(sp["nom"], why[0].lower() + why[1:]), 6000)
         lst.append({"nom": sp["nom"], "prepare": True})
+        self.engine.mark_new("sort:" + sp["nom"])        # v52 : badge « ✨ Nouveau »
         self._spell_list_changed()
         self._update_lib_btn()
+
+    def _scribe(self, sp: dict) -> bool:
+        """v52 : Magicien — recopier un sort trouvé dans le grimoire (coût affiché, or et temps au choix)."""
+        po, minutes = self.engine.scribe_cost(sp)
+        opts = ["Recopier : payer {} po et passer {} h".format(po, minutes // 60),
+                "Recopier sans rien déduire (déjà réglé avec le MJ)"]
+        picked = ask_choice(self.win, "Recopier un sort dans le grimoire",
+                            "« {} » (niveau {}) : 50 po et 2 heures par niveau du sort, soit {} po et {} h.".format(
+                                sp["nom"], sp.get("niveau", 1), po, minutes // 60), opts)
+        if not picked:
+            return False
+        full = picked == opts[0]
+        ok, msg = self.engine.scribe_spell(sp["nom"], pay=full, take_time=full)
+        self.win.statusBar().showMessage(msg, 8000)
+        if ok:
+            self.engine.mark_new("sort:" + sp["nom"])
+            self._spell_list_changed()
+            self._update_lib_btn()
+        return ok
 
     def _on_remove(self):
         name = self.current_class()
         row = self._selected_spell(self.chosen, self._chosen_rows)
         if not row or row.get("domaine"):
+            return
+        if self.guided and (row.get("niveau", 1) == 0 or not self.engine.free_prep_class(name) or
+                            name == "Magicien"):         # v52 : on n'oublie pas un sort en Mode guidé
+            self.guided_refuse("oublier un sort")
             return
         self.ch.sorts[name] = [s for s in self.ch.sorts.get(name, []) if s["nom"] != row["nom"]]
         self._spell_list_changed()
@@ -646,6 +718,8 @@ class MagicTab(BaseTab):
                 ask_yes_no(self.win, "Incantation impossible", block[1] + "\n\nRetirez l'armure ou le bouclier non "
                            "maîtrisé (onglet Combat ou Inventaire) pour lancer des sorts.", yes="Compris", no="Fermer",
                            default_no=False)
+            return False
+        if not check_costly_component(self.win, eng, spell.get("nom", name)):   # v52 : composante coûteuse
             return False
         # Armure de mage : inefficace si une armure est portée -> avertissement avant de dépenser quoi que ce soit
         armor = eng.wears_armor()
@@ -820,6 +894,9 @@ class MagicTab(BaseTab):
         block = self.engine.spell_block_reason()
         if r.get("separator") or r.get("domaine") or r["niveau"] == 0 or (block and block[0] == "forme"):
             return
+        if self.guided and not self.engine.free_prep_class(self.current_class()):   # v52 : Paladin / Rôdeur 2024…
+            self.guided_refuse("la préparation de ce sort")
+            return
         for sp in self.ch.sorts.get(self.current_class(), []):
             if sp["nom"] == r["nom"]:
                 sp["prepare"] = not sp.get("prepare", True)
@@ -958,7 +1035,8 @@ class MagicTab(BaseTab):
                         self.chosen.setItem(r, col, cell("", "center", selectable=False))
                     continue
                 st = spell_status(row, ch.concentration, blocked_form)
-                label = row["nom"] + ("  (sous-classe)" if row["domaine"] else "")
+                label = row["nom"] + ("  (sous-classe)" if row["domaine"] else "") + (
+                    "  ✨ Nouveau" if eng.is_new("sort:" + row["nom"]) else "")              # v52 : badge
                 tip = rich_tip(row["nom"], eng.spell_description_at(row["nom"], 0, name)[0]) if row["sort"] else ""
                 color = t.muted if blocked_form else t.good if st["actif"] else t.accent_text if row["domaine"] else None
                 self.chosen.setItem(r, 0, cell("    " + label, "left", tip, color, bold=row["domaine"] or st["actif"]))
@@ -1087,9 +1165,14 @@ class MagicTab(BaseTab):
         """Encart des sorts raciaux (Races.json) : niveau requis, utilisation, DD / attaque avec la carac. raciale."""
         eng, t = self.engine, theme.current()
         spells = eng.racial_spells()
+        slots = eng.racial_choice_slots()
+        self._refresh_racial_choices(slots)
         self._racial_rows = [{"nom": r["nom"], "sort": r["sort"]} for r in spells]
-        self.racial_box.setVisible(bool(spells))
+        self.racial_box.setVisible(bool(spells) or bool(slots))
+        self.mark_box(self.racial_box, "✦ Magie raciale — [Sort Racial] (toutes classes, même non lanceuses de sorts)",
+                      "magie", "Sorts raciaux")
         if not spells:
+            self.racial.setRowCount(0)
             return
         ab, choice = eng.racial_spell_ability()
         mod = eng.mod(ab)
@@ -1105,7 +1188,7 @@ class MagicTab(BaseTab):
             test = sp.get("test", "")
             jet = ("Attaque {}".format(R.fmt_bonus(r["attaque"])) if test in ("A", "AC") else
                    "JS {} DD {}".format(test, r["dc"]) if test and test != "Arme" else "—")
-            self.racial.setItem(i, 0, cell(("🧠 " if r["nom"] == self.ch.concentration else "✦ " if r["debloque"] else "🔒 ") + r["nom"] + (" (au choix)" if r["au_choix"] else ""),
+            self.racial.setItem(i, 0, cell(("🧠 " if r["nom"] == self.ch.concentration else "✦ " if r["debloque"] else "🔒 ") + r["nom"] + " [Sort Racial]" + (" (au choix)" if r["au_choix"] else ""),
                                            "left", tip, color or t.accent_text, bold=r["debloque"]))
             self.racial.setItem(i, 1, cell("0" if r["niveau"] == 0 else str(r["niveau"]), "center", tip, color))
             self.racial.setItem(i, 2, cell("oui" if r["debloque"] else "niveau {}".format(r["niveau_requis"]), "center",
@@ -1113,6 +1196,30 @@ class MagicTab(BaseTab):
             self.racial.setItem(i, 3, cell(r["usage"], "center", tip, color))
             self.racial.setItem(i, 4, cell(jet, "center", tip, color))
             self.racial.setItem(i, 5, cell(r["source"], "left", tip, color))
+
+    def _refresh_racial_choices(self, slots: list[dict]) -> None:
+        """v48 : un sélecteur par trait « sort mineur de votre choix » (Haut-elfe…)."""
+        key = tuple((s["cle"], s["choix"]) for s in slots)
+        if key == getattr(self, "_racial_choice_key", None):
+            return
+        self._racial_choice_key = key
+        from .game_widgets import clear_layout
+        clear_layout(self.racial_choice_row)
+        self.racial_choice_widgets = {}
+        for s in slots:
+            combo = QComboBox()
+            opts = self.engine.racial_choice_options(s["cle"])
+            tips = {o["nom"]: rich_tip(o["nom"], o.get("description", "")) for o in opts}
+            fill_combo(combo, ["— à choisir —"] + [o["nom"] for o in opts], s["choix"] or "— à choisir —", tips)
+            combo.activated.connect(lambda _=0, c=combo, k=s["cle"]: self._on_racial_choice(k, c.currentText()))
+            self.racial_choice_row.addWidget(make_label("{} — sort mineur ({}) :".format(s["source"], s["liste"]),
+                                                        "head"))
+            self.racial_choice_row.addWidget(combo, 1)
+            self.racial_choice_widgets[s["cle"]] = combo
+
+    def _on_racial_choice(self, key: str, name: str) -> None:
+        self.engine.set_racial_choice(key, "" if name.startswith("—") else name)
+        self.changed()
 
     def _on_sorcery(self, used: int):
         self.engine.set_resource_used("sorcellerie", used)

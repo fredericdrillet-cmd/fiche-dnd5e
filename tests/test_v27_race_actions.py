@@ -151,12 +151,12 @@ class UiTests(unittest.TestCase):
         win = window()
         win.engine.change_race("Gobelin")
         win.changed()
-        self.assertEqual(win.combat_tab.res_box.title(), "⚔ Actions, capacités de classe et de race")
+        self.assertEqual(win.combat_tab.res_box.title(), "Ressources")      # v52 : les actions sont des tuiles
         win.engine.change_race("Humain")
         win.ch.classes = [{"nom": "Guerrier", "niveau": 3, "sous_classe": "", "pv_jets": []}]
         win.engine.normalize()
         win.changed()
-        self.assertEqual(win.combat_tab.res_box.title(), "⚔ Actions, capacités de classe")
+        self.assertEqual(win.combat_tab.res_box.title(), "Ressources")
 
     def test_vision_box(self):
         win = window()

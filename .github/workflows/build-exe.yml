@@ -1,10 +1,10 @@
-# Compilation automatique de l'exécutable Windows à chaque envoi (push) sur GitHub.
+# Compilation de l'exécutable Windows, lancée À LA DEMANDE (onglet « Actions » > « Run workflow », ou par
+# l'assistant quand l'utilisateur la demande) — plus à chaque envoi, pour regrouper plusieurs modifications.
 # Le fichier Fiche_Personnage_DnD5E.exe est téléchargeable dans l'onglet « Actions » du dépôt
 # (artefact « Fiche_Personnage_DnD5E »), avec le journal de build.
 name: Exécutable Windows
 
 on:
-  push:
   workflow_dispatch:
 
 jobs:

@@ -51,13 +51,40 @@ def choose_slot_level(win, engine, spell: dict, class_name: str = "") -> Optiona
     return labels.get(picked) if picked else None
 
 
+def counter_flow(win, engine, name: str, level: int) -> str:
+    """Niveau du sort visé, puis annulation d'office, test de caractéristique (DD 10 + niveau) ou DD du JS (2024)."""
+    from .dialogs import ask_int
+    from .dice_dialog import roll_dice
+    target = ask_int(win, name, "Niveau du sort (ou de l'effet) visé :", max(1, level), 0, 9)
+    if target is None:
+        return ""
+    info = engine.counter_info(name, level, target)
+    if info["dd"]:
+        r = roll_dice(win, engine.counter_check_spec(name, info["dd"], info["carac"]))
+        text = engine.counter_result(name, r.total, info["dd"]) if r is not None else info["texte"]
+    else:
+        text = info["texte"]
+        ask_yes_no(win, name, text, yes="OK", no="Fermer", default_no=False)
+    win.statusBar().showMessage(text, 12000)
+    return text
+
+
 def resolve_spell(win, engine, name: str, level: int, class_name: str = "",
                   attack_flow: Optional[Callable] = None) -> str:
     """Jets du sort lancé au niveau `level`. Renvoie le mode de résolution (attaque, sauvegarde…)."""
+    if engine.counter_kind(name):                        # v52 : Contresort, Dissipation de la magie
+        counter_flow(win, engine, name, level)
+        return "contre"
     res = engine.spell_resolution(name, level, class_name)
     if not res:
         return ""
     mode = res["mode"]
+    if mode == "reserve":                                 # v52 : Sommeil, Couleurs dansantes (2014)
+        r = roll_damage_dialog(win, res["reserve"])
+        if r is not None:
+            win.statusBar().showMessage("{} : {} PV de créatures affectés, par PV actuels croissants.".format(
+                res["nom"], r.total), 12000)
+        return mode
     if mode == "attaque" and res["attaque"] is not None:
         if attack_flow is None:
             return mode

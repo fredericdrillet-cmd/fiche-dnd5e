@@ -19,7 +19,7 @@ class RaceTab(BaseTab):
         root = QHBoxLayout(self)
 
         # ---------------- race
-        rbox = QGroupBox("Race")
+        rbox = self.race_box = QGroupBox("Race")
         rl = QVBoxLayout(rbox)
         form = QGridLayout()
         self.race = QComboBox()
@@ -45,7 +45,7 @@ class RaceTab(BaseTab):
         root.addWidget(rbox, 1)
 
         # ---------------- historique
-        bbox = QGroupBox("Historique")
+        bbox = self.bg_box = QGroupBox("Historique")
         bl = QVBoxLayout(bbox)
         self.bg = QComboBox()
         bl.addWidget(self.bg)
@@ -162,6 +162,14 @@ class RaceTab(BaseTab):
 
     def _on_lang_item(self, item: QListWidgetItem):
         name = item.data(Qt.ItemDataRole.UserRole)
+        if self.guided:                                  # v52 : seulement ajouter une langue manquante
+            on = item.checkState() == Qt.CheckState.Checked
+            if not on or self.engine.languages_missing() <= 0:
+                with blocked(self.lang_list):
+                    item.setCheckState(Qt.CheckState.Checked if name in self.ch.langues_liste
+                                       else Qt.CheckState.Unchecked)
+                self.guided_refuse("la langue")
+                return
         langs = [x for x in self.ch.langues_liste if x != name]
         if item.checkState() == Qt.CheckState.Checked:
             langs.append(name)
@@ -175,7 +183,15 @@ class RaceTab(BaseTab):
         self.win.mark_dirty()
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _apply_guided_locks(self) -> None:
+        """v52 : Mode guidé — espèce, sous-race et historique fixés à la création."""
+        for w in (self.race, self.sub, self.bg):
+            w.setEnabled(not self.guided)
+            w.setToolTip(self.GUIDED_TIP if self.guided else "")
+        self.langs.setReadOnly(self.guided and self.engine.languages_missing() <= 0)
+
     def refresh(self):
+        self._apply_guided_locks()
         self.mark_box(self.lang_box, "Langues", "race", "Langues")
         self._refresh_lang_count()
         from .common import indicator_qss
@@ -184,7 +200,8 @@ class RaceTab(BaseTab):
                                      "QListWidget::item {{ padding: 4px 2px; }}"
                                      "QListWidget::item:hover {{ background: {}; }}".format(t.select_bg))
         eng, db, ch, t = self.engine, self.db, self.ch, theme.current()
-        fill_combo(self.race, db.race_names(), ch.race)
+        races = eng.race_options()                                   # v52 : filtrées selon l'édition
+        fill_combo(self.race, races, ch.race, tips=eng.edition_tips({n: db.races[n] for n in races}))
         subs = db.subraces_of(ch.race)
         self.sub.setVisible(bool(subs))
         self.sub_label.setVisible(bool(subs))
@@ -213,7 +230,8 @@ class RaceTab(BaseTab):
                 self.traits.setCurrentRow(min(max(row, 0), len(self._traits) - 1))
         self._on_trait(self.traits.currentRow())
 
-        fill_combo(self.bg, db.background_names(), ch.historique)
+        bgs = eng.background_options()
+        fill_combo(self.bg, bgs, ch.historique, tips=eng.edition_tips({n: db.backgrounds[n] for n in bgs}))
         bg = db.backgrounds.get(ch.historique)
         if bg:
             skills = ", ".join(ch.competences_historique) or "—"

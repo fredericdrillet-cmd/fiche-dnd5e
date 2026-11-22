@@ -347,6 +347,118 @@ l'injectent dans le tableau « Sorts accordés » avec leur source. Données : `
   - Si le style est remplacé, la manœuvre, l'action et le dé disparaissent.
   - Description du style corrigée : il n'y a pas de « DD 14 » fixe, et le dé revient au repos court ou long.
 
+## Nouveautés v52 — éditions 2014 / 2024, règles de la table, ergonomie de table
+- **Édition choisie à la création** (2014 ou 2024), une par fiche : classes, sous-classes, espèces, historiques, dons et sorts de l'édition ; classes 2024 jouables (tables, compteurs, sous-classe au niveau 3, historique 2024 avec bonus et don d'origine, styles de combat en dons, bottes d'arme, Occultiste et Métamagie 2024, actions de combat 2024). Détails : `ARCHITECTURE_EDITIONS_v52.md`.
+- **Données complétées** (`data/editions/`) : sous-classes, dons, historiques et sorts officiels qui manquaient ; corrections de l'audit 2014 (compétences de classe, Druide, Demi-orque, armes). Audit : `AUDIT_CONFORMITE_5E2014.md`.
+- **Règles de la table** (Options) : potion en action bonus, bottes d'arme sur l'arsenal 2014, inspiration héroïque, actions d'arme BG3.
+- **Onglet « 🎲 En partie »** (ex-Combat) : bande d'emplacements de sorts et de pacte cliquable ; **saisie rapide des PV** (« 7 » ou « -7 » = dégâts, « +5 » = soins, boutons 💥 Dégâts / 💚 Soins, **Ctrl+D**).
+- **Lancers** : le jet part dans le mode de l'état du personnage ; boutons *Normal / Avantage / Désavantage* pour relancer si le MJ en décide autrement ; **historique des 50 derniers lancers** (Options > Historique des lancers, **Ctrl+H**).
+- Assistant de création : la race, puis **l'historique avant la classe**.
+- **Effets automatiques des dons et aptitudes** : un don choisi ou un niveau atteint applique ses effets (PV, vitesse, CA, compétences, expertise, JS, outils, résistances, sorts accordés avec 1 lancer gratuit, points de chance, Faveurs épiques jusqu'à 30, Dernier rempart à 0 PV, dés ajoutés aux armes, ressources rendues à l'initiative ou au repos court). Les choix (compétences, sorts…) se font dans l'onglet Progression, encart « Choix des dons ».
+- **Sous-classes 2024** : sorts toujours préparés appliqués (domaines, serments, cercles, protecteurs…), mécanismes des sous-classes renommées, critiques du Champion, résistances, initiative, soins de Disciple de la vie ; sorts 2024 avec leurs soins, JS et surclassement.
+- **Sous-classes 2024 sans équivalent 2014** : tuiles et effets de l'Arbre-Monde, du Cœur sauvage, de la Danse, des cercles de la Terre et des Mers, du Credo des Éléments, de l'Assassin, du Champion ; options de Conduit divin 2024.
+- **Lexique des règles** (`data/Lexique.json`, 67 termes, différences 2014 / 2024) : définitions ajoutées aux infobulles partout, fenêtre Aide > Lexique (**F1**) ; option **« Aides pour débuter »** (Options, désactivée par défaut) : mots de règles soulignés et une ligne d'explication par onglet et par étape de création.
+- **Début et fin de tour** : boutons « ▶ Début de mon tour » / « ⏹ Fin de mon tour » avec un bandeau de rappels (concentration, rage, jet contre la mort, capacités de début / fin de tour, action bonus non utilisée) ; rappels aussi après le jet d'initiative.
+- **Quand vous touchez** : une fenêtre de cases (Attaque sournoise, Châtiment divin, Marque du chasseur, Frappe divine…) avant de lancer les dégâts, rien coché d'office ; coûts dépensés, « une fois par tour » suivi.
+- **🛡 On m'attaque !** : jet de l'ennemi contre votre CA, réactions proposées (Bouclier, Duelliste défensif, Mots cinglants, Esquive instinctive, Parade / Déviation…), puis dégâts typés ; « Subir les dégâts » toujours possible.
+- **Avant un repos** : la fenêtre de repos liste aussi ce qui n'a pas servi (rages, Second souffle, Conduit divin, emplacements…).
+- **✨ Nouveau** : après une montée de niveau, les capacités et sorts gagnés portent un badge jusqu'à leur première utilisation (ou au repos long).
+- **📌 À ne pas oublier** : encart repliable de l'onglet « En partie » listant, par moment du tour, les capacités de situation (Attaque téméraire, Rage implacable, auras pour les alliés, traits d'espèce…).
+- **Options de Tasha** (fiches 2014, règle de la table active par défaut) : toutes les options qui s'ajoutent sont appliquées (compétences, Arme dédiée, sorts supplémentaires, tuiles Guérison accélérée, Visée stable, Exploitation du pouvoir divin…) ; celles qui remplacent une aptitude ne le sont pas.
+- **Annuler / Refaire** : menu Édition (Ctrl+Z / Ctrl+Y), 30 étapes nommées (« Annuler : PV », « Annuler : ressources »…), montée de niveau et repos compris.
+- **Jet de concentration** : proposé dès qu'on subit des dégâts en se concentrant (avantages de Mage de guerre, Esprit occulte…), sort terminé sur un échec ; à 0 PV, concentration rompue.
+- **Dons de combat** : bascule −5/+10 (Tireur d'élite, Briseur d'armes lourdes) sur la ligne d'arme et en tuile ; tuiles d'attaque bonus (talon d'arme d'hast, arbalète de poing, après un critique) et Coup de bouclier.
+- **Options de Tasha qui remplacent une aptitude** : au choix par personnage (onglet Classes) — Ennemi favori, Explorateur expert, Conscience primordiale, Voile de la nature, Frappes bénies — avec leurs effets ; l'aptitude remplacée est désactivée.
+- **Forme sauvage 2024** : formes connues, action bonus, PV du druide conservés et PV temporaires (×3 Cercle de la Lune), CA 13 + Sagesse de la Lune, limites de FP et de vol 2024.
+- **Compagnon primitif 2024** (Maître des bêtes) : choisi en un clic, créé et tenu à jour dans la Ménagerie (CA et dégâts sur votre Sagesse, deux attaques au niveau 11) ; ses attaques sont des tuiles de « Ce tour-ci ».
+- **Épuisement selon l'édition** : compteur dans « En partie », malus 2014 ou 2024 appliqués, JS d'épuisement (marche forcée, chaleur, froid, privation) avec le DD officiel, Frénésie du Berserker 2014.
+- **Durées des effets** : décompte en rounds à chaque début de tour et avec le temps qui passe (« Bénédiction : 7 rounds »), fin automatique, clic droit pour prolonger.
+- **Actions communes 2014 / 2024** : Se tenir prêt ; en 2024 Saisir / Bousculer avec le DD de la cible, Se cacher DD 15, Étudier, Influencer, Magie ; les tests se lancent depuis la tuile.
+- **Inspiration héroïque automatique** (Ingénieux de l'Humain 2024) et bouton 🌟 dans la fenêtre de jet.
+- **Jet libre** « 2d6+3 » (Ctrl+R) et **Fichier > Récents**.
+- **États 2014 / 2024** (Agrippé, Étourdi, Invisible, Neutralisé…), tuile « Se libérer », concentration rompue par un état neutralisant, Caché qui prend fin à l'attaque.
+- **Chanceux** : relance automatique des 1 du Halfelin, bouton 🍀 des points de chance (et désavantage imposé en 2024).
+- **🏁 Fin du combat** (munitions récupérées, bilan) et **🌪 Environnement** (chute, suffocation).
+- **Objets magiques** : recharge selon leur formule (dés animés), charges multiples des baguettes, d20 de destruction, perles et autres éléments comptés (Collier de boules de feu…).
+- **Recherche Ctrl+F**, **menu Partie** (Ctrl+T, Ctrl+E, Ctrl+I, Ctrl+A) et **Aide > Raccourcis clavier**.
+- **Contresort et Dissipation de la magie** calculés ; **lumière** (bougie, torche, lanternes) avec la règle de survie.
+- **Aide-mémoire de combat** en option dans l'export PDF ; **journal de session** (Ctrl+H, export texte).
+- **Versions de sauvegarde** (10 dernières, Fichier > Restaurer) et **manuel d'utilisation** (F2, export PDF).
+- **Plus rapide** : rafraîchissement des onglets deux à trois fois plus court.
+- **Composantes coûteuses** vérifiées au lancement du sort ; **abri** (+2 / +5) contre les attaques et aux JS de Dextérité.
+- **Export PDF** (Fichier, Ctrl+P) : fiche imprimable en 2 pages (+ une page de sorts), organisée comme la fiche classique, portrait inclus.
+- **Règles appliquées au lancer et aux PV** : type de dégâts dans la saisie rapide (résistances, immunités, Maître des armures lourdes), Talent fiable, Puissance indomptable, rappel d'Évasion, Faveur de mémoire des sorts, immunités aux états (Aura de dévotion, Aura de courage, Pureté du corps…), textes 2024 des sous-classes renommées.
+- **Jet contre la mort** : bouton à 0 PV, résultat appliqué (20 = 1 PV, 1 = deux échecs), mort instantanée.
+- **Aptitudes 2024 calculées** : Sorcellerie innée (DD +1, avantage aux attaques de sorts, 2 par repos long, Sorcellerie incarnée au niveau 7), Ordre divin du Clerc et Ordre primitif du Druide (maîtrises, tour de magie, bonus de Sagesse aux tests), prérequis des dons 2024 (Faveurs épiques au niveau 19).
+
+## Nouveautés v51 — multiclassage sans blocage, en-tête épuré, mises en page compactes
+- **Bug corrigé — « Choix du niveau (1) » fantôme** (ex. Occultiste 1 → Paladin 1) :
+  - en Mode guidé, un prérequis de multiclassage non rempli était compté comme un choix du niveau, invisible sur la page, et bloquait « Confirmer » ;
+  - désormais une classe aux prérequis non remplis n'est plus proposée : elle est listée « 🔒 » avec la raison (Mode libre : proposée avec un avertissement) ;
+  - le compteur ne compte que les choix de LA classe montée à ce niveau (sous-classe, amélioration, style, sorts, pacte, manifestations) : 0 choix → « ✔ » et validation immédiate.
+- **En-tête** : « Vitesse » et « Maîtrise » retirées (elles sont dans l'onglet Combat) ; restent PV, CA et Initiative (avec son d20).
+- **Onglet Combat** : les cinq encarts (Initiative, Vitesse, Maîtrise, Perception passive, Vision dans le noir) sont alignés sur une grille, à hauteur fixe identique.
+- **Onglet Caractéristiques & Compétences** :
+  - cartes de caractéristiques moins hautes, tables de compétences et de sauvegardes en lignes compactes, légende raccourcie ;
+  - texte « Valeurs choisies dans l'assistant… » déplacé en infobulle ;
+  - but : tenir sur un écran 1080p sans défilement.
+- Rapport : `RAPPORT_CORRECTIFS_v51.md`.
+
+## Nouveautés v50 — fenêtres maximisables, création incomplète confirmée, en-têtes selon le mode
+- **Fenêtres** :
+  - l'assistant de création et « Niveau supérieur » sont de vraies fenêtres (barre de titre, boutons Réduire / Agrandir / Fermer), redimensionnables ; bouton « ⛶ Plein écran » dans l'assistant ;
+  - toutes les pages défilent, donc rien n'est coupé en fenêtre réduite ;
+  - la fenêtre principale descend jusqu'à 1024 × 640.
+- **Création incomplète** : « ✔ Créer le personnage » ouvre la modale « Création de personnage incomplète » avec la liste des choix manquants.
+  - « Poursuivre la création » ramène à la première étape incomplète ; « Valider malgré tout » crée la fiche.
+- **Cases à cocher** : « Sac sans fond » sur sa propre ligne, page Équipement défilante ; fenêtre Options défilante ; cases dessinées de façon visible quel que soit le thème.
+- **Multiclassage** : l'interrupteur de l'onglet Classes est retiré. « Niveau supérieur » propose toujours les autres classes ; en Mode guidé, les prérequis de caractéristiques officiels bloquent « Confirmer » (Mode libre : accord du MJ).
+- **Mode guidé** : classe, sous-classe et niveau en texte statique stylé (badges) dans l'en-tête de la fiche et dans l'onglet Classes. Le **Mode libre** rétablit les sélecteurs.
+- Rapport : `RAPPORT_CORRECTIFS_v50.md`.
+
+## Nouveautés v49 — aide pédagogique (BG3), recommandations de caractéristiques, inspecteur de sorts
+- **Fiche pédagogique de classe** dans l'assistant de création (étape Classe) et dans « Niveau supérieur » (étape Classe) :
+  - concept, style de jeu, mécaniques clés ;
+  - caractéristiques recommandées, dé de vie, maîtrises ;
+  - liste des sous-classes avec le niveau de déblocage. Un clic déplie la fiche d'une sous-classe : source, orientation (🔮 Magie, ⚔ Offensive, 🛡 Défense…), pouvoirs principaux par niveau, sorts accordés ; un second clic la replie.
+  - Dans « Niveau supérieur », le sélecteur de sous-classe affiche un résumé au survol et la fiche de la sous-classe choisie.
+- **Recommandations de caractéristiques** : badges « ⭐ [Principale] » / « ✦ [Secondaire] » sur les cartes de caractéristiques, avec infobulle expliquant pourquoi.
+  - Ils s'adaptent à la sous-classe : Arnaqueur arcanique et Chevalier occulte → Intelligence ; Bretteur → Charisme ; Lame maudite → Charisme principal…
+  - Dans l'assistant, une « sous-classe visée » peut être indiquée avant son niveau de déblocage.
+- **Identité** (étape 7 de l'assistant) : « [ Importer un portrait ] » (png, jpg, jpeg… réduit au format de la fiche) et zone « Passé du personnage ». Les deux sont repris dans l'onglet « Histoire, Portrait », modifiables à tout moment.
+- **Sélection des sorts** (création et montée de niveau) :
+  - un clic affiche la fiche détaillée : école, incantation, portée, composantes, durée, concentration, rituel, texte complet ;
+  - le double-clic ou le bouton « ✚ Apprendre le sort » / « ✚ Préparer » apprend le sort, dans la limite des quotas.
+- Rapport : `RAPPORT_ARCHITECTURE_v49.md`.
+
+## Nouveautés v48 — création façon Baldur's Gate 3, Mode guidé / Mode libre, sauvegarde automatique
+- **Assistant de création niveau 1** (Fichier > Nouveau personnage, ouvert aussi au premier lancement), sur une copie de la fiche, avec un résumé dynamique à droite :
+  1. Race / Sous-race ;
+  2. Classe — sous-classe de niveau 1, style de combat, compétences et expertises ;
+  3. Historique et langues ;
+  4. Caractéristiques ;
+  5. Sorts et tours de magie, avec la magie raciale ;
+  6. Équipement ;
+  7. Identité — nom, joueur, alignement.
+- **Magie raciale pour toutes les classes** :
+  - encart « ✦ Magie raciale — [Sort Racial] » dans l'onglet Magie (visible aussi pour un Guerrier) ;
+  - sort mineur au choix du Haut-elfe (liste du magicien) ;
+  - tuiles « … [Sort Racial] » dans « Sorts et magie » de l'onglet Combat.
+- **Équipement de départ** :
+  - l'équipement de l'historique est offert ;
+  - ensuite, au choix : le paquetage de classe standard (équipé automatiquement), ou la boutique — budget = or de la classe (moyenne ou jet de dés) + or de l'historique, le reste allant dans la bourse.
+- **En-tête** : champ Alignement retiré (il est désormais dans « Histoire, Portrait » et dans l'assistant) ; le nom du joueur prend la place libérée.
+- **Mode guidé (par défaut)** :
+  - nom du personnage verrouillé ;
+  - niveau global, ajout, retrait et changement de classe uniquement par « ▲ Niveau supérieur » ; onglet Classes en lecture seule ;
+  - onglet Race remplacé par l'encart « Résumé de la race » à côté du portrait ;
+  - caractéristiques brutes remplacées par un résumé.
+  
+  « Activer le Mode libre » (Options) déverrouille tout. Un écran verrouillé réapparaît tant qu'un choix doit y être fait.
+- **Sauvegarde automatique** : copie de sécurité 1,5 s après chaque modification. Au lancement, le dernier personnage est rouvert (modifications non enregistrées comprises).
+- **Menu Fichier** : Nouveau personnage… / Charger… / Sauvegarder / Sauvegarder sous….
+- Rapport : `RAPPORT_ARCHITECTURE_v48.md`.
+
 ## Nouveautés v47 — exécutable Windows autonome
 - **`core/paths.py`** :
   - `get_resource_path()` lit les données dans `sys._MEIPASS` (exécutable PyInstaller), sinon dans le dossier du projet ;

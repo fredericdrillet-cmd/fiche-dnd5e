@@ -35,9 +35,8 @@ def window(eng=None):
 class EngineTests(unittest.TestCase):
     def test_options(self):
         eng = make("Guerrier", 3, "Champion")
-        self.assertEqual([o["classe"] for o in eng.level_up_options()], ["Guerrier"])
-        eng.ch.multiclassage = True
-        opts = eng.level_up_options()
+        opts = eng.level_up_options()                   # v50 : multiclassage toujours proposé (sans interrupteur)
+        self.assertEqual(opts[0]["classe"], "Guerrier")
         self.assertGreater(len(opts), 1)
         self.assertTrue(all(o["nouvelle"] for o in opts[1:]))
         self.assertEqual(make("Guerrier", 20, "Champion").level_up_options(), [])
@@ -123,6 +122,7 @@ class DialogTests(unittest.TestCase):
     def test_class_switch_rebuilds_copy(self):
         from ui.levelup_dialog import LevelUpDialog
         win = window(make("Guerrier", 3, "Champion", multi=True))
+        win.settings["mode_libre"] = True                 # v51 : Intelligence 13 non remplie -> classe masquée en Mode guidé
         dlg = LevelUpDialog(win)
         idx = next(i for i, o in enumerate(dlg.options) if o["classe"] == "Magicien")
         dlg.class_combo.setCurrentIndex(idx)

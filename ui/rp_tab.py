@@ -1,14 +1,19 @@
-"""Onglet « Histoire & Portrait (RP) » : portrait importé, histoire du personnage, notes de campagne."""
+"""Onglet « Histoire & Portrait (RP) » : portrait importé, histoire du personnage, notes de campagne.
+v48 : encart « Résumé de la race » à côté du portrait (traits, langues, pouvoirs et sorts raciaux) — il remplace
+l'onglet Race en Mode guidé — et choix de l'alignement (retiré de l'en-tête)."""
 from __future__ import annotations
 
 import base64
+import html
 
 from PyQt6.QtCore import QBuffer, QByteArray, QIODevice, QSize, Qt
 from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtWidgets import (QFileDialog, QGroupBox, QHBoxLayout, QLabel, QMessageBox, QPlainTextEdit, QPushButton,
-                             QVBoxLayout)
+from PyQt6.QtWidgets import (QComboBox, QFileDialog, QGroupBox, QHBoxLayout, QLabel, QMessageBox, QPlainTextEdit,
+                             QPushButton, QScrollArea, QVBoxLayout)
 
-from .common import CENTER, BaseTab, blocked, make_label, rich_tip
+from core import rules as R
+from . import theme
+from .common import CENTER, BaseTab, blocked, fill_combo, make_label, rich_tip
 
 IMAGE_FILTER = "Images (*.png *.jpg *.jpeg *.bmp *.gif *.webp);;Tous les fichiers (*)"
 PORTRAIT_SIZE = (300, 400)        # cadre photo 3:4
@@ -62,7 +67,27 @@ class RPTab(BaseTab):
         bl.addWidget(self.caption)
         bl.addWidget(self.import_btn)
         bl.addWidget(self.clear_btn)
-        left.addWidget(box)
+        arow = QHBoxLayout()                              # v48 : alignement (retiré de l'en-tête)
+        arow.addWidget(make_label("Alignement"))
+        self.align = QComboBox()
+        arow.addWidget(self.align, 1)
+        bl.addLayout(arow)
+        # v48 : résumé de la race à côté du portrait
+        self.race_box = QGroupBox("☗ Résumé de la race")
+        rbl = QVBoxLayout(self.race_box)
+        self.race_summary = make_label("", "", wrap=True)
+        self.race_summary.setTextFormat(Qt.TextFormat.RichText)
+        self.race_summary.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        scroll.setWidget(self.race_summary)
+        rbl.addWidget(scroll)
+        self.race_box.setMinimumWidth(300)
+        top = QHBoxLayout()
+        top.addWidget(box)
+        top.addWidget(self.race_box, 1)
+        left.addLayout(top)
         # traits de personnalité (déplacés de l'onglet Inventaire en v33 : les informations RP vivent ici)
         tbox = QGroupBox("Traits, idéaux, liens, défauts")
         tl = QVBoxLayout(tbox)
@@ -88,6 +113,7 @@ class RPTab(BaseTab):
         right.addWidget(notes, 3)
         root.addLayout(right, 1)
 
+        self.align.activated.connect(lambda _=0: self._on_align(self.align.currentText()))
         self.import_btn.clicked.connect(self._on_import)
         self.clear_btn.clicked.connect(self._on_clear)
         self.story.textChanged.connect(lambda: self._on_text("histoire", self.story))
@@ -96,6 +122,34 @@ class RPTab(BaseTab):
         self._shown: str | None = None      # portrait actuellement affiché (évite de le redessiner à chaque rafraîchissement)
 
     # ------------------------------------------------------------------ handlers
+    def _on_align(self, value: str) -> None:
+        self.ch.alignement = value
+        self.win.mark_dirty()
+
+    def race_summary_html(self) -> str:
+        """Race / sous-race, traits (nom + début du texte), langues, pouvoirs et sorts raciaux [Sort Racial]."""
+        eng, ch, t = self.engine, self.ch, theme.current()
+        title = ch.race + (" — {}".format(ch.sous_race) if ch.sous_race else "")
+        parts = ["<h3 style='color:{}'>{}</h3>".format(t.accent_text, html.escape(title or "Race non choisie"))]
+        bg = ch.historique
+        if bg:
+            parts.append("<p><b>Historique :</b> {}</p>".format(html.escape(bg)))
+        langs = list(ch.langues_liste) + ([ch.langues] if ch.langues else [])
+        parts.append("<p><b>Langues :</b> {}</p>".format(html.escape(", ".join(langs)) if langs else "—"))
+        spells = eng.racial_spells()
+        if spells:
+            parts.append("<p><b>Sorts raciaux :</b><br/>" + "<br/>".join(
+                "{} {} [Sort Racial] — {}{}".format("✦" if r["debloque"] else "🔒", html.escape(r["nom"]),
+                                                    html.escape(r["usage"]), "" if r["debloque"] else
+                                                    " (niveau {})".format(r["niveau_requis"])) for r in spells) + "</p>")
+        traits = eng.race_capacities()
+        if traits:
+            parts.append("<p><b>Traits raciaux :</b></p><ul style='margin-left:-20px'>" + "".join(
+                "<li><b>{}</b> — {}</li>".format(html.escape(c.get("nom", "")), html.escape(
+                    (c.get("description", "") or "")[:160] + ("…" if len(c.get("description", "") or "") > 160 else "")))
+                for c in traits) + "</ul>")
+        return "".join(parts)
+
     def _on_import(self):
         path, _ = QFileDialog.getOpenFileName(self, "Importer un portrait", self.win._start_dir(), IMAGE_FILTER)
         if not path:
@@ -129,6 +183,9 @@ class RPTab(BaseTab):
                                                 Qt.TransformationMode.SmoothTransformation))
             self._shown = ch.portrait
         self.clear_btn.setEnabled(bool(ch.portrait))
+        with blocked(self.align):
+            fill_combo(self.align, R.ALIGNMENTS, ch.alignement)
+        self.race_summary.setText(self.race_summary_html())
         classes = " / ".join("{} {}".format(c["nom"], c["niveau"]) for c in ch.classes)
         # le nom du personnage figure déjà dans l'en-tête : sous le portrait, seulement la race et les classes
         self.caption.setText("{} — {}".format(ch.race, classes) if ch.race else classes)

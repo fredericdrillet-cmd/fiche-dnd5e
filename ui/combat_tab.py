@@ -5,11 +5,13 @@ barre d'états actifs (buffs / débuffs / conditions), concentration, réactions
 from __future__ import annotations
 
 import html
+import re
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDoubleSpinBox, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QLineEdit, QPushButton,
                              QScrollArea, QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
 
+from core.engine_extras import ExtrasMixin
 from core import effects as FX
 from core import engine_extras as X
 from core import mechanics as M
@@ -19,9 +21,10 @@ from core.proficiencies import CAST_BLOCKED, WEAPON_WARNING
 from . import theme
 from .orbs import GaugeBar, OrbBar
 from core import dice as D
+from core import durations as D_
 from .common import (CENTER, BaseTab, DamageLabel, adv_badge, blocked, calc_tip, center, fill_combo, formula_html,
                      head, hline, make_label, rich_tip)
-from .dialogs import ask_choice, ask_yes_no
+from .dialogs import ask_choice, ask_int, ask_yes_no
 from .dice_dialog import d20_button, d20_icon, die_icon, retain_when_hidden, roll_damage_dialog, roll_dice
 from .game_widgets import ActionChip, EffectBadge, clear_layout
 from .rest_dialog import run_rest
@@ -86,16 +89,19 @@ class CombatTab(BaseTab):
                                           "pour regagner 1d8 PV par niveau de l'emplacement (sur les PV de la bête)."))
         self.form_end = QPushButton("Reprendre sa forme normale")
         self.form_end.setProperty("role", "ghost")
-        fg.addWidget(self.form_info, 0, 0, 1, 6)
+        self.form_info.setWordWrap(True)                  # v52 : mis en page pour la colonne de gauche
+        fg.addWidget(self.form_info, 0, 0, 1, 3)
         fg.addWidget(make_label("PV de la bête"), 1, 0)
-        fg.addWidget(self.form_hp, 1, 1)
-        fg.addWidget(make_label("Dégâts"), 1, 2)
-        fg.addWidget(self.form_dmg, 1, 3)
-        fg.addWidget(self.form_dmg_btn, 1, 4)
-        fg.addWidget(self.form_end, 1, 5)
-        fg.addWidget(make_label("Emplacement"), 2, 0)
-        fg.addWidget(self.moon_lvl, 2, 1)
-        fg.addWidget(self.moon_btn, 2, 2, 1, 3)
+        fg.addWidget(self.form_hp, 1, 1, 1, 2)
+        fg.addWidget(make_label("Dégâts"), 2, 0)
+        fg.addWidget(self.form_dmg, 2, 1)
+        fg.addWidget(self.form_dmg_btn, 2, 2)
+        self.moon_caption = make_label("Emplacement")
+        fg.addWidget(self.moon_caption, 3, 0)
+        fg.addWidget(self.moon_lvl, 3, 1)
+        fg.addWidget(self.moon_btn, 3, 2)
+        fg.addWidget(self.form_end, 4, 0, 1, 3)
+        fg.setColumnStretch(2, 1)
         self.form_box.setVisible(False)
         root.addWidget(self.form_box)
         self.form_hp.valueChanged.connect(self._on_form_hp)
@@ -114,24 +120,68 @@ class CombatTab(BaseTab):
         self.hp_tmp.setRange(0, 999)
         self.hp_misc.setRange(-999, 999)
         self.hit_dice = make_label("", "muted", wrap=True)
-        g.addWidget(make_label("PV max"), 0, 0)
-        g.addWidget(self.hp_max, 0, 1)
-        g.addWidget(make_label("PV actuels"), 1, 0)
-        g.addWidget(self.hp_cur, 1, 1)
-        g.addWidget(make_label("PV temporaires"), 2, 0)
-        g.addWidget(self.hp_tmp, 2, 1)
-        g.addWidget(make_label("Bonus de PV divers"), 3, 0)
-        g.addWidget(self.hp_misc, 3, 1)
+        # v52 : saisie rapide des PV — « 7 » ou « -7 » = dégâts, « +5 » = soins, puis Entrée (Ctrl+D)
+        quick = QHBoxLayout()
+        self.hp_entry = QLineEdit()
+        self.hp_entry.setPlaceholderText("-7 dégâts, +5 soins (Ctrl+D)")
+        self.hp_entry.setToolTip(rich_tip("Saisie rapide des PV", "Tapez un nombre puis Entrée : « 7 » ou « -7 » "
+                                          "pour des dégâts, « +5 » pour des soins. Les PV temporaires sont consommés "
+                                          "en premier, et le jet de concentration est rappelé."))
+        self.hp_entry.returnPressed.connect(lambda: self._quick_hp(""))
+        self.dmg_btn = QPushButton("💥 Dégâts")
+        self.dmg_btn.setToolTip("Retirer la valeur saisie des PV (PV temporaires d'abord).")
+        self.dmg_btn.clicked.connect(lambda: self._quick_hp("degats"))
+        self.heal_btn = QPushButton("💚 Soins")
+        self.heal_btn.setToolTip("Ajouter la valeur saisie aux PV (sans dépasser le maximum).")
+        self.heal_btn.clicked.connect(lambda: self._quick_hp("soins"))
+        self.dmg_type = QComboBox()                           # v52 : type de dégâts -> résistances et réductions
+        self.dmg_type.addItems(["Type : —"] + [t.capitalize() for t in ExtrasMixin.DAMAGE_TYPES])
+        self.dmg_type.setToolTip(rich_tip("Type de dégâts", "Facultatif : avec le type, la fiche applique vos "
+                                          "immunités, résistances (moitié) et réductions (Maître des armures lourdes)."))
+        self.dmg_magic = QCheckBox("magique")
+        self.dmg_magic.setToolTip(rich_tip("Dégâts magiques", "Arme ou attaque magique : les résistances « non "
+                                           "magiques » et la réduction 2014 de Maître des armures lourdes ne "
+                                           "s'appliquent pas."))
+        quick.addWidget(self.hp_entry, 1)
+        quick.addWidget(self.dmg_type)
+        quick.addWidget(self.dmg_magic)
+        quick.addWidget(self.dmg_btn)
+        quick.addWidget(self.heal_btn)
+        g.addLayout(quick, 8, 0, 1, 2)
+        free = QHBoxLayout()                              # v52 : jet libre (Ctrl+R)
+        self.free_roll = QLineEdit()
+        self.free_roll.setPlaceholderText("🎲 Jet libre : 2d6+3, d20+5, 4d6… (Ctrl+R)")
+        self.free_roll.setToolTip(rich_tip("Jet libre", "Tapez une formule de dés puis Entrée : les dés roulent et "
+                                           "le résultat va dans l'historique des lancers (Ctrl+H)."))
+        self.free_roll.returnPressed.connect(self._on_free_roll)
+        self.free_roll_btn = QPushButton("🎲 Lancer")
+        self.free_roll_btn.clicked.connect(self._on_free_roll)
+        self.free_roll_last = make_label("", "muted")
+        free.addWidget(self.free_roll, 1)
+        free.addWidget(self.free_roll_btn)
+        free.addWidget(self.free_roll_last)
+        g.addLayout(free, 9, 0, 1, 2)
+        self.hp_old_labels = [make_label(t) for t in ("PV max", "PV actuels", "PV temporaires", "Bonus de PV divers")]
+        for r, (lab, wid) in enumerate(zip(self.hp_old_labels, (self.hp_max, self.hp_cur, self.hp_tmp,
+                                                                  self.hp_misc))):
+            g.addWidget(lab, r, 0)
+            g.addWidget(wid, r, 1)
         g.addWidget(self.hit_dice, 4, 0, 1, 2)
         death = QHBoxLayout()
         self.ok_boxes = [QCheckBox() for _ in range(3)]
         self.ko_boxes = [QCheckBox() for _ in range(3)]
-        death.addWidget(make_label("Jets contre la mort — réussites"))
+        self.death_labels = [make_label("Jets contre la mort — réussites"), make_label("échecs")]
+        death.addWidget(self.death_labels[0])
         for b in self.ok_boxes:
             death.addWidget(b)
-        death.addWidget(make_label("échecs"))
+        death.addWidget(self.death_labels[1])
         for b in self.ko_boxes:
             death.addWidget(b)
+        self.death_btn = QPushButton("🎲 Jet contre la mort")      # v52 : résultat appliqué automatiquement
+        self.death_btn.setToolTip(rich_tip("Jet contre la mort", "d20 : 10 ou plus = réussite, moins = échec ; "
+                                           "1 naturel = deux échecs ; 20 naturel = vous reprenez 1 PV. Disponible à "
+                                           "0 PV ; les cases se cochent toutes seules."))
+        death.addWidget(self.death_btn)
         g.addLayout(death, 5, 0, 1, 2)
         rest = QHBoxLayout()
         self.short_btn = QPushButton("🔥 Repos court…")
@@ -174,13 +224,43 @@ class CombatTab(BaseTab):
         self._style_key = None          # None : première construction forcée (même sans aucun emplacement)
         self.style_empty = make_label("", "muted", wrap=True)
         right_col = QVBoxLayout()
+        # v52 : emplacements de sorts dans l'onglet En partie (mêmes compteurs que l'onglet Magie)
+        self.slots_box = QGroupBox("✨ Emplacements de sorts")
+        sg = QGridLayout(self.slots_box)
+        self.slot_strip = []
+        for lvl in range(9):
+            lab = make_label("Niv. {}".format(lvl + 1), "head")
+            orbs = OrbBar("emplacement", orb=18, gap=4, per_row=5)
+            orbs.changed.connect(lambda used, n=lvl: self._on_slot_used(n, used))
+            sg.addWidget(lab, lvl // 3, (lvl % 3) * 2)
+            sg.addWidget(orbs, lvl // 3, (lvl % 3) * 2 + 1)
+            self.slot_strip.append((lab, orbs))
+        self.pact_strip = (make_label("Pacte", "warn"), OrbBar("pacte", orb=18, gap=4, per_row=5))
+        self.pact_strip[1].changed.connect(self._on_pact_used)
+        sg.addWidget(self.pact_strip[0], 3, 0)
+        sg.addWidget(self.pact_strip[1], 3, 1, 1, 5)
+        right_col.addWidget(self.slots_box)
         right_col.addWidget(self.style_box, 1)
-        # v36 : options de sous-classe (runes du Chevalier runique, options de Tir arcanique)
-        self.options_box = QGroupBox("Options de sous-classe")
-        self.options_layout = QGridLayout(self.options_box)
-        self._options_key = None
-        self.options_box.setVisible(False)
-        right_col.addWidget(self.options_box)
+        # v52 : bottes d'arme (maîtrise d'arme 2024) — nombre limité sur une fiche 2024
+        self.mastery_box = QGroupBox("Bottes d'arme")
+        mb = QHBoxLayout(self.mastery_box)
+        self.mastery_label = make_label("", "muted", wrap=True)
+        self.mastery_btn = QPushButton("Choisir les bottes…")
+        self.mastery_btn.clicked.connect(self._choose_masteries)
+        mb.addWidget(self.mastery_label, 1)
+        mb.addWidget(self.mastery_btn)
+        right_col.addWidget(self.mastery_box)
+        # v52 : « À ne pas oublier » — capacités de situation, une ligne chacune, repliable
+        self.remember_box = QGroupBox("📌 À ne pas oublier")
+        rl = QVBoxLayout(self.remember_box)
+        self.remember_toggle = QPushButton("▾ Masquer")
+        self.remember_toggle.setProperty("role", "ghost")
+        self.remember_toggle.clicked.connect(self._on_remember_toggle)
+        rl.addWidget(self.remember_toggle)
+        self.remember_text = make_label("", "", wrap=True)
+        rl.addWidget(self.remember_text)
+        self._remember_open = True
+        right_col.addWidget(self.remember_box)
         # jets de sauvegarde ultra-condensés (3 × 2) juste sous le style de combat
         self.saves_box = QGroupBox("Jets de sauvegarde")
         sg = QGridLayout(self.saves_box)
@@ -206,15 +286,18 @@ class CombatTab(BaseTab):
 
         # ================= 2. Statistiques de base
         # cinq encarts de même largeur (stretch 1, largeur minimale libre) : aucun dépassement de la ligne
-        stats = QHBoxLayout()
-        stats.setSpacing(8)
+        # v51 : grille unique, hauteur FIXE identique pour les cinq encarts, contenu centré verticalement
+        stats = QGridLayout()
+        stats.setHorizontalSpacing(8)
         self.stat_boxes = {}
-        for key, title in (("init", "Initiative"), ("vit", "Vitesse"), ("prof", "Maîtrise"),
-                           ("perc", "Perception passive"), ("vision", "Vision dans le noir")):
+        for col, (key, title) in enumerate((("init", "Initiative"), ("vit", "Vitesse"), ("prof", "Maîtrise"),
+                                            ("perc", "Perception passive"), ("vision", "Vision dans le noir"))):
             box = QGroupBox(title)
-            box.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Maximum)
+            box.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
             box.setMinimumWidth(0)
+            box.setFixedHeight(self.STAT_BOX_HEIGHT)
             lay = QVBoxLayout(box)
+            lay.setAlignment(Qt.AlignmentFlag.AlignVCenter)
             lab = center("", "stat")
             lab.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
             lab.setWordWrap(True)                        # vitesses multiples : retour à la ligne plutôt que rognage
@@ -231,7 +314,8 @@ class CombatTab(BaseTab):
                 lay.addWidget(lab)
             self.stat_labels[key] = lab
             self.stat_boxes[key] = box
-            stats.addWidget(box, 1)
+            stats.addWidget(box, 0, col)
+            stats.setColumnStretch(col, 1)
         root.addLayout(stats)
 
         # ================= 2 bis. Ce tour-ci (v30, barre d'action façon BG3) : tout ce qui est jouable, filtré par coût
@@ -285,6 +369,27 @@ class CombatTab(BaseTab):
         conc.addWidget(self.conc_label, 1)
         conc.addWidget(self.conc_btn)
         fl.addLayout(conc)
+        exh = QHBoxLayout()                               # v52 : épuisement selon l'édition
+        self.exh_minus = QPushButton("−")
+        self.exh_plus = QPushButton("＋")
+        for b in (self.exh_minus, self.exh_plus):
+            b.setProperty("role", "ghost")
+            b.setFixedWidth(34)
+        self.exh_label = make_label("")
+        self.exh_roll = QPushButton("🎲 JS d'épuisement…")
+        self.exh_roll.setProperty("role", "ghost")
+        self.exh_roll.setToolTip(rich_tip("JS d'épuisement", "Marche forcée, chaleur ou froid extrêmes, privation… "
+                                          "Le DD officiel est proposé ; un échec ajoute un niveau d'épuisement."))
+        self.exh_minus.setToolTip(rich_tip("Épuisement", "Retire un niveau (un repos long en retire un aussi)."))
+        self.exh_plus.setToolTip(rich_tip("Épuisement", "Ajoute un niveau d'épuisement."))
+        self.exh_caption = make_label("Épuisement", "muted")
+        exh.addWidget(self.exh_caption)
+        exh.addWidget(self.exh_minus)
+        exh.addWidget(self.exh_label)
+        exh.addWidget(self.exh_plus)
+        exh.addWidget(self.exh_roll)
+        exh.addStretch(1)
+        fl.addLayout(exh)
         self.fx_holder = QWidget()
         self.fx_grid = QGridLayout(self.fx_holder)
         self.fx_grid.setContentsMargins(0, 0, 0, 0)
@@ -292,7 +397,6 @@ class CombatTab(BaseTab):
         self.fx_empty = make_label("Aucun effet actif.", "muted")
         fl.addWidget(self.fx_holder)
         fl.addWidget(self.fx_empty)
-        pick = QHBoxLayout()
         self.fx_cat = QComboBox()
         self.fx_cat.addItems([ALL_CATS] + FX.CATEGORIES)
         self.fx_search = QLineEdit()
@@ -311,9 +415,15 @@ class CombatTab(BaseTab):
                                            "(ex. « poison », « Hâte », « feu »)."))
         self.fx_add.setToolTip(rich_tip("Ajouter l'effet", "Active l'effet choisi : ses modificateurs s'appliquent "
                                         "immédiatement à la fiche (CA, jets, compétences, vitesse…)."))
-        for wdg in (self.fx_cat, self.fx_search, self.fx_combo, self.fx_add, self.fx_clear):
-            pick.addWidget(wdg)
-        pick.setStretch(1, 1)
+        pick = QGridLayout()                              # v52 : deux lignes (colonne de gauche étroite)
+        self.fx_combo.setMinimumWidth(0)
+        self.fx_clear.setText("🧹 Retirer les temporaires")
+        pick.addWidget(self.fx_cat, 0, 0)
+        pick.addWidget(self.fx_search, 0, 1, 1, 2)
+        pick.addWidget(self.fx_combo, 1, 0, 1, 2)
+        pick.addWidget(self.fx_add, 1, 2)
+        pick.addWidget(self.fx_clear, 2, 0, 1, 3)
+        pick.setColumnStretch(1, 1)
         fl.addLayout(pick)
         self.fx_summary = make_label("", "head", wrap=True)
         fl.addWidget(self.fx_summary)
@@ -355,6 +465,7 @@ class CombatTab(BaseTab):
             b.toggled.connect(lambda _=False: self._on_death())
         for b in self.ko_boxes:
             b.toggled.connect(lambda _=False: self._on_death())
+        self.death_btn.clicked.connect(self._on_death_save)
         self.short_btn.clicked.connect(lambda: self._on_rest("short"))
         self.long_btn.clicked.connect(lambda: self._on_rest("long"))
         self.fx_cat.activated.connect(lambda _=0: self._fill_fx_picker())
@@ -362,10 +473,257 @@ class CombatTab(BaseTab):
         self.fx_add.clicked.connect(self._on_add_effect)
         self.fx_combo.activated.connect(lambda _=0: None)
         self.fx_clear.clicked.connect(self._on_clear_effects)
+        self.exh_minus.clicked.connect(lambda: self._on_exhaustion(-1))
+        self.exh_plus.clicked.connect(lambda: self._on_exhaustion(1))
+        self.exh_roll.clicked.connect(lambda: self.open_exhaustion())
         self.conc_btn.clicked.connect(self._on_break_concentration)
         self.armor.activated.connect(self._on_armor)
         self.armor_magic.activated.connect(self._on_armor)
         self.shield.activated.connect(lambda _=0: self._on_armor())
+        self._relayout(root)                              # v52 : disposition 16/9 (bandeau, colonne, tuiles)
+
+    STAT_BOX_HEIGHT = 104                                # v51 : hauteur commune des encarts de statistiques
+
+    # ------------------------------------------------------------------ v52 : disposition 16/9
+    def _relayout(self, root) -> None:
+        """Bandeau du haut (PV, CA, initiative, vitesse, maîtrise, perception, vision, inspiration, épuisement),
+        colonne de gauche (caractéristiques et JS, PV, repos, ressources, rappels, états) et zone principale (tuiles
+        du tour en colonnes). Les anciens encarts (armure, style, armes, sorts mineurs) restent créés mais masqués."""
+        while root.count():
+            root.takeAt(0)
+        self._parking = QWidget(self)                    # anciens encarts conservés (logique, tests) mais cachés
+        self._parking.hide()
+        park = QVBoxLayout(self._parking)
+        ac_box = self.stat_labels["ca"].parentWidget()
+        fx_box = self.fx_holder.parentWidget()
+        turn_box = self.turn_banner.parentWidget()
+        # --- bandeau du haut
+        hdr = QFrame()
+        hdr.setObjectName("partyHeader")
+        hl = QHBoxLayout(hdr)
+        hl.setContentsMargins(8, 4, 8, 4)
+        hl.setSpacing(14)
+        self.hp_big = make_label("", "stat")
+        self.hp_big.setToolTip(rich_tip("Points de vie", "PV actuels / maximum (+ PV temporaires). Corrections "
+                                        "fines dans l'encart « Points de vie » de la colonne de gauche."))
+        self.dmg_open_btn = QPushButton("💥 Dégâts")
+        self.dmg_open_btn.setToolTip(rich_tip("Dégâts subis", "Demande le montant et le type : résistances, "
+                                              "immunités et réactions sont appliquées (Ctrl+D)."))
+        self.heal_open_btn = QPushButton("💚 Soins")
+        self.heal_open_btn.setToolTip(rich_tip("Soins reçus", "Demande le nombre de PV regagnés (ou de PV "
+                                               "temporaires)."))
+        self.dmg_open_btn.clicked.connect(self.open_damage)
+        self.heal_open_btn.clicked.connect(self.open_heal)
+        hl.addWidget(self.hp_big)
+        hl.addWidget(self.dmg_open_btn)
+        hl.addWidget(self.heal_open_btn)
+
+        def stat(caption: str, *widgets):
+            box = QVBoxLayout()
+            box.setSpacing(0)
+            box.addWidget(make_label(caption, "muted"), 0, Qt.AlignmentFlag.AlignHCenter)
+            row = QHBoxLayout()
+            row.setSpacing(2)
+            for w in widgets:
+                w.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+                row.addWidget(w)
+            box.addLayout(row)
+            hl.addLayout(box)
+        stat("CA", self.stat_labels["ca"])
+        stat("Initiative", self.stat_labels["init"], self.init_btn)
+        stat("Vitesse", self.stat_labels["vit"])
+        stat("Maîtrise", self.stat_labels["prof"])
+        stat("Perception", self.stat_labels["perc"])
+        stat("Vision", self.stat_labels["vision"])
+        for key in ("init", "vit", "prof", "perc", "vision", "ca"):
+            self.stat_labels[key].setWordWrap(False)
+        self.insp_check = QCheckBox("🌟 Inspiration")
+        self.insp_check.setToolTip(rich_tip("Inspiration", "Cochée : vous avez un point d'inspiration (accordé par "
+                                            "le MJ, ou Ingénieux). Il se dépense dans la fenêtre d'un jet de d20."))
+        self.insp_check.toggled.connect(self._on_inspiration)
+        hl.addWidget(self.insp_check)
+        self.style_badge = make_label("", "muted")
+        hl.addWidget(self.style_badge)
+        hl.addStretch(1)
+        self.exh_minus.setText("−")                       # v52 : − / + bien lisibles
+        self.exh_plus.setText("+")
+        self.exh_roll.setText("🎲 JS")
+        for b in (self.exh_minus, self.exh_plus):
+            b.setFixedSize(30, 26)
+        hl.addWidget(make_label("Épuisement", "muted"))
+        hl.addWidget(self.exh_minus)
+        hl.addWidget(self.exh_label)
+        hl.addWidget(self.exh_plus)
+        hl.addWidget(self.exh_roll)
+        root.addWidget(hdr)
+        # --- corps : colonne de gauche + zone principale
+        body = QHBoxLayout()
+        body.setSpacing(10)
+        left = QWidget()
+        left.setMaximumWidth(470)
+        left.setMinimumWidth(380)
+        ll = QVBoxLayout(left)
+        ll.setContentsMargins(0, 0, 0, 0)
+        ll.setSpacing(6)
+        ll.addWidget(self.form_box)
+        ll.addWidget(self._abilities_box())
+        ll.addWidget(self.hp_box)
+        ll.addWidget(self.mastery_box)
+        ll.addWidget(self.racial_box)
+        ll.addStretch(1)
+        body.addWidget(left)
+        main = QVBoxLayout()
+        park.addWidget(self.beast_box)                    # v52 : les attaques de la bête sont des tuiles
+        park.addWidget(self.res_box)                      # v52 : les ressources sont affichées sur les tuiles
+        main.addWidget(turn_box)
+        under = QHBoxLayout()                             # sous les tuiles : états actifs | à ne pas oublier
+        under.addWidget(fx_box, 1)
+        under.addWidget(self.remember_box, 1)
+        main.addLayout(under)
+        main.addStretch(1)
+        body.addLayout(main, 1)
+        self.exh_caption.setVisible(False)
+        root.addLayout(body, 1)
+        # Magie : emplacements de sorts en tête de la colonne
+        self.turn_slots_layout.addWidget(self.slots_box)
+        self.slots_box.setTitle("Emplacements de sorts")
+        # PV : PV max dans le bandeau ; actuels / temporaires / divers sur une seule ligne
+        g = self.hp_box.layout()
+        for w in self.hp_old_labels + [self.hp_max]:
+            w.setVisible(False)
+        row = QWidget()
+        rl = QHBoxLayout(row)
+        rl.setContentsMargins(0, 0, 0, 0)
+        for caption, spin in (("Actuels", self.hp_cur), ("Temp.", self.hp_tmp), ("Divers", self.hp_misc)):
+            rl.addWidget(make_label(caption, "muted"))
+            spin.setVisible(True)
+            rl.addWidget(spin, 1)
+        g.addWidget(row, 0, 0, 1, 2)
+        self.hp_box.setTitle("Points de vie (corrections)")
+        # PV : la saisie rapide est remplacée par les boutons Dégâts / Soins du bandeau
+        for w in (self.hp_entry, self.dmg_type, self.dmg_magic, self.dmg_btn, self.heal_btn):
+            w.setVisible(False)
+        # ressources : seules les sphères restent (les actions sont des tuiles)
+        self.act_layout.parentWidget().setVisible(False)
+        self.res_sep.setVisible(False)
+        # encarts retirés de l'écran (armure / bouclier -> inventaire, style -> création, armes -> tuiles)
+        for w in [ac_box, self.style_box, self.saves_box, self.cantrip_box] + list(self.weapon_boxes) + \
+                list(self.stat_boxes.values()):
+            park.addWidget(w)
+
+    def _abilities_box(self) -> QGroupBox:
+        """Caractéristiques avec leur jet de sauvegarde sur la même ligne (le dé juste à côté)."""
+        box = QGroupBox("Caractéristiques et jets de sauvegarde")
+        g = QGridLayout(box)
+        g.setHorizontalSpacing(8)
+        g.setVerticalSpacing(2)
+        self.ab_labels = {}
+        for r, ab in enumerate(R.ABILITIES):
+            name = make_label(ab, "head")
+            score = make_label("", "")
+            self.ab_labels[ab] = score
+            cell_w = self.save_cells[ab]["label"].parentWidget()
+            cl = cell_w.layout()
+            if cl is not None and hasattr(cl, "setStretch"):
+                cl.setStretch(0, 0)                       # le dé juste à côté du bonus
+                cl.addStretch(1)
+            self.save_cells[ab]["label"].setMinimumWidth(80)
+            g.addWidget(name, r, 0)
+            g.addWidget(score, r, 1)
+            g.addWidget(make_label("JS", "muted"), r, 2)
+            g.addWidget(cell_w, r, 3)
+        g.setColumnStretch(3, 1)
+        return box
+
+    def _refresh_header(self) -> None:
+        eng, ch = self.engine, self.ch
+        hp_max = eng.hp_max()
+        cur = ch.pv_actuels if ch.pv_actuels >= 0 else hp_max
+        form = eng.form_status()
+        if form and ch.forme_active and not eng.wild_shape_2024():   # PV de la bête (vos PV sont mis de côté)
+            self.hp_big.setText("{} {} / {}  (vos PV : {} / {})".format(form["icone"], ch.forme_pv, form["pv_max"],
+                                                                     cur, hp_max))
+        else:
+            self.hp_big.setText("❤ {} / {}{}".format(cur, hp_max, "  (+{} temp.)".format(ch.pv_temporaires)
+                                                    if ch.pv_temporaires else ""))
+        for ab, lab in self.ab_labels.items():
+            lab.setText("{} ({})".format(eng.score(ab), R.fmt_bonus(eng.mod(ab))))
+        with blocked(self.insp_check):
+            self.insp_check.setChecked(bool(ch.inspiration))
+        styles = []
+        for sid, name in (ch.styles_combat or {}).items():
+            if name and "|modele" not in sid:
+                styles.append((name, self.db.style_description(sid.split("|")[0], name)))
+        self.style_badge.setText(" · ".join("⚔ " + n for n, _d in styles))
+        self.style_badge.setToolTip(rich_tip("Style de combat", "\n".join("{} : {}".format(n, d) for n, d in styles))
+                                    if styles else "")
+        down = ch.pv_actuels == 0 and not ch.forme_active          # jets contre la mort seulement à 0 PV
+        for w in self.death_labels + self.ok_boxes + self.ko_boxes + [self.death_btn]:
+            w.setVisible(down)
+
+    def _on_inspiration(self, on: bool) -> None:
+        self.ch.inspiration = bool(on)
+        self.changed()
+
+    def open_damage(self) -> bool:
+        from .hp_dialogs import DamageDialog
+        dlg = DamageDialog(self.win)
+        if not dlg.exec():
+            return False
+        amount, dtype, magical = dlg.values()
+        return self.apply_damage(amount, dtype, magical)
+
+    def apply_damage(self, amount: int, dtype: str = "", magical: bool = False) -> bool:
+        if amount <= 0:
+            return False
+        if self.engine.defense_options("degats"):        # réactions possibles avant les dégâts
+            return self.open_defense("degats", amount, dtype, magical)
+        self._message(self.engine.take_damage(amount, dtype, magical))
+        self.changed()
+        self.maybe_concentration_save()
+        self.maybe_zero_hp()
+        return True
+
+    def open_heal(self) -> bool:
+        from .hp_dialogs import HealDialog
+        dlg = HealDialog(self.win)
+        if not dlg.exec():
+            return False
+        amount, temp = dlg.values()
+        return self.apply_heal(amount, temp)
+
+    def apply_heal(self, amount: int, temp: bool = False) -> bool:
+        if amount <= 0:
+            return False
+        if temp:
+            self.ch.pv_temporaires = max(int(self.ch.pv_temporaires), int(amount))
+            self._message("PV temporaires : {}.".format(self.ch.pv_temporaires))
+        else:
+            self._message(self.engine.receive_healing(amount))
+        self.changed()
+        return True
+
+    def maybe_form_ended(self) -> None:
+        """v52 : la bête tombe à 0 PV — fenêtre « fin de la transformation » (puis 0 PV éventuel)."""
+        eng = self.engine
+        msg = getattr(eng, "form_ended_message", "")
+        if not msg:
+            return
+        eng.form_ended_message = ""
+        ask_yes_no(self.win, "Fin de la transformation", msg, yes="Compris", no="Fermer", default_no=False)
+
+    def maybe_zero_hp(self) -> None:
+        """v52 : à 0 PV, message et jet contre la mort proposé."""
+        self.maybe_form_ended()
+        eng = self.engine
+        if not getattr(eng, "dropped_to_zero", False):
+            return
+        eng.dropped_to_zero = False
+        if ask_yes_no(self.win, "0 PV — inconscient", "Vous tombez à 0 PV : vous êtes inconscient et à terre.\n\n"
+                      "Faites un jet de sauvegarde contre la mort au début de chacun de vos tours (10 ou plus : "
+                      "réussite ; 3 réussites : stabilisé ; 3 échecs : mort).", yes="🎲 Lancer le jet maintenant",
+                      no="Plus tard", default_no=False):
+            self._on_death_save()
 
     # ------------------------------------------------------------------ barre du tour (v30)
     TURN_FILTERS = ["Tout", "Action", "Action bonus", "Réaction", "Gratuit"]
@@ -379,6 +737,19 @@ class CombatTab(BaseTab):
         box = QGroupBox("⚔ Ce tour-ci — cliquez une tuile pour l'utiliser (filtre par coût)")
         lay = QVBoxLayout(box)
         lay.setSpacing(6)
+        # v52 : bandeau de rappels (début / fin de tour, initiative) — se ferme d'un clic, jamais bloquant
+        self.turn_banner = QWidget()
+        tb = QHBoxLayout(self.turn_banner)
+        tb.setContentsMargins(0, 0, 0, 0)
+        self.turn_banner_text = make_label("", "banner", wrap=True)
+        self.turn_banner_close = QPushButton("✕")
+        self.turn_banner_close.setProperty("role", "ghost")
+        self.turn_banner_close.setToolTip("Fermer les rappels")
+        self.turn_banner_close.clicked.connect(lambda: self.show_turn_banner("", []))
+        tb.addWidget(self.turn_banner_text, 1)
+        tb.addWidget(self.turn_banner_close)
+        self.turn_banner.setVisible(False)
+        lay.addWidget(self.turn_banner)
         filt = QHBoxLayout()
         self.turn_filter = "Tout"
         self.turn_filter_btns = {}
@@ -410,6 +781,28 @@ class CombatTab(BaseTab):
             lay.addWidget(frame)
             self.turn_groups[gkey] = (frame, head_lab, grid)
         self.turn_grid = self.turn_groups["attaques"][2]          # compatibilité (anciens accès)
+        for frame, _h, _g in self.turn_groups.values():           # v52 : remplacés par les colonnes ci-dessous
+            frame.setParent(None)
+            frame.hide()
+        for b in self.turn_filter_btns.values():
+            b.setVisible(False)
+        # v52 : une seule grille de tuiles, une couleur par type (attaque, capacité, magie, objet, action commune) ;
+        # le coût (● Action, ▲ Bonus, ◆ Réaction, ○ Gratuit) est écrit sur chaque tuile
+        top = QHBoxLayout()
+        self.turn_slots_layout = QHBoxLayout()            # emplacements de sorts (encart déplacé ici)
+        top.addLayout(self.turn_slots_layout)
+        top.addStretch(1)
+        self.turn_legend = make_label("", "")
+        self.turn_legend.setTextFormat(Qt.TextFormat.RichText)
+        top.addWidget(self.turn_legend)
+        lay.addLayout(top)
+        holder = QWidget()
+        self.turn_flow = QGridLayout(holder)
+        self.turn_flow.setContentsMargins(0, 0, 0, 0)
+        self.turn_flow.setHorizontalSpacing(5)
+        self.turn_flow.setVerticalSpacing(5)
+        lay.addWidget(holder)
+        self.turn_cols = {}                               # compatibilité
         self.turn_empty = make_label("Rien à faire dans cette catégorie.", "muted")
         lay.addWidget(self.turn_empty)
         self.turn_tiles: dict[str, QPushButton] = {}
@@ -436,16 +829,47 @@ class CombatTab(BaseTab):
         self.turn_move_left = make_label("", "muted")
         foot.addWidget(self.turn_move_left)
         foot.addStretch(1)
+        lay.addLayout(foot)
+        foot = QHBoxLayout()                              # v52 : 2e ligne — tour, attaque subie, environnement
+        foot.addStretch(1)
         self.turn_auto_btn = QPushButton("")
         self.turn_auto_btn.setProperty("role", "ghost")
         self.turn_auto_btn.clicked.connect(self._on_auto_reaction)
         foot.addWidget(self.turn_auto_btn)
-        self.turn_round_btn = QPushButton("⟳ Nouveau round")
+        self.turn_round_btn = QPushButton("▶ Début de mon tour")       # v52 : remplace « Nouveau round »
         self.turn_round_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.turn_round_btn.setToolTip(rich_tip("Nouveau round", "Action, action bonus, réaction et déplacement "
-                                                "redeviennent disponibles."))
+        self.turn_round_btn.setToolTip(rich_tip("Début de mon tour", "Action, action bonus, réaction et "
+                                                "déplacement redeviennent disponibles ; les effets de début de tour "
+                                                "s'appliquent et les rappels s'affichent."))
         self.turn_round_btn.clicked.connect(self._on_new_round)
         foot.addWidget(self.turn_round_btn)
+        self.turn_end_btn = QPushButton("⏹ Fin de mon tour")
+        self.turn_end_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.turn_end_btn.setToolTip(rich_tip("Fin de mon tour", "Rappelle ce qui n'a pas servi (action, action "
+                                              "bonus) et ce qui se déclenche à la fin de votre tour."))
+        self.turn_end_btn.clicked.connect(self._on_end_turn)
+        foot.addWidget(self.turn_end_btn)
+        self.attacked_btn = QPushButton("🛡 On m'attaque !")         # v52 : jet ennemi, réactions, dégâts
+        self.attacked_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.attacked_btn.setToolTip(rich_tip("On m'attaque !", "Saisissez le jet de l'ennemi : la fiche le compare "
+                                              "à votre CA, propose vos réactions (Bouclier, Esquive instinctive, "
+                                              "Parade…) puis applique les dégâts."))
+        self.attacked_btn.clicked.connect(lambda: self.open_defense("attaque"))
+        foot.addWidget(self.attacked_btn)
+        self.env_btn = QPushButton("🌪 Environnement…")             # v52 : chute, suffocation
+        self.env_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.env_btn.setToolTip(rich_tip("Environnement", "Chute (1d6 par 3 m, À terre, Chute ralentie, Feuille "
+                                         "morte) et suffocation (souffle retenu, décompte en rounds)."))
+        self.env_btn.clicked.connect(self.open_environment)
+        foot.addWidget(self.env_btn)
+        self.end_combat_btn = QPushButton("🏁 Fin du combat")       # v52 : bilan et munitions récupérées
+        self.end_combat_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.end_combat_btn.setToolTip(rich_tip("Fin du combat", "Récupère la moitié des munitions tirées, met fin "
+                                                "à la rage et aux effets de tour (Esquiver, Bouclier…), aux états "
+                                                "Surpris, Caché et À terre, et affiche le bilan. Les sorts en cours "
+                                                "gardent leur durée."))
+        self.end_combat_btn.clicked.connect(self._on_end_combat)
+        foot.addWidget(self.end_combat_btn)
         lay.addLayout(foot)
         box.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
         return box
@@ -459,32 +883,15 @@ class CombatTab(BaseTab):
             with blocked(b):
                 b.setChecked(name == self.turn_filter)
             b.setText("{} ({})".format(name, len(tiles) if name == "Tout" else counts.get(name, 0)))
-        key = tuple((x["id"], x["nom"], x["disponible"], x["origine"], x.get("groupe")) for x in shown) + \
+        key = tuple((x["id"], x["nom"], x["disponible"], x["origine"], x.get("groupe"), x.get("nouveau"))
+                    for x in shown) + \
             (self.turn_filter, t.key)
+        spheres = self._tile_spheres()
+        key = key + (tuple(sorted(spheres.items())),
+                     tuple((k, i, r["cle"], r.get("dd")) for k, i, r, _w in self._weapon_action_rows()))
         if key != self._turn_key:
             self._turn_key = key
-            self.turn_tiles = {}
-            cols = 6
-            for gkey, (frame, head_lab, grid) in self.turn_groups.items():
-                clear_layout(grid)
-                items = [x for x in shown if x.get("groupe", "capacites") == gkey]
-                frame.setVisible(bool(items))
-                title = dict(self.TURN_GROUPS)[gkey]
-                head_lab.setText("{}  ({})".format(title, len(items)))
-                for n, x in enumerate(items):
-                    b = QPushButton("{} {}\n{} {} · {}".format(x["icone"], x["nom"], self.TURN_ICONS.get(x["type"], ""),
-                                                                x["type"], x["origine"]))
-                    b.setMinimumHeight(48)
-                    b.setEnabled(x["disponible"])
-                    b.setCursor(Qt.CursorShape.PointingHandCursor)
-                    b.setToolTip(rich_tip(x["nom"], "{}{}{}".format(
-                        x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
-                        "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
-                    b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
-                    grid.addWidget(b, n // cols, n % cols)
-                    self.turn_tiles[x["id"]] = b
-                for c in range(cols):
-                    grid.setColumnStretch(c, 1)
+            self._render_turn_columns(shown, spheres)
             self.turn_empty.setVisible(not shown)
         st = eng.turn_state()
         for kind, b in self.turn_lights.items():
@@ -507,6 +914,155 @@ class CombatTab(BaseTab):
                          x["id"] == "sort:" + used.replace("sort:", "")), used.split(":")[-1])
             self.turn_lights["Réaction"].setToolTip("Réaction utilisée ce round : {} — clic : annuler.".format(name))
         self.turn_auto_btn.setVisible(False)             # v40 : plus de réaction « automatique »
+
+    # ------------------------------------------------------------------ v52 : colonnes de tuiles
+    def _tile_spheres(self) -> dict:
+        """Ressource restante affichée sur chaque tuile de capacité : {id de tuile: « ●●○ 2/3 »}."""
+        eng = self.engine
+        trackers = {t["key"]: t for t in eng.resource_trackers()}
+        acts = {a["id"]: a for a in eng.class_actions()}
+        out = {}
+        for x in eng.turn_actions():
+            ref = x.get("ref") or {}
+            a = acts.get(ref.get("action", "")) if isinstance(ref, dict) else None
+            cost = (a or {}).get("cout") or {}
+            tr = trackers.get(cost.get("ressource", "")) if isinstance(cost, dict) else None
+            if tr is None and a is not None:
+                tr = trackers.get(a["id"])
+            if tr and tr.get("total"):
+                total, left = int(tr["total"]), max(0, int(tr["total"]) - eng.resource_used(tr["key"]))
+                out[x["id"]] = ("●" * left + "○" * (total - left) if total <= 10 else "") + " {}/{}".format(
+                    left, total)
+        return out
+
+    @staticmethod
+    def _is_spell_tile(x: dict) -> bool:
+        return x["id"].startswith("sort:") or x.get("groupe") == "magie"
+
+    # v52 : libellés courts des petites tuiles d'actions communes (le nom complet reste dans l'infobulle)
+    SHORT_COMMON = {"Se désengager": "Désengager", "Se cacher": "Cacher", "Se tenir prêt": "Prêt",
+                    "Utiliser un objet": "Objet", "Boire une potion (Action bonus)": "Potion", "Influencer": "Influence"}
+
+    def _make_tile(self, x: dict, spheres: dict, compact: bool = False) -> QPushButton:
+        res = spheres.get(x["id"], "")
+        x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
+        if compact:
+            text = "{} {}".format(x["icone"], self.SHORT_COMMON.get(x["nom"], x["nom"]))
+        else:
+            sub = x["origine"] if x["origine"] not in ("action commune",) else ""
+            if self._is_spell_tile(x):
+                sub = "{} {}".format(self.TURN_ICONS.get(x["type"], ""), x["type"])
+            text = "{} {}{}\n{}".format(x["icone"], x["nom"], "  ✨" if x.get("nouveau") else "",
+                                        (res + "  " if res else "") + sub)
+        b = QPushButton(text)
+        b.setMinimumHeight(26 if compact else 46)
+
+        b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)   # colonnes de même largeur
+        b.setEnabled(x["disponible"])
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+        b.setToolTip(rich_tip(x["nom"], "{}{}{}{}".format(
+            x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
+            "\n<b>Restant : {}</b>".format(res) if res else "",
+            "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
+        b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
+        self.turn_tiles[x["id"]] = b
+        return b
+
+    TILE_CATS = [("attaque", "Attaques"), ("capacite", "Capacités de classe et de race"), ("magie", "Magie"),
+                 ("objet", "Objets magiques"), ("reaction", "Réactions"), ("commune", "Actions communes")]
+    FLOW_COLS = 6
+
+    def _tile_cat(self, x: dict) -> str:
+        if self._is_spell_tile(x):
+            return "magie"
+        g = x.get("groupe", "")
+        if g == "generiques":
+            return "commune"
+        if g == "attaques":
+            return "attaque"
+        if g == "objets":
+            return "objet"
+        if x["type"] == "Réaction":
+            return "reaction"
+        return "capacite"
+
+    def _render_turn_columns(self, shown: list, spheres: dict) -> None:
+        """v52 : grille unique, tuiles regroupées et colorées par type ; les actions communes, plus petites, en fin."""
+        self.turn_tiles = {}
+        clear_layout(self.turn_flow)
+        colors = theme.tile_palette(theme.current())      # v52 : couleurs accordées au thème choisi
+        order = {k: n for n, (k, _l) in enumerate(self.TILE_CATS)}
+        eco = {"Action": 0, "Action bonus": 1, "Réaction": 2, "Gratuit": 3}
+        items = [x for x in shown if not x["id"].startswith("inspiration:")
+                 and x["id"] != "commune:magie"]          # v52 : sorts et objets ont déjà leurs tuiles
+        items.sort(key=lambda x: (order[self._tile_cat(x)], eco.get(x["type"], 4)))
+        main = [x for x in items if self._tile_cat(x) != "commune"]
+        common = [x for x in items if self._tile_cat(x) == "commune"]
+        cols = self.FLOW_COLS
+        n = -1
+        for n, x in enumerate(main):
+            b = self._make_tile(x, spheres)
+            self._color_tile(b, colors[self._tile_cat(x)])
+            self.turn_flow.addWidget(b, n // cols, n % cols)
+        if self.turn_filter in ("Tout", "Action"):        # v52 : actions d'arme (bottes, actions BG3) en tuiles
+            for key, i, row, weapon in self._weapon_action_rows():
+                n += 1
+                label = row["nom"] + (" (DD {})".format(row["dd"]) if row.get("dd") else "")
+                b = QPushButton("{} {}\n{}".format(row.get("icone", "⚔"), label, weapon))
+                b.setMinimumHeight(46)
+                b.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+                b.setCursor(Qt.CursorShape.PointingHandCursor)
+                b.setToolTip(WA.tooltip_html(row, theme.current().accent_text) +
+                             "<p style='color:gray'><i>🎲 Clic : jet d'attaque avec cette arme.</i></p>")
+                b.clicked.connect(lambda _=False, k=key, idx=i, r=row: self._on_weapon_action(k, idx, r))
+                self._color_tile(b, colors["attaque"])
+                self.turn_tiles["arme_action:{}:{}:{}".format(key, i, row["cle"])] = b
+                self.turn_flow.addWidget(b, n // cols, n % cols)
+        row0 = (n + 1 + cols - 1) // cols
+        self._common_cells = {}
+        for n, x in enumerate(common):                    # actions communes : deux petites tuiles par case
+            b = self._make_tile(x, spheres, compact=True)
+            self._color_tile(b, colors["commune"], compact=True)
+            self._common_grid_add(b, row0, n)
+        for c in range(cols):
+            self.turn_flow.setColumnStretch(c, 1)
+        present = {self._tile_cat(x) for x in items}
+        self.turn_legend.setText("  ".join("<span style='color:{c}'>■</span> {l}".format(c=colors[k], l=l)
+                                           for k, l in self.TILE_CATS if k in present))
+
+    def _weapon_action_rows(self) -> list:
+        """Actions d'arme des armes équipées (main principale, distance) : [(clé de liste, indice, action, arme)]."""
+        out = []
+        for key in ("armes_cac", "armes_distance"):
+            for i, slot in enumerate(getattr(self.ch, key)):
+                if key == "armes_cac" and i > 0 or not slot.get("nom"):
+                    continue
+                if not self.engine.weapon_stats(slot):
+                    continue
+                for row in self.engine.weapon_actions(slot):
+                    out.append((key, i, row, slot["nom"]))
+        return out
+
+    def _common_grid_add(self, b, row0: int, n: int) -> None:
+        """Actions communes en fin de grille : deux par case de tuile normale (plus compact)."""
+        r, k = divmod(n, self.FLOW_COLS * 2)
+        cell = (row0 + r, k // 2)
+        holder = self._common_cells.get(cell)
+        if holder is None:
+            w = QWidget()
+            holder = QHBoxLayout(w)
+            holder.setContentsMargins(0, 0, 0, 0)
+            holder.setSpacing(3)
+            self.turn_flow.addWidget(w, cell[0], cell[1])
+            self._common_cells[cell] = holder
+        holder.addWidget(b)
+
+    @staticmethod
+    def _color_tile(b, color: str, compact: bool = False) -> None:
+        # petites tuiles : texte réduit et marges serrées, pour que le libellé ne soit jamais tronqué
+        extra = "font-size: 11px; padding: 1px 3px; border-left-width: 4px;" if compact else "padding: 2px 6px;"
+        b.setStyleSheet("QPushButton {{ border: 1px solid {c}; border-left: 6px solid {c}; border-radius: 6px; "
+                        "text-align: left; {e} }}".format(c=color, e=extra))
 
     def _on_roll_initiative(self) -> None:
         from .dice_dialog import roll_initiative
@@ -533,7 +1089,15 @@ class CombatTab(BaseTab):
     def _on_turn_tile(self, tile_id: str) -> None:
         """Tuile : dépense l'action / l'action bonus / la réaction, puis le jet animé (attaque, dés) ou le sort."""
         eng, win = self.engine, self.win
-        res = eng.use_turn_action(tile_id)
+        count = 0
+        if tile_id.startswith("objet:"):                  # v52 : charges ou perles à dépenser
+            choice = eng.item_count_choice(tile_id)
+            if choice and choice["max"] > choice["min"]:
+                count = ask_int(win, choice["objet"], "Combien de {} dépenser ({} à {}) ?".format(
+                    choice["nom"], choice["min"], choice["max"]), choice["min"], choice["min"], choice["max"])
+                if count is None:
+                    return
+        res = eng.use_turn_action(tile_id, count) if count else eng.use_turn_action(tile_id)
         win.statusBar().showMessage(res["message"], 6000)
         if res.get("sort"):
             from .spell_flow import choose_slot_level, resolve_spell
@@ -573,6 +1137,11 @@ class CombatTab(BaseTab):
             return
         if res.get("objet"):                              # v45 : capacité d'un objet magique
             self._use_item_power(res)
+            if res.get("destruction") and res.get("entree") is not None:   # v52 : dernière charge -> d20
+                r = roll_damage_dialog(win, D.DamageSpec("Dernière charge — " + res["objet"]["objet"], "1d20",
+                                                         kind="de"))
+                if r is not None:
+                    self._message(eng.resolve_item_destruction(res["entree"], r.total))
             self.changed()
             return
         if res.get("ok") and tile_id == "classe:cap:forme_sauvage":   # v39 : choix de la bête puis transformation
@@ -589,13 +1158,67 @@ class CombatTab(BaseTab):
                 win.statusBar().showMessage("Forme sauvage : {}.".format(picked), 6000)
             self.changed()
             return
+        if res.get("liberer"):                            # v52 : Se libérer (Agrippé / Entravé)
+            self._escape(res)
+            self.changed()
+            return
+        if res.get("tests"):                              # v52 : action commune résolue par un test
+            self._common_test(res)
+            self.changed()
+            return
         if res.get("attaque") is not None:
-            self._attack_flow(res["attaque"], res.get("degats"))
+            self._attack_flow(res["attaque"], res.get("degats"), res.get("slot"))
         elif res.get("degats") is not None:
             r = roll_damage_dialog(win, res["degats"])
             if r is not None and res.get("soin"):
                 eng.heal(r.total)
         self.changed()
+
+    def _escape(self, res: dict) -> None:
+        eng, conds = self.engine, res["liberer"]
+        key = conds[0]
+        if len(conds) > 1:
+            names = {FX.EFFECTS[k]["nom"]: k for k in conds}
+            picked = ask_choice(self.win, "Se libérer", "De quel état ?", list(names))
+            if not picked:
+                return
+            key = names[picked]
+        dc = res.get("dd", 0)
+        if dc:                                            # 2024 : DD de la prise (8 + For + maîtrise de l'agrippeur)
+            dc = ask_int(self.win, "Se libérer", "DD de la prise (donné par le MJ, 8 + Force + maîtrise de "
+                         "l'agrippeur) :", dc)
+            if dc is None:
+                return
+        spec = eng.skill_spec(res["competence"])
+        spec.title = "Se libérer — " + spec.title + (" — DD {}".format(dc) if dc else "")
+        r = roll_dice(self.win, spec)
+        if r is None:
+            return
+        if dc:
+            success = r.total >= dc
+        else:                                             # 2014 : test en opposition, le MJ compare
+            success = ask_yes_no(self.win, "Se libérer", "Votre test : {}.\n\nL'emportez-vous sur le jet adverse "
+                                 "(ou le DD de l'effet) ?".format(r.total), yes="✔ Réussi", no="✘ Raté",
+                                 default_no=False)
+        self._message(eng.resolve_escape(key, bool(success), r.total, dc))
+
+    def _common_test(self, res: dict) -> None:
+        eng, skills = self.engine, res["tests"]
+        if len(skills) > 1:
+            rows = {r["nom"]: r for r in eng.skill_rows()}
+            labels = {"{} ({:+d})".format(s, rows[s]["bonus"]) if s in rows else s: s for s in skills}
+            picked = ask_choice(self.win, res["message"].split(" :")[0], "Quelle compétence ?", list(labels))
+            if not picked:
+                return
+            skill = labels[picked]
+        else:
+            skill = skills[0]
+        spec = eng.skill_spec(skill)
+        if res.get("dd"):
+            spec.title += " — DD {}".format(res["dd"])
+        r = roll_dice(self.win, spec)
+        if r is not None:
+            self._message(eng.resolve_common_test(res.get("commune", ""), skill, r.total, res.get("dd", 0)))
 
     def _use_item_power(self, res: dict) -> None:
         """Sort lancé par l'objet (sans emplacement : charges déjà décomptées) -> résolution habituelle (attaque,
@@ -632,7 +1255,8 @@ class CombatTab(BaseTab):
             w["d20"] = d20_button("Jet d'attaque avec cette arme")
             w["d20"].clicked.connect(lambda _=False, k=key, n=i: self._attack_flow(
                 self.engine.weapon_attack_spec(getattr(self.ch, k)[n]),
-                self.engine.weapon_damage_spec(getattr(self.ch, k)[n], offhand=(k == "armes_cac" and n == 1))))
+                self.engine.weapon_damage_spec(getattr(self.ch, k)[n], offhand=(k == "armes_cac" and n == 1)),
+                getattr(self.ch, k)[n]))
             w["dmg"].clicked.connect(lambda k=key, n=i: self._roll_weapon_damage(k, n))
             # dégâts + commutateur « 1 main / 2 mains » des armes polyvalentes
             w["dmg_box"] = QWidget()
@@ -644,8 +1268,17 @@ class CombatTab(BaseTab):
             w["hands"].setProperty("role", "toggle")
             w["hands"].setCursor(Qt.CursorShape.PointingHandCursor)
             w["hands"].clicked.connect(lambda checked=False, k=key, n=i: self._on_hands(k, n, checked))
+            w["power"] = QPushButton("💪 −5/+10")              # v52 : Tireur d'élite / Briseur d'armes lourdes
+            w["power"].setCheckable(True)
+            w["power"].setProperty("role", "toggle")
+            w["power"].setToolTip(rich_tip("Attaque puissante", "−5 au toucher, +10 aux dégâts (Tireur d'élite "
+                                           "ou Briseur d'armes lourdes). Même bascule que la tuile « Attaque "
+                                           "puissante »."))
+            w["power"].clicked.connect(lambda checked=False: self._on_power(checked))
+            w["power"].setVisible(False)
             db_lay.addWidget(w["dmg"])
             db_lay.addWidget(w["hands"])
+            db_lay.addWidget(w["power"])
             db_lay.addStretch(1)
             order = ["combo", "prof", "magic", "ab", "atk", "d20", "dmg_box", "acts"]
             if kind == "distance":
@@ -729,6 +1362,13 @@ class CombatTab(BaseTab):
         setattr(self.ch, attr, value)
         self.changed()
 
+    def _on_death_save(self):
+        r = roll_dice(self.win, self.engine.death_save_spec())
+        if r is None:
+            return
+        self.win.statusBar().showMessage(self.engine.apply_death_save(r.natural, r.total), 10000)
+        self.changed()
+
     def _on_death(self):
         self.ch.mort_reussites = sum(b.isChecked() for b in self.ok_boxes)
         self.ch.mort_echecs = sum(b.isChecked() for b in self.ko_boxes)
@@ -798,7 +1438,7 @@ class CombatTab(BaseTab):
                 e = FX.EFFECTS[k]
                 self.fx_combo.addItem("{} {}  ·  {}".format(e["icone"], e["nom"], e["categorie"]), k)
                 lines = M.mech_lines(k)
-                self.fx_combo.setItemData(i, FX.tooltip_html(k) + ("<p><b>Appliqué à la fiche :</b> {}</p>".format(
+                self.fx_combo.setItemData(i, self.engine.effect_tooltip(k) + ("<p><b>Appliqué à la fiche :</b> {}</p>".format(
                     " · ".join(lines)) if lines else ""), Qt.ItemDataRole.ToolTipRole)
             idx = self.fx_combo.findData(current)
             if idx >= 0:
@@ -811,7 +1451,13 @@ class CombatTab(BaseTab):
             from .druid_tab import start_polymorph
             start_polymorph(self.win, use_slot=False)
             return
+        blocked = self.engine.effect_blocked(key) if key else ""
+        if blocked:                                      # v52 : immunité aux états
+            self.win.statusBar().showMessage(blocked, 8000)
+            return
         if key and self.engine.add_effect(key):
+            if self.engine.last_effect_message:          # v52 : état neutralisant -> concentration rompue
+                self._message(self.engine.last_effect_message)
             self.changed()
 
     def _on_remove_effect(self, key: str):
@@ -845,8 +1491,39 @@ class CombatTab(BaseTab):
         self.changed()
 
     def _on_new_round(self):
-        self.engine.new_round()
+        res = self.engine.start_turn()                   # v52 : début de tour + rappels
+        lines = ["✔ " + m for m in res["appliques"]] + ["• " + m for m in res["rappels"]]
+        self.show_turn_banner("▶ Début de votre tour", lines or ["Rien de particulier à ce début de tour."])
         self.changed()
+
+    def open_environment(self) -> bool:
+        from .environment_dialog import EnvironmentDialog
+        dlg = EnvironmentDialog(self.win)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            self.maybe_concentration_save()
+            return True
+        return False
+
+    def _on_end_combat(self):
+        self.show_turn_banner("🏁 Fin du combat", ["• " + m for m in self.engine.end_combat()])
+        self.changed()
+
+    def _on_end_turn(self):
+        lines = ["• " + m for m in self.engine.end_turn()]
+        self.show_turn_banner("⏹ Fin de votre tour", lines or ["Tout a servi : bon tour !"])
+        self.changed()
+
+    def show_turn_banner(self, title: str, lines: list) -> None:
+        """Bandeau de rappels en tête de « Ce tour-ci » (vide = masqué)."""
+        if not title:
+            self.turn_banner_text.setText("")
+            self.turn_banner.setVisible(False)
+            return
+        self.turn_banner_text.setText("<b>{}</b><br/>{}".format(html.escape(title), "<br/>".join(
+            html.escape(x) for x in lines)))
+        self.turn_banner.setVisible(True)
 
     def _on_ammo(self, i: int):
         self.ch.armes_distance[i]["munition"] = self.weapon_rows["armes_distance"][i]["ammo"].currentData() or ""
@@ -859,7 +1536,8 @@ class CombatTab(BaseTab):
     def _refresh_effects(self):
         eng, t = self.engine, theme.current()
         keys = eng.active_effect_keys()
-        state = (tuple(keys), tuple(eng.innate_effects()), self.ch.concentration, t.key)
+        timers = tuple(eng.effect_rounds(k) for k in keys)
+        state = (tuple(keys), tuple(eng.innate_effects()), self.ch.concentration, t.key, timers)
         if state != self._fx_key:
             self._fx_key = state
             clear_layout(self.fx_grid)
@@ -869,7 +1547,10 @@ class CombatTab(BaseTab):
                     e["nom"] = self.ch.concentration
                 source = eng.innate_source(k)
                 lines = M.mech_lines(k)
-                tip = FX.tooltip_html(k, t.accent_text)
+                tip = eng.effect_tooltip(k, t.accent_text)  # v52 : texte de l'état selon l'édition
+                if k.startswith("epuisement_") and eng.sheet_edition == 2024:     # v52 : règle 2024
+                    tip = "<p><b>{}</b> — règle 2024</p><p>{}</p>".format(e["nom"], html.escape(eng.exhaustion_text()))
+                    lines = []
                 if lines:
                     tip += "<p><b>Appliqué à la fiche :</b> {}</p>".format(" · ".join(lines))
                 if source:
@@ -877,8 +1558,15 @@ class CombatTab(BaseTab):
                 if k == "concentration":
                     tip += "<p>🧠 Sort en cours : <b>{}</b> — clic : rompre la concentration.</p>".format(
                         self.ch.concentration)
+                left = eng.effect_rounds(k)
+                short = ""
+                if left is not None:                      # v52 : décompte en rounds
+                    tip += "<p>⏳ <b>{}</b> — baisse à chaque « ▶ Début de mon tour » et avec le temps qui " \
+                           "passe.</p>".format(eng.effect_rounds_text(k))
+                    short = "{} r".format(left) if left < 20 else D_.rounds_text(left)
                 badge = EffectBadge(k, e["icone"], e["nom"], e["categorie"], tip,
-                                    on_remove=self._on_remove_effect, permanent=bool(source))
+                                    on_remove=self._on_remove_effect, permanent=bool(source), timer=short,
+                                    on_extend=self._on_extend_effect if left is not None else None)
                 self.fx_grid.addWidget(badge, n // FX_PER_ROW, n % FX_PER_ROW)
             self.fx_grid.setColumnStretch(FX_PER_ROW, 1)
         self.fx_holder.setVisible(bool(keys))
@@ -892,6 +1580,18 @@ class CombatTab(BaseTab):
         self.fx_defenses.setText("   ".join(parts))
         self.fx_defenses.setToolTip(rich_tip("Résistances et immunités", "\n".join(
             "{} — {}".format(x, src) for field in ("resistances", "immunites") for x, src in d[field])) if parts else "")
+        n = eng.exhaustion_level()
+        self.exh_label.setText("Niveau {}".format(n) if n else "aucun")   # v52 : l'effet est dans l'infobulle
+        tip = rich_tip("Épuisement — niveau {} / 6".format(n), eng.exhaustion_text() if n else
+                       "Aucun niveau d'épuisement.")
+        for w in (self.exh_label, self.exh_minus, self.exh_plus):
+            w.setToolTip(tip)
+        t = theme.current()
+        for b in (self.exh_minus, self.exh_plus):         # suit le thème choisi
+            b.setStyleSheet("QPushButton {{ padding: 0px; font-weight: bold; font-size: 17px; color: {}; }}"
+                            "QPushButton:disabled {{ color: {}; }}".format(t.accent_text, t.locked))
+        self.exh_minus.setEnabled(n > 0)
+        self.exh_plus.setEnabled(n < 6)
         lines = eng.effect_summary_lines()
         self.fx_summary.setText("Modificateurs en vigueur : " + " · ".join(lines) if lines else "")
         self._fill_fx_picker()
@@ -904,7 +1604,9 @@ class CombatTab(BaseTab):
             self.conc_label.setText("🧠 Concentration en cours : {}{} — lancer un autre sort de concentration la "
                                     "romprait. Un JS de Constitution (DD 10 ou moitié des dégâts) est requis quand "
                                     "vous subissez des dégâts.".format(name, " (lancé sur un allié)"
-                                                                       if self.ch.concentration_cible == "allie" else ""))
+                                                                       if self.ch.concentration_cible == "allie" else "")
+                                    + (" ⏳ " + self.engine.effect_rounds_text("concentration") + "."
+                                       if self.engine.effect_rounds("concentration") is not None else ""))
 
     def _refresh_weapon_extras(self, key: str, i: int, w: dict, slot: dict, st):
         """Pastilles d'actions d'arme (infobulle riche immédiate) et sélecteur de munitions."""
@@ -958,6 +1660,8 @@ class CombatTab(BaseTab):
         self._message(self.engine.damage_form(self.form_dmg.value()))
         self.form_dmg.setValue(0)
         self.changed()
+        self.maybe_concentration_save()
+        self.maybe_zero_hp()                              # v52 : fin de transformation, puis 0 PV éventuel
 
     def _on_moon_heal(self):
         text = self.moon_lvl.currentText()
@@ -995,9 +1699,11 @@ class CombatTab(BaseTab):
         kept = ("INT {} SAG {} CHA {} de la bête (Métamorphose : toutes les caractéristiques sont remplacées ; "
                 "concentration du lanceur requise)".format(c["INT"][0], c["SAG"][0], c["CHA"][0]) if poly else
                 "INT, SAG, CHA, maîtrises et alignement du druide conservés")
-        self.form_info.setText("{} — CA {} — vitesse {} — FOR {} DEX {} CON {} — {} — vos PV ({}/{}) sont mis de "
-                               "côté".format(beast["nom"], eng.beast_ac(beast), beast["vitesse"], c["FOR"][0],
-                                             c["DEX"][0], c["CON"][0], kept, ch.pv_actuels, eng.hp_max()))
+        hp_note = ("vous gardez vos PV ({}/{}) et vos PV temporaires de forme (2024)".format(ch.pv_actuels, eng.hp_max())
+                   if eng.wild_shape_2024() else "vos PV ({}/{}) sont mis de côté".format(ch.pv_actuels, eng.hp_max()))
+        self.form_info.setText("{} — CA {} — vitesse {} — FOR {} DEX {} CON {} — {} — {}".format(
+            beast["nom"], eng.beast_ac(beast), beast["vitesse"], c["FOR"][0], c["DEX"][0], c["CON"][0], kept, hp_note))
+        self.form_hp.setVisible(not eng.wild_shape_2024())   # 2024 : pas de PV de bête
         with blocked(self.form_hp):
             self.form_hp.setRange(0, hp_max)
             self.form_hp.setValue(ch.forme_pv)
@@ -1005,7 +1711,7 @@ class CombatTab(BaseTab):
         moon = eng.moon_heal_available()
         levels = eng.moon_heal_levels() if moon else []
         fill_combo(self.moon_lvl, ["Niveau {}".format(n) for n in levels], self.moon_lvl.currentText())
-        for w in (self.moon_lvl, self.moon_btn):
+        for w in (self.moon_lvl, self.moon_btn, self.moon_caption):
             w.setVisible(moon)
         self.moon_btn.setEnabled(bool(levels) and ch.forme_pv < hp_max)
         attacks = eng.beast_attacks()
@@ -1133,6 +1839,7 @@ class CombatTab(BaseTab):
         while self.res_layout.count():
             item = self.res_layout.takeAt(0)
             if item.widget():
+                item.widget().setParent(None)            # retrait immédiat (pas de superposition à l'écran)
                 item.widget().deleteLater()
         self.res_rows = []
         for r, tr in enumerate(trackers):
@@ -1146,11 +1853,15 @@ class CombatTab(BaseTab):
                 w["orbs"].changed.connect(lambda used, k=tr["key"]: self._on_orbs(k, used))
             if tr.get("de"):                              # dés de supériorité / d'inspiration : taille du dé
                 w["label"].setText("{} ({})".format(tr["label"], tr["de"]))
-            for c, k in enumerate(("label", "orbs", "left", "info")):
-                self.res_layout.addWidget(w[k], r, c)
+            # v52 : colonne étroite — nom et compteur sur une ligne, sphères dessous, détail en infobulle
+            w["label"].setToolTip(rich_tip(tr["label"], tr["info"]))
+            w["info"].setVisible(False)
+            self.res_layout.addWidget(w["label"], 2 * r, 0)
+            self.res_layout.addWidget(w["left"], 2 * r, 1)
+            self.res_layout.addWidget(w["orbs"], 2 * r + 1, 0, 1, 2)
+            self.res_layout.addWidget(w["info"], 2 * r + 1, 2)
             self.res_rows.append(w)
-        self.res_layout.setColumnStretch(1, 1)
-        self.res_layout.setColumnStretch(3, 2)
+        self.res_layout.setColumnStretch(0, 1)
 
     def _on_orbs(self, key: str, used: int):
         """Clic sur une sphère : la sphère s'est déjà redessinée ; on met à jour le compteur sans tout recalculer."""
@@ -1175,9 +1886,9 @@ class CombatTab(BaseTab):
         actions = self._refresh_actions()
         passives = self._refresh_passives()
         racial = any(a.get("origine") == "race" for a in actions)
-        self.res_box.setTitle("⚔ Actions, capacités de classe et de race" if racial else "⚔ Actions, capacités de classe")
+        self.res_box.setTitle("Ressources")              # v52 : les actions sont des tuiles ; ici, les compteurs
         self.res_sep.setVisible(bool(trackers) and bool(actions))
-        self.res_box.setVisible(bool(trackers) or bool(actions) or bool(passives))
+        self.res_box.setVisible(bool(trackers) or bool(passives))   # v52 : les actions sont des tuiles
         for tr, w in zip(trackers, self.res_rows):
             if tr["total"] is None:
                 w["left"].setText("")
@@ -1362,7 +2073,7 @@ class CombatTab(BaseTab):
             for n, p in enumerate(passives):
                 tip = ("<div style='max-width:380px'><p><b>{}</b> <i>— {}</i></p><p>{}</p></div>").format(
                     html.escape(p["nom"]), html.escape(p["source"]), html.escape(p["description"]))
-                self.pass_layout.addWidget(ActionChip("◈", p["nom"], tip), n // 4, n % 4)
+                self.pass_layout.addWidget(ActionChip("◈", p["nom"], tip), n // 2, n % 2)   # colonne étroite
             self.pass_layout.setColumnStretch(4, 1)
         self.pass_title.setVisible(bool(passives))
         return passives
@@ -1417,7 +2128,8 @@ class CombatTab(BaseTab):
             self.changed()
             return
         if res["attaque"] is not None:
-            self._attack_flow(res["attaque"], res.get("degats"))       # Déluge de coups… : dégâts si l'attaque touche
+            weapon = eng.action_weapon_slot(a) if a and a.get("attaque_arme") else None
+            self._attack_flow(res["attaque"], res.get("degats"), weapon)   # Déluge de coups… : dégâts si l'attaque touche
         elif res["degats"] is not None and res.get("lancer_maintenant", True):
             r = roll_damage_dialog(win, res["degats"])
             if r is not None and res["soin"]:
@@ -1454,17 +2166,25 @@ class CombatTab(BaseTab):
     def _on_weapon_action(self, key: str, i: int, row: dict):
         """Action d'arme (Sape, Brise-crâne, Frappe affaiblissante…) : jet d'attaque immédiat de l'arme équipée."""
         slot = getattr(self.ch, key)[i]
-        self._attack_flow(self.engine.weapon_action_spec(slot, row), self.engine.weapon_damage_spec(slot))
+        self._attack_flow(self.engine.weapon_action_spec(slot, row), self.engine.weapon_damage_spec(slot), slot)
 
-    def _attack_flow(self, attack_spec, damage_spec=None) -> bool:
+    def _attack_flow(self, attack_spec, damage_spec=None, slot=None) -> bool:
         """Jet de toucher (d20 animé) puis « L'attaque touche-t-elle ? » : OUI -> dés de dégâts animés (dés doublés
         sur un 20 naturel), NON -> on ferme. Un 1 naturel rate toujours. Renvoie True si des dégâts ont été lancés."""
         win = self.win
         r = roll_dice(win, attack_spec)
+        if r is not None:
+            self.engine.reveal_after_attack()            # v52 : attaquer met fin à l'état Caché
+            if slot is not None:
+                shot = self.engine.fire_ammo(slot)        # v52 : une munition par attaque
+                if shot:
+                    self.win.statusBar().showMessage(shot, 6000)
         if r is None or damage_spec is None:
             return False
         if r.critical == "echec":
-            win.statusBar().showMessage("1 naturel : l'attaque rate automatiquement.", 7000)
+            graze = self.engine.mastery_on_miss(slot)       # v52 : Effleurement aussi sur un 1 naturel
+            win.statusBar().showMessage("1 naturel : l'attaque rate automatiquement." + (" " + graze if graze else ""),
+                                        12000)
             return False
         crit = r.critical == "succes"
         if not ask_yes_no(win, "L'attaque touche-t-elle ?",
@@ -1472,18 +2192,34 @@ class CombatTab(BaseTab):
                           .format(attack_spec.title, r.natural, r.total,
                                   " — 20 naturel : coup critique, les dés de dégâts sont doublés" if crit else ""),
                           yes="Oui : lancer les dégâts", no="Non", default_no=False):
+            graze = self.engine.mastery_on_miss(slot)       # v52 : Effleurement sur un raté
+            if graze:
+                win.statusBar().showMessage(graze, 12000)
             return False
         spec = D.DamageSpec(damage_spec.title, damage_spec.formula, damage_spec.damage_type, damage_spec.note,
                             damage_spec.kind)
-        for label, dice in getattr(damage_spec, "options", []) or []:   # Marque du chasseur, Maléfice… (cible)
-            if ask_yes_no(win, label, "Ajouter +{} ({}) ? La cible est-elle concernée par cet effet ?".format(
-                    dice, label), yes="Oui : ajouter " + dice, no="Non", default_no=False):
-                spec.formula += "+" + dice
-                spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
+        spec.parts = list(getattr(damage_spec, "parts", []) or [])   # v52 : dégâts par type
+        # v52 : « Quand vous touchez » — une fenêtre de cases (rien coché d'office) au lieu de questions successives
+        from .on_hit_dialog import ask_on_hit
+        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
+        mastery = self.engine.mastery_on_hit(slot)       # v52 : rappel de la botte d'arme
+        if mastery:
+            spec.note = (spec.note + " ; " if spec.note else "") + mastery
+        chosen = ask_on_hit(win, attack_spec.title + ("\n" + mastery if mastery else ""), options, crit)
+        if chosen is None:
+            return False
+        for label, dice in self.engine.apply_on_hit(options, chosen):
+            spec.formula += "+" + dice
+            spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
+            if spec.parts:
+                kind = D.damage_type_in(label) or ("radiants" if "chatiment" in R.norm(label) else spec.damage_type)
+                spec.parts.append((dice, kind))
         if crit:
+            parts = [(D.critical_formula(p), t) for p, t in spec.parts]
             spec = D.DamageSpec(spec.title + " (critique)", D.critical_formula(spec.formula),
                                 spec.damage_type, "Coup critique : dés doublés." + (" " + spec.note if spec.note else ""),
                                 spec.kind)
+            spec.parts = parts
         roll_damage_dialog(win, spec)
         return True
 
@@ -1533,45 +2269,23 @@ class CombatTab(BaseTab):
         self.style_layout.setColumnStretch(1, 1)
         self.style_layout.setColumnStretch(2, 1)
 
-    NO_OPTION = "— à choisir —"
-
-    def _refresh_class_options(self) -> None:
-        """Runes (Chevalier runique) et options de Tir arcanique : une liste par choix, description en infobulle ;
-        chaque option déjà prise ailleurs est retirée des autres listes."""
-        sets = self.engine.option_sets()
-        self.options_box.setVisible(bool(sets))
-        n_missing = sum(s["total"] - len(s["chosen"]) for s in sets)
-        self.options_box.setTitle("Options de sous-classe" + ("  — ○ {} à choisir".format(n_missing) if n_missing
-                                                               else ""))
-        key = tuple((s["key"], s["total"], tuple(s["options"]), tuple(s["chosen"])) for s in sets) + \
-            (theme.current().key,)
-        if key == self._options_key:
-            return
-        self._options_key = key
-        clear_layout(self.options_layout)
-        row = 0
-        for s in sets:
-            self.options_layout.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]),
-                                                     "head"), row, 0, 1, 2)
-            row += 1
-            for i in range(s["total"]):
-                current = s["chosen"][i] if i < len(s["chosen"]) else ""
-                taken = {c for j, c in enumerate(s["chosen"]) if j != i}
-                names = [n for n in s["options"] if n not in taken]
-                combo = QComboBox()
-                fill_combo(combo, [self.NO_OPTION] + names, current or self.NO_OPTION,
-                           {n: rich_tip(n, s["options"][n]) for n in names})
-                combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self._on_class_option(k, idx, c))
-                desc = make_label((s["options"].get(current, "") or "").split("\n")[0], "muted", wrap=True)
-                self.options_layout.addWidget(combo, row, 0)
-                self.options_layout.addWidget(desc, row, 1)
-                row += 1
-        self.options_layout.setColumnStretch(1, 1)
-
-    def _on_class_option(self, key: str, index: int, combo) -> None:
-        text = combo.currentText()
-        self.engine.set_class_option(key, index, "" if text == self.NO_OPTION else text)
+    def _on_power(self, checked: bool) -> None:
+        self.ch.attaque_puissante = bool(checked)
         self.changed()
+
+    def _on_remember_toggle(self) -> None:
+        self._remember_open = not self._remember_open
+        self._refresh_remember()
+
+    def _refresh_remember(self) -> None:
+        groups = self.engine.remember_list()
+        self.remember_box.setVisible(bool(groups))
+        n = sum(len(v) for v in groups.values())
+        self.remember_box.setTitle("📌 À ne pas oublier ({})".format(n))
+        self.remember_toggle.setText("▾ Masquer" if self._remember_open else "▸ Afficher")
+        self.remember_text.setVisible(self._remember_open)
+        self.remember_text.setText("".join("<b>{}</b><br/>{}<br/>".format(
+            html.escape(m), "<br/>".join("• " + html.escape(x) for x in lines)) for m, lines in groups.items()))
 
     NO_MANEUVER = "— choisir une manœuvre —"
 
@@ -1589,9 +2303,140 @@ class CombatTab(BaseTab):
             self.ch.styles_combat[slot_id] = text
         self.changed()
 
+    # ------------------------------------------------------------------ v52 : saisie rapide des PV, emplacements
+    def _on_free_roll(self) -> None:
+        formula = D.free_formula(self.free_roll.text())
+        if not formula:
+            self.win.statusBar().showMessage("Formule de dés non reconnue : essayez « 2d6+3 » ou « d20+5 ».", 6000)
+            return
+        r = roll_damage_dialog(self.win, D.DamageSpec("Jet libre", formula, kind="de"))
+        if r is not None:
+            self.free_roll_last.setText("{} → {}".format(formula, r.total))
+            self.free_roll.selectAll()
+            self.changed()
+
+    def focus_free_roll(self) -> None:
+        self.free_roll.setFocus()
+        self.free_roll.selectAll()
+
+    def focus_hp_entry(self) -> None:
+        """Ctrl+D : fenêtre des dégâts (v52 : le champ de saisie rapide est remplacé)."""
+        self.open_damage()
+
+    def _on_extend_effect(self, key: str) -> None:
+        msg = self.engine.extend_effect(key)
+        if msg:
+            self._message(msg)
+            self.changed()
+
+    def _on_exhaustion(self, delta: int) -> None:
+        self._message(self.engine.set_exhaustion(self.engine.exhaustion_level() + delta))
+        self.changed()
+
+    def open_exhaustion(self, cause: str = "marche") -> bool:
+        from .exhaustion_dialog import ExhaustionDialog
+        dlg = ExhaustionDialog(self.win, cause)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            return True
+        return False
+
+    def maybe_concentration_save(self) -> None:
+        """v52 : après des dégâts subis en se concentrant, propose le JS de Constitution et applique le résultat."""
+        eng = self.engine
+        damage = int(getattr(eng, "pending_concentration", 0) or 0)
+        if not damage or not eng.ch.concentration:
+            return
+        if not ask_yes_no(self.win, "Concentration", "Vous subissez {} dégâts en vous concentrant sur {}.\n\nLancer le "
+                          "JS de Constitution (DD {}) ?".format(damage, eng.ch.concentration,
+                                                              eng.concentration_dc(damage)),
+                          yes="🎲 Lancer le JS", no="Plus tard", default_no=False):
+            return
+        r = roll_dice(self.win, eng.concentration_save_spec(damage))
+        if r is not None:
+            self._message(eng.resolve_concentration(r.total, damage))
+            self.changed()
+
+    def open_defense(self, start: str = "attaque", amount: int = 0, dtype: str = "", magical: bool = False) -> bool:
+        from .defense_dialog import DefenseDialog
+        dlg = DefenseDialog(self.win, start, amount, dtype, magical)
+        if dlg.exec() and dlg.result_text:
+            self._message(dlg.result_text)
+            self.changed()
+            self.maybe_concentration_save()
+            self.maybe_zero_hp()
+            return True
+        self.changed()
+        return False
+
+    def _quick_hp(self, kind: str) -> None:
+        idx = self.dmg_type.currentIndex()
+        dtype = ExtrasMixin.DAMAGE_TYPES[idx - 1] if idx > 0 else ""
+        m = re.fullmatch(r"\s*([+-]?)\s*(\d+)\s*", self.hp_entry.text() or "")
+        is_damage = bool(m) and (kind == "degats" or (not kind and m.group(1) != "+"))
+        if is_damage and self.engine.defense_options("degats"):     # v52 : réactions proposées avant les dégâts
+            self.hp_entry.clear()
+            self.open_defense("degats", int(m.group(2)), dtype, self.dmg_magic.isChecked())
+            return
+        msg = self.engine.apply_hp_input(self.hp_entry.text(), kind, dtype, self.dmg_magic.isChecked())
+        if not msg:
+            self.win.statusBar().showMessage("Saisissez un nombre : « 7 » ou « -7 » pour des dégâts, « +5 » pour des "
+                                             "soins.", 6000)
+            return
+        self.hp_entry.clear()
+        self._message(msg)
+        self.changed()
+        self.maybe_concentration_save()            # v52
+
+    def _on_slot_used(self, level_idx: int, used: int) -> None:
+        self.ch.emplacements_utilises[level_idx] = used
+        self.win.light_changed()
+
+    def _on_pact_used(self, used: int) -> None:
+        self.ch.pacte_utilises = used
+        self.win.light_changed()
+
+    def _refresh_slot_strip(self) -> None:
+        eng, ch = self.engine, self.ch
+        slots = eng.spell_slots()
+        n_pact, pact_lvl = eng.pact()
+        self.slots_box.setVisible(any(slots) or n_pact > 0)
+        for i, (lab, orbs) in enumerate(self.slot_strip):
+            lab.setVisible(slots[i] > 0)
+            orbs.setVisible(slots[i] > 0)
+            if slots[i]:
+                orbs.set_state(slots[i], ch.emplacements_utilises[i])
+        for w in self.pact_strip:
+            w.setVisible(n_pact > 0)
+        if n_pact:
+            self.pact_strip[0].setText("Pacte (niv. {})".format(pact_lvl))
+            self.pact_strip[1].set_state(n_pact, ch.pacte_utilises)
+
+    def _refresh_masteries(self):
+        """Encart « Bottes d'arme » : visible si la fiche a des bottes (aptitude 2024 ou règle de la table)."""
+        eng = self.engine
+        count = eng.mastery_count()
+        self.mastery_box.setVisible(count is None or count > 0)
+        self.mastery_btn.setVisible(False)              # v52 : choisies à la création / montée de niveau, une
+        #                                                 se change au repos long
+        self.mastery_label.setToolTip(rich_tip("Bottes d'arme", "Choisies à la création et à la montée de niveau "
+                                               "(rappel dans l'onglet Classes) ; une botte se change à la fin d'un "
+                                               "repos long.") if count else "")
+        if count is None:
+            self.mastery_label.setText("Règle de la table : la botte de chaque arme maîtrisée s'applique.")
+        elif count:
+            chosen = eng.mastery_weapons() or []
+            self.mastery_label.setText("{} / {} : {}".format(len(chosen), count, ", ".join(chosen) or "aucune "
+                                                             "(les armes équipées sont proposées par défaut)"))
+
+    def _choose_masteries(self):
+        from .mastery_dialog import MasteryDialog
+        MasteryDialog(self.win).exec()
+
     def _refresh_styles(self):
         """Sélecteurs : actifs uniquement si le niveau de classe requis est atteint (règles 5e)."""
-        eng, db = self.engine, self.db
+        eng, db = self.engine, self.engine.db          # v52 : styles de l'édition de la fiche
         slots = eng.fighting_style_slots()
         key = tuple((s["id"], s["debloque"]) for s in slots)
         if key != self._style_key:
@@ -1634,6 +2479,7 @@ class CombatTab(BaseTab):
 
     # ------------------------------------------------------------------ rafraîchissement
     def refresh(self):
+        self._refresh_header()                            # v52 : bandeau du haut, caractéristiques, jets contre la mort
         self.mark_box(self.style_box, "Style de combat et modèle d'armure", "combat", "Style de combat")
         eng, ch, db = self.engine, self.ch, self.db
         ac_info = eng.armor_class_detail()
@@ -1693,7 +2539,7 @@ class CombatTab(BaseTab):
                "</qt>".format(form["icone"], form["libelle"], ch.pv_actuels, eng.hp_max()) if form else "")
         for w in (self.hp_max, self.hp_cur):
             w.setToolTip(tip)
-        self.hp_box.setTitle("Points de vie — {} {}".format(form["icone"], form["bete"]) if form else "Points de vie")
+        self.hp_box.setTitle("Points de vie — {} {}".format(form["icone"], form["bete"]) if form else "Points de vie (corrections)")
         with blocked(self.hp_cur, self.hp_tmp, self.hp_misc, *self.ok_boxes, *self.ko_boxes):
             self.hp_cur.setRange(0, hp)
             self.hp_cur.setValue(form["pv"] if form else ch.pv_actuels)
@@ -1703,6 +2549,7 @@ class CombatTab(BaseTab):
                 b.setChecked(i < ch.mort_reussites)
             for i, b in enumerate(self.ko_boxes):
                 b.setChecked(i < ch.mort_echecs)
+        self.death_btn.setEnabled(ch.pv_actuels == 0 and not form)
         self.hit_dice.setText("Dés de vie restants : " + ", ".join(
             "{} / {} {}".format(p["restants"], p["total"], p["de"]) for p in eng.hit_dice_pool())
             + " — dépensez-les lors d'un repos court. PV max calculés avec la valeur moyenne fixe des dés de vie.")
@@ -1724,7 +2571,9 @@ class CombatTab(BaseTab):
                                                    if ac_info["note"] else ""))
         self.ac_detail.setText("= " + ac_info["chiffres"] if " + " in ac_info["formule"] else "")
         self._refresh_styles()
-        self._refresh_class_options()
+        self._refresh_masteries()
+        self._refresh_slot_strip()
+        self._refresh_remember()                         # v52 : À ne pas oublier
         self._refresh_resources()
         self._refresh_saves()
         self._refresh_effects()
@@ -1790,6 +2639,9 @@ class CombatTab(BaseTab):
                     " ({})".format(st["prise"]) if st.get("prise") else "")
                 w["dmg"].set_formula(st["degats"], calc + ("<br/>" + html.escape(other) if other else ""))
                 self._refresh_hands(w, st)
+                w["power"].setVisible(bool(st.get("puissance_possible")))
+                with blocked(w["power"]):
+                    w["power"].setChecked(bool(st.get("puissance")))
                 info = ", ".join(st["proprietes"])
                 if st["portee"]:
                     info += " — portée {} m".format(st["portee"])

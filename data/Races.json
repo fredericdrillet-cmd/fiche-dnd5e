@@ -1984,6 +1984,41 @@
       ]
     },
     {
+      "nom": "Demi-orque",
+      "source": "Manuel des Joueurs",
+      "caracteristiques": "For +2, Con +1",
+      "langues": [
+        "Commun",
+        "Orc"
+      ],
+      "capacites": [
+        {
+          "nom": "Taille",
+          "description": "Moyenne (1,50 m à plus de 1,80 m). Vitesse de marche : 9 mètres."
+        },
+        {
+          "nom": "Augmentation de caractéristiques",
+          "description": "Votre Force augmente de 2 et votre Constitution de 1."
+        },
+        {
+          "nom": "Vision dans le noir",
+          "description": "Grâce à votre sang orque, vous avez une vision supérieure dans l’obscurité et la pénombre. Vous pouvez voir dans la pénombre dans un rayon de 18 m comme si c’était une lumière vive, et dans l’obscurité comme si c’était de la pénombre. Vous ne pouvez pas discerner les couleurs dans l’obscurité, seulement des nuances de gris."
+        },
+        {
+          "nom": "Menaçant",
+          "description": "Vous gagnez la maîtrise de la compétence Intimidation."
+        },
+        {
+          "nom": "Endurance implacable",
+          "description": "Quand vous êtes réduit à 0 point de vie sans être tué sur le coup, vous pouvez à la place tomber à 1 point de vie. Une fois utilisé, ce trait revient après un repos long."
+        },
+        {
+          "nom": "Attaques sauvages",
+          "description": "Quand vous réalisez un coup critique avec une attaque d’arme au corps à corps, vous pouvez lancer une fois de plus l’un des dés de dégâts de l’arme et l’ajouter aux dégâts supplémentaires du coup critique."
+        }
+      ]
+    },
+    {
       "nom": "Demi-elfe",
       "source": "Manuel des Joueurs",
       "caracteristiques": "Cha +2, +1, +1",

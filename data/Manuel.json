@@ -1,0 +1,253 @@
+{
+  "manuel": {
+    "version": 52,
+    "chapitres": [
+      {
+        "id": "demarrer",
+        "titre": "1. Démarrer",
+        "onglet": "",
+        "sections": [
+          {
+            "titre": "Créer un personnage",
+            "texte": "Fichier > Nouveau personnage (Ctrl+N) ouvre l'assistant de création : édition (2014 ou 2024), espèce, classe, historique, caractéristiques, compétences, équipement et sorts. Chaque étape explique ses choix ; le bouton « Terminer » n'est actif que lorsque tout ce qui est obligatoire est choisi."
+          },
+          {
+            "titre": "Édition 2014 ou 2024",
+            "texte": "Une fiche suit une seule édition. Elle ne propose que les classes, espèces, historiques, dons et sorts de cette édition, et applique ses règles (épuisement, états, actions, montée de niveau…). L'édition se choisit à la création ; Options > Règles de la table permet de la changer ou de passer en mode « libre »."
+          },
+          {
+            "titre": "Mode guidé ou mode libre",
+            "texte": "Par défaut, le mode guidé verrouille la classe, le niveau et le nom : on change de niveau avec « ▲ Niveau supérieur » (Ctrl+L), qui pose les bonnes questions dans le bon ordre. Le mode libre (Options) déverrouille tout pour corriger une fiche à la main."
+          },
+          {
+            "titre": "Règles de la table",
+            "texte": "Options > Règles de la table : règles optionnelles de votre groupe (options du Chaudron de Tasha, potion en action bonus, inspiration héroïque, bottes d'arme, règle de survie…). Chaque règle indique ce qu'elle change."
+          },
+          {
+            "titre": "Aides pour débuter",
+            "texte": "Options > Préférences > « Aides pour débuter » affiche une ligne d'explication en haut de chaque onglet et souligne les termes de règles (survolez-les pour leur définition). F1 ouvre le lexique complet."
+          }
+        ]
+      },
+      {
+        "id": "classes",
+        "titre": "2. Onglet Classes",
+        "onglet": "classes",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Liste de vos classes avec leurs aptitudes, niveau par niveau. Les aptitudes débloquées sont mises en avant ; survolez-les pour leur texte complet. Le badge ✨ signale une nouveauté depuis votre dernier repos long."
+          },
+          {
+            "titre": "Calculé tout seul",
+            "texte": "Dés de vie, PV maximum, bonus de maîtrise, sous-classe au bon niveau, aptitudes qui donnent des maîtrises, des résistances, des sorts ou des bonus (Défense sans armure, Sens du danger, Attaque supplémentaire…)."
+          },
+          {
+            "titre": "Options de Tasha",
+            "texte": "Les options du Chaudron de Tasha qui s'ajoutent sont appliquées d'office (si la règle est active). Celles qui remplacent une aptitude se choisissent dans l'encart « Options de Tasha » : l'aptitude remplacée est désactivée."
+          }
+        ]
+      },
+      {
+        "id": "caracteristiques",
+        "titre": "3. Caractéristiques et compétences",
+        "onglet": "caracteristiques",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Vos six caractéristiques (achat de points, tirage ou valeurs fixes), leurs modificateurs, vos jets de sauvegarde et vos compétences. Cliquez un jet pour le lancer."
+          },
+          {
+            "titre": "Calculé tout seul",
+            "texte": "Bonus d'espèce et d'historique, améliorations de caractéristiques et dons, maîtrises et expertises, avantages et désavantages dus aux états, à l'armure ou aux effets actifs. Survolez une valeur pour le détail du calcul."
+          }
+        ]
+      },
+      {
+        "id": "race",
+        "titre": "4. Espèce, historique et langues",
+        "onglet": "race",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Votre espèce (et sous-espèce), votre historique et vos langues. Les traits d'espèce sont listés avec leur texte."
+          },
+          {
+            "titre": "Calculé tout seul",
+            "texte": "Vitesse, vision dans le noir, résistances, sorts innés et leurs utilisations, compétences et outils de l'historique ; en 2024, l'historique donne ses bonus de caractéristiques et son don d'origine."
+          }
+        ]
+      },
+      {
+        "id": "rp",
+        "titre": "5. Histoire et portrait",
+        "onglet": "rp",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Traits de personnalité, idéaux, liens, défauts, histoire, notes de campagne et portrait (enregistré dans la sauvegarde). Ces textes sont repris dans la fiche PDF."
+          }
+        ]
+      },
+      {
+        "id": "combat",
+        "titre": "6. En partie",
+        "onglet": "combat",
+        "sections": [
+          {
+            "titre": "Vue d'ensemble",
+            "texte": "L'onglet de la table : PV, ressources, emplacements de sorts, états actifs, armes et tuiles d'action du tour. Le pied de tour indique l'action, l'action bonus, la réaction et le déplacement déjà utilisés."
+          },
+          {
+            "titre": "Déroulé d'un tour",
+            "texte": "1. « ▶ Début de mon tour » (Ctrl+T) : action, action bonus, réaction et déplacement redeviennent disponibles, les effets de début de tour s'appliquent et les durées baissent d'un round. 2. Cliquez les tuiles : l'économie d'action est dépensée et le jet part (attaque, sort, capacité). 3. « ⏹ Fin de mon tour » (Ctrl+E) rappelle ce qui n'a pas servi et ce qui se déclenche en fin de tour."
+          },
+          {
+            "titre": "Attaquer",
+            "texte": "Une tuile d'arme lance le jet de toucher, puis demande si l'attaque touche. Avant les dégâts, cochez les bonus qui s'appliquent (Attaque sournoise, Châtiment divin…). Un 20 naturel double les dés. Les munitions sont décomptées à chaque tir, et l'état Caché prend fin."
+          },
+          {
+            "titre": "Lancer un sort",
+            "texte": "Une tuile de sort (ou l'onglet Magie) demande le niveau d'emplacement, vérifie la composante coûteuse s'il y en a une, puis lance l'attaque ou annonce le DD de sauvegarde et les dégâts. La concentration est suivie, avec sa durée."
+          },
+          {
+            "titre": "Saisir des dégâts ou des soins",
+            "texte": "Ctrl+D place le curseur dans la saisie rapide : « 7 » ou « -7 » = dégâts, « +5 » = soins. Indiquez le type de dégâts pour appliquer résistances et immunités. Le jet de concentration est proposé si besoin."
+          },
+          {
+            "titre": "On m'attaque !",
+            "texte": "Ctrl+A : saisissez le jet de l'ennemi et l'abri éventuel ; la fiche le compare à votre CA, propose vos réactions (Bouclier, Esquive instinctive, Parade, point de chance…), puis applique les dégâts."
+          },
+          {
+            "titre": "États et durées",
+            "texte": "Ajoutez un état depuis la liste ; ses effets s'appliquent à la fiche selon l'édition. Les effets à durée chiffrée montrent les rounds restants sur leur icône (clic droit : prolonger) et prennent fin seuls. Un état neutralisant rompt la concentration. Le compteur d'épuisement a son JS d'épuisement."
+          },
+          {
+            "titre": "Fin du combat et environnement",
+            "texte": "« 🏁 Fin du combat » rend la moitié des munitions tirées, met fin aux effets de combat et affiche le bilan. « 🌪 Environnement » gère la chute, la suffocation et, avec la règle de survie, la lumière."
+          },
+          {
+            "titre": "Jet libre",
+            "texte": "Ctrl+R : tapez une formule (« 2d6+3 », « d20+5 ») ; les dés roulent et le résultat va dans l'historique."
+          }
+        ]
+      },
+      {
+        "id": "magie",
+        "titre": "7. Magie",
+        "onglet": "magie",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Sorts connus ou préparés, sorts mineurs, emplacements, DD et attaque de sort. Préparez vos sorts après un repos long ; lancez-les depuis la liste ou les tuiles d'« En partie »."
+          },
+          {
+            "titre": "Calculé tout seul",
+            "texte": "Nombre de sorts préparés ou connus, sorts toujours préparés (domaine, serment…), surclassement, dégâts au niveau lancé, Contresort et Dissipation de la magie (DD selon le niveau visé), composantes coûteuses."
+          }
+        ]
+      },
+      {
+        "id": "druide",
+        "titre": "8. Forme sauvage",
+        "onglet": "druide",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Choisissez une bête permise par votre niveau (FP, nage, vol) ; ses statistiques remplacent les vôtres tant que vous gardez la forme. En 2024, vos formes connues se choisissent dans les options de classe."
+          }
+        ]
+      },
+      {
+        "id": "menagerie",
+        "titre": "9. Ménagerie et montures",
+        "onglet": "menagerie",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Familiers, compagnons de classe (Maître des bêtes…) et montures, avec leurs statistiques et leurs PV. Les attaques des compagnons actifs apparaissent en tuiles dans « En partie »."
+          }
+        ]
+      },
+      {
+        "id": "progression",
+        "titre": "10. Progression et dons",
+        "onglet": "progression",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Améliorations de caractéristiques et dons aux niveaux prévus. Les choix des dons (compétence, caractéristique, sort…) se font ici ; leurs effets sont appliqués automatiquement à la fiche."
+          }
+        ]
+      },
+      {
+        "id": "inventaire",
+        "titre": "11. Inventaire",
+        "onglet": "inventaire",
+        "sections": [
+          {
+            "titre": "Ce qu'on y fait",
+            "texte": "Équipement, argent, outils et objets magiques ; le poids porté et l'encombrement sont calculés. Équipez une arme ou une armure pour qu'elle compte."
+          },
+          {
+            "titre": "Objets magiques",
+            "texte": "Les objets à capacités deviennent des tuiles d'« En partie ». Les charges se décomptent et se rechargent au repos long selon la formule de l'objet ; une baguette peut dépenser plusieurs charges pour surclasser son sort ; à la dernière charge, le d20 de destruction est lancé. Les objets à perles (Collier de boules de feu…) demandent leur nombre à l'ajout et sont « épuisés » à 0."
+          }
+        ]
+      },
+      {
+        "id": "repos",
+        "titre": "12. Repos et montée de niveau",
+        "onglet": "",
+        "sections": [
+          {
+            "titre": "Repos court et repos long",
+            "texte": "Les boutons de repos (onglet En partie) ouvrent une fenêtre qui liste ce qui revient : dés de vie à dépenser au repos court ; PV, emplacements, ressources et recharges d'objets au repos long. Les effets temporaires prennent fin, un niveau d'épuisement disparaît au repos long."
+          },
+          {
+            "titre": "Monter de niveau",
+            "texte": "« ▲ Niveau supérieur » (Ctrl+L) : PV (moyenne ou jet), nouvelles aptitudes, sous-classe, sorts à apprendre, amélioration ou don. Les nouveautés sont marquées ✨ jusqu'au prochain repos long."
+          }
+        ]
+      },
+      {
+        "id": "fichiers",
+        "titre": "13. Sauvegarde, versions, PDF et journal",
+        "onglet": "",
+        "sections": [
+          {
+            "titre": "Sauvegarder",
+            "texte": "Ctrl+S enregistre la fiche (format JSON). Une sauvegarde automatique tourne en continu et est proposée au prochain lancement en cas de fermeture imprévue. Fichier > Récents rouvre les 8 derniers fichiers."
+          },
+          {
+            "titre": "Versions",
+            "texte": "Chaque enregistrement garde une copie datée (10 au plus). Fichier > Restaurer une version précédente en rouvre une ; l'état actuel est gardé comme version avant la restauration."
+          },
+          {
+            "titre": "Fiche PDF",
+            "texte": "Fichier > Exporter la fiche en PDF (Ctrl+P) : fiche en style grimoire noir et blanc, grimoire de sorts, et en option l'aide-mémoire de combat (actions, ressources à cocher, états courants)."
+          },
+          {
+            "titre": "Historique et journal",
+            "texte": "Ctrl+H : les derniers lancers de dés, et le journal de session (dégâts, soins, sorts, ressources, repos, états), groupé par jour de jeu, exportable en texte. Annuler / Refaire (Ctrl+Z / Ctrl+Y) ne touche pas au journal."
+          }
+        ]
+      },
+      {
+        "id": "raccourcis",
+        "titre": "14. Raccourcis et astuces",
+        "onglet": "",
+        "sections": [
+          {
+            "titre": "Raccourcis clavier",
+            "texte": "Ctrl+F rechercher · Ctrl+D dégâts ou soins · Ctrl+R jet libre · Ctrl+T début de tour · Ctrl+E fin de tour · Ctrl+I initiative · Ctrl+A on m'attaque · Ctrl+H historique et journal · Ctrl+Z / Ctrl+Y annuler / refaire · Ctrl+S sauvegarder · Ctrl+P PDF · Ctrl+L niveau supérieur · F1 lexique · F2 manuel · F11 plein écran. La liste complète est dans Aide > Raccourcis clavier."
+          },
+          {
+            "titre": "Astuces",
+            "texte": "Survolez presque tout : une infobulle détaille le calcul ou la règle. Ctrl+F retrouve un sort, une aptitude ou un terme en quelques lettres. Les onglets se réordonnent par glisser-déposer. Le thème se change dans le coin de la barre de menus."
+          }
+        ]
+      }
+    ]
+  }
+}

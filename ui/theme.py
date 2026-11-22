@@ -71,6 +71,32 @@ def best_text(*backgrounds: str) -> str:
     return max(("#000000", "#FFFFFF"), key=lambda c: min(contrast_ratio(c, b) for b in backgrounds))
 
 
+TILE_HUES = {"attaque": 5, "capacite": 205, "magie": 250, "objet": 45, "reaction": 150}   # teintes de référence
+
+
+def tile_palette(t: "Theme") -> dict[str, str]:
+    """v52 : couleurs des tuiles du tour accordées au thème. Chaque catégorie garde sa teinte de référence
+    (attaque rouge, capacité bleue, magie indigo, objet doré, réaction verte) mais prend la saturation et la
+    clarté de l'accent du thème, puis est teintée par cet accent : des tons de la même famille que le thème,
+    toujours distincts entre eux. Actions communes : texte secondaire du thème. Contraste >= 3:1 sur les panneaux."""
+    import colorsys
+    h, l, s = colorsys.rgb_to_hls(*_rgb(t.accent_text))
+    s = min(0.55, max(0.3, s * 0.75))
+    dark = luminance(t.panel) < 0.2
+    out = {}
+    for cat, hue in TILE_HUES.items():
+        light = min(0.72, max(0.3, l))
+        while True:
+            col = "#" + "".join(f"{round(x * 255):02X}" for x in colorsys.hls_to_rgb(hue / 360, light, s))
+            col = blend(col, t.accent_text, 0.25)
+            if contrast_ratio(col, t.panel) >= 3 or not 0.05 < light < 0.95:
+                break
+            light += 0.03 if dark else -0.03
+        out[cat] = col
+    out["commune"] = t.muted
+    return out
+
+
 TEXTURE_MARGIN = 0.06     # intensité maximale d'une texture (décalage de luminosité) prise en compte par l'audit
 
 

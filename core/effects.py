@@ -186,6 +186,19 @@ _e("cache", "Caché", "🫥", "État", "Action Se cacher (PHB)", "Jusqu'à être
    "Après un test de Dextérité (Discrétion) réussi, la créature n'est pas localisée. Sa première attaque "
    "a l'avantage, puis elle est révélée ; faire du bruit ou être vue met fin à l'effet.",
    attaque="avantage", notes=["Révélé après l'attaque"])
+_e("apnee", "Retient son souffle", "🫧", "État", "Règle de survie (PHB)", "Variable",
+   "Vous retenez votre souffle : 1 + modificateur de Constitution minutes (30 secondes au moins). Ensuite, "
+   "vous suffoquez.", notes=["Décompte en rounds ; ensuite : Suffoque"])
+_e("suffoque", "Suffoque", "😶‍🌫️", "Malus", "Règle de survie (PHB)", "Variable",
+   "Vous n'avez plus d'air. 2014 : vous survivez un nombre de rounds égal à votre modificateur de Constitution "
+   "(1 au moins), puis tombez à 0 PV. 2024 : un niveau d'épuisement à la fin de chacun de vos tours, retirés quand "
+   "vous respirez à nouveau.", notes=["Respirer à nouveau : retirez l'état"])
+for _k, _n, _ic, _v, _f, _d in (("lumiere_bougie", "Bougie", "🕯️", "1,50 m", "1,50 m", "1 heure"),
+                                 ("lumiere_torche", "Torche", "🔥", "6 m", "6 m", "1 heure"),
+                                 ("lumiere_lanterne", "Lanterne à capote", "🏮", "9 m", "9 m", "6 heures"),
+                                 ("lumiere_sourde", "Lanterne sourde", "🔦", "cône de 18 m", "18 m", "6 heures")):
+    _e(_k, _n, _ic, "Bonus", "Équipement d'aventurier (PHB)", _d,
+       "Lumière vive sur {}, lumière faible sur {} de plus.".format(_v, _f), notes=["Lumière vive " + _v])
 _e("surpris", "Surpris", "😲", "État", "Règle de combat (PHB)", "Premier round",
    "La créature n'a pas vu venir l'embuscade : elle ne peut ni bouger ni agir à son premier tour, et ne "
    "peut pas prendre de réaction avant la fin de celui-ci.",
@@ -562,6 +575,21 @@ def _fmt(value) -> str:
     if isinstance(value, (int, float)) and not isinstance(value, bool):
         return f"{value:+d}" if isinstance(value, int) else f"{value:+g}"
     return str(value)
+
+
+# v52 — Sorcellerie innée (Ensorceleur 2024) : effet d'aptitude (DD +1 et avantage calculés par le moteur)
+# v52 — sous-classes 2024
+_e("courroux_mers", "Courroux des mers", "🌊", "Aptitude", "Druide, Cercle des Mers (2024)", "10 minutes",
+   "Émanation d'embruns autour de vous : à chaque action bonus, une créature de l'émanation fait un JS de Constitution "
+   "ou subit des dégâts de froid et est repoussée. Niveau 10 (Enfant des tempêtes) : vol, et les trois énergies des "
+   "tempêtes ne vous atteignent qu'à moitié.")
+_e("lien_elementaire", "Lien élémentaire", "🌀", "Aptitude", "Moine, Credo des Éléments (2024)", "10 minutes",
+   "Allonge +3 m des frappes à mains nues, dégâts d'acide, de froid, de feu, de foudre ou de tonnerre au choix, cible "
+   "déplacée de 3 m sur un JS de Force raté.")
+_e("sorcellerie_innee", "Sorcellerie innée", "🔮", "Aptitude", "Ensorceleur (Manuel des joueurs 2024)", "1 minute",
+   "La magie de votre âme se libère : le DD de sauvegarde de vos sorts d'ensorceleur augmente de 1 et vous avez "
+   "l'avantage aux jets d'attaque des sorts d'ensorceleur que vous lancez.",
+   notes=["DD des sorts d'ensorceleur +1", "Avantage aux attaques de sorts d'ensorceleur"])
 
 
 def summary_mods(keys: list[str]) -> dict:

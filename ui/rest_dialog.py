@@ -79,6 +79,10 @@ class RestDialog(QDialog):
             recharges = eng.long_rest_recharges()
         lay.addWidget(make_label("Rechargé à la fin du repos :", "head"))
         lay.addWidget(make_label("<br/>".join("✔ " + html.escape(x) for x in recharges), wrap=True))
+        unused = eng.unused_before_rest("long" if long_rest else "court")      # v52 : ce qui n'a pas servi
+        if unused:
+            lay.addWidget(make_label("Pas utilisé depuis qu'il est revenu — pensez-y au prochain combat :", "head"))
+            lay.addWidget(make_label("<br/>".join("○ " + html.escape(x) for x in unused), "muted", wrap=True))
         ending = eng.effects_ending(long_rest)
         if ending:
             lay.addWidget(make_label("Effets temporaires qui prendront fin :", "head"))
@@ -89,12 +93,15 @@ class RestDialog(QDialog):
         self.pending_prep: dict[str, list[str]] = {}     # v44 : sorts préparés choisis, appliqués à la fin du repos
         self.spell_messages: list[str] = []
         self.pending_cantrip = None                      # v44 : (ancien, nouveau) tour de magie du Magicien
+        self.pending_swaps: dict[str, tuple[str, str]] = {}   # v52 : botte d'arme, forme connue (un échange)
         self.prep_labels: dict[str, object] = {}
         self.cantrip_label = None
         if long_rest:
             self._build_spell_section(lay)
+            self._build_swap_section(lay)
 
         self.ration = None
+        self.starving = None
         if long_rest:
             warn = eng.long_rest_warning()
             if warn:
@@ -109,6 +116,8 @@ class RestDialog(QDialog):
                     lay.addWidget(make_label("⚠ Aucune ration : le personnage se repose le ventre vide. Au-delà de "
                                              "3 + modificateur de Constitution jours sans manger, il subit un niveau "
                                              "d'épuisement par jour (PHB).", "warn", wrap=True))
+                    self.starving = QCheckBox("Délai dépassé : +1 niveau d'épuisement (privation de nourriture)")
+                    lay.addWidget(self.starving)
 
         buttons = QHBoxLayout()
         buttons.addStretch(1)
@@ -148,8 +157,8 @@ class RestDialog(QDialog):
             row += 1
         if cantrip:
             btn = QPushButton("[ Changer un tour de magie ]")
-            btn.setToolTip("Magicien — Formules de sorts mineurs (Tasha) : remplacer un tour de magie connu par un "
-                           "autre tour de magie de la liste du Magicien.")
+            btn.setToolTip("Magicien — remplacer un tour de magie connu par un autre tour de magie de la liste du "
+                           "Magicien (règle 2024 ; option de Tasha « Formules de sorts mineurs » en 2014).")
             btn.clicked.connect(lambda _=False: self.open_cantrip())
             self.cantrip_label = make_label("", "muted", wrap=True)
             grid.addWidget(btn, row, 0)
@@ -206,8 +215,45 @@ class RestDialog(QDialog):
         self._update_spell_labels()
         return True
 
+    # ------------------------------------------------------------------ v52 : un échange au repos long (2024)
+    def _build_swap_section(self, lay) -> None:
+        swaps = self.win.engine.rest_option_swaps()
+        if not swaps:
+            return
+        lay.addWidget(make_label("🔁 Un échange permis par ce repos long :", "head"))
+        self.swap_labels = {}
+        for sw in swaps:
+            row = QHBoxLayout()
+            btn = QPushButton("[ {} ]".format(sw["titre"]))
+            btn.clicked.connect(lambda _=False, k=sw["key"]: self.open_swap(k))
+            label = make_label("Inchangé", "muted", wrap=True)
+            row.addWidget(btn)
+            row.addWidget(label, 1)
+            lay.addLayout(row)
+            self.swap_labels[sw["key"]] = label
+
+    def open_swap(self, key: str) -> bool:
+        from .dialogs import ask_choice
+        sw = next((x for x in self.win.engine.rest_option_swaps() if x["key"] == key), None)
+        if sw is None:
+            return False
+        old = ask_choice(self, sw["titre"], "Quel choix remplacer ?", list(sw["set"]["chosen"]))
+        if not old:
+            return False
+        new = ask_choice(self, sw["titre"], "Par quoi remplacer {} ?".format(old),
+                         [n for n in sw["set"]["options"] if n not in sw["set"]["chosen"]])
+        return bool(new) and self.set_swap_choice(key, old, new)
+
+    def set_swap_choice(self, key: str, old: str, new: str) -> bool:
+        self.pending_swaps[key] = (old, new)
+        if key in getattr(self, "swap_labels", {}):
+            self.swap_labels[key].setText("🔁 {} → {} (appliqué à la fin du repos)".format(old, new))
+        return True
+
     def _apply_spell_changes(self) -> list[str]:
         eng, out = self.win.engine, []
+        for key, (old, new) in self.pending_swaps.items():
+            out.append(eng.rest_swap_option(key, old, new)[1])
         if self.pending_cantrip:
             ok, msg = eng.swap_cantrip(*self.pending_cantrip)
             out.append(msg)
@@ -240,7 +286,16 @@ class RestDialog(QDialog):
     def apply(self):
         eng = self.win.engine
         if self.kind == "long":
-            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()))
+            rolls = {}                                     # v52 : recharge des objets magiques (formule, dés animés)
+            from core import dice as D
+            from .dice_dialog import roll_damage_dialog
+            for idx, name, formula in eng.pending_recharges():
+                r = roll_damage_dialog(self.win, D.DamageSpec("Recharge — " + name, formula, kind="de"))
+                if r is not None:
+                    rolls[idx] = r.total
+            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()), recharge_rolls=rolls)
+            if self.starving is not None and self.starving.isChecked():     # v52 : après la récupération du repos
+                eng.gain_exhaustion("Privation de nourriture")
             self.spell_messages = self._apply_spell_changes()
         else:
             eng.do_short_rest()

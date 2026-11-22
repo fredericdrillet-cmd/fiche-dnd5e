@@ -73,6 +73,7 @@ Tests : `python -m unittest discover tests`
 - **Alliés** : ménagerie (familiers, compagnons de classe, invocations, montures) avec fiche calculée, PV, statut,
   niveau du sort de convocation, jets et attaques ; conseils selon la classe.
 - **Menu ☰** : plusieurs personnages, import / export, partage, impression PDF, 10 thèmes, lanceur de dés.
+- **Édition 2014 ou 2024** (v52) : choisie à la création du personnage ; toute la fiche suit cette édition (classes, sous-classes, espèces, historiques, dons, sorts). Menu ☰ → **⚖ Règles de la table** : changer d'édition, règles optionnelles (potion en action bonus, bottes d'arme, inspiration héroïque, actions d'arme), choix des bottes d'arme.
 
 Seul le **mannequin d'équipement** (affichage graphique des emplacements portés) reste propre à l'application
 bureau : sur le web, les objets se portent avec la case « Équipé », et leurs effets s'appliquent de la même façon.

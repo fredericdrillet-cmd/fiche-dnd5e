@@ -19,6 +19,7 @@ import re
 from typing import Optional
 
 from .rules import norm
+from .features_2024 import sub_norm_of
 
 LONG, SHORT = "repos long", "repos court"
 
@@ -387,6 +388,55 @@ TILES = [
       uses="MOD:Intelligence", degats={9: "2d6", 15: "4d6"}, type_degats="force", par_tour=True),
 ]
 
+from .subclass_2024 import tiles_2024  # noqa: E402
+TILES += tiles_2024()                            # v52 : sous-classes 2024 sans équivalent 2014
+
+
+def _tasha(tid, nom, icone, classe, niveau, kind, desc, feature, **kw):
+    tile = T(tid, nom, icone, classe, "", niveau, kind, desc, **kw)
+    tile["tasha"] = feature                          # nom de l'option dans les aptitudes de la classe
+    return tile
+
+
+for _tile in TILES:                              # v52 : la marque au toucher est l'option de Tasha « Ennemi favori »
+    if _tile["id"] == "cap:ennemi_jure":
+        _tile.update(nom="Ennemi favori", tasha="ennemi favori", effet="", description=(
+            "Quand vous touchez : marquez la créature (concentration, 1 minute) ; +dé aux dégâts une fois par tour "
+            "contre elle. Utilisations : bonus de maîtrise par repos long (option de Tasha)."))
+
+TILES += [                                       # v52 : options de classe de Tasha (ajouts), fiches 2014
+    _tasha("guerison_acceleree", "Guérison accélérée", "💗", "Moine", 4, "Action",
+           "2 points de ki : regagnez un dé d'arts martiaux + votre bonus de maîtrise en PV.", "guerison acceleree",
+           cout={"ressource": "ki", "n": 2}, degats="1d{MA}+{BM}", soin=True),
+    _tasha("visee_concentree", "Visée concentrée", "🎯", "Moine", 5, "Spécial",
+           "Quand vous ratez une attaque : 1 à 3 points de ki, +2 au jet par point (un clic par point).",
+           "visee concentree", cout={"ressource": "ki", "n": 1}),
+    _tasha("visee_stable", "Visée stable", "🎯", "Roublard", 3, "Action bonus",
+           "Sans vous être déplacé ce tour : avantage à votre prochaine attaque ce tour-ci ; votre vitesse tombe à 0.",
+           "visee stable"),
+    _tasha("exploitation_divine", "Exploitation du pouvoir divin", "✨", "Paladin", 3, "Action bonus",
+           "1 Conduit divin : récupérez un emplacement de sort dépensé de niveau au plus la moitié de votre bonus de "
+           "maîtrise (arrondie au supérieur) — appliqué automatiquement.", "exploitation du pouvoir divin",
+           cout={"ressource": "conduit", "n": 1}),
+    _tasha("canalisation_divine", "Canalisation de puissance divine", "✨", "Clerc", 2, "Action bonus",
+           "1 Conduit divin : récupérez un emplacement de sort dépensé de niveau au plus la moitié de votre bonus de "
+           "maîtrise (arrondie au supérieur) — appliqué automatiquement.", "canalisation de puissance divine",
+           cout={"ressource": "conduit", "n": 1}),
+    _tasha("voile_nature", "Voile de la nature", "🍃", "Rôdeur", 10, "Action bonus",
+           "Vous devenez invisible jusqu'au début de votre prochain tour (option de Tasha, remplace Camouflage).",
+           "voile de la nature", uses="BM", effet="invisible"),
+    _tasha("infatigable", "Infatigable", "💪", "Rôdeur", 10, "Action",
+           "Gagnez 1d8 + modificateur de Sagesse PV temporaires (minimum 1) ; un repos court retire un niveau "
+           "d'épuisement (option de Tasha).", "infatigable", uses="BM", degats="1d8+{MOD_SAG}"),
+    _tasha("compagnon_sauvage", "Compagnon sauvage", "🦉", "Druide", 2, "Action",
+           "1 Forme sauvage : Appel de familier sans composantes matérielles (le familier est une fée, il disparaît "
+           "après la moitié de votre niveau de druide en heures).", "compagnon sauvage",
+           cout={"ressource": "forme", "n": 1}),
+    _tasha("guidage_magique", "Guidage magique", "🔁", "Ensorceleur", 5, "Spécial",
+           "Test de caractéristique raté : 1 point de sorcellerie pour relancer le d20 (le nouveau résultat "
+           "s'impose).", "guidage magique", cout={"ressource": "sorcellerie", "n": 1}),
+]
+
 # Métamagie (Ensorceleur) : option de classe choisie, une tuile par option, coût en points de sorcellerie
 METAMAGIC = {
     "Sort prudent": (1, "Jusqu'à mod. de Charisme créatures réussissent automatiquement le JS du sort."),
@@ -419,9 +469,17 @@ class ClassTilesMixin:
 
     def _tile_level(self, t: dict) -> int:
         e = self.ch.find_class(t["classe"])
-        if not e or e["niveau"] < t["niveau"]:
+        if not e:
             return 0
-        if t["sc"] and t["sc"] not in norm(e.get("sous_classe", "")):
+        if t.get("tasha") and not self.has_tasha(t["tasha"]):      # v52 : option de Tasha (ajout) active
+            return 0
+        alt = self.tile_feature_2024(t) if t.get("sc") and not t.get("ed") else {}
+        if alt.get("masquer") or e["niveau"] < alt.get("niveau", t["niveau"]):   # v52 : niveau 2024 si renommée
+            return 0
+        if t.get("ed"):                                  # v52 : tuile d'une sous-classe 2024 (nom 2024)
+            if getattr(self, "sheet_edition", 2014) != t["ed"] or t["sc"] not in norm(e.get("sous_classe", "")):
+                return 0
+        elif t["sc"] and t["sc"] not in sub_norm_of(e):
             return 0
         return e["niveau"]
 
@@ -444,8 +502,11 @@ class ClassTilesMixin:
         for t in TILES:
             lvl = self._tile_level(t)
             total = self._uses_total(t, lvl) if lvl else None
+            alt = self.tile_feature_2024(t) if lvl else {}      # v52 : sous-classe 2024 renommée
+            if alt.get("masquer") or (alt and lvl < alt["niveau"]):
+                continue
             if lvl and total is not None:
-                out.append({"key": t["id"], "label": t["nom"], "total": total, "kind": "conduit",
+                out.append({"key": t["id"], "label": alt.get("nom", t["nom"]), "total": total, "kind": "conduit",
                             "recover": t["recover"], "info": "{} utilisation{} — récupération au {}".format(
                                 total, "s" * (total > 1), t["recover"]), "where": "combat", "de": ""})
         return out
@@ -462,7 +523,11 @@ class ClassTilesMixin:
                 "MOD_CHA": str(self.mod("Charisme")),
                 "DEMI_SOURNOISE": "{}d6".format(max(1, math.ceil(math.ceil(rogue / 2) / 2))) if rogue else "1d6",
                 "DEUX_ARTS_MARTIAUX": "2d{}".format(ma), "SOINS_LUNE": "{}d8".format(
-                    max(1, (self.smite_levels() or [1])[0]))}
+                    max(1, (self.smite_levels() or [1])[0])),
+                "MA": str(ma), "MOD_SAG_MIN": str(max(1, self.mod("Sagesse"))),     # v52 : tuiles 2024
+                "RAGE_DES": str(max(1, _rage_bonus(self.class_level("Barbare")))),
+                "DE_INSP": next((tr.get("de") or "d6" for tr in self.resource_trackers() if tr["key"] == "inspiration"),
+                                "d6")}
 
     def class_tile_actions(self) -> list[dict]:
         out = []
@@ -470,19 +535,23 @@ class ClassTilesMixin:
             lvl = self._tile_level(t)
             if not lvl:
                 continue
+            alt = self.tile_feature_2024(t)              # v52 : texte 2024 d'une sous-classe renommée
+            if alt.get("masquer") or (alt and lvl < alt["niveau"]):
+                continue
             ctx = self._tile_context(t, lvl)
             dmg = str(_tier(t["degats"], lvl) or "")
             dmg = re.sub(r"\{([A-Z_]+)\}", lambda m: ctx.get(m.group(1), "{" + m.group(1) + "}"), dmg)
             desc = t["description"]
             if t["js"]:
-                ab = {"CHA": "Charisme", "SAG": "Sagesse", "INT": "Intelligence", "CON": "Constitution"}[t["js"]]
+                ab = {"CHA": "Charisme", "SAG": "Sagesse", "INT": "Intelligence", "CON": "Constitution",
+                      "FOR": "Force", "DEX": "Dextérité"}[t["js"]]
                 desc += " (DD {} : 8 + maîtrise + mod. de {})".format(8 + self.prof + self.mod(ab), ab)
             cost = dict(t["cout"]) if t["cout"] else ({"ressource": t["id"], "n": 1} if self._uses_total(t, lvl)
                                                        is not None else {})
             kind = t["type"]
-            if t["id"] == "cap:forme_sauvage" and "lune" in norm((self.ch.find_class("Druide") or {}).get(
-                    "sous_classe", "")):
-                kind = "Action bonus"                    # Cercle de la Lune : Forme sauvage de combat
+            if t["id"] == "cap:forme_sauvage" and ("lune" in norm((self.ch.find_class("Druide") or {}).get(
+                    "sous_classe", "")) or self.sheet_edition == 2024):
+                kind = "Action bonus"                    # Cercle de la Lune ; 2024 : toujours une action bonus
             a = {"id": t["id"], "nom": t["nom"], "icone": t["icone"], "classe": t["classe"], "sous_classe": "",
                  "niveau": t["niveau"], "type": kind, "cout": cost, "jet": "degats" if dmg else "aucun",
                  "degats": dmg, "type_degats": t["type_degats"], "description": desc, "effet": t["effet"],
@@ -491,28 +560,44 @@ class ClassTilesMixin:
             if t["naturelle"]:
                 a["naturelle"] = t["naturelle"]
                 a["attaque_arme"] = True
+            if alt:
+                a.update(nom=alt["nom"], description=alt["description"] + (
+                    " (DD {})".format(desc.rsplit("(DD ", 1)[1].split(" ")[0]) if "(DD " in desc else ""),
+                    niveau=alt["niveau"])
             out.append(a)
         out += self.metamagic_actions()
         return out
 
     # ------------------------------------------------------------------ Métamagie
+    def metamagic_table(self) -> dict:
+        """Options de Métamagie de l'édition de la fiche {nom: (coût, description)}."""
+        view = getattr(self.db, "metamagic_2024", None)
+        table = view() if (view and self.sheet_edition == 2024) else None
+        return table or METAMAGIC
+
+    def metamagic_known_count(self, lvl: int) -> int:
+        if self.sheet_edition == 2024:                   # 2024 : 2 au niveau 2, 4 au niveau 10, 6 au niveau 17
+            return 0 if lvl < 2 else 2 if lvl < 10 else 4 if lvl < 17 else 6
+        return metamagic_known(lvl)
+
     def metamagic_option_set(self) -> Optional[dict]:
         lvl = self.class_level("Ensorceleur")
-        if lvl < 3:
+        if self.metamagic_known_count(lvl) == 0:
             return None
-        return {"key": "metamagie", "label": "Options de métamagie (Ensorceleur)", "total": metamagic_known(lvl),
+        return {"key": "metamagie", "label": "Options de métamagie (Ensorceleur)", "total": self.metamagic_known_count(lvl),
                 "options": {n: "{} point{} de sorcellerie — {}".format(c, "s" * (c > 1), d)
-                            for n, (c, d) in METAMAGIC.items()},
+                            for n, (c, d) in self.metamagic_table().items()},
                 "chosen": list((self.ch.options_classe or {}).get("metamagie", []))}
 
     def chosen_metamagic(self) -> list[str]:
-        return [n for n in (self.ch.options_classe or {}).get("metamagie", []) if n in METAMAGIC] \
-            if self.class_level("Ensorceleur") >= 3 else []
+        table = self.metamagic_table()
+        return [n for n in (self.ch.options_classe or {}).get("metamagie", []) if n in table] \
+            if self.metamagic_known_count(self.class_level("Ensorceleur")) else []
 
     def metamagic_actions(self) -> list[dict]:
         out = []
         for name in self.chosen_metamagic():
-            cost, desc = METAMAGIC[name]
+            cost, desc = self.metamagic_table()[name]
             out.append({"id": "meta:" + norm(name).replace(" ", "_"), "nom": "Métamagie : " + name, "icone": "🔮",
                         "classe": "Ensorceleur", "sous_classe": "", "niveau": 3, "type": "Spécial",
                         "cout": {"ressource": "sorcellerie", "n": cost}, "jet": "aucun", "degats": "",
@@ -523,3 +608,8 @@ class ClassTilesMixin:
 def R_martial(level: int) -> int:
     from . import rules as R
     return R.martial_arts_die(level) if level else 4
+
+
+def _rage_bonus(level: int) -> int:
+    from .rules import rage_damage
+    return rage_damage(level) if level else 0

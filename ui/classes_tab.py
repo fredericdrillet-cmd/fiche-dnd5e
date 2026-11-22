@@ -78,7 +78,9 @@ class ClassPanel(QWidget):
         lay = QVBoxLayout(self)
 
         # --- ligne de contrôle : classe / niveau / sous-classe / retrait
-        ctl = QHBoxLayout()
+        self.edit_row = QWidget()                        # v50 : sélecteurs (Mode libre) …
+        ctl = QHBoxLayout(self.edit_row)
+        ctl.setContentsMargins(0, 0, 0, 0)
         self.class_combo = QComboBox()
         self.level_spin = QSpinBox()
         self.level_spin.setRange(1, R.MAX_LEVEL)
@@ -98,7 +100,10 @@ class ClassPanel(QWidget):
         ctl.addWidget(self.sub_note)
         ctl.addStretch(1)
         ctl.addWidget(self.remove_btn)
-        lay.addLayout(ctl)
+        lay.addWidget(self.edit_row)
+        self.static_head = make_label("", "", wrap=True)   # … ou en-tête statique stylé (Mode guidé)
+        self.static_head.setTextFormat(Qt.TextFormat.RichText)
+        lay.addWidget(self.static_head)
 
         # --- frise de progression 1 → 20 (v29)
         self.roadmap = RoadmapStrip()
@@ -140,6 +145,14 @@ class ClassPanel(QWidget):
         row.addWidget(self.cast_box, 1)
         row.addWidget(self.prof_box, 1)
         lay.addLayout(row)
+
+        # v52 : options de Tasha qui remplacent une aptitude (choix du joueur, désactivées par défaut)
+        self.tasha_box = QGroupBox("Options de Tasha qui remplacent une aptitude (avec l'accord du MJ)")
+        self.tasha_lay = QHBoxLayout(self.tasha_box)
+        self.tasha_checks: dict[str, QCheckBox] = {}
+        self._tasha_key = None
+        self.tasha_box.setVisible(False)
+        lay.addWidget(self.tasha_box)
 
         # --- aptitudes + détail + sorts associés
         split = QSplitter(Qt.Orientation.Horizontal)
@@ -277,8 +290,34 @@ class ClassPanel(QWidget):
                 theme.current().accent_text, html.escape(f["nom"]), f["niveau"], html.escape(f["source"]), state, formula_html(self.tab.engine, f["description"], self.entry["nom"])))
 
     # ------------------------------------------------------------------ rafraîchissement
+    def _refresh_tasha(self) -> None:
+        opts = self.tab.engine.tasha_replacement_options(self.entry["nom"])
+        self.tasha_box.setVisible(bool(opts))
+        key = tuple(o["cle"] for o in opts)
+        if key != self._tasha_key:
+            self._tasha_key = key
+            while self.tasha_lay.count():
+                item = self.tasha_lay.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            self.tasha_checks = {}
+            for o in opts:
+                cb = QCheckBox("{} (remplace {})".format(o["nom"], o["remplace"]))
+                cb.toggled.connect(lambda on, k=o["cle"]: self._on_tasha(k, on))
+                self.tasha_lay.addWidget(cb)
+                self.tasha_checks[o["cle"]] = cb
+            self.tasha_lay.addStretch(1)
+        for o in opts:
+            with blocked(self.tasha_checks[o["cle"]]):
+                self.tasha_checks[o["cle"]].setChecked(o["actif"])
+
+    def _on_tasha(self, cle: str, on: bool) -> None:
+        self.tab.engine.set_tasha_replacement(cle, on)
+        self.tab.changed()
+
     def refresh(self):
-        eng, db, e = self.tab.engine, self.tab.db, self.entry
+        self._refresh_tasha()
+        eng, db, e = self.tab.engine, self.tab.engine.db, self.entry      # v52 : classes de l'édition de la fiche
         owned = {c["nom"] for i, c in enumerate(self.tab.ch.classes) if i != self.index}
         fill_combo(self.class_combo, [n for n in db.class_names() if n not in owned], e["nom"])
         others = self.tab.ch.niveau_total - e["niveau"]
@@ -286,9 +325,9 @@ class ClassPanel(QWidget):
             self.level_spin.setRange(1, max(1, R.MAX_LEVEL - others))
             self.level_spin.setValue(e["niveau"])
         # sous-classe
-        need = R.SUBCLASS_LEVEL.get(e["nom"], 3)
+        need = eng.subclass_level(e["nom"])
         subs = ["— aucune —"] + [s["nom"] for s in db.subclasses(e["nom"])]
-        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0])
+        fill_combo(self.sub_combo, subs, e.get("sous_classe") or subs[0], tips=db.subclass_tips(e["nom"]))
         unlocked = e["niveau"] >= need
         self.sub_combo.setEnabled(unlocked)
         todo = unlocked and not e.get("sous_classe") and len(subs) > 1
@@ -297,6 +336,30 @@ class ClassPanel(QWidget):
         self._refresh_terrain()
         self.roadmap.set_roadmap(eng.class_roadmap(e))
         self.remove_btn.setEnabled(len(self.tab.ch.classes) > 1)
+        # v48 — Mode guidé : résumé consultatif ; niveaux et classes changent par « ▲ Niveau supérieur »
+        free = getattr(self.tab.win, "free_mode", True)
+        locked_tip = rich_tip("Mode guidé", "Les niveaux et les classes se modifient avec « ▲ Niveau supérieur » "
+                              "(multiclassage compris). Mode libre (Options) : édition directe.")
+        for w in (self.class_combo, self.level_spin, self.remove_btn):
+            w.setEnabled(free and w.isEnabled() if w is self.remove_btn else free)
+            w.setToolTip("" if free else locked_tip)
+        if not free:                                     # sous-classe : seulement si elle reste à choisir
+            self.sub_combo.setEnabled(bool(todo))
+        # v50 : Mode guidé -> texte statique (classe, niveau, sous-classe en badges) ; Mode libre -> sélecteurs
+        self.edit_row.setVisible(free or bool(todo))
+        self.static_head.setVisible(not free and not todo)
+        if not free:
+            t = theme.current()
+            badge = ("<span style='background:{bg}; color:{fg}; border:1px solid {b}; border-radius:6px; "
+                     "padding:3px 10px; font-weight:bold'>&nbsp;{txt}&nbsp;</span>")
+            parts = [badge.format(bg=t.panel2, fg=t.accent_text, b=t.ornament, txt=html.escape(e["nom"])),
+                     badge.format(bg=t.panel2, fg=t.text, b=t.border, txt="Niveau {}".format(e["niveau"]))]
+            parts.append(badge.format(bg=t.panel2, fg=t.text, b=t.border, txt=html.escape(e["sous_classe"]))
+                         if e.get("sous_classe") else
+                         "<i style='color:{}'>sous-classe au niveau {}</i>".format(t.muted, need))
+            self.static_head.setText("<span style='font-size:15px'>{}</span>&nbsp;&nbsp;<i style='color:{}'>"
+                                     "Lecture seule — « ▲ Niveau supérieur » pour progresser</i>".format(
+                                         " &nbsp;".join(parts), t.muted))
 
         self._refresh_profs()
         # PV
@@ -333,7 +396,8 @@ class ClassPanel(QWidget):
             self.feat_list.clear()
             for f in self._features:
                 tag = "★ " if f["sous_classe"] else ""
-                item = QListWidgetItem("Niv. {:>2} — {}{}".format(f["niveau"], tag, f["nom"]))
+                item = QListWidgetItem("Niv. {:>2} — {}{}{}".format(f["niveau"], tag, f["nom"], "  ✨ Nouveau" if
+                                                                      eng.is_new("apt:" + f["nom"]) else ""))
                 item.setToolTip(formula_tip(eng, "{} (niveau {})".format(f["nom"], f["niveau"]), f["description"], e["nom"]))
                 if not f["debloque"]:
                     item.setForeground(QBrush(QColor(theme.current().locked)))
@@ -388,7 +452,8 @@ class ClassesTab(BaseTab):
                                            "prérequis de caractéristiques vérifiés)."))
         top.addWidget(make_label("Classes du personnage", "title"))
         top.addStretch(1)
-        top.addWidget(self.multi_chk)
+        # v50 : interrupteur « Multiclassage » retiré — le multiclassage est proposé par « Niveau supérieur »
+        self.multi_chk.setVisible(False)
         top.addWidget(self.add_combo)
         top.addWidget(self.add_btn)
         lay.addLayout(top)
@@ -396,6 +461,20 @@ class ClassesTab(BaseTab):
         lay.addWidget(self.info)
         self.tabs = QTabWidget()
         lay.addWidget(self.tabs, 1)
+        # v52 : rappels des choix de classe (manœuvres, runes, Tir arcanique…) — choisis pendant la montée de niveau
+        self.options_box = QGroupBox("Rappels — choix de classe")
+        ob = QHBoxLayout(self.options_box)
+        self.options_label = make_label("", wrap=True)
+        self.options_label.setTextFormat(Qt.TextFormat.RichText)
+        self.options_btn = QPushButton("Compléter les choix…")
+        self.options_btn.setToolTip(rich_tip("Choix manquants", "Ces choix se font pendant « Niveau supérieur ». "
+                                             "Pour une fiche où il en manque (ancienne sauvegarde, Mode libre), "
+                                             "complétez-les ici."))
+        self.options_btn.clicked.connect(self._on_complete_options)
+        ob.addWidget(self.options_label, 1)
+        ob.addWidget(self.options_btn)
+        self.options_box.setVisible(False)
+        lay.addWidget(self.options_box)
         self.panels: list[ClassPanel] = []
         self._key: tuple = ()
         self.add_btn.clicked.connect(self._on_add)
@@ -413,6 +492,19 @@ class ClassesTab(BaseTab):
             return
         self.engine.set_multiclass(checked)
         self.changed()
+
+    def _refresh_class_options(self) -> None:
+        from .class_options import class_option_sets, options_missing, reminders_html
+        t = theme.current()
+        sets = class_option_sets(self.engine)
+        self.options_box.setVisible(bool(sets))
+        n = options_missing(self.engine)
+        self.options_label.setText(reminders_html(self.engine, t.accent_text, t.warn))
+        self.options_btn.setVisible(n > 0)
+
+    def _on_complete_options(self) -> None:
+        from .class_options import ask_class_options
+        ask_class_options(self.win, self.engine, self.changed)
 
     def current_index(self) -> int:
         return max(0, self.tabs.currentIndex())
@@ -448,6 +540,7 @@ class ClassesTab(BaseTab):
             p.refresh()
             c = self.ch.classes[i]
             self.tabs.setTabText(i, "{} {}".format(c["nom"], c["niveau"]))
+        self._refresh_class_options()
         owned = {c["nom"] for c in self.ch.classes}
         free = [n for n in self.db.class_names() if n not in owned]
         fill_combo(self.add_combo, free, free[0] if free else "")
@@ -455,11 +548,17 @@ class ClassesTab(BaseTab):
             self.multi_chk.setChecked(self.ch.multiclassage)
         self.multi_chk.setText("⚔ Multiclassage : activé" if self.ch.multiclassage else
                                "⚔ Multiclassage : désactivé")
-        can_add = bool(free) and self.ch.niveau_total < R.MAX_LEVEL and self.ch.multiclassage
+        can_add = bool(free) and self.ch.niveau_total < R.MAX_LEVEL
+        guided = not getattr(self.win, "free_mode", True)
+        if guided:                                       # v48 : ajout de classe via « Niveau supérieur »
+            can_add = False
         self.add_btn.setEnabled(can_add)
         self.add_combo.setEnabled(can_add)
-        self.add_btn.setToolTip("" if self.ch.multiclassage else "Activez l'option « Multiclassage » pour ajouter "
-                                "une classe.")
-        self.info.setText("Niveau global : {} — bonus de maîtrise {}. Chaque onglet détaille une classe ; "
-                          "le niveau global de l'en-tête agit sur l'onglet de classe affiché.".format(
-                              self.engine.total_level, R.fmt_bonus(self.engine.prof)))
+        self.add_btn.setVisible(not guided)
+        self.add_combo.setVisible(not guided)
+        self.add_btn.setToolTip("Mode libre : ajout direct d'une classe (multiclassage).")
+        self.info.setText(("Niveau global : {} — bonus de maîtrise {}. " + (
+            "Mode guidé : résumé consultatif — utilisez « ▲ Niveau supérieur » pour gagner un niveau ou une nouvelle "
+            "classe (multiclassage, prérequis de caractéristiques vérifiés)." if guided else
+            "Chaque onglet détaille une classe ; le niveau global de l'en-tête agit sur l'onglet de classe affiché."))
+            .format(self.engine.total_level, R.fmt_bonus(self.engine.prof)))
