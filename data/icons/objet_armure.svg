@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><!-- objet_armure : icône de la fiche D&D 5e (dessinée par tools/build_icons.py) --><path d="M18 6 L26 10 C28 14 36 14 38 10 L46 6 L56 16 L50 26 V58 H14 V26 L8 16 Z" fill="#FFFFFF"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><!-- objet_armure : icône de la fiche D&D 5e (core/icon_art.py) --><path d="M18 6 L26 10 C28 14 36 14 38 10 L46 6 L56 16 L50 26 V58 H14 V26 L8 16 Z" fill="#FFFFFF"/></svg>

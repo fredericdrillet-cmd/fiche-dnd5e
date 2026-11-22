@@ -97,6 +97,31 @@ def tile_palette(t: "Theme") -> dict[str, str]:
     return out
 
 
+# v53 : icônes du tour (style « jeu de rôle ») — teinte imposée par catégorie, tons accordés au thème
+ICON_HUES = {"attaque": (2, 0.72), "magie": (218, 0.70), "soins": (128, 0.58), "commune": (28, 0.42),
+             "capacite": (272, 0.55), "objet": (44, 0.70), "reaction": (176, 0.55)}
+
+
+def icon_palette(t: "Theme") -> dict[str, dict[str, str]]:
+    """{catégorie: {haut, bas, cadre, glyphe}} : dégradé de fond, cadre et couleur du dessin. La teinte est celle
+    de la catégorie (attaques rouges, magie bleue, soins verts, actions communes brunes…) ; clarté et saturation
+    suivent le thème (sombre : fonds profonds, dessin clair ; clair : fonds plus vifs), teintées de 12 % par
+    l'accent du thème pour rester dans la même famille de couleurs."""
+    import colorsys
+
+    def hls(h, l, s_):
+        return "#" + "".join(f"{round(x * 255):02X}" for x in colorsys.hls_to_rgb(h / 360, l, s_))
+    dark = luminance(t.panel) < 0.2
+    out = {}
+    for cat, (hue, sat) in ICON_HUES.items():
+        top = blend(hls(hue, 0.36 if dark else 0.46, sat), t.accent_text, 0.12)
+        bottom = blend(hls(hue, 0.16 if dark else 0.30, sat), t.panel, 0.15)
+        frame = blend(hls(hue, 0.62 if dark else 0.38, min(1.0, sat + 0.1)), t.ornament, 0.25)
+        glyph = blend("#FFFFFF", hls(hue, 0.85, sat), 0.35)
+        out[cat] = {"haut": top, "bas": bottom, "cadre": frame, "glyphe": glyph}
+    return out
+
+
 TEXTURE_MARGIN = 0.06     # intensité maximale d'une texture (décalage de luminosité) prise en compte par l'audit
 
 

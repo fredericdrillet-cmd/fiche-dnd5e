@@ -1,1 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><!-- objet_cape : icône de la fiche D&D 5e (dessinée par tools/build_icons.py) --><path d="M24 6 h16 l4 8 C52 30 56 46 58 58 H6 C8 46 12 30 20 14 Z" fill="#FFFFFF"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"><!-- objet_cape : icône de la fiche D&D 5e (core/icon_art.py) --><path d="M24 6 h16 l4 8 C52 30 56 46 58 58 H6 C8 46 12 30 20 14 Z" fill="#FFFFFF"/></svg>
