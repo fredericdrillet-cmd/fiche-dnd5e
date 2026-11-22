@@ -45,7 +45,8 @@ class PaletteTests(unittest.TestCase):
     def test_categories_for_every_theme(self):
         for t in theme.THEMES.values():
             pal = theme.icon_palette(t)
-            self.assertEqual(set(pal), {"attaque", "magie", "soins", "commune", "capacite", "objet", "reaction"})
+            self.assertTrue({"attaque", "magie", "soins", "commune", "capacite", "objet", "reaction"} <= set(pal))
+            self.assertEqual(len([k for k in pal if k.startswith("ecole_")]), 8)
             self.assertEqual(len({p["haut"] for p in pal.values()}), len(pal), t.key)
 
 

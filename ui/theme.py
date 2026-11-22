@@ -99,7 +99,14 @@ def tile_palette(t: "Theme") -> dict[str, str]:
 
 # v53 : icônes du tour (style « jeu de rôle ») — teinte imposée par catégorie, tons accordés au thème
 ICON_HUES = {"attaque": (2, 0.72), "magie": (218, 0.70), "soins": (128, 0.58), "commune": (28, 0.42),
-             "capacite": (272, 0.55), "objet": (44, 0.70), "reaction": (176, 0.55)}
+             "capacite": (288, 0.52), "objet": (44, 0.70), "reaction": (176, 0.55),
+             # v53 : une couleur par école de magie (les sorts de soins restent verts)
+             "ecole_abjuration": (210, 0.72), "ecole_divination": (200, 0.30), "ecole_enchantement": (328, 0.62),
+             "ecole_evocation": (24, 0.85), "ecole_illusion": (248, 0.55), "ecole_invocation": (52, 0.80),
+             "ecole_necromancie": (92, 0.45), "ecole_transmutation": (174, 0.66)}
+SCHOOL_KEYS = {"abjuration": "ecole_abjuration", "divination": "ecole_divination", "enchantement": "ecole_enchantement",
+               "evocation": "ecole_evocation", "illusion": "ecole_illusion", "invocation": "ecole_invocation",
+               "necromancie": "ecole_necromancie", "transmutation": "ecole_transmutation"}
 
 
 def icon_palette(t: "Theme") -> dict[str, dict[str, str]]:

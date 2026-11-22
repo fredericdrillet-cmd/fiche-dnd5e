@@ -98,12 +98,13 @@ def icon_pixmap(name: str, category: str, size: int = 56, dim: bool = False) -> 
 
 
 def spell_pixmap(db, spell_name: str, category: str = "", size: int = 56, dim: bool = False) -> QPixmap:
-    """Icône unique d'un sort : bleue (magie), verte pour un sort de soins."""
+    """Icône unique d'un sort : couleur de son école (verte pour un sort de soins)."""
     from core import spell_icons as SI
+    from core.rules import norm
     body = SI.spell_icon(db.spells, spell_name) or ICONS["sort"]()
     if not category:
         sp = db.find_spell(spell_name) or {}
-        category = "soins" if SI.is_healing(sp) else "magie"
+        category = "soins" if SI.is_healing(sp) else theme.SCHOOL_KEYS.get(norm(sp.get("ecole", "")), "magie")
     return _render(body, category, size, theme.current().key, dim)
 
 
