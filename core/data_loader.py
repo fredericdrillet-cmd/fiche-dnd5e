@@ -427,6 +427,10 @@ def normalize_spell(s: dict, classes: dict[str, list[str]]) -> dict:
 UNOFFICIAL_NOTE = "Sous-classe non officielle (création de la communauté)."
 
 
+# fichiers de data/ qui ne sont pas des données de règles (lus ailleurs)
+NOT_RULES_DATA = {"action_icons.json"}
+
+
 class Database:
     """Base de données de règles construite à partir des fichiers JSON du dossier `data_dir`."""
 
@@ -480,6 +484,8 @@ class Database:
         classes, spell_parts, raw = [], [], {}
         if self.data_dir and self.data_dir.is_dir():
             for path in sorted(self.data_dir.glob("*.json")):
+                if path.name in NOT_RULES_DATA:          # v53 : registre des icônes, lu par core/action_icons
+                    continue
                 try:
                     content, warn = read_json(path)
                 except (OSError, json.JSONDecodeError) as exc:
