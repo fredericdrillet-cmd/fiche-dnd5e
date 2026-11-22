@@ -2213,11 +2213,19 @@ class CombatTab(BaseTab):
                                         12000)
             return False
         crit = r.critical == "succes"
-        if not ask_yes_no(win, "L'attaque touche-t-elle ?",
-                          "{}\n\nd20 = {} → total {}{}.\n\nComparez à la CA de la cible : l'attaque touche-t-elle ?"
-                          .format(attack_spec.title, r.natural, r.total,
-                                  " — 20 naturel : coup critique, les dés de dégâts sont doublés" if crit else ""),
-                          yes="Oui : lancer les dégâts", no="Non", default_no=False):
+        question = "d20 = {} → total {}{}. Comparez à la CA de la cible : l'attaque touche-t-elle ?".format(
+            r.natural, r.total, " — 20 naturel : coup critique, les dés de dégâts sont doublés" if crit else "")
+        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
+        mastery = self.engine.mastery_on_hit(slot)       # v52 : rappel de la botte d'arme
+        if options:                                      # v53 : « touche ? » + bonus au toucher, une seule fenêtre
+            from .on_hit_dialog import ask_hit
+            chosen = ask_hit(win, attack_spec.title + ("\n" + mastery if mastery else ""), question, options, crit)
+            hit = chosen is not None
+        else:
+            hit = ask_yes_no(win, "L'attaque touche-t-elle ?", "{}\n\n{}".format(attack_spec.title, question),
+                             yes="Oui : lancer les dégâts", no="Non", default_no=False)
+            chosen = []
+        if not hit:
             graze = self.engine.mastery_on_miss(slot)       # v52 : Effleurement sur un raté
             if graze:
                 win.statusBar().showMessage(graze, 12000)
@@ -2225,15 +2233,8 @@ class CombatTab(BaseTab):
         spec = D.DamageSpec(damage_spec.title, damage_spec.formula, damage_spec.damage_type, damage_spec.note,
                             damage_spec.kind)
         spec.parts = list(getattr(damage_spec, "parts", []) or [])   # v52 : dégâts par type
-        # v52 : « Quand vous touchez » — une fenêtre de cases (rien coché d'office) au lieu de questions successives
-        from .on_hit_dialog import ask_on_hit
-        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
-        mastery = self.engine.mastery_on_hit(slot)       # v52 : rappel de la botte d'arme
         if mastery:
             spec.note = (spec.note + " ; " if spec.note else "") + mastery
-        chosen = ask_on_hit(win, attack_spec.title + ("\n" + mastery if mastery else ""), options, crit)
-        if chosen is None:
-            return False
         for label, dice in self.engine.apply_on_hit(options, chosen):
             spec.formula += "+" + dice
             spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)

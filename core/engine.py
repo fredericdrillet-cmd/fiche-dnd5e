@@ -894,8 +894,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     def class_skill_status(self) -> dict:
         """Compétences de classe : liste de choix, nombre autorisé, nombre coché (hors historique)."""
         info = self.db.start_info(self.first_class()) if self.ch.classes else {"competences": [], "nb_competences": 0}
-        picked = [n for n, st in self.ch.competences.items()
-                  if st.get("maitrise") and n not in self.ch.competences_historique]
+        fixed = set(self.ch.competences_historique) | set(self._acquis().get("competences", []))  # v53 : espèce
+        picked = [n for n, st in self.ch.competences.items() if st.get("maitrise") and n not in fixed]
         return {"options": info["competences"], "nombre": info["nb_competences"], "choisies": picked}
 
     def off_list_skills(self) -> list[str]:
@@ -2258,6 +2258,16 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                         " ; +{} {}{}".format(d["des"], d.get("type", ""), "" if d.get("condition", "toujours") ==
                                              "toujours" else " ({})".format(d.get("note") or d["condition"]))
                         for d in extras))
+            self.add_magic_gear(nom, base)
+            return nom
+        shields = getattr(self.db, "shields", {}) or {}
+        if type_ == "Armure" and (base in self.db.armors or base in shields) and base != "Aucune armure":
+            # v53 : armure / bouclier sur mesure — objet de base (CA, catégorie, force, Discrétion) + bonus de CA
+            tier = max(0, min(3, int(bonus or ca or 0)))
+            self.ch.objets_perso[nom].update(bonus_fixe=tier, ca=tier,
+                                            precision="bouclier" if base in shields else "")
+            if not (description or "").strip() and not powers:
+                self.ch.objets_perso[nom]["description"] = "{}{}.".format(base, " +{}".format(tier) if tier else "")
             self.add_magic_gear(nom, base)
             return nom
         self.add_magic_item(nom)

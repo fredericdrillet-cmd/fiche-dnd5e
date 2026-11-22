@@ -216,8 +216,9 @@ class ProgressionTab(BaseTab):
         self._cat_key = key
         tips = self._all_tips()
         self._cat_names = names
+        from .common import bulk_fill                    # v53 : colonnes figées pendant le remplissage (×20 plus rapide)
         self.table.setUpdatesEnabled(False)
-        with blocked(self.table):
+        with blocked(self.table), bulk_fill(self.table):
             self.table.setRowCount(len(names))
             for r, n in enumerate(names):
                 f = self.db.feats[n]

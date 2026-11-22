@@ -411,8 +411,12 @@ class OnHitMixin:
                                 "dice": self.class_action_formula(a, lvl), "cout": "gratuit" if aid ==
                                 "chatiment_gratuit" else "emplacement de niveau {}".format(lvl),
                                 "action": aid, "niveau": lvl, "groupe": "chatiment"})
-        seen = {"sournoise", "chatiment", "chatiment_gratuit"}
+        out += self._extra_on_hit(slot, acts)            # v53 : manœuvres, psi, Tueur de colosses, Frappe divine…
+        seen = {"sournoise", "chatiment", "chatiment_gratuit", "manoeuvre", "manoeuvre_style", "psi_frappe",
+                "cap:tueur_colosses"}
         for a in acts.values():
+            if a["id"].startswith("manoeuvre:"):
+                continue
             if a["id"] in seen or not a.get("disponible") or a.get("attaque_arme") or not a.get("formule"):
                 continue
             if any(x in norm(a.get("description", "")) for x in self._HIT_WORDS) and D.has_dice(a["formule"]):
@@ -420,9 +424,55 @@ class OnHitMixin:
                             "cout": self.class_action_state(a).get("cout_txt", ""), "action": a["id"], "niveau": 0})
         return out
 
+    def _extra_on_hit(self, slot: Optional[dict], acts: dict) -> list[dict]:
+        """v53 — bonus de dégâts au toucher absents jusque-là : manœuvres qui ajoutent le dé aux dégâts (une par
+        coup, un dé de supériorité), Frappe psionique (un dé psi, une fois par tour), Tueur de colosses, Frappe
+        divine (2014) / Frappes bénies (2024), Fureur divine (Zélote en rage), Marque du chasseur et Maléfice."""
+        out = []
+        if not slot:
+            return out
+        sup = next((t for t in self.resource_trackers() if t["key"] == "superiorite"), None)
+        sup_left = sup is not None and (sup.get("total") or 0) - self.resource_used("superiorite") > 0
+        for a in acts.values():                          # une action « manoeuvre:<nom> » par manœuvre choisie
+            if not a["id"].startswith("manoeuvre:") or not sup_left or not a.get("formule"):
+                continue
+            desc = norm(self.db.maneuvers.get(a["nom"], a.get("description", "")))
+            if "aux degats" in desc and "subit" not in desc.split("aux degats")[0][-40:]:
+                out.append({"key": "man:" + a["nom"], "label": "Manœuvre : " + a["nom"], "dice": a["formule"],
+                            "cout": "1 dé de supériorité", "action": a["id"], "niveau": 0, "groupe": "manoeuvre"})
+        tech = acts.get("manoeuvre_style")
+        if tech and tech.get("disponible") and "aux degats" in norm(self.db.maneuvers.get(self.ch.technique_manoeuvre, "")):
+            out.append({"key": "man_style", "label": "Manœuvre : " + self.ch.technique_manoeuvre, "dice": "1d6",
+                        "cout": "dé de Technique supérieure", "action": "manoeuvre_style", "niveau": 0,
+                        "groupe": "manoeuvre"})
+        psi = acts.get("psi_frappe")
+        if psi and psi.get("disponible") and psi.get("formule") and not self.per_turn_used("psi_frappe"):
+            out.append({"key": "psi_frappe", "label": "Frappe psionique", "dice": psi["formule"],
+                        "cout": "1 dé psi, une fois par tour", "action": "psi_frappe", "niveau": 0, "tour": "psi_frappe"})
+        col = acts.get("cap:tueur_colosses")
+        if col and col.get("formule") and not self.per_turn_used("tueur_colosses"):
+            out.append({"key": "tueur_colosses", "label": "Tueur de colosses (cible déjà blessée)", "dice": col["formule"],
+                        "cout": "une fois par tour", "action": "", "niveau": 0, "tour": "tueur_colosses"})
+        clerc = self.class_level("Clerc")
+        passives = {norm(p["nom"]) for p in self.class_passives()}
+        blessed = "Frappe divine" in ((self.ch.options_classe or {}).get("frappes_benies") or [])
+        if clerc >= 8 and ("frappe divine" in passives or blessed) and not self.per_turn_used("frappe_divine"):
+            out.append({"key": "frappe_divine", "label": "Frappe divine", "dice": "2d8" if clerc >= 14 else "1d8",
+                        "cout": "une fois par tour", "action": "", "niveau": 0, "tour": "frappe_divine"})
+        if "fureur divine" in passives and "rage" in self.ch.effets_actifs and not self.per_turn_used("fureur_divine"):
+            out.append({"key": "fureur_divine", "label": "Fureur divine (radiants ou nécrotiques)",
+                        "dice": "1d6+{}".format(self.class_level("Barbare") // 2), "cout": "premier coup du tour en rage",
+                        "action": "", "niveau": 0, "tour": "fureur_divine"})
+        conc = norm(re.sub(r"\s*\(2024\)$", "", self.ch.concentration or ""))
+        if conc in ("marque du chasseur", "malefice"):
+            out.append({"key": "conc:" + conc, "label": ("Marque du chasseur" if conc.startswith("marque") else
+                                                         "Maléfice (nécrotiques)"), "dice": "1d6",
+                        "cout": "sort de concentration actif", "action": "", "niveau": 0})
+        return out
+
     def apply_on_hit(self, options: list[dict], chosen: list[str]) -> list[tuple[str, str]]:
         """Dépense les coûts des bonus choisis et renvoie [(libellé, dés)] à ajouter aux dégâts."""
-        out, smite_done = [], False
+        out, smite_done, man_done = [], False, False
         for o in options:
             if o["key"] not in chosen:
                 continue
@@ -430,6 +480,12 @@ class OnHitMixin:
                 if smite_done:                            # un seul Châtiment par coup
                     continue
                 smite_done = True
+            if o.get("groupe") == "manoeuvre":            # v53 : une seule manœuvre par coup
+                if man_done:
+                    continue
+                man_done = True
+            if o.get("tour"):
+                self.mark_per_turn(o["tour"])
             if o["action"] == "sournoise_hit":
                 self.mark_per_turn("sournoise")
             elif o["action"]:

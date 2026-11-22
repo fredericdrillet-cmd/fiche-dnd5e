@@ -158,7 +158,7 @@ def _checked(lst) -> list[str]:
 
 
 def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = None,
-                    spell_names: list[str] | None = None) -> dict | None:
+                    spell_names: list[str] | None = None, armor_names: list[str] | None = None) -> dict | None:
     """Formulaire « Objet sur mesure » en une fenêtre : nom, type, rareté (peu commun par défaut), case
     « Harmonisation requise », description courte, poids, bonus de CA. Renvoie le dictionnaire ou None."""
     from .dialogs import BlurBackdrop, ConfirmDialog
@@ -203,6 +203,19 @@ def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = Non
         lay.insertWidget(pos + 5, wbox)
     wbox.setVisible(w["type"].currentText() == "Arme")
     w["type"].currentTextChanged.connect(lambda t: wbox.setVisible(t == "Arme"))
+    abox = QWidget()                                     # v53 : armure / bouclier sur mesure
+    al = QHBoxLayout(abox)
+    al.setContentsMargins(0, 0, 0, 0)
+    armor_base = QComboBox()
+    armor_base.addItems(armor_names or [])
+    armor_base.setToolTip("Armure (ou bouclier) de base : sa CA, sa catégorie, sa force requise et son désavantage "
+                          "en Discrétion s'appliquent ; le bonus de CA ci-dessus s'y ajoute.")
+    al.addWidget(QLabel("Armure de base :"))
+    al.addWidget(armor_base, 1)
+    if lay is not None:
+        lay.insertWidget(pos + 5, abox)
+    abox.setVisible(w["type"].currentText() == "Armure")
+    w["type"].currentTextChanged.connect(lambda t: abox.setVisible(t == "Armure"))
     pbox, pf = _power_fields(spell_names or [])                  # v52 : pouvoirs (tous types d'objets)
     if lay is not None:
         lay.insertWidget(pos + 6, QLabel("<b>Pouvoirs de l'objet</b> (facultatif)"))
@@ -231,6 +244,8 @@ def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = Non
                 extras.append({"des": d, "type": kind.currentText(), "condition": EXTRA_WHEN[when.currentIndex()][0],
                                "note": note.text().strip()})
         data.update(base=wf["base"].currentText(), bonus=wf["bonus"].currentIndex(), degats_sup=extras)
+    if data["type_"] == "Armure" and armor_names:        # v53 : armure de base + bonus de CA (+0 à +3)
+        data.update(base=armor_base.currentText(), bonus=w["ca"].value())
     return data
 
 
@@ -521,7 +536,8 @@ class MagicItemsPanel(BaseTab):
         spells = sorted((n for n, sp in self.db.spells.items()
                          if (self.engine.sheet_edition == 2024) == ("(2024)" in n or sp.get("edition") == 2024)),
                         key=norm)
-        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons, spell_names=spells)
+        armors = [n for n in self.db.armors if n != "Aucune armure"] + sorted(getattr(self.db, "shields", {}) or {})
+        data = ask_custom_item(self.win, name.strip(), weapon_names=weapons, spell_names=spells, armor_names=armors)
         if not data:
             return
         real = self.engine.add_custom_magic_item(**data)

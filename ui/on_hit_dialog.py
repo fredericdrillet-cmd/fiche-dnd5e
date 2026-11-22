@@ -11,14 +11,18 @@ NO_SMITE = "Pas de Châtiment"
 class OnHitDialog(QDialog):
     """Cases à cocher (toutes décochées) ; le Châtiment est une liste (un seul niveau par coup)."""
 
-    def __init__(self, win, title: str, options: list[dict], crit: bool = False):
+    def __init__(self, win, title: str, options: list[dict], crit: bool = False, hit_question: str = ""):
         super().__init__(win)
-        self.setWindowTitle("L'attaque touche : bonus de dégâts")
+        self.setWindowTitle("L'attaque touche-t-elle ?" if hit_question else "L'attaque touche : bonus de dégâts")
         self.options = options
         lay = QVBoxLayout(self)
         lay.addWidget(make_label(title + (" — coup critique : tous les dés seront doublés." if crit else ""), "head",
                                  wrap=True))
-        lay.addWidget(make_label("Cochez ce qui s'applique à ce coup (coût dépensé à la validation) :", "muted",
+        if hit_question:                                 # v53 : question « touche ? » et bonus dans une seule fenêtre
+            lay.addWidget(make_label(hit_question, "", wrap=True))
+        lay.addWidget(make_label("Si l'attaque touche, cochez les bonus à ajouter aux dégâts (le coût n'est dépensé "
+                                 "qu'en validant « Touché ») :" if hit_question else
+                                 "Cochez ce qui s'applique à ce coup (coût dépensé à la validation) :", "muted",
                                  wrap=True))
         self.checks: dict[str, QCheckBox] = {}
         smites = [o for o in options if o.get("groupe") == "chatiment"]
@@ -42,9 +46,10 @@ class OnHitDialog(QDialog):
             lay.addLayout(row)
         btns = QHBoxLayout()
         btns.addStretch(1)
-        ok = QPushButton("🎲 Lancer les dégâts")
+        ok = QPushButton("✔ Touché : lancer les dégâts" if hit_question else "🎲 Lancer les dégâts")
+        ok.setDefault(True)
         ok.clicked.connect(lambda: self.done(1))
-        cancel = QPushButton("Annuler")
+        cancel = QPushButton("✘ Raté" if hit_question else "Annuler")
         cancel.setProperty("role", "ghost")
         cancel.clicked.connect(lambda: self.done(0))
         btns.addWidget(cancel)
@@ -56,6 +61,13 @@ class OnHitDialog(QDialog):
         if self.smite is not None and self.smite.currentData():
             keys.append(self.smite.currentData())
         return keys
+
+
+def ask_hit(win, title: str, question: str, options: list[dict], crit: bool = False):
+    """v53 : « L'attaque touche-t-elle ? » ET les bonus au toucher (Attaque sournoise, Châtiment, manœuvre, dé psi…)
+    dans une seule fenêtre. None = raté ; sinon la liste des bonus cochés."""
+    dlg = OnHitDialog(win, title, options, crit, hit_question=question)
+    return dlg.chosen() if dlg.exec() else None
 
 
 def ask_on_hit(win, title: str, options: list[dict], crit: bool = False):
