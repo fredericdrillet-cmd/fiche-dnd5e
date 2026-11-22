@@ -253,18 +253,3 @@ class HarmonisationEquipementTests(unittest.TestCase):
         e.add_magic_item("Anneau de protection")
         e.set_equipped(0, True)
         self.assertEqual(e.paperdoll()["anneau_1"]["rarete"], "rare")
-
-    def test_web_refuse_au_dela_de_la_limite(self):
-        from web import service
-        e, ch = self.fresh()
-        for n in self.LINKED:
-            e.add_magic_item(n)
-        for i in range(3):
-            e.set_equipped(i, True)
-        res = service.apply(ch.to_dict(), [{"op": "magic_equip", "idx": 3, "value": True}])
-        self.assertIn("3 / 3", json_dump(res))
-
-
-def json_dump(obj) -> str:
-    import json
-    return json.dumps(obj, ensure_ascii=False)

@@ -1,7 +1,7 @@
 """
 Éditions de règles (v52) : mode 2014, 2024 ou libre, filtrage des données et multiclassage inter-éditions.
 
-Logique pure (aucune dépendance à l'interface), utilisée par le moteur, l'application bureau et la version web.
+Logique pure (aucune dépendance à l'interface), utilisée par le moteur et l'application bureau.
 
 - **Modes** : « 2014 » (contenu 2014 seul), « 2024 » (contenu 2024 seul) et « libre » (les deux éditions, avec un
   badge d'édition à l'affichage). Le mode est enregistré dans chaque personnage (`Character.edition_mode`) ; la

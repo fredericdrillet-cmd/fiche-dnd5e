@@ -1186,7 +1186,7 @@ class ExtrasMixin:
         return D.spec_from_detail("{} — {}".format(self.ch.forme_active, attack["nom"]), "attaque",
                                   detail + fx["detail"], fx["avantage"], fx["desavantage"], fx["echec"], note)
 
-    # ---- v52 : saisie rapide des PV (bureau et web) -------------------------------------------
+    # ---- v52 : saisie rapide des PV -------------------------------------------
     # ---- v52 : type de dégâts (résistances, immunités, réductions) -------------------------
     DAMAGE_TYPES = ["acide", "contondant", "feu", "force", "foudre", "froid", "nécrotique", "perforant", "poison",
                     "psychique", "radiant", "tonnerre", "tranchant"]

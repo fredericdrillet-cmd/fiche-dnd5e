@@ -1,11 +1,11 @@
 # Fiche de personnage & générateur D&D 5e (PyQt6) — version 2
 
-> **Version web mobile** : voir [README_WEB.md](README_WEB.md) (lancement `python app.py`, déploiement Render, commandes Git).
+> **Version web** : retirée en v53 (elle n'était plus à jour) ; elle sera reconstruite plus tard sur le moteur `core/`.
 
 ## Lancer l'application
 ```bash
 python -m venv .venv && source .venv/bin/activate        # Windows : .venv\Scripts\activate
-pip install -r requirements-desktop.txt                  # installe PyQt6 (version web : voir README_WEB.md)
+pip install -r requirements-desktop.txt                  # installe PyQt6
 python main.py
 ```
 Python 3.10+ requis. `python main.py --check` vérifie le chargement des JSON sans ouvrir l'interface.

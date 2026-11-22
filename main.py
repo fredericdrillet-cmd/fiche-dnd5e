@@ -51,7 +51,7 @@ def main() -> int:
     try:
         from ui.main_window import run
     except ModuleNotFoundError as exc:
-        print("Dépendance manquante :", exc, "\nInstallez-la avec :  pip install -r requirements.txt")
+        print("Dépendance manquante :", exc, "\nInstallez-la avec :  pip install -r requirements-desktop.txt")
         return 1
     return run(db)
 
