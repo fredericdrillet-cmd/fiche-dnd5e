@@ -63,6 +63,24 @@ class OnHitTests(unittest.TestCase):
         self.assertNotIn("tueur_colosses", self.keys(eng))
 
 
+class SmiteUndeadTests(unittest.TestCase):
+    def test_extra_d8_against_fiend_or_undead(self):
+        from core.combat_flow import SMITE_UNDEAD
+        for edition in ("2014", "2024"):
+            eng = sheet("Paladin", 5)
+            if edition == "2024":
+                eng.set_edition_mode("2024")
+                eng.normalize()
+                eng.ch.armes_cac[0]["nom"] = "Épée longue"
+                eng.normalize()
+            opts = eng.on_hit_options(eng.ch.armes_cac[0])
+            added = eng.apply_on_hit(opts, ["chatiment:1", SMITE_UNDEAD])
+            self.assertEqual([d for _l, d in added], ["2d8", "1d8"], edition)
+        eng = sheet("Paladin", 5)
+        opts = eng.on_hit_options(eng.ch.armes_cac[0])
+        self.assertEqual(eng.apply_on_hit(opts, [SMITE_UNDEAD]), [])   # sans Châtiment : rien
+
+
 class CustomArmorTests(unittest.TestCase):
     def test_custom_armor_on_base(self):
         eng = sheet("Guerrier", 5)

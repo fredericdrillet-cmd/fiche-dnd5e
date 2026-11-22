@@ -495,8 +495,12 @@ class OnHitMixin:
                 if o.get("groupe") == "chatiment" and self.sheet_edition == 2024:
                     self.ch.tour_bonus = True                # Châtiment divin 2024 : action bonus
             out.append((o["label"].split(" (")[0], o["dice"]))
+        if smite_done and SMITE_UNDEAD in chosen:          # v53 : +1d8 contre un fiélon ou un mort-vivant
+            out.append(("Châtiment divin — fiélon ou mort-vivant", "1d8"))
         return out
 
+
+SMITE_UNDEAD = "chatiment:fielon_mort_vivant"            # case de la fenêtre « touche ? » (Châtiment divin)
 
 MASTERY_EFFECTS = {
     "Coup double": "Coup double : l'attaque supplémentaire de l'arme légère fait partie de l'action Attaquer (pas "

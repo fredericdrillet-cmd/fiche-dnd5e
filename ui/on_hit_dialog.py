@@ -38,6 +38,7 @@ class OnHitDialog(QDialog):
             lay.addWidget(cb)
             self.checks[o["key"]] = cb
         self.smite = None
+        self.smite_undead = None
         if smites:
             row = QHBoxLayout()
             row.addWidget(make_label("⚡ Châtiment divin :"))
@@ -47,6 +48,15 @@ class OnHitDialog(QDialog):
                 self.smite.addItem("{} : +{} ({})".format(o["label"], o["dice"], o["cout"]), o["key"])
             row.addWidget(self.smite, 1)
             lay.addLayout(row)
+            # v53 : la cible est-elle un fiélon ou un mort-vivant ? (+1d8 au Châtiment, 2014 et 2024)
+            self.smite_undead = QCheckBox("La cible est un fiélon ou un mort-vivant : +1d8 au Châtiment")
+            self.smite_undead.setToolTip(rich_tip("Châtiment divin", "Les dégâts augmentent de 1d8 si la cible est "
+                                                  "un fiélon ou un mort-vivant (sans effet si aucun Châtiment n'est "
+                                                  "choisi)."))
+            self.smite_undead.setEnabled(False)
+            self.smite.currentIndexChanged.connect(
+                lambda _i=0: self.smite_undead.setEnabled(bool(self.smite.currentData())))
+            lay.addWidget(self.smite_undead)
         btns = QHBoxLayout()
         btns.addStretch(1)
         ok = QPushButton("✔ Touché : lancer les dégâts" if hit_question else "🎲 Lancer les dégâts")
@@ -63,6 +73,9 @@ class OnHitDialog(QDialog):
         keys = [k for k, cb in self.checks.items() if cb.isChecked()]
         if self.smite is not None and self.smite.currentData():
             keys.append(self.smite.currentData())
+            if self.smite_undead is not None and self.smite_undead.isChecked():
+                from core.combat_flow import SMITE_UNDEAD
+                keys.append(SMITE_UNDEAD)
         return keys
 
 
