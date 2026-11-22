@@ -1192,9 +1192,9 @@ class LevelUpDialog(QDialog):
                 for sp in rows:
                     it = QListWidgetItem(("✦ " if sp["nom"] in added else "") + self._spell_label(sp))
                     it.setData(Qt.ItemDataRole.UserRole, sp["nom"])
-                    IC.spell_card(it, self.sim.db, sp, "✦ " if sp["nom"] in added else "")
-                    if sp["nom"] in added:
-                        it.setToolTip(it.toolTip() + "<p><i>Appris à ce niveau : double-clic pour le retirer.</i></p>")
+                    IC.spell_card(it, self.sim.db, sp, "✦ " if sp["nom"] in added else "",
+                                  extra="<p><i>Appris à ce niveau : double-clic pour le retirer.</i></p>"
+                                  if sp["nom"] in added else "")
                     if key == "mine1" and prep["toujours"]:        # sorts connus : toujours utilisables
                         it.setText("✔ " + it.text())
                     elif key == "mine1":                             # case « Préparé »
