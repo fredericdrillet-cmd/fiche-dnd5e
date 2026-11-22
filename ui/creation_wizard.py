@@ -669,16 +669,18 @@ class CreationWizard(QDialog):
                 row = QHBoxLayout()
                 avail, mine = QListWidget(), QListWidget()
                 for lst in (avail, mine):
-                    lst.setMinimumHeight(170)
+                    lst.setMinimumHeight(240)          # v53 : cartes de sorts
                 opts = [sp for sp in eng.level_spell_options(eng, cls) if (sp["niveau"] == 0) == (kind == "mineurs")]
                 owned = [eng.db.find_spell(s["nom"]) or {"nom": s["nom"], "niveau": 1}
                          for s in self.ch.sorts.get(cls, [])]
                 owned = [sp for sp in owned if (sp.get("niveau", 1) == 0) == (kind == "mineurs")]
+                from . import icons as IC                # v53 : cartes de sorts
                 for lst, rows in ((avail, opts), (mine, owned)):
+                    IC.card_grid(lst)
                     for sp in rows:
                         it = QListWidgetItem("{} ({})".format(sp["nom"], sp.get("ecole", "")))
                         it.setData(Qt.ItemDataRole.UserRole, sp["nom"])
-                        it.setToolTip(rich_tip(sp["nom"], sp.get("description", "")))
+                        IC.spell_card(it, eng.db, sp)
                         lst.addItem(it)
                 avail.itemDoubleClicked.connect(lambda it, c=cls: self.learn(c, it.data(Qt.ItemDataRole.UserRole)))
                 mine.itemDoubleClicked.connect(lambda it, c=cls: self.unlearn(c, it.data(Qt.ItemDataRole.UserRole)))
@@ -745,6 +747,22 @@ class CreationWizard(QDialog):
         if not plan and not slots and not racial and not total:
             lay.addWidget(make_label("Aucun sort à choisir : passez à l'étape suivante.", "muted"))
         lay.addStretch(1)
+        self._fit_page(lay)                              # v53 : la page défilante suit la hauteur des cartes
+
+    @staticmethod
+    def _fit_page(lay) -> None:
+        """Hauteur minimale de la page = celle de son contenu, calculée une fois les widgets en place."""
+        def fit() -> None:
+            try:
+                lay.activate()
+                lay.parentWidget().setMinimumHeight(lay.totalMinimumSize().height())
+            except (AttributeError, TypeError, RuntimeError):
+                pass
+        try:
+            from PyQt6.QtCore import QTimer
+            QTimer.singleShot(0, fit)
+        except (AttributeError, TypeError):
+            pass
 
     def set_manifestation(self, index: int, name: str) -> None:
         """v52 : manifestation occulte choisie à la création (une seule fois chacune)."""

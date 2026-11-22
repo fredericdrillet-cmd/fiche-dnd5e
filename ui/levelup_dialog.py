@@ -1076,10 +1076,12 @@ class LevelUpDialog(QDialog):
             w[key].setEnabled(ready)
         with blocked(w["options"]):
             w["options"].clear()
+            from . import icons as IC
+            IC.card_grid(w["options"])
             for sp in opts if ready else []:
                 it = QListWidgetItem(self._spell_label(sp))
                 it.setData(Qt.ItemDataRole.UserRole, sp["nom"])
-                it.setToolTip(rich_tip(sp["nom"], sp.get("description", "")))
+                IC.spell_card(it, self.sim.db, sp)
                 w["options"].addItem(it)
         w["summary"].setText("✔ Échange : {} → {}".format(st["oublie"], st["nouveau"]) if st["nouveau"] else
                              "⚠ Choisissez le remplaçant de {}.".format(st["oublie"]) if st["oublie"] else
@@ -1174,21 +1176,25 @@ class LevelUpDialog(QDialog):
             w["prep_label"].setText("Préparés : {} / {} (limite de la classe)".format(prep["prepares"], prep["maximum"]))
         w["prep_bar"].setRange(0, max(1, prep["maximum"]))
         w["prep_bar"].setValue(min(prep["prepares"], max(1, prep["maximum"])))
+        from . import icons as IC                        # v53 : cartes de sorts (icône unique, couleur de l'école)
         with blocked(w["avail0"], w["avail1"], w["mine0"], w["mine1"]):
             for key, rows in (("avail0", cantrips), ("avail1", leveled)):
+                IC.card_grid(w[key])
                 w[key].clear()
                 for sp in rows:
                     it = QListWidgetItem(self._spell_label(sp))
                     it.setData(Qt.ItemDataRole.UserRole, sp["nom"])
-                    it.setToolTip(rich_tip(sp["nom"], sp.get("description", "")))
+                    IC.spell_card(it, self.sim.db, sp)
                     w[key].addItem(it)
             for key, rows in (("mine0", mine0), ("mine1", mine1)):
+                IC.card_grid(w[key])
                 w[key].clear()
                 for sp in rows:
                     it = QListWidgetItem(("✦ " if sp["nom"] in added else "") + self._spell_label(sp))
                     it.setData(Qt.ItemDataRole.UserRole, sp["nom"])
-                    it.setToolTip(rich_tip(sp["nom"], sp.get("description", "") + (
-                        "\nAppris à ce niveau : double-clic pour le retirer." if sp["nom"] in added else "")))
+                    IC.spell_card(it, self.sim.db, sp, "✦ " if sp["nom"] in added else "")
+                    if sp["nom"] in added:
+                        it.setToolTip(it.toolTip() + "<p><i>Appris à ce niveau : double-clic pour le retirer.</i></p>")
                     if key == "mine1" and prep["toujours"]:        # sorts connus : toujours utilisables
                         it.setText("✔ " + it.text())
                     elif key == "mine1":                             # case « Préparé »

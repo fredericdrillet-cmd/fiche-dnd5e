@@ -118,3 +118,33 @@ def spell_pixmap(db, spell_name: str, category: str = "", size: int = 56, dim: b
 
 def icon_file(name: str) -> str:
     return get_resource_path("data/icons/{}.svg".format(name))
+
+
+# ---------------------------------------------------------------------------------------------- cartes de sorts
+def card_grid(lst, icon: int = 52, cell=(118, 92)) -> None:
+    """v53 : liste en grille de cartes (icône carrée, nom dessous) — mêmes éléments, mêmes signaux qu'avant."""
+    from PyQt6.QtCore import QSize
+    from PyQt6.QtWidgets import QListView
+    try:
+        lst.setViewMode(QListView.ViewMode.IconMode)
+        lst.setIconSize(QSize(icon, icon))
+        lst.setGridSize(QSize(*cell))
+        lst.setResizeMode(QListView.ResizeMode.Adjust)
+        lst.setMovement(QListView.Movement.Static)
+        lst.setWordWrap(True)
+        lst.setUniformItemSizes(True)
+    except (AttributeError, TypeError):                  # faux Qt des tests
+        pass
+
+
+def spell_card(it, db, sp: dict, prefix: str = "", size: int = 52) -> None:
+    """Élément de liste -> carte de sort : icône unique (couleur de l'école), nom court, niveau ; fiche au survol."""
+    from PyQt6.QtGui import QIcon
+    from .spell_inspector import spell_card_html
+    lvl = int(sp.get("niveau") or 0)
+    tags = "".join(x for x, on in ((" Ⓒ", sp.get("concentration")), (" ᴿ", sp.get("rituel"))) if on)
+    it.setText("{}{}{}".format(prefix, sp["nom"].replace(" (2024)", ""), tags))   # niveau : dans la fiche
+    it.setData(Qt.ItemDataRole.AccessibleDescriptionRole, "tour de magie" if lvl == 0 else "niveau {}".format(lvl))
+    if HAS_SVG:
+        it.setIcon(QIcon(spell_pixmap(db, sp["nom"], size=size)))
+    it.setToolTip(spell_card_html(sp))
