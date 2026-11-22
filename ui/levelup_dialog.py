@@ -30,6 +30,7 @@ from PyQt6.QtWidgets import (QComboBox, QDialog, QFrame, QGraphicsDropShadowEffe
 
 from core.levelup import SCHOOLS, filter_spells, roadmap_icons
 from core.rules import ABILITIES
+from core.rules import norm as R_norm
 from . import theme
 from .common import blocked, make_label, rich_tip
 from .dialogs import BlurBackdrop
@@ -637,10 +638,13 @@ class LevelUpDialog(QDialog):
                 row.addWidget(make_label("et +1 à"))
                 row.addWidget(a2, 1)
         elif m == "don":
-            row.addWidget(feat, 2)
+            row.addStretch(1)                            # v53 : liste des dons + panneau de détail (ci-dessous)
+            feat.setVisible(False)
         else:
             row.addStretch(1)
         lay.addLayout(row)
+        if m == "don":
+            lay.addLayout(self._feat_picker(slot, feat, feats, c.get("don", "")))
         # aperçu / résumé sous le sélecteur
         if m in ("plus2", "plus1x2"):
             gains = {c.get("a1"): 2 if m == "plus2" else 1}
@@ -667,11 +671,74 @@ class LevelUpDialog(QDialog):
             lab.setText(summary)
             lay.addWidget(lab)
         elif m == "don":
-            lay.addWidget(make_label("Survolez la liste pour lire l'effet de chaque don.", "muted", wrap=True))
+            lay.addWidget(make_label("Cliquez un don pour le choisir ; sa fiche s'affiche à droite.", "muted",
+                                     wrap=True))
         for cb in (mode, a1, a2, feat):
             cb.activated.connect(lambda _=0, s=slot["id"], w=(mode, a1, a2, feat), f=feats: self._set_asi(s, w, f))
         self.choice_widgets["asi:" + slot["id"]] = (mode, a1, a2, feat)
         self.choices_lay.addWidget(card)
+
+    def _feat_html(self, name: str) -> str:
+        f = self.sim.db.feats.get(name, {})
+        state, why = self.sim.feat_status(name)
+        t = theme.current()
+        return ("<h3 style='color:{acc}'>{n}</h3><p>{ok}</p><p>{d}</p>{b}").format(
+            acc=t.accent_text, n=html.escape(name),
+            ok="<span style='color:{}'>✔ Prérequis remplis</span>".format(t.good) if state == "ok" else
+            "<span style='color:{}'>⚠ {}</span>".format(t.warn, html.escape(why or "Prérequis non remplis")),
+            d=html.escape(f.get("description", "")).replace("\n", "<br/>"),
+            b="<p><i>Bonus : {}</i></p>".format(html.escape(f["asi_texte"])) if f.get("asi_texte") else "")
+
+    def _feat_picker(self, slot: dict, feat_combo, feats: list[str], current: str):
+        """v53 : liste des dons (✔ prérequis remplis / ⚠ non remplis), recherche, fiche détaillée à droite."""
+        from PyQt6.QtWidgets import QLineEdit as _QLineEdit
+        row = QHBoxLayout()
+        left = QVBoxLayout()
+        search = _QLineEdit()
+        search.setPlaceholderText("Rechercher un don…")
+        lst = QListWidget()
+        lst.setMinimumHeight(220)
+        detail = QTextBrowser()
+        detail.setMinimumHeight(220)
+
+        def fill(text: str = "") -> None:
+            with blocked(lst):
+                lst.clear()
+                for n in feats:
+                    if text and R_norm(text) not in R_norm(n):
+                        continue
+                    ok = self.sim.feat_status(n)[0] == "ok"
+                    it = QListWidgetItem("{} {}".format("✔" if ok else "⚠", n))
+                    it.setData(Qt.ItemDataRole.UserRole, n)
+                    if not ok:
+                        it.setForeground(QColor(theme.current().muted))
+                    lst.addItem(it)
+                    if n == current:
+                        lst.setCurrentItem(it)
+
+        def show(it) -> None:
+            if it is not None:
+                detail.setHtml(self._feat_html(it.data(Qt.ItemDataRole.UserRole)))
+
+        def pick(it) -> None:
+            name = it.data(Qt.ItemDataRole.UserRole)
+            if name in feats:
+                feat_combo.setCurrentIndex(feats.index(name) + 1)
+                self._set_asi(slot["id"], self.choice_widgets["asi:" + slot["id"]], feats)
+        fill()
+        detail.setHtml(self._feat_html(current) if current else
+                       "<p><i>Survolez ou cliquez un don pour lire sa fiche.</i></p>")
+        search.textChanged.connect(fill)
+        lst.currentItemChanged.connect(lambda it, _prev=None: show(it))
+        lst.itemEntered.connect(show)
+        lst.setMouseTracking(True)
+        lst.itemClicked.connect(pick)
+        left.addWidget(search)
+        left.addWidget(lst)
+        row.addLayout(left, 2)
+        row.addWidget(detail, 3)
+        self.choice_widgets["dons_liste:" + slot["id"]] = lst
+        return row
 
     # ------------------------------------------------------------------ manifestations occultes (v43)
     def _inv_base(self) -> list[str]:
