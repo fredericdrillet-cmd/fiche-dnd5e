@@ -238,6 +238,9 @@ class CreationWizard(QDialog):
                                                keys=lambda: self._feat_keys(self._race_feat()))
         rc.addWidget(self.race_feat_panel)
         self.race_panel.race_box.layout().insertWidget(1, self.race_choices)   # juste sous le choix de la race
+        from .card_picker import CardPicker                 # v53 : cartes d'espèce, de classe et d'historique
+        self.race_cards = CardPicker(self.pick_race, icon=72, cell=(140, 128))
+        self.race_panel.race_box.layout().insertWidget(0, self.race_cards)
         self.pages.addWidget(self._scroll(w))             # v50 : défilement en fenêtre réduite
         # 2. historique
         self.bg_panel = RaceTab(self.host)
@@ -246,6 +249,8 @@ class CreationWizard(QDialog):
         w, lay = self._page()                             # v52 : + choix du don d'origine (2024)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.addWidget(self.bg_panel)
+        self.bg_cards = CardPicker(self.pick_background, icon=56, cell=(150, 104), height=230)
+        self.bg_panel.bg_box.layout().insertWidget(0, self.bg_cards)
         self.bg_choices = QGroupBox("Choix du don d'origine")
         bc = QVBoxLayout(self.bg_choices)
         self.bg_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
@@ -261,6 +266,8 @@ class CreationWizard(QDialog):
         self.class_combo.activated.connect(lambda _=0: self._on_class(self.class_combo.currentText()))
         row.addWidget(self.class_combo, 1)
         lay.addLayout(row)
+        self.class_cards = CardPicker(lambda n: self._on_class(n), icon=64, cell=(136, 100), height=220)
+        lay.addWidget(self.class_cards)
         self.class_info = make_label("", "muted", wrap=True)
         lay.addWidget(self.class_info)
         self.guide = ClassGuidePanel()                    # v49 : fiche pédagogique de la classe et des sous-classes
@@ -483,7 +490,25 @@ class CreationWizard(QDialog):
             self.ch.ameliorations[slot["id"]] = {"mode": "don", "don": name}
         self.host.changed()
 
+    def pick_race(self, name: str) -> None:
+        """v53 : carte d'espèce cliquée."""
+        if name and name != self.ch.race:
+            self.engine.change_race(name)
+            self.host.changed()
+
+    def pick_background(self, name: str) -> None:
+        if name and name != self.ch.historique:
+            self.ch.historique = name
+            self.engine.apply_background()
+            self.host.changed()
+
     def _refresh_race(self) -> None:
+        from .card_picker import race_pixmap
+        eng = self.engine
+        self.race_cards.set_items([(r, race_pixmap(r), rich_tip(r, (eng.db.races.get(r) or {}).get("description", "")
+                                                                [:400] if isinstance(eng.db.races.get(r), dict) else ""))
+                                   for r in eng.race_options()])
+        self.race_cards.select(self.ch.race)
         self.race_panel.refresh()
         eng = self.engine
         self.race_color_panel.refresh()
@@ -503,6 +528,10 @@ class CreationWizard(QDialog):
         self.race_choices.setVisible(bool(self.race_color_panel.sets()) or slot is not None)
 
     def _refresh_background(self) -> None:
+        from .card_picker import background_pixmap
+        eng = self.engine
+        self.bg_cards.set_items([(b, background_pixmap(b), "") for b in eng.background_options()])
+        self.bg_cards.select(self.ch.historique)
         self.bg_panel.refresh()
         self.bg_feat_panel.refresh()
         self.bg_choices.setVisible(bool(self.bg_feat_panel.sets()))
@@ -568,6 +597,9 @@ class CreationWizard(QDialog):
         tips = {n: rich_tip(n, "Dé de vie {} — sauvegardes : {}".format(
             db.start_info(n)["de_vie"], ", ".join(db.start_info(n)["sauvegardes"]))) for n in db.class_names()}
         fill_combo(self.class_combo, db.class_names(), cls, tips)
+        from .card_picker import class_pixmap
+        self.class_cards.set_items([(n, class_pixmap(n), tips.get(n, "")) for n in db.class_names()])
+        self.class_cards.select(cls)
         info = db.start_info(cls)
         self.class_info.setText("Dé de vie : {} — PV au niveau 1 : {} — Jets de sauvegarde : {}<br/>Armures : {} — "
                                 "Armes : {}".format(info["de_vie"], eng.hp_max(), ", ".join(info["sauvegardes"]),
