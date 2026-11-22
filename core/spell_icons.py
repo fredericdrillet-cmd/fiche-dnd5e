@@ -100,21 +100,40 @@ def base_name(name: str) -> str:
     return re.sub(r"\s*\(2024\)\s*$", "", name or "").strip()
 
 
+_TRAITS: dict = {}
+_RX: dict = {}
+
+
+def _rx(pattern: str):
+    """Motif compilé une fois (v53 : analyse des 534 sorts ×5 plus rapide)."""
+    c = _RX.get(pattern)
+    if c is None:
+        c = _RX[pattern] = re.compile(pattern)
+    return c
+
+
 def spell_traits(spell: dict) -> dict:
-    """{effet, forme, motif, ecole} déduits des données du sort."""
+    """{effet, forme, motif, ecole} déduits des données du sort (mémorisés par nom et texte)."""
+    key = (spell.get("nom", ""), spell.get("description", ""), spell.get("type_degats", ""))
+    if key not in _TRAITS:
+        _TRAITS[key] = _spell_traits(spell)
+    return _TRAITS[key]
+
+
+def _spell_traits(spell: dict) -> dict:
     desc = norm(spell.get("description", ""))
     dtype = norm(spell.get("type_degats", "") or "")
     effect = next((k for k in DAMAGE_KEYS if dtype.startswith(k)), "")
     if effect in ("contondant", "perforant", "tranchant"):   # dégâts physiques d'un élément : l'élément prime
         element = next((k for k, rx in EFFECT_WORDS if k in ("eau", "froid", "feu", "foudre", "terrain", "nature")
-                        and re.search(rx, desc)), "")
+                        and _rx(rx).search(desc)), "")
         effect = element or effect
     if not effect:
-        effect = next((k for k, rx in EFFECT_WORDS if re.search(rx, desc)), "")
-    shape = next((k for k, rx in SHAPES if re.search(rx, desc)), "")
+        effect = next((k for k, rx in EFFECT_WORDS if _rx(rx).search(desc)), "")
+    shape = next((k for k, rx in SHAPES if _rx(rx).search(desc)), "")
     if not shape and norm(spell.get("portee", "")).startswith("contact"):
         shape = "contact"
-    motif = next((k for k, rx, _f in MOTIFS if re.search(rx, desc + " " + norm(spell.get("nom", "")))), "")
+    motif = next((k for k, rx, _f in MOTIFS if _rx(rx).search(desc + " " + norm(spell.get("nom", "")))), "")
     school = norm(spell.get("ecole", ""))
     return {"effet": effect, "forme": shape, "motif": motif, "ecole": school}
 

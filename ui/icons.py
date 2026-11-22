@@ -29,23 +29,15 @@ def _svg_bytes(body: str) -> QByteArray:
 
 @lru_cache(maxsize=4096)
 def _glyph_mask(body: str, size: int) -> QImage:
-    """Dessin -> masque alpha (blanc opaque = visible, noir = découpe transparente)."""
-    img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
-    img.fill(Qt.GlobalColor.transparent)
+    """Dessin -> masque alpha (blanc opaque = visible, noir = découpe transparente). v53 : rendu en blanc sur fond
+    NOIR opaque, puis niveaux de gris = couverture × luminance — sans boucle Python sur les pixels."""
+    img = QImage(size, size, QImage.Format.Format_RGB32)
+    img.fill(QColor(0, 0, 0))
     p = QPainter(img)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
     QSvgRenderer(_svg_bytes(body)).render(p, QRectF(0, 0, size, size))
     p.end()
-    gray = img.convertToFormat(QImage.Format.Format_Grayscale8)
-    alpha = img.convertToFormat(QImage.Format.Format_Alpha8)
-    mask = QImage(size, size, QImage.Format.Format_Grayscale8)
-    for y in range(size):                                # alpha × luminance : le noir devient transparent
-        g_line, a_line, m_line = gray.scanLine(y), alpha.scanLine(y), mask.scanLine(y)
-        g_line.setsize(size)
-        a_line.setsize(size)
-        m_line.setsize(size)
-        m_line[:] = bytes(a * l // 255 for a, l in zip(bytes(a_line), bytes(g_line)))
-    return mask
+    return img.convertToFormat(QImage.Format.Format_Grayscale8)
 
 
 def _tinted(body: str, size: int, color: str) -> QImage:

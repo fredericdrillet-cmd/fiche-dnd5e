@@ -198,16 +198,24 @@ def die_icon(sides: int, size: int = 22) -> QIcon:
     return QIcon(pix)
 
 
+_D20_CACHE: dict = {}
+
+
 def d20_icon(size: int = 22) -> QIcon:
+    key = (size, theme.current().key)                    # v53 : dessiné une fois par taille et par thème
+    if key in _D20_CACHE:
+        return _D20_CACHE[key]
     pix = QPixmap(size, size)
     pix.fill(QColor(0, 0, 0, 0))
     p = QPainter(pix)
     try:
         paint_d20(p, QRectF(1, 1, size - 2, size - 2), theme.current().ornament, "20" if size >= 30 else "")
     except TypeError:                                   # environnement de test sans Qt réel
-        pass
+        p.end()
+        return QIcon(pix)
     p.end()
-    return QIcon(pix)
+    _D20_CACHE[key] = QIcon(pix)
+    return _D20_CACHE[key]
 
 
 def d20_button(tip: str = "Lancer le d20") -> QToolButton:
