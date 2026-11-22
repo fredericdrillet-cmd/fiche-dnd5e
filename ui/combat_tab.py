@@ -22,7 +22,7 @@ from . import theme
 from .orbs import GaugeBar, OrbBar
 from core import dice as D
 from core import durations as D_
-from .common import (CENTER, BaseTab, DamageLabel, adv_badge, blocked, calc_tip, center, fill_combo, formula_html,
+from .common import (CENTER, BaseTab, DamageLabel, adv_badge, blocked, no_truncate, calc_tip, center, fill_combo, formula_html,
                      head, hline, make_label, rich_tip)
 from .dialogs import ask_choice, ask_int, ask_yes_no
 from .dice_dialog import d20_button, d20_icon, die_icon, retain_when_hidden, roll_damage_dialog, roll_dice
@@ -541,6 +541,7 @@ class CombatTab(BaseTab):
         self.insp_check.setToolTip(rich_tip("Inspiration", "Cochée : vous avez un point d'inspiration (accordé par "
                                             "le MJ, ou Ingénieux). Il se dépense dans la fenêtre d'un jet de d20."))
         self.insp_check.toggled.connect(self._on_inspiration)
+        no_truncate(self.insp_check)
         hl.addWidget(self.insp_check)
         self.style_badge = make_label("", "muted")
         hl.addWidget(self.style_badge)

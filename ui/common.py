@@ -153,6 +153,19 @@ def center(text: str = "", role: str = "") -> QLabel:
     return make_label(text, role, align=CENTER)
 
 
+def no_truncate(*widgets) -> None:
+    """v53 : le widget (bouton, case à cocher) ne rétrécit jamais sous la taille de son texte complet — calculée
+    par Qt avec la police du thème (politique horizontale « Minimum »)."""
+    from PyQt6.QtWidgets import QSizePolicy
+    for w in widgets:
+        try:
+            pol = w.sizePolicy()
+            pol.setHorizontalPolicy(QSizePolicy.Policy.Minimum)
+            w.setSizePolicy(pol)
+        except (AttributeError, TypeError):
+            pass
+
+
 def head(text: str) -> QLabel:
     """Intitulé de colonne de grille : centré, couleur d'accent."""
     return make_label(text, "head", align=CENTER)

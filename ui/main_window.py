@@ -126,6 +126,8 @@ class MainWindow(QMainWindow):
         self._sync_tabs()
         self.tabs.currentChanged.connect(self._on_tab_changed)
         self.tabs.tabBar().tabMoved.connect(self._on_tab_moved)
+        self.tabs.tabBar().setElideMode(Qt.TextElideMode.ElideNone)   # v53 : noms d'onglets jamais tronqués
+        self.tabs.tabBar().setUsesScrollButtons(True)
         lay.addWidget(self.tabs, 1)
 
         # v28 : deux voyants cliquables — « ○ N choix à faire » (oublis, couleur d'ornement) et « ⚠ N incohérence(s) »
@@ -200,8 +202,8 @@ class MainWindow(QMainWindow):
         self.xp_hint = make_label("", "muted")
         # v51 : « Vitesse » et « Maîtrise » retirées de l'en-tête (déjà affichées dans l'onglet Combat)
         self.badges = {k: make_label("", "badge") for k in ("pv", "ca", "init")}
-        self.name_edit.setMinimumWidth(240)
-        self.player_edit.setMinimumWidth(220)            # v48 : la place de l'alignement revient au joueur
+        self.name_edit.setMinimumWidth(150)              # v53 : l'en-tête tient en 1366 px sans rien tronquer
+        self.player_edit.setMinimumWidth(130)            # v48 : la place de l'alignement revient au joueur
         h.addWidget(make_label("⚜ Personnage", "title"))
         h.addWidget(self.name_edit, 2)
         h.addWidget(make_label("Joueur"))
@@ -223,6 +225,8 @@ class MainWindow(QMainWindow):
                                              "niveau pas à pas : classe, points de vie, aptitudes gagnées, choix du "
                                              "niveau, récapitulatif avant / après (Ctrl+L)."))
         self.levelup_btn.clicked.connect(self.action_level_up)
+        from .common import no_truncate
+        no_truncate(self.levelup_btn)
         h.addWidget(self.levelup_btn)
         from .dice_dialog import d20_button
         for k, b in self.badges.items():

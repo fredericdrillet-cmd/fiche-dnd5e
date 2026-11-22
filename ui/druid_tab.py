@@ -17,7 +17,7 @@ from PyQt6.QtCore import Qt
 from core import rules as R
 from core.rules import norm
 from . import theme
-from .common import BaseTab, cell, make_label, rich_tip, style_table
+from .common import BaseTab, cell, make_label, no_truncate, rich_tip, style_table
 from .orbs import OrbBar
 
 
@@ -75,6 +75,7 @@ class DruidTab(BaseTab):
         self.search = QLineEdit()
         self.search.setPlaceholderText("Rechercher une bête…")
         self.show_all = QCheckBox("Afficher aussi les formes interdites (grisées)")
+        no_truncate(self.show_all)
         flt.addWidget(self.search, 1)
         flt.addWidget(self.show_all)
         ll.addLayout(flt)
@@ -257,6 +258,7 @@ class BeastPickerDialog(QDialog):
         self.search = QLineEdit()
         self.search.setPlaceholderText("Rechercher une bête…")
         self.show_all = QCheckBox("Afficher aussi les formes interdites (grisées)")
+        no_truncate(self.show_all)
         flt.addWidget(self.search, 1)
         flt.addWidget(self.show_all)
         ll.addLayout(flt)

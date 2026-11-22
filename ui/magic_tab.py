@@ -23,7 +23,7 @@ from core import dice as D
 from .dice_dialog import d20_icon, roll_damage_dialog, roll_dice
 from .manifestations_panel import ManifestationsPanel
 from .orbs import OrbBar
-from .common import CENTER, BaseTab, blocked, cell, check_item, fill_combo, head, make_label, rich_tip, style_table
+from .common import CENTER, BaseTab, blocked, cell, check_item, fill_combo, head, make_label, no_truncate, rich_tip, style_table
 
 ALL_LEVELS = "Tous les niveaux"
 ALL_SCHOOLS = "Toutes les écoles"
@@ -237,6 +237,7 @@ class MagicTab(BaseTab):
         top_row = QHBoxLayout()
         self.count_label = make_label("", "muted", wrap=True)
         self.prepared_only = QCheckBox("Sorts préparés seulement")
+        no_truncate(self.prepared_only)
         self.prepared_only.setToolTip(rich_tip("Filtre d'affichage", "Coché : n'affiche que les sorts préparés "
                                                "(plus les sorts mineurs et les sorts de sous-classe toujours "
                                                "préparés). Décoché : tous les sorts connus / du grimoire. "
@@ -336,6 +337,7 @@ class MagicTab(BaseTab):
             self.level_chips.append(b)
         chips.addStretch(1)
         self.unknown_only = QCheckBox("Masquer mes sorts")
+        no_truncate(self.unknown_only)
         self.unknown_only.setToolTip(rich_tip("Masquer mes sorts", "Cache les sorts déjà ajoutés à votre liste."))
         chips.addWidget(self.unknown_only)
         ll.addLayout(chips)

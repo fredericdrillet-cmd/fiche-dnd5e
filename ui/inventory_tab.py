@@ -12,7 +12,7 @@ from . import theme
 from core import weapon_actions as WA
 from .game_widgets import ActionChip, clear_layout, use_consumable
 from .magic_items_panel import MagicItemsPanel
-from .common import CENTER, BaseTab, blocked, cell, fill_combo, indicator_qss, make_label, rich_tip, style_table
+from .common import CENTER, BaseTab, blocked, cell, fill_combo, indicator_qss, make_label, no_truncate, rich_tip, style_table
 
 ALL_CATEGORIES = "Toutes catégories"
 CATEGORIES = [ALL_CATEGORIES, "Équipement", "Paquetage", "Arme", "Armure", "Bouclier", "Outil"]
@@ -93,7 +93,6 @@ class InventoryTab(BaseTab):
         self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         style_table(self.table, stretch_col=0)
         il.addWidget(self.table)
-        btns = QHBoxLayout()
         self.del_btn = QPushButton("Retirer la ligne")
         self.bg_btn = QPushButton("Équipement de l'historique")
         self.use_btn = QPushButton("🧪 Utiliser / boire")
@@ -107,11 +106,11 @@ class InventoryTab(BaseTab):
                                            "secondaire, anneau, cape…) ou le retire. Le bonus +X s'applique dès que "
                                            "l'objet est équipé (et harmonisé s'il l'exige)."))
         self.equip_btn.clicked.connect(self._on_equip_magic)
-        btns.addWidget(self.use_btn)
-        btns.addWidget(self.equip_btn)
-        btns.addWidget(self.del_btn)
-        btns.addWidget(self.bg_btn)
-        il.addLayout(btns)
+        grid_btns = QGridLayout()                         # v53 : deux rangées, libellés jamais tronqués
+        for k, b in enumerate((self.use_btn, self.equip_btn, self.del_btn, self.bg_btn)):
+            grid_btns.addWidget(b, k // 2, k % 2)
+        no_truncate(self.use_btn, self.equip_btn, self.del_btn, self.bg_btn, self.pack_btn)
+        il.addLayout(grid_btns)
         left.addWidget(inv, 1)
         root.addLayout(left, 3)
 
@@ -386,6 +385,7 @@ class InventoryTab(BaseTab):
         magic.setToolTip(rich_tip("Bonus magique", "Arme +1, +2 ou +3 : s'ajoute au toucher et aux dégâts."))
         magic.activated.connect(lambda idx, k=key, n=i: self._set_weapon(k, n, "bonus", idx))
         prof = QCheckBox("Maîtrisée")
+        no_truncate(prof)
         st = self.engine.weapon_stats(slot) or {}
         prof.setChecked(bool(st.get("maitrise", slot.get("maitrise"))))
         prof.setToolTip(rich_tip("Maîtrise de l'arme", "Cochée : votre bonus de maîtrise s'ajoute au toucher. "
