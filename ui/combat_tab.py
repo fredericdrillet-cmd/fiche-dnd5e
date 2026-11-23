@@ -1322,8 +1322,18 @@ class CombatTab(BaseTab):
         from .spell_flow import resolve_spell
         win, info = self.win, res["objet"]
         if res.get("objet_sort"):
-            resolve_spell(win, self.engine, res["objet_sort"], int(res.get("objet_niveau") or 0), "",
-                          self._attack_flow)
+            self.engine.item_spell_override = info.get("stats")   # v53 : DD / attaque fixes (Tatouage sortilège)
+            try:
+                resolve_spell(win, self.engine, res["objet_sort"], int(res.get("objet_niveau") or 0), "",
+                              self._attack_flow)
+            finally:
+                self.engine.item_spell_override = None
+        elif info.get("degats"):                          # v53 : capacité qui inflige des dégâts (Vrilles agrippantes)
+            if ask_yes_no(win, "[Objet Magique : {}]".format(info["objet"]), "{}\n\n{}\n\nLancer les dégâts (si la "
+                          "cible rate son jet de sauvegarde) ?".format(info["message"], info["description"][:600]),
+                          yes="Lancer les dégâts", no="Fermer", default_no=False):
+                roll_damage_dialog(win, D.DamageSpec("{} — {}".format(info["objet"], info.get("dd", "")),
+                                                     info["degats"], info.get("type_degats", "")))
         else:
             ask_yes_no(win, "[Objet Magique : {}]".format(info["objet"]), "{}\n\n{}".format(
                 info["message"], info["description"][:900]), yes="OK", no="Fermer", default_no=False)
@@ -2305,7 +2315,9 @@ class CombatTab(BaseTab):
         spec.parts = list(getattr(damage_spec, "parts", []) or [])   # v52 : dégâts par type
         if mastery:
             spec.note = (spec.note + " ; " if spec.note else "") + mastery
-        for label, dice in self.engine.apply_on_hit(options, chosen):
+        added = self.engine.apply_on_hit(options, chosen)
+        drain = [a for a in added if a[0].startswith("Fureur sanglante")]     # v53 : en dernier (soins = ces dés)
+        for label, dice in [a for a in added if a not in drain] + drain:
             spec.formula += "+" + dice
             spec.note = (spec.note + " ; " if spec.note else "") + "{} : +{}".format(label, dice)
             if spec.parts:
@@ -2317,7 +2329,12 @@ class CombatTab(BaseTab):
                                 spec.damage_type, "Coup critique : dés doublés." + (" " + spec.note if spec.note else ""),
                                 spec.kind)
             spec.parts = parts
-        roll_damage_dialog(win, spec)
+        r = roll_damage_dialog(win, spec)
+        if r is not None and drain:                       # v53 : Fureur sanglante — PV = dégâts nécrotiques infligés
+            n = 8 if crit else 4
+            gained = self.engine.heal(sum(v for faces, v, sign in r.dice[-n:] if faces == 6 and sign > 0))
+            win.statusBar().showMessage("Fureur sanglante : vous regagnez {} PV.".format(gained), 8000)
+            self.changed()
         return True
 
     def _roll_weapon_damage(self, key: str, i: int):

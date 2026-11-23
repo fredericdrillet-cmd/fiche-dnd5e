@@ -51,6 +51,9 @@ class ItemPassivesMixin:
         else:
             desc = item.get("description", "") or ""
             if re.search(r"le (?:md|mj) choisit|determine de maniere aleatoire|determine aleatoirement", norm(desc)):
+                desc = ""
+            from .tattoos import tattoo_key
+            if tattoo_key(item.get("nom", "")):          # v53 : tatouage — règles exactes dans core/tattoos.py
                 desc = ""                                 # objet à variantes (plan, type…) : seul le choix compte
             conditional_block = False
             for sentence in re.split(r"(?<=[.!?:])\s+", desc):

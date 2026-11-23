@@ -16,7 +16,7 @@ import html
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QGridLayout, QGroupBox, QLabel, QSizePolicy, QVBoxLayout
 
-from core.equipment import MAGIC_SLOTS, SLOT_LABELS, SLOTS
+from core.equipment import MAGIC_SLOTS, SLOT_LABELS, SLOTS, TATTOO_SLOTS
 from . import theme
 from .common import make_label, rich_tip
 from .dialogs import ask_choice
@@ -145,6 +145,29 @@ class PaperdollPanel(QGroupBox):
             quick.addWidget(b)
             self.quick_btns.append(b)
         lay.addLayout(quick)
+        # v53 : quatre cases de tatouages (Chaudron de Tasha), rangée masquable (réglage mémorisé)
+        tat_head = QHBoxLayout()
+        from PyQt6.QtWidgets import QPushButton
+        self.tattoo_toggle = QPushButton()
+        self.tattoo_toggle.setProperty("role", "ghost")
+        self.tattoo_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.tattoo_toggle.setToolTip(rich_tip("Tatouages", "Afficher ou masquer les quatre cases de tatouages "
+                                               "magiques. Un tatouage qui exige l'harmonisation l'est dès qu'il "
+                                               "est dans une case."))
+        self.tattoo_toggle.clicked.connect(self._toggle_tattoos)
+        tat_head.addWidget(self.tattoo_toggle)
+        tat_head.addStretch(1)
+        lay.addLayout(tat_head)
+        from PyQt6.QtWidgets import QWidget
+        self.tattoo_row = QWidget()
+        tat = QHBoxLayout(self.tattoo_row)
+        tat.setContentsMargins(0, 0, 0, 0)
+        tat.setSpacing(6)
+        for key, _lab, _icon in TATTOO_SLOTS:
+            b = SlotCard(lambda k=key: self._on_slot(k), 96, 64, slot=key, on_drop=self.drop_on_slot)
+            tat.addWidget(b)
+            self.slot_btns[key] = b                       # rafraîchies et cliquées comme les autres cases
+        lay.addWidget(self.tattoo_row)
         lay.addStretch(1)
         self.hint = make_label("Glissez un objet du sac sur une case, ou cliquez une case pour choisir parmi les objets qui correspondent à "
                                "son rôle (armures, armes, boucliers, anneaux, capes…). Un objet par case.",
@@ -159,7 +182,7 @@ class PaperdollPanel(QGroupBox):
     def refresh(self) -> None:
         eng, t = self.engine, theme.current()
         doll = eng.paperdoll()
-        icons = {k: icon for k, _lab, icon in SLOTS}
+        icons = {k: icon for k, _lab, icon in SLOTS + TATTOO_SLOTS}
         for key, b in self.slot_btns.items():
             item = doll.get(key)
             label = SLOT_LABELS[key]
@@ -169,8 +192,13 @@ class PaperdollPanel(QGroupBox):
                 warn = eng.item_proficiency_warning(item["nom"]) if key in (
                     "armure", "main_principale", "main_secondaire", "distance") else ""
                 magic = item["source"] == "objet" or item.get("magique")
-                b.setText("{} {}\n{}{}{}{}".format(icons[key], label, "⚠ " if warn else "", "✨ " if magic else "",
-                                                   item["nom"], mark))
+                if key.startswith("tatouage"):            # v53 : petite case — nom court, sans « Tatouage »
+                    import re as _re
+                    short = _re.sub(r"^Tatouage (?:de la |de l'|de |d'|du )?", "", item["nom"]).strip()
+                    b.setText("{} {}{}".format(icons[key], short[:1].upper() + short[1:], mark))
+                else:
+                    b.setText("{} {}\n{}{}{}{}".format(icons[key], label, "⚠ " if warn else "",
+                                                       "✨ " if magic else "", item["nom"], mark))
                 color = theme.rarity_color(item.get("rarete", ""), t, t.panel2) if magic else t.text
                 b.set_look(t.warn if warn else color, bold=True)          # v53 : couleur de la rareté
                 b.setToolTip(rich_tip(("⚠ " if warn else "") + item["nom"], "{}{}{}{}".format(
@@ -179,13 +207,15 @@ class PaperdollPanel(QGroupBox):
                     "\n○ Harmonisation requise (non harmonisé : sans effet)" if item.get("lien") else "",
                     "\n⚠ " + warn if warn else "")))
             else:
-                n = len(eng.slot_inventory(key))           # objets du sac qui vont dans cette case
+                n = sum(1 for c in eng.slot_inventory(key)   # objets du sac (pas déjà portés) pour cette case
+                        if c.get("kind") != "magique" or not eng.ch.objets_magiques[c["index"]].get("equipe"))
                 b.setText("{} {}\n{}".format(icons[key], label, EMPTY if not n else "{} objet{} disponible{}".format(
                     n, "s" * (n > 1), "s" * (n > 1))))
                 b.set_look(t.muted, dashed=True)
                 b.setToolTip(rich_tip(label, "Case vide." + (" Clic : choisir un objet." if n else "")))
         self._refresh_attunement(doll)
         self._refresh_quick()
+        self._refresh_tattoo_toggle(doll)
         self._refresh_portrait()
 
     def _refresh_attunement(self, doll: dict) -> None:
@@ -212,10 +242,31 @@ class PaperdollPanel(QGroupBox):
             if not (e.get("harmonise") or hors_case):
                 continue
             parts.append("<span style='color:{}'><b>{}{}</b></span>{}".format(
-                theme.rarity_color(item.get("rarete", ""), t), "◉ " if e.get("harmonise") else "",
+                theme.rarity_color(e.get("palier") or item.get("rarete", ""), t), "◉ " if e.get("harmonise") else "",
                 html.escape(eng.magic_display_name(e)), " <i>(porté, sans case)</i>" if hors_case else ""))
         self.attuned.setText(" · ".join(parts) if parts else
                              "Aucun objet harmonisé : équipez un objet ✦ (sac ou case) pour l'harmoniser.")
+
+    def _tattoos_shown(self) -> bool:
+        return bool((getattr(self.win, "settings", {}) or {}).get("tatouages_visibles", True))
+
+    def _refresh_tattoo_toggle(self, doll: dict) -> None:
+        n = sum(1 for k, _l, _i in TATTOO_SLOTS if k in doll)
+        shown = self._tattoos_shown()
+        self.tattoo_toggle.setText("{} 🖋 Tatouages ({} / 4)".format("▾" if shown else "▸", n))
+        self.tattoo_row.setVisible(shown)
+
+    def _toggle_tattoos(self) -> None:
+        settings = getattr(self.win, "settings", None)
+        if settings is None:
+            return
+        settings["tatouages_visibles"] = not self._tattoos_shown()
+        try:
+            from core.settings import save_settings
+            save_settings(settings)
+        except (ImportError, OSError):
+            pass
+        self._refresh_tattoo_toggle(self.engine.paperdoll())
 
     def _refresh_quick(self) -> None:
         eng, t = self.engine, theme.current()

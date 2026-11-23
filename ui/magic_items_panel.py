@@ -279,6 +279,17 @@ def add_catalog_item(win, engine, item: dict, bonus: int = 0) -> str:
                             "hasard) ?", [t.capitalize() for t in DAMAGE_TYPES])
         if picked:
             engine.ch.objets_magiques[-1]["resistance_choisie"] = picked.lower()
+    kind = engine.tattoo_choice(item["nom"]) or ("palier" if engine.rarity_choice_needed(item) else "")   # v53
+    if kind and engine.ch.objets_magiques:
+        from .dialogs import ask_choice
+        if kind == "palier":
+            picked = ask_choice(win, item["nom"], "Rareté de l'objet (elle fixe son effet : CA du tatouage, bonus "
+                                "+1 / +2 / +3 aux sorts) :", ["Peu commun", "Rare", "Très rare"])
+        else:
+            picked = ask_choice(win, item["nom"], "Sort contenu dans le tatouage (niveau 5 au plus) :",
+                                engine.spell_tattoo_options())
+        if picked:
+            engine.set_tattoo_choice(len(engine.ch.objets_magiques) - 1, picked)
     elements = engine.item_rules(item)["elements"]
     entry = engine.ch.objets_magiques[-1] if engine.ch.objets_magiques else {}
     if elements and entry.get("nom") == item["nom"]:     # v52 : nombre de perles… indiqué par le joueur

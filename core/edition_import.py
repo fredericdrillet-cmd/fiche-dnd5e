@@ -123,7 +123,7 @@ def merge(db) -> dict:
             sub.setdefault("edition", 2014)
     cat = db.editions
     stats = {"sorts": 0, "dons": 0, "dons_corriges": 0, "historiques": 0, "sous_classes": 0, "especes": 0,
-             "armes": 0}
+             "armes": 0, "objets_magiques": 0}
     if not cat.available():
         return stats
     _merge_spells(db, cat, stats)
@@ -132,8 +132,56 @@ def merge(db) -> dict:
     _merge_subclasses(db, cat, stats)
     _merge_species(db, cat, stats)
     _merge_weapons(db, cat, stats)
+    _merge_magic_items(db, cat, stats)
     db._spell_index = {norm(n): n for n in db.spells}
     return stats
+
+
+# v53 : objets qui « fonctionnent comme » un objet du catalogue (Tombe de l'Annihilation) -> mêmes effets et case
+MAGIC_ALIASES = {"Anneau de protection d'Obo'laka": "Anneau de protection",
+                 "Bracelets d'archerie de Kubazan": "Bracelets d'archer",
+                 "Œuf de gruog pétrifié de Nangnang (perle de puissance)": "Perle de pouvoir",
+                 "Charme de Joho": "Heaume de compréhension des langues",
+                 "Instrument de barde de Shagambi (mandoline de Canaith)": "Mandoline de Canaith",
+                 "Corne d'I'jin (baguette de prodiges)": "Baguette des merveilles",
+                 "Robe de couleurs scintillantes d'Unkh": "Robe prismatique"}
+
+
+def _merge_magic_items(db, cat, stats):
+    """v53 : objets magiques de la référence absents de data/objets_magiques.json (Tasha, Xanathar, Eberron,
+    Wildemount, Fizban…) — même format que les objets chargés. Doublons écartés par nom français, nom anglais et
+    formes « +1, +2 ou +3 » déjà découpées en paliers (« Armure +1 »…)."""
+    import json
+    from .data_loader import normalize_magic_item
+    from .paths import get_resource_path
+    names_en = set()
+    try:                                                 # noms anglais des objets déjà chargés
+        with open(get_resource_path("data/objets_magiques.json"), encoding="utf-8") as f:
+            names_en = {norm(o.get("nom_en") or "") for o in json.load(f).get("objets", [])} - {""}
+    except (OSError, ValueError, AttributeError):
+        pass
+    present = {norm(n) for n in db.magic_items}
+    for o in cat.items("objets"):
+        name = o.get("nom", "")
+        if not name or norm(name) in present or norm(o.get("nom_en") or "-") in names_en:
+            continue
+        if "+1, +2 ou +3" in name and norm(name.replace("+1, +2 ou +3", "+1")) in present:
+            continue
+        m = re.match(r"\s*([^(]+?)\s*(?:\((.*)\))?\s*$", o.get("type", "") or "")
+        kind, prec = (m.group(1), m.group(2) or "") if m else (o.get("type", ""), "")
+        raw = {"id": o.get("id", name), "nom": name, "type": kind or "Objet merveilleux", "type_precision": prec,
+               "rarete_texte": o.get("rarete", ""), "lien": bool(o.get("attunement")),
+               "lien_condition": o.get("attunement_precision") or "", "description": _text(o.get("description", "")),
+               "source": _source(o)}
+        item = normalize_magic_item(raw)
+        item.update(edition=int(o.get("edition") or 2014), importe=True)
+        twin = db.magic_items.get(MAGIC_ALIASES.get(name, ""))
+        if twin:                                         # effets de l'objet dont il tient lieu
+            item.update(comme=twin["nom"], ca=twin["ca"], js=twin["js"], lien=twin["lien"] or item["lien"],
+                        description=item["description"] + "\n\n" + twin["description"])
+        db.magic_items[name] = item
+        present.add(norm(name))
+        stats["objets_magiques"] += 1
 
 
 def _merge_spells(db, cat, stats):

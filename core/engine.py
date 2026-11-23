@@ -136,6 +136,7 @@ def damage_calc(die: str, terms: list, result: str) -> str:
 
 
 from .quick_slots import QuickSlotsMixin  # noqa: E402
+from .tattoos import SpellItemBonusMixin, TattoosMixin  # noqa: E402
 
 class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, MissingChoicesMixin,
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
@@ -143,7 +144,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
              FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin,
              TurnRemindersMixin, OnHitMixin, DefenseMixin, NoveltyMixin,
-             RememberMixin, MasteryFlowMixin, ExhaustionMixin, QuickSlotsMixin,
+             RememberMixin, MasteryFlowMixin, ExhaustionMixin, QuickSlotsMixin, TattoosMixin,
+             SpellItemBonusMixin,
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
              LightMixin, JournalMixin, ItemPassivesMixin):
@@ -1156,6 +1158,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             if self.class_level("Barbare"):
                 options["Défense sans armure (barbare)"] = [("10", 10), ("Dex", dex), ("Con", self.mod("Constitution"))]
             options.update(self.subclass_unarmored())    # v52 : Pirouettes éblouissantes (Collège de la Danse)
+            options.update(self.tattoo_unarmored())      # v53 : Tatouage barrière (bouclier permis)
             if self.class_level("Moine") and not a.get("bouclier"):
                 options["Défense sans armure (moine)"] = [("10", 10), ("Dex", dex), ("Sag", self.mod("Sagesse"))]
             for e in self.ch.classes:
@@ -1557,6 +1560,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 d["prepares_max"] = R.spells_prepared(e["nom"], lvl, m)
             if e["nom"] == "Ensorceleur" and self.innate_sorcery_active():      # v52 : Sorcellerie innée, DD +1
                 d["dc"] += 1
+            ib = self.item_spell_bonuses(e["nom"])       # v53 : Grimoire des arcanes, Amulette des dévots…
+            d["dc"] += ib["dd"]
+            d["attaque"] += ib["attaque"]
             out.append(d)
         return out
 

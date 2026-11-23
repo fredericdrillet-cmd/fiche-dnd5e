@@ -383,3 +383,118 @@ class EmplacementsRapidesTests(unittest.TestCase):
         again = Character.from_dict(json.loads(json.dumps(ch.to_dict())))
         self.assertEqual(again.emplacements_rapides[2], "Potion de guérison")
         self.assertEqual(Character.from_dict({}).emplacements_rapides, ["", "", "", ""])
+
+
+class ObjetsImportesEtTatouagesTests(unittest.TestCase):
+    """v53 : objets magiques de la référence importés (Tasha, Xanathar, Eberron…), tatouages, bonus de sorts."""
+
+    def fresh(self, cls="Guerrier", lvl=5):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        return e, ch
+
+    def wear(self, e, name, **extra):
+        e.add_magic_item(name)
+        e.ch.objets_magiques[-1].update(extra)
+        e.normalize()
+        ok, msg = e.equip_from_bag(e.bag_key(len(e.ch.objets_magiques) - 1))
+        e.normalize()
+        self.assertTrue(ok, msg)
+        return e.ch.objets_magiques[-1]
+
+    def test_import(self):
+        imported = [n for n, i in DB.magic_items.items() if i.get("importe")]
+        self.assertGreater(len(imported), 300)
+        self.assertEqual(len([n for n in imported if n.startswith("Tatouage")]), 11)
+        self.assertNotIn("Armure +1, +2 ou +3", DB.magic_items)          # déjà découpée en paliers
+
+    def test_tatouages_dans_leurs_cases(self):
+        e, ch = self.fresh()
+        for n in ("Tatouage de Gisombre", "Tatouage mascarade", "Tatouage de l'enlumineur"):
+            entry = self.wear(e, n)
+            self.assertTrue(entry["emplacement"].startswith("tatouage_"))
+            self.assertTrue(entry["harmonise"])
+        e.add_magic_item("Tatouage barrière")                              # 4e tatouage : 3 / 3 harmonisations
+        self.assertIn("3 / 3", e.attune_blocked(len(ch.objets_magiques) - 1))
+
+    def test_barriere_et_griffe(self):
+        e, ch = self.fresh()
+        ch.armure["nom"] = "Aucune armure"
+        e.normalize()
+        dex = e.mod("Dextérité")
+        self.wear(e, "Tatouage barrière", palier="Rare")
+        self.assertEqual(e.armor_class()[0], 15 + min(dex, 2))
+        unarmed = e.weapon_stats(e.unarmed_slot())["attaque"]
+        self.wear(e, "Tatouage de la griffe occulte")
+        self.assertEqual(e.weapon_stats(e.unarmed_slot())["attaque"], unarmed + 1)
+
+    def test_fontaine_de_vie(self):
+        e, ch = self.fresh()
+        self.wear(e, "Tatouage de fontaine de vie")
+        self.assertIn("nécrotique", [r for r, _ in e.defenses()["resistances"]])
+        ch.pv_actuels = 4
+        e.take_damage(10)
+        self.assertEqual(ch.pv_actuels, 1)
+        e.take_damage(10)
+        self.assertEqual(ch.pv_actuels, 0)
+        e.long_rest()
+        self.assertNotIn("charges_utilisees", ch.objets_magiques[0])
+
+    def test_fureur_et_foulee(self):
+        e, ch = self.fresh()
+        self.wear(e, "Tatouage de fureur sanglante")
+        opts = e.on_hit_options(ch.armes_cac[0])
+        self.assertIn("tatouage:fureur", [o["key"] for o in opts])
+        e.apply_on_hit(opts, ["tatouage:fureur"])
+        self.assertEqual(ch.objets_magiques[0]["charges_utilisees"], 1)
+        e2, ch2 = self.fresh()
+        self.wear(e2, "Tatouage de foulée spectrale")
+        self.assertEqual(e2.defenses()["resistances"], [])                 # seulement pendant la forme
+        p = e2.magic_item_powers()[0]
+        e2.use_item_power(p["id"])
+        self.assertIn("forme_fantomatique", ch2.effets_actifs)
+
+    def test_sortilege(self):
+        e, ch = self.fresh()
+        self.wear(e, "Tatouage sortilège", sort_tatouage="Rayon de givre")
+        p = e.magic_item_powers()[0]
+        out = e.use_item_power(p["id"])
+        self.assertEqual(out["stats"]["attaque"], 5)
+        self.assertEqual(ch.objets_magiques, [])                            # le tatouage disparaît
+        e.item_spell_override = out["stats"]
+        spec = e.spell_attack_spec("Rayon de givre")
+        e.item_spell_override = None
+        self.assertEqual(sum(t.value for t in spec.terms), 5)
+
+    def test_gisombre(self):
+        e, ch = self.fresh()
+        self.wear(e, "Tatouage de Gisombre")
+        self.assertEqual(e.darkvision()["portee"], 18.0)
+
+    def test_bonus_de_sorts(self):
+        e, ch = self.fresh("Magicien")
+        dc, atk = e.caster("Magicien")["dc"], e.caster("Magicien")["attaque"]
+        self.wear(e, "Grimoire des arcanes", palier="Très rare")
+        self.assertEqual((e.caster("Magicien")["dc"], e.caster("Magicien")["attaque"]), (dc + 3, atk + 3))
+        self.wear(e, "Fiole sanguine", palier="Rare")                       # sorts d'ensorceleur : sans effet
+        self.assertEqual(e.caster("Magicien")["dc"], dc + 3)
+
+    def test_fonctionne_comme(self):
+        e, ch = self.fresh()
+        ca = e.armor_class()[0]
+        entry = self.wear(e, "Anneau de protection d'Obo'laka")
+        self.assertTrue(entry["emplacement"].startswith("anneau"))
+        self.assertEqual(e.armor_class()[0], ca + 1)
+
+    def test_ceinturon_et_parchemin(self):
+        e, ch = self.fresh()
+        self.wear(e, "Ceinturon de force de géant (givre ou pierres)")
+        self.assertEqual(e.score("Force"), 23)
+        self.assertEqual(e.scroll_level("Parchemin de sort (tour de magie)"), 0)
+
+    def test_reglage_tatouages_enregistre(self):
+        from core import settings as S
+        self.assertIn("tatouages_visibles", S.DEFAULTS)
+        self.assertIn("icones_noms", S.DEFAULTS)

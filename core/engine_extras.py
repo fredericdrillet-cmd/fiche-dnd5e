@@ -268,7 +268,9 @@ class ExtrasMixin:
         out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
-            m = dict(M.item_mech(entry.get("nom", "")))
+            m = dict(M.item_mech(entry.get("nom", "")) or M.item_mech(item.get("comme", "") or "-"))
+            from .tattoos import tattoo_key
+            m.update(self.tattoo_mech(tattoo_key(entry.get("nom", ""))))   # v53 : Gisombre, Fontaine de vie
             for k, v in self.item_passive_mech(entry, item).items():   # v52 : résistances, immunités, JS lus
                 if k not in m and k != "etats_immunises":
                     m[k] = v
@@ -843,6 +845,8 @@ class ExtrasMixin:
         if sub_dv:
             gain = sub_dv if (best == 0 or self._ed24) else 9.0
             best, src = best + gain if best else sub_dv, "Vision ombreuse (Traqueur des ténèbres)"
+        if self.tattoo_darkvision() > best:              # v53 : Tatouage de Gisombre
+            best, src, text = self.tattoo_darkvision(), "Tatouage de Gisombre", "Vision dans le noir à 18 m."
         if "vision_noir" in self.ch.effets_actifs and best < 18:
             best, src, text = 18.0, "Sort « Vision dans le noir »", "La cible voit dans les ténèbres jusqu'à 18 m."
         magic = False
@@ -1015,10 +1019,13 @@ class ExtrasMixin:
         spell = self.db.find_spell(spell_name)
         if not spell or spell.get("test") not in ("A", "AC"):
             return None
+        override = getattr(self, "item_spell_override", None)     # v53 : objet à bonus d'attaque fixe
         caster = self.caster(class_name) if class_name else None
         if caster is None:
             caster = next((c for c in self.casters() if c["liste"] in spell.get("classes", [])), None)
-        if caster is not None:
+        if override:
+            caster, ab = None, ""
+        elif caster is not None:
             ab = caster["carac"]
         else:
             racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None) or \
@@ -1026,7 +1033,11 @@ class ExtrasMixin:
             if racial is None and not self.casters():
                 return None
             ab = racial["carac"] if racial else self.casters()[0]["carac"]
-        detail = [(R.mod_label(ab), "{:+d}".format(self.mod(ab))), ("Maîtrise", "{:+d}".format(self.prof))]
+        detail = [("Bonus de l'objet", "{:+d}".format(override["attaque"]))] if override else \
+            [(R.mod_label(ab), "{:+d}".format(self.mod(ab))), ("Maîtrise", "{:+d}".format(self.prof))]
+        ib = self.item_spell_bonuses(caster["classe"] if caster else "") if not override else {"attaque": 0}
+        if ib["attaque"]:                                # v53 : objets qui améliorent les attaques de sort
+            detail.append(("Objets ({})".format(", ".join(ib["sources"])), "{:+d}".format(ib["attaque"])))
         fx = self.attack_mods()
         if self.innate_sorcery_active() and caster is not None and caster["classe"] == "Ensorceleur":
             fx = dict(fx, avantage=list(fx["avantage"]) + ["Sorcellerie innée"])      # v52 (2024)
@@ -1262,6 +1273,10 @@ class ExtrasMixin:
                 self.pending_concentration = amount      # v52 : l'interface propose le JS
                 text += ". JS de Constitution DD {} pour maintenir {}".format(self.concentration_dc(amount),
                                                                           ch.concentration)
+        if ch.pv_actuels == 0 and overflow < self.hp_max():
+            saved = self.life_well_saves()               # v53 : Tatouage de fontaine de vie
+            if saved:
+                return text + ". " + saved + "."
         if ch.pv_actuels == 0 and self.feat_flag("dernier_rempart") and not self.resource_used("don_dernier_rempart"):
             self.set_resource_used("don_dernier_rempart", 1)              # v52 : Faveur de récupération
             ch.pv_actuels = min(self.hp_max(), 1 + self.hp_max() // 2)

@@ -92,7 +92,7 @@ class QuickSlotsMixin:
         n = norm(name or "")
         if not n.startswith("parchemin de sort"):
             return None
-        if "sort mineur" in n:
+        if "sort mineur" in n or "tour de magie" in n:
             return 0
         m = re.search(r"niveau\s*(\d)", n)
         return int(m.group(1)) if m else None

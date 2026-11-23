@@ -25,7 +25,8 @@ SLOTS = [
     ("main_principale", "Main principale", "⚔"), ("main_secondaire", "Main secondaire", "🛡"),
     ("distance", "Distance", "🏹"),
 ]
-SLOT_LABELS = {k: lab for k, lab, _ in SLOTS}
+TATTOO_SLOTS = [("tatouage_{}".format(n), "Tatouage", "🖋") for n in range(1, 5)]   # v53 : sous le mannequin
+SLOT_LABELS = {k: lab for k, lab, _ in SLOTS + TATTOO_SLOTS}
 KEYWORDS = [
     ("tete", ("chapeau", "heaume", "casque", "bandeau", "diademe", "couronne", "lunettes", "capuchon", "masque",
               "yeux", "serre-tete", "tiare", "voile")),
@@ -35,7 +36,8 @@ KEYWORDS = [
     ("ceinture", ("ceinture", "ceinturon")),
     ("bottes", ("bottes", "chaussons", "chaussures", "sandales", "pantoufles", "souliers")),
 ]
-MAGIC_SLOTS = ("tete", "amulette", "cape", "gants", "ceinture", "bottes", "anneau_1", "anneau_2")
+MAGIC_SLOTS = ("tete", "amulette", "cape", "gants", "ceinture", "bottes", "anneau_1", "anneau_2",
+               "tatouage_1", "tatouage_2", "tatouage_3", "tatouage_4")
 
 
 def item_slot_kind(item: Optional[dict], name: str) -> str:
@@ -45,6 +47,8 @@ def item_slot_kind(item: Optional[dict], name: str) -> str:
     first = n.split(" ")[0] if n else ""
     if kind == "anneau" or first in ("anneau", "bague"):     # « Baguette » n'est pas une bague
         return "anneau"
+    if first == "tatouage" or "tatouage" in norm((item or {}).get("precision", "")):   # v53
+        return "tatouage"
     if kind not in ("objet merveilleux", ""):
         return ""
     for slot, words in KEYWORDS:
@@ -54,6 +58,8 @@ def item_slot_kind(item: Optional[dict], name: str) -> str:
 
 
 def slots_for(kind: str) -> list[str]:
+    if kind == "tatouage":
+        return [k for k, _l, _i in TATTOO_SLOTS]
     return ["anneau_1", "anneau_2"] if kind == "anneau" else [kind] if kind in MAGIC_SLOTS else []
 
 
@@ -67,7 +73,10 @@ class EquipmentMixin:
 
     # ------------------------------------------------------------------ cases des objets magiques
     def magic_slot_kind(self, name: str) -> str:
-        return item_slot_kind(self.magic_item(name), name)
+        item = self.magic_item(name)
+        if item and item.get("comme"):                   # v53 : objet qui fonctionne comme un autre
+            return item_slot_kind(self.magic_item(item["comme"]), item["comme"])
+        return item_slot_kind(item, name)
 
     def sync_equipment_slots(self) -> None:
         """Cohérence au chargement : objet non équipé = sans case ; équipé = case libre de son type si possible."""
@@ -339,13 +348,13 @@ class EquipmentMixin:
             if e.get("equipe") and slot in MAGIC_SLOTS:
                 item = self.magic_item(e["nom"]) or {}
                 out[slot] = {"nom": e["nom"], "source": "objet", "index": i, "harmonise": bool(e.get("harmonise")),
-                             "lien": bool(item.get("lien")), "detail": item.get("rarete", ""),
-                             "rarete": item.get("rarete", "")}
+                             "lien": bool(item.get("lien")), "detail": e.get("palier") or item.get("rarete", ""),
+                             "rarete": e.get("palier") or item.get("rarete", "")}
         return out
 
     def slot_candidates(self, slot: str) -> list[tuple[int, str]]:
         """Objets magiques de l'inventaire qui peuvent aller dans cette case : [(index, nom)]."""
-        kind = "anneau" if slot.startswith("anneau") else slot
+        kind = "anneau" if slot.startswith("anneau") else "tatouage" if slot.startswith("tatouage") else slot
         return [(i, e["nom"]) for i, e in enumerate(self.ch.objets_magiques)
                 if self.magic_slot_kind(e["nom"]) == kind]
 

@@ -383,6 +383,7 @@ ITEM_MECH = [   # (fragment de nom normalisé, modificateur) — objets équipé
     ("ceinturon de force de geant du feu", {"carac_min": {"Force": 25}}),
     ("ceinturon de force de geant des nuages", {"carac_min": {"Force": 27}}),
     ("ceinturon de force de geant des tempetes", {"carac_min": {"Force": 29}}),
+    ("ceinturon de force de geant (givre ou pierres)", {"carac_min": {"Force": 23}}),
     ("gantelets de puissance d'ogre", {"carac_min": {"Force": 19}}),
     ("bandeau d'intelligence", {"carac_min": {"Intelligence": 19}}),
     ("amulette de sante", {"carac_min": {"Constitution": 19}}),

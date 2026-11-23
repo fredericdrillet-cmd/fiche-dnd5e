@@ -69,9 +69,10 @@ class CombatFlowMixin:
         slot = self.ch.armes_distance[0] if self.ch.armes_distance else None
         return slot if slot and slot.get("nom") and slot["nom"] in self.db.weapons else None
 
-    @staticmethod
-    def unarmed_slot() -> dict:
-        return {"nom": "Mains nues", "bonus": 0, "maitrise": None}
+    def unarmed_slot(self) -> dict:
+        """Mains nues ; +1 au toucher et aux dégâts avec le Tatouage de la griffe occulte (v53)."""
+        bonus = self.tattoo_unarmed_bonus() if hasattr(self, "tattoo_unarmed_bonus") else 0
+        return {"nom": "Mains nues", "bonus": bonus, "maitrise": None}
 
     def off_hand_free(self, slot: Optional[dict] = None) -> bool:
         """v46 : main secondaire libre (ni bouclier, ni seconde arme) — une arme polyvalente se tient alors à deux
@@ -309,6 +310,8 @@ class CombatFlowMixin:
         racial = next((r for r in self.racial_spells() if r["nom"] == spell["nom"]), None) or \
             self.feat_spell(spell["nom"])                # v52 : sort accordé par un don
         dc = caster["dc"] if caster else (racial["dc"] if racial else None)
+        if getattr(self, "item_spell_override", None):   # v53 : sort lancé par un objet à DD fixe (tatouage)
+            dc = self.item_spell_override["dd"]
         test = spell.get("test", "")
         rays = 0
         if lvl == 0:
@@ -412,6 +415,7 @@ class OnHitMixin:
                                 "chatiment_gratuit" else "emplacement de niveau {}".format(lvl),
                                 "action": aid, "niveau": lvl, "groupe": "chatiment"})
         out += self._extra_on_hit(slot, acts)            # v53 : manœuvres, psi, Tueur de colosses, Frappe divine…
+        out += self.tattoo_on_hit(slot)                  # v53 : Tatouage de fureur sanglante
         seen = {"sournoise", "chatiment", "chatiment_gratuit", "manoeuvre", "manoeuvre_style", "psi_frappe",
                 "cap:tueur_colosses"}
         for a in acts.values():
@@ -484,6 +488,8 @@ class OnHitMixin:
                 if man_done:
                     continue
                 man_done = True
+            if o.get("charge_objet") is not None and not self.spend_item_charge(o["charge_objet"], 10):
+                continue                                  # v53 : charge de l'objet (Fureur sanglante)
             if o.get("tour"):
                 self.mark_per_turn(o["tour"])
             if o["action"] == "sournoise_hit":

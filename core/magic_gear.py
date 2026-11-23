@@ -157,7 +157,8 @@ class MagicGearMixin:
             item = self.magic_item(name) or {"nom": name}
             return self._gear_display(name, entry["base"], self.magic_gear_tier(item, entry))
         name = name.replace("+1, +2 ou +3", "+{}".format(entry["bonus"])) if entry.get("bonus") else name
-        return name + (" ({})".format(entry["resistance_choisie"]) if entry.get("resistance_choisie") else "")
+        detail = entry.get("resistance_choisie") or entry.get("palier") or entry.get("sort_tatouage")   # v53
+        return name + (" ({})".format(detail) if detail else "")
 
     # ------------------------------------------------------------------ ajout
     def _new_uid(self) -> str:
@@ -366,6 +367,10 @@ class MagicGearMixin:
             if e.get("detruit") or e.get("epuise"):      # v52 : objet détruit ou épuisé : plus de tuile
                 continue
             desc = item.get("description", "") or ""
+            special = self.tattoo_powers(i, e, self.magic_display_name(e), desc)   # v53 : tatouages, règles exactes
+            if special is not None:
+                out += special
+                continue
             hits = [(m.start(), k) for k, rx in ECONOMY_PATTERNS for m in [rx.search(desc)] if m]
             economy = min(hits)[1] if hits else ""         # la première mention de l'économie d'action
             m = CHARGES.search(desc)
@@ -503,8 +508,20 @@ class MagicGearMixin:
         elif left == 0 and p.get("destruction"):
             destroy = True
             msg += " Dernière charge : lancez le d20 (sur un 1, l'objet est détruit)."
-        return {"ok": True, "message": msg, "sort": p["sort"], "niveau": level, "description": p["description"],
-                "objet": p["objet"], "destruction": destroy, "entree": p["entree"]}
+        extra = {}
+        if p.get("effet"):                               # v53 : état appliqué (Maillet occulte, forme fantomatique)
+            self.add_effect(p["effet"])
+            msg += " État « {} » actif.".format(__import__("core.effects", fromlist=["EFFECTS"]).EFFECTS.get(
+                p["effet"], {}).get("nom", p["effet"]))
+        if p.get("degats"):                              # v53 : dégâts de la capacité (Vrilles agrippantes)
+            extra.update(degats=p["degats"], type_degats=p.get("type_degats", ""), dd=p.get("dd", ""))
+        if p.get("stats"):                               # v53 : sort à DD / attaque fixes (Tatouage sortilège)
+            extra["stats"] = p["stats"]
+        if p.get("consomme"):                            # le tatouage disparaît une fois le sort lancé
+            self.remove_magic_item(p["entree"])
+            msg += " L'objet disparaît."
+        return dict({"ok": True, "message": msg, "sort": p["sort"], "niveau": level, "description": p["description"],
+                     "objet": p["objet"], "destruction": destroy, "entree": p["entree"]}, **extra)
 
     def resolve_item_destruction(self, index: int, roll: int) -> str:
         entry = self.ch.objets_magiques[index]

@@ -232,6 +232,15 @@ _e("heroisme", "Héroïsme", "🦸", "Bonus", _sort(1, "Héroïsme"), "1 minute"
 _e("faveur_divine", "Faveur divine", "✝️", "Bonus", _sort(1, "Faveur divine"), "1 minute",
    "Vos attaques avec une arme infligent 1d4 dégâts radiants supplémentaires quand elles touchent.",
    degats="+1d4 radiants")
+_e("maillet_occulte", "Maillet occulte", "🖋", "Bonus", "Tatouage de la griffe occulte", "1 minute",
+   "Vos attaques de corps à corps (arme ou mains nues) atteignent une cible jusqu'à 4,50 m et infligent 1d6 dégâts "
+   "de force supplémentaires.", degats="+1d6 force", notes=["Allonge 4,50 m au corps à corps"])
+_e("forme_fantomatique", "Forme fantomatique", "👻", "Bonus", "Tatouage de foulée spectrale",
+   "Jusqu'à la fin de votre prochain tour",
+   "Résistance aux dégâts contondants, perforants et tranchants des attaques non magiques ; vous ne pouvez pas être "
+   "empoigné ni entravé ; vous traversez créatures et objets comme un terrain difficile (1d10 force si vous y "
+   "finissez votre tour).", resistances=["contondant, perforant et tranchant (attaques non magiques)"],
+   notes=["Immunité : Empoigné, Entravé", "Traverse créatures et objets (terrain difficile)"])
 _e("armure_mage", "Armure du mage", "🧥", "Bonus", _sort(1, "Armure du mage"), "8 heures",
    "Une créature consentante qui ne porte pas d'armure a une CA de base de 13 + son modificateur de "
    "Dextérité. Le sort prend fin si elle enfile une armure.",
