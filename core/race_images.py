@@ -54,7 +54,10 @@ def index(folder: Path = DEFAULT_DIR, refresh: bool = False) -> dict[str, Path]:
 
 
 # noms de fichier qui ne suivent pas exactement le nom de la race (« demi-orc.jpg » pour le Demi-orque)
-IMAGE_ALIASES = {"demiorque": "demiorc"}
+IMAGE_ALIASES = {"demiorque": "demiorc",
+                 # v53 : sous-races 2014 importées -> illustration de la race parente
+                 "elfepale": "elfe", "halfelinspectral": "halfelinpiedleger", "halfelindulotusden": "halfelinrobuste",
+                 "aasimarfleau": "aasimarprotecteur"}
 
 
 def find_race_image(race: str, subrace: str = "", folder: Path = DEFAULT_DIR) -> Optional[Path]:

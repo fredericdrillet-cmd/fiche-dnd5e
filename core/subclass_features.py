@@ -193,9 +193,12 @@ class SubclassFeaturesMixin:
         opts = {c: "Dégâts : {} — souffle : {} — JS de {}".format(t, z, js) for c, (t, z, js) in DRACONIC.items()}
         out = []
         if norm(self.ch.race).startswith("drakeide") and self.has_breath():
-            c = self.ch.ascendance_raciale
+            from .engine_extras import FIZBAN, fizban_kind
+            c, kind = self.ch.ascendance_raciale, fizban_kind(self.ch.race)
+            race_opts = {k: "Dégâts : {} — souffle : {} — JS de Dextérité".format(t, FIZBAN[kind][1])
+                         for k, t in FIZBAN[kind][0].items()} if kind else opts      # v53 : tables de Fizban
             out.append({"key": "ascendance_raciale", "label": "Ascendance draconique ({})".format(self.ch.race),
-                        "total": 1, "options": opts, "chosen": [c] if c in DRACONIC else []})
+                        "total": 1, "options": race_opts, "chosen": [c] if c in race_opts else []})
         if self.is_draconic_sorcerer():
             c = self.ch.ascendance_ensorceleur
             out.append({"key": "ascendance_ensorceleur", "label": "Ascendance draconique (Ensorceleur)", "total": 1,

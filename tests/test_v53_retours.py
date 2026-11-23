@@ -498,3 +498,62 @@ class ObjetsImportesEtTatouagesTests(unittest.TestCase):
         from core import settings as S
         self.assertIn("tatouages_visibles", S.DEFAULTS)
         self.assertIn("icones_noms", S.DEFAULTS)
+
+
+class DonneesReferenceCompleteesTests(unittest.TestCase):
+    """v53 : races 2014, paquetages 2024, listes de sorts 2014, dons accordés par le MJ (data/editions)."""
+
+    def sheet(self, race="Humain", cls="Guerrier", lvl=5):
+        ch = Engine.new_character(DB)
+        ch.race = race
+        ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        return e, ch
+
+    def test_races_2014(self):
+        for n in ("Drakéide chromatique", "Drakéide métallique", "Drakéide diamantin", "Drakéide ravenite",
+                  "Nain (Marque de garde)", "Humain (Marque du passage)", "Elfe pâle", "Halfelin spectral",
+                  "Aasimar fléau", "Demi-elfe (Marque de la tempête)"):
+            self.assertIn(n, DB.races, n)
+            e, ch = self.sheet(n)
+            self.assertIn(n, e.race_options())
+        self.assertEqual(DB.races["Nain (Marque de garde)"]["caracteristiques"], "Con +2, Int +1")
+        self.assertEqual(DB.races["Aasimar fléau"]["caracteristiques"], "Cha +2, Con +1")
+        self.assertNotIn("Résistance aux dégâts", [c["nom"] for c in DB.races["Drakéide ravenite"]["capacites"]])
+        self.assertNotIn("Haut-elfe", DB.races)                            # déjà une sous-race d'Elfe
+        e, ch = self.sheet()
+        e.set_edition_mode("2024")
+        e.normalize()
+        self.assertNotIn("Elfe pâle", e.race_options())
+
+    def test_drakeides_de_fizban(self):
+        e, ch = self.sheet("Drakéide diamantin")
+        ch.ascendance_raciale = "Améthyste"
+        e.normalize()
+        b = e.breath_weapon()
+        self.assertEqual((b["type"], b["zone"], b["degats"], b["utilisations"]), ("force", "cône de 4,50 m", "2d10", 3))
+        self.assertIn("resist_force", e.innate_effects())
+        sets = [s for s in e.option_sets() if s["key"] == "ascendance_raciale"]
+        self.assertIn("Topaze", sets[0]["options"])
+
+    def test_paquetages_2024(self):
+        self.assertEqual(DB.catalog["Sac d'explorateur"]["categorie"], "Paquetage")
+        e, ch = self.sheet()
+        self.assertGreater(e.add_pack("Sac d'explorateur"), 5)
+        self.assertIn("Torche", [i["nom"] for i in ch.equipement])
+
+    def test_listes_de_sorts(self):
+        self.assertIn("Occultiste", DB.spells["Gelure"]["classes"])
+        self.assertIn("Artificier", DB.spells["Verrou magique"]["classes"])
+        self.assertIn("Barde", DB.spells["Mot de pouvoir mortel"]["classes"])
+        self.assertNotIn("Magicien", DB.spells["Piqûre sapeuse"].get("classes", []))   # dunamancie : restreinte
+        self.assertIn("Glace entravante de Rime", DB.spells)
+
+    def test_dons_du_mj(self):
+        e, ch = self.sheet(lvl=4)
+        self.assertNotIn("Charme de vision dans le noir", e.feat_options())
+        self.assertIn("Charme de vision dans le noir", e.feat_options(gm=True))
+        self.assertTrue(e.add_gm_feat("Faveur de vigueur" if "Faveur de vigueur" in DB.feats else
+                                      "Charme de vision dans le noir"))
+        self.assertTrue(ch.dons_mj)

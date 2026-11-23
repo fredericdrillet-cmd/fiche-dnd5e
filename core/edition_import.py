@@ -25,7 +25,7 @@ SUFFIX_2024 = " (2024)"
 
 # sorts 2014 des nouvelles données déjà présents dans l'app sous une autre traduction
 SPELL_TRANSLATIONS_2014 = {norm(n) for n in (
-    "Lance psychique de Raulothim", "Glace entravante de Rime", "Piques argentées", "Châtiment de stupeur",
+    "Lance psychique de Raulothim", "Piques argentées", "Châtiment de stupeur",
     "Invocation d'esprit draconique", "Préméditation", "Rafale de vent")}
 
 # sous-classes 2014 absentes de l'app (identifiées par leur nom anglais ; les autres sont des traductions de
@@ -123,16 +123,19 @@ def merge(db) -> dict:
             sub.setdefault("edition", 2014)
     cat = db.editions
     stats = {"sorts": 0, "dons": 0, "dons_corriges": 0, "historiques": 0, "sous_classes": 0, "especes": 0,
-             "armes": 0, "objets_magiques": 0}
+             "armes": 0, "objets_magiques": 0, "races_2014": 0, "equipement_2024": 0, "listes_sorts": 0}
     if not cat.available():
         return stats
     _merge_spells(db, cat, stats)
+    _merge_spell_lists(db, cat, stats)
     _merge_feats(db, cat, stats)
     _merge_backgrounds(db, cat, stats)
     _merge_subclasses(db, cat, stats)
     _merge_species(db, cat, stats)
+    _merge_races_2014(db, cat, stats)
     _merge_weapons(db, cat, stats)
     _merge_magic_items(db, cat, stats)
+    _merge_gear_2024(db, cat, stats)
     db._spell_index = {norm(n): n for n in db.spells}
     return stats
 
@@ -210,6 +213,43 @@ def _merge_spells(db, cat, stats):
             stats["sorts"] += 1
 
 
+# v53 : sorts de la référence connus sous un autre nom dans l'application
+SPELL_NAME_MAP = {"lance psychique de raulothim": "Lance d'arçon psychique de Raulothim",
+                  "piques argentees": "Barbes argentées", "invocation d'esprit draconique": "Convocation d'esprit draconique",
+                  "rafale de vent": "Bourrasque"}
+CLASS_IDS = {"artificer": "Artificier", "druid": "Druide", "ranger": "Rôdeur", "sorcerer": "Ensorceleur",
+             "wizard": "Magicien", "cleric": "Clerc", "paladin": "Paladin", "bard": "Barde", "warlock": "Occultiste"}
+
+
+def _merge_spell_lists(db, cat, stats):
+    """v53 : listes de sorts 2014 par classe complétées d'après sorts_par_classe_fr.json (sorts de Xanathar,
+    Tasha… ajoutés aux listes officielles : Gelure pour l'Occultiste, Verrou magique pour l'Artificier…)."""
+    import json
+    from .paths import get_resource_path
+    try:
+        with open(get_resource_path("data/editions/sorts_par_classe_fr.json"), encoding="utf-8") as f:
+            index = json.load(f).get("classes", {})
+    except (OSError, ValueError):
+        return
+    by_id = {s.get("id"): s for s in cat.items("sorts")}
+    names = {norm(n): n for n in db.spells if "(2024)" not in n}
+    for cid, levels in index.items():
+        parts = cid.split("-")
+        if len(parts) < 3 or parts[2] != "2014" or parts[1] not in CLASS_IDS:
+            continue
+        cls = CLASS_IDS[parts[1]]
+        for ids in (levels or {}).values():
+            for sid in ids or []:
+                ref = by_id.get(sid)
+                if not ref or ref.get("restriction_acces"):     # dunamancie (Wildemount) : accès restreint
+                    continue
+                app = SPELL_NAME_MAP.get(norm(ref["nom"])) or names.get(norm(ref["nom"]))
+                sp = db.spells.get(app or "")
+                if sp is not None and cls not in sp.setdefault("classes", []):
+                    sp["classes"].append(cls)
+                    stats["listes_sorts"] += 1
+
+
 def _enrich_2024(sp: dict, twin: Optional[dict]) -> None:
     """Complète un sort 2024 : règles lues dans son texte, puis règles auditées du sort 2014 équivalent pour ce que le
     texte ne donne pas (projectiles, modificateur aux dégâts, échelle des tours de magie…)."""
@@ -232,9 +272,12 @@ def _enrich_2024(sp: dict, twin: Optional[dict]) -> None:
 def _merge_feats(db, cat, stats):
     from .data_loader import normalize_feat
     present = {norm(n) for n in db.feats}
+    gm_feats = []
     for f in cat.list("dons", "2014"):
         en = f.get("nom_en", "")
         if norm(f.get("categorie", "")) and any(x in norm(f.get("categorie", "")) for x in FEAT_CATEGORIES_EXCLUDED):
+            if norm(f["nom"]) not in present:            # v53 : don accordé par le MJ (faveur épique, charme,
+                gm_feats.append(f)                        # bénédiction, don de piété ou sombre) : hors progression
             continue
         asi, choices = _asi(f.get("benefices"))
         if en in FEATS_2014_PRESENT:
@@ -251,6 +294,12 @@ def _merge_feats(db, cat, stats):
     for f in cat.list("dons", "2024"):
         asi, choices = _asi(f.get("benefices"))
         _add_feat(db, f, 2024, asi, choices, normalize_feat, stats)
+    for f in gm_feats:                                   # après 2024 : les faveurs épiques 2024 gardent leur nom
+        asi, choices = _asi(f.get("benefices"))
+        _add_feat(db, f, 2014, asi, choices, normalize_feat, stats)
+        name = next(n for n in reversed(list(db.feats)) if db.feats[n].get("id") == f.get("id", ""))
+        db.feats[name]["mj_seulement"] = True
+        stats["dons_mj"] = stats.get("dons_mj", 0) + 1
     db.feats = dict(sorted(db.feats.items(), key=lambda kv: (norm(kv[0]), kv[0])))
 
 
@@ -331,6 +380,159 @@ def _merge_species(db, cat, stats):
         if m:
             db.speeds[name] = float(m.group(1).replace(",", "."))
         stats["especes"] += 1
+
+
+# v53 : races et sous-races 2014 absentes de Races.json (Eberron, Fizban, Wildemount, Côte des Épées)
+RACES_2014_SKIP = {          # déjà dans l'application sous un autre nom, ou texte de règles (pas une race jouable)
+    "genasi", "drow", "elfe noir", "demi-orc", "homme-lezard", "tortelin", "forge de guerre", "metamorphe",
+    "harengon", "sang-sorcier", "renaissant", "nain gris", "nain d'or", "nain des ecus", "elfe de la lune",
+    "elfe du soleil", "halfelin coeur-vaillant", "personnaliser", "ethnies", "sous-races d'elfes rares",
+    "tieffelin de feerune", "etre creux"}
+RACES_2014_SKIP_EXACT = {"haut-elfe", "elfe des bois", "fee", "humain (variante)"}   # Elfe (sous-races), Fadette…
+# race 2014 de l'application qui sert de parent quand la référence ne donne qu'un renvoi au manuel :
+# (race, traits propres à retirer, bonus de base)
+APP_PARENTS = {"drakeide": ("Drakéide", (), ""), "dragonborn": ("Drakéide", (), ""),
+               "demi-elfe": ("Demi-elfe", ("polyvalence", "augmentation de caracteristiques"), ""),
+               "aasimar": ("Aasimar protecteur", ("ame radieuse",), "Cha +2")}
+RACE_PARENTS = {"dragonborn": "Drakéide", "drakeide": "Drakéide", "elf": "Elfe", "elfe": "Elfe", "halfling": "Halfelin",
+                "halfelin": "Halfelin", "dwarf": "Nain", "nain": "Nain", "aasimar": "Aasimar", "gnome": "Gnome",
+                "humain": "Humain", "demi-elfe": "Demi-elfe", "demi-orc / humain": "Humain"}
+ABILITY_WORDS = {"force": "For", "dexterite": "Dex", "constitution": "Con", "intelligence": "Int", "sagesse": "Sag",
+                 "charisme": "Cha"}
+DROP_TRAITS = ("augmentation de caracteristique", "age", "alignement", "langues", "sous-race", "type de creature",
+               "sorts de la marque")
+
+
+def _race_name_2014(name: str) -> str:
+    """« Humain (variante) : Marque du passage » -> « Humain (Marque du passage) » ; « Sous-race naine : Marque de
+    Garde » -> « Nain (Marque de garde) »."""
+    m = re.match(r"(?:Sous-race (naine|elfique|halfeline)|(.+?)(?: \(variante\))?)\s*:\s*(.+)$", name)
+    if not m:
+        return name
+    parent = {"naine": "Nain", "elfique": "Elfe", "halfeline": "Halfelin"}.get(m.group(1) or "", m.group(2) or "")
+    parent = parent.replace("Demi-orc ou humain", "Demi-orque ou humain")
+    mark = m.group(3)
+    return "{} ({})".format(parent, mark[:1].upper() + mark[1:].lower().replace("marque", "Marque", 1))
+
+
+def _asi_text(text: str) -> str:
+    """« Votre valeur de Dextérité augmente de 2, et une autre valeur … de votre choix augmente de 1 » -> « Dex +2, +1 »."""
+    n = norm(text)
+    parts = ["{} +{}".format(ABILITY_WORDS[w], v) for w, v in re.findall(
+        r"(force|dexterite|constitution|intelligence|sagesse|charisme)(?: augmente de| \+)\s*(\d)", n)]
+    parts += ["+{}".format(v) for v in re.findall(r"(?:de votre choix|une autre|au choix)[^.]*?augmente de (\d)", n)]
+    if not parts and ("une valeur de caracteristique de 2" in n or "augmentez une valeur" in n):
+        return "+2, +1 (ou +1, +1, +1)"
+    return ", ".join(parts)
+
+
+def _merge_races_2014(db, cat, stats):
+    present = {norm(n) for n in db.races}
+    refs = cat.items("races")
+    parents = {}
+    for r in refs:                                       # parent 2014 : la fiche du Manuel (avec ses bonus)
+        if str(r.get("edition")) == "2014" and not r.get("sous_race_de"):
+            score = sum(1 for t in r.get("traits_raciaux") or [] if isinstance(t, dict) and
+                        norm(t.get("nom", "")).startswith(("augmentation de caract", "langues")))
+            if score > parents.get(norm(r["nom"]), ({}, -1))[1]:
+                parents[norm(r["nom"])] = (r, score)
+    parents = {k: v[0] for k, v in parents.items()}
+    languages = [x for x in db.language_names()] if hasattr(db, "language_names") else []
+    for r in refs:
+        if str(r.get("edition")) != "2014" or not r.get("traits_raciaux"):
+            continue
+        name = _race_name_2014(r["nom"])
+        n = norm(r["nom"])
+        if norm(name) in present or n in RACES_2014_SKIP_EXACT or any(k in n for k in RACES_2014_SKIP):
+            continue
+        raw_traits = [t for t in r.get("traits_raciaux") or [] if isinstance(t, dict)]
+        drop_parent = set()
+        for t in raw_traits:                             # « (option, remplace Polyvalence) » : trait parent retiré
+            for w in re.findall(r"remplace ([^)]+)\)", t.get("nom", "")):
+                drop_parent.add(norm(w.strip()))
+        traits = [t for t in raw_traits if "renvoi" not in norm(t.get("nom", "")) and
+                  not norm(t.get("nom", "")).startswith("variantes de")]
+        stub = len(traits) < len(raw_traits)
+        own = {norm(t.get("nom", "")) for t in traits}
+        asi_trait = next((t for t in traits if norm(t.get("nom", "")).startswith("augmentation de caract")), None)
+        car = r.get("caracteristiques") if isinstance(r.get("caracteristiques"), dict) else {}
+        asi = _asi_text((asi_trait or {}).get("description", "") or car.get("bonus_caracteristiques", "")
+                        or car.get("bonus", ""))
+        if "resistance" in norm(str(car.get("remplace", ""))):
+            drop_parent.add("resistance")                # Drakéide ravenite : la résistance du parent est remplacée
+        pkey = norm(r.get("sous_race_de") or "")
+        parent = parents.get(norm(RACE_PARENTS.get(pkey, r.get("sous_race_de") or "")))
+        stub = stub or any("renvoi" in norm(t.get("nom", "")) for t in (parent or {}).get("traits_raciaux") or []
+                           if isinstance(t, dict))        # la référence du parent n'est qu'un renvoi au manuel
+        app_parent = APP_PARENTS.get(pkey) if (stub or parent is None) else None
+        if app_parent and app_parent[0] in db.races:     # renvoi au manuel : traits de la race 2014 de l'appli
+            ar = db.races[app_parent[0]]
+            drop_parent |= set(app_parent[1])
+            parent = {"nom": app_parent[0], "traits_raciaux": [
+                c for c in ar.get("capacites", []) if not any(norm(c.get("nom", "")).startswith(d) or
+                                                               d.startswith(norm(c.get("nom", ""))) for d in drop_parent)],
+                "_asi": app_parent[2] or ar.get("caracteristiques", ""), "_langues": ar.get("langues", [])}
+        full = "type de creature" in own
+        replaces = full or "remplac" in norm(r.get("description", "")) or "remplace" in car or \
+            sum(int(x) for x in re.findall(r"\+(\d)", asi)) >= 3
+        merged = []
+        if parent and not full:                          # traits de la race parente, sauf ceux que la sous-race change
+            pt = [t for t in parent.get("traits_raciaux") or [] if isinstance(t, dict)]
+            merged = [t for t in pt if norm(t.get("nom", "")) not in own and
+                      not any(norm(t.get("nom", "")).startswith(d) for d in drop_parent)]
+            if not replaces:
+                p_asi = next((t for t in pt if norm(t.get("nom", "")).startswith("augmentation de caract")), None)
+                base = parent.get("_asi") or _asi_text((p_asi or {}).get("description", ""))
+                asi = ", ".join(x for x in (base, asi) if x)
+        merged += traits
+        lang_text = " ".join(t.get("description", "").split(".")[0] for t in merged
+                             if norm(t.get("nom", "")) == "langues")             # 1re phrase : les langues parlées
+        langs = [x for x in languages if norm(x) and re.search(r"\b{}\b".format(re.escape(norm(x))), norm(lang_text))] \
+            or list((parent or {}).get("_langues") or ["Commun"])
+        if "autre langue" in norm(lang_text) or "de votre choix" in norm(lang_text):
+            langs.append("1 au choix")
+        caps = [{"nom": t.get("nom", ""), "description": t.get("description", "")} for t in merged
+                if not norm(t.get("nom", "")).startswith(DROP_TRAITS)]
+        spells = r.get("sorts_de_la_marque")
+        if isinstance(spells, dict) and spells:          # sorts de la marque : ajoutés aux listes des lanceurs
+            caps.append({"nom": "Sorts de la Marque", "description": "Si vous avez la capacité Incantation, ces "
+                         "sorts s'ajoutent à la liste de sorts de votre classe : " + " ; ".join(
+                             "niveau {} : {}".format(k[0], ", ".join(v)) for k, v in spells.items())})
+        db.races[name] = {"nom": name, "source": _source(r), "caracteristiques": asi or "+2, +1 (ou +1, +1, +1)",
+                          "langues": list(dict.fromkeys(langs)), "capacites": caps, "edition": 2014,
+                          "id": r.get("id", ""), "description": r.get("description", ""),
+                          "sous_race_de": (parent or {}).get("nom", "")}
+        speed = next((t.get("description", "") for t in merged if norm(t.get("nom", "")).startswith("vitesse")), "")
+        m = re.search(r"(\d+(?:[.,]\d+)?)\s*m", speed)
+        if m:
+            db.speeds[name] = float(m.group(1).replace(",", "."))
+        present.add(norm(name))
+        stats["races_2014"] += 1
+
+
+def _merge_gear_2024(db, cat, stats):
+    """v53 : paquetages 2024 (« Sac d'explorateur »…) et équipement d'aventurier 2024 absent du catalogue, pour
+    l'équipement de départ des personnages 2024 (développés en objets comme les paquetages 2014)."""
+    if not hasattr(db, "equipment"):
+        return
+    added = False
+    for kind in ("equipement_aventurier", "kits"):
+        for o in cat.list(kind, "2024"):
+            name = o.get("nom", "")
+            if not name or name in db.equipment or name in db.catalog or norm(name).startswith("parchemin de sort"):
+                continue
+            weight = o.get("poids_kg")
+            desc = o.get("description", "") or ""
+            if kind == "kits" and o.get("contenu"):          # liste lisible par Database.parse_item_list
+                desc = "Contient " + ", ".join("{}{}".format("{} ".format(c["quantite"]) if int(c.get(
+                    "quantite") or 1) > 1 else "", c["objet"]) for c in o["contenu"]) + "."
+            db.equipment[name] = {"nom": name, "poids": "{} kg".format(str(weight).replace(".", ",")) if isinstance(
+                weight, (int, float)) else "—", "prix": o.get("cout") or "—", "description": desc,
+                "categorie": "Paquetage" if kind == "kits" else "Équipement", "edition": 2024}
+            stats["equipement_2024"] += 1
+            added = True
+    if added and hasattr(db, "_build_catalog"):
+        db._build_catalog()
 
 
 def _merge_weapons(db, cat, stats):

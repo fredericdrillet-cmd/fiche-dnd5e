@@ -101,6 +101,21 @@ DRACONIC = {
     "Vert": ("poison", "cône de 4,50 m", "Constitution"), "Rouge": ("feu", "cône de 4,50 m", "Dextérité"),
     "Argent": ("froid", "cône de 4,50 m", "Constitution"), "Blanc": ("froid", "cône de 4,50 m", "Constitution"),
 }
+# v53 : drakéides du Trésor draconique de Fizban — ascendance et souffle propres (1d10 par palier, Dextérité,
+# utilisations = bonus de maîtrise par repos long)
+FIZBAN = {"chromatique": ({"Noir": "acide", "Bleu": "foudre", "Vert": "poison", "Rouge": "feu", "Blanc": "froid"},
+                          "ligne de 1,50 × 9 m"),
+          "metallique": ({"Airain": "feu", "Bronze": "foudre", "Cuivre": "acide", "Or": "feu", "Argent": "froid"},
+                         "cône de 4,50 m"),
+          "diamantin": ({"Améthyste": "force", "Cristal": "radiant", "Émeraude": "psychique", "Saphir": "tonnerre",
+                         "Topaze": "nécrotique"}, "cône de 4,50 m")}
+
+
+def fizban_kind(race: str) -> str:
+    n = norm(race or "")
+    return next((k for k in FIZBAN if n.startswith("drakeide") and k in n), "")
+
+
 GM_USAGES = ["À volonté", "1 fois par repos long", "1 fois par repos court", "Avec vos emplacements de sort",
              "Usage unique", "Autre (voir note)"]
 
@@ -150,8 +165,9 @@ class ExtrasMixin:
                             out.setdefault(key, "Aptitude de classe : {} ({} niv. {})".format(
                                 f["nom"], e["nom"], f["niveau"]))
         color = self.ch.ascendance_raciale
-        if color in DRACONIC and self.has_breath():      # Résistance draconique selon l'ascendance choisie
-            out.setdefault("resist_" + DRACONIC[color][0], "Trait racial : Résistance draconique ({}, dragon {})".format(
+        dtype = self.draconic_damage_type()
+        if dtype and self.has_breath():                  # Résistance draconique selon l'ascendance choisie
+            out.setdefault("resist_" + norm(dtype), "Trait racial : Résistance draconique ({}, dragon {})".format(
                 self.ch.race, color.lower()))
         # (Affinité élémentaire de l'ensorceleur : résistance activable en dépensant 1 point -> non permanente)
         for cls, lvl, key in self.CLASS_INNATE:
@@ -1062,10 +1078,27 @@ class ExtrasMixin:
         return any("souffle" in norm(c.get("nom", "")) and "infini" not in norm(c.get("nom", ""))
                    for c in race.get("capacites", []))
 
+    def draconic_damage_type(self) -> str:
+        """Type de dégâts de l'ascendance draconique de l'espèce (table du Manuel ou de Fizban)."""
+        color, kind = self.ch.ascendance_raciale, fizban_kind(self.ch.race)
+        if kind:
+            return FIZBAN[kind][0].get(color, "")
+        return DRACONIC[color][0] if color in DRACONIC else ""
+
     def breath_weapon(self) -> Optional[dict]:
         """Souffle draconique calculé selon la couleur choisie (type, zone, JS, DD, dés, utilisations)."""
         if not self.has_breath():
             return None
+        kind = fizban_kind(self.ch.race)
+        if kind:                                         # v53 : Fizban — remplace une attaque de l'action Attaquer
+            lvl = self.total_level
+            colors, shape = FIZBAN[kind]
+            color = self.ch.ascendance_raciale if self.ch.ascendance_raciale in colors else ""
+            return {"couleur": color, "type": colors.get(color, ""), "zone": shape, "js": "Dextérité",
+                    "dd": 8 + self.prof + self.mod("Constitution"),
+                    "degats": "{}d10".format(1 if lvl < 5 else 2 if lvl < 11 else 3 if lvl < 17 else 4),
+                    "utilise": self.resource_used("souffle") >= self.prof, "utilisations": self.prof,
+                    "recuperation": "repos long", "fizban": True}
         color = self.ch.ascendance_raciale if self.ch.ascendance_raciale in DRACONIC else ""
         dtype, shape, save = DRACONIC.get(color, ("", "", "Dextérité"))
         if norm(self.ch.race) == "demi-dragon":          # homebrew : toujours un cône de 4,50 m

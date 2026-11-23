@@ -1741,8 +1741,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         return [n for n in self.db.background_names()
                 if self.allowed(self.db.backgrounds[n]) or n == self.ch.historique]
 
-    def feat_options(self) -> list[str]:
-        return [n for n, f in self.db.feats.items() if self.allowed(f)]
+    def feat_options(self, gm: bool = False) -> list[str]:
+        """Dons proposés ; les dons réservés au MJ (faveurs, charmes, bénédictions…) seulement avec `gm`."""
+        return [n for n, f in self.db.feats.items() if self.allowed(f) and (gm or not f.get("mj_seulement"))]
 
     def edition_tips(self, items: dict) -> dict[str, str]:
         """Badge discret (info-bulle) « Édition 2014 / 2024 » des éléments en mode libre."""

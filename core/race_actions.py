@@ -122,13 +122,14 @@ class RaceActionsMixin:
         breath = self.breath_weapon() if hasattr(self, "breath_weapon") else None
         for c in self._race_trait_list():
             name, desc = c.get("nom", ""), c.get("description", "")
-            is_breath = breath is not None and "souffle" in norm(name) and "infini" not in norm(name)
+            is_breath = breath is not None and "souffle" in norm(name) and "infini" not in norm(name) and \
+                "metallique" not in norm(name)           # v53 : 2e souffle du drakéide métallique : action à part
             if not is_breath and not is_race_action(name, desc):
                 continue
             lvl = min_level(desc)
             kind = action_type(desc)
             if is_breath:
-                key, uses = "souffle", 1
+                key, uses = "souffle", int(breath.get("utilisations") or 1)
                 formula, dtype, heal = breath["degats"], breath["type"], False
                 desc = "{} — {}, JS de {} DD {}, {} {} (moitié en cas de réussite).".format(
                     desc, breath["zone"] or "zone selon la couleur", breath["js"], breath["dd"], breath["degats"],
@@ -143,7 +144,7 @@ class RaceActionsMixin:
                         "cout": {"ressource": key, "n": 1} if uses else {}, "jet": jet, "degats": formula,
                         "type_degats": dtype, "soin": heal, "description": desc, "origine": "race",
                         "ressource_race": key if uses else "", "utilisations": uses or 0,
-                        "recuperation": "repos court" if is_breath else recovery_of(desc)})
+                        "recuperation": (breath.get("recuperation") or "repos court") if is_breath else recovery_of(desc)})
         level = self.total_level
         return [a for a in out if level >= a["niveau"]]
 

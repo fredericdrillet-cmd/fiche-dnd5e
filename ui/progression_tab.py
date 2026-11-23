@@ -112,7 +112,8 @@ class ProgressionTab(BaseTab):
     def _on_gm_feat(self):
         row = self.table.currentRow()
         pre = self._cat_names[row] if 0 <= row < len(self._cat_names) else ""
-        name = ask_gm_feat(self.win, self.feat_names(), pre)
+        gm_names = sorted(self.engine.feat_options(gm=True), key=lambda n: (norm(n), n))   # v53 : + dons du MJ
+        name = ask_gm_feat(self.win, gm_names, pre)
         if name and self.engine.add_gm_feat(name):
             self.win.statusBar().showMessage("Don accordé par le MJ : {}.".format(name), 6000)
             self.changed()
@@ -262,7 +263,8 @@ class ProgressionTab(BaseTab):
                 w["mode"].setCurrentIndex(list(MODES.values()).index(mode))
                 w["a1"].setCurrentIndex(max(0, w["a1"].findText(c.get("a1", "Force"))))
                 w["a2"].setCurrentIndex(max(0, w["a2"].findText(c.get("a2", "Dextérité"))))
-            fill_combo(w["feat"], names, c.get("don", "") or (names[0] if names else ""), tips)
+            row_names = names + [c["don"]] if w["mj"] and c.get("don") and c["don"] not in names else names
+            fill_combo(w["feat"], row_names, c.get("don", "") or (names[0] if names else ""), tips)
             feat = db.feats.get(w["feat"].currentText(), {})
             choices = eng.feat_ability_options(feat["nom"]) if feat else []    # v52 : Résilient (2024)…
             fill_combo(w["fa"], choices or ["—"], c.get("don_carac", "") if c.get("don_carac") in choices
