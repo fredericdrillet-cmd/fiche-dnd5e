@@ -231,7 +231,10 @@ class InventoryGrid(QListWidget):
         if not e.mimeData().hasFormat(MIME_SLOT):
             return
         slot = bytes(e.mimeData().data(MIME_SLOT)).decode("utf-8")
-        self.tab.engine.unequip_slot(slot)
+        if slot.startswith("rapide:"):                   # v53 : emplacement rapide vidé
+            self.tab.engine.clear_quick_slot(int(slot.split(":")[1]))
+        else:
+            self.tab.engine.unequip_slot(slot)
         self.tab.win.statusBar().showMessage("Case vidée : l'objet retourne dans le sac.", 5000)
         e.acceptProposedAction()
         self.tab.changed()

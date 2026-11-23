@@ -135,13 +135,15 @@ def damage_calc(die: str, terms: list, result: str) -> str:
     return "{}{} = {}".format(pretty_formula(die), parts, pretty_formula(result))
 
 
+from .quick_slots import QuickSlotsMixin  # noqa: E402
+
 class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, MissingChoicesMixin,
              LevelUpMixin, TurnMixin, EquipmentMixin, SubclassFeaturesMixin, InvocationsMixin,
              CombatFlowMixin, ClassTilesMixin, ProficiencyMixin, SpellSwapMixin,
              MagicGearMixin, InitiativeMixin, CreationMixin, ClassGuideMixin, Features2024Mixin,
              FeatPrereq2024Mixin, FeatEffectsMixin, ClassAutoMixin, Subclass2024Mixin,
              TurnRemindersMixin, OnHitMixin, DefenseMixin, NoveltyMixin,
-             RememberMixin, MasteryFlowMixin, ExhaustionMixin,
+             RememberMixin, MasteryFlowMixin, ExhaustionMixin, QuickSlotsMixin,
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
              LightMixin, JournalMixin, ItemPassivesMixin):
@@ -272,6 +274,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         self.sync_magic_gear()                           # v45 : armes / armures magiques liées aux cases
         if self.sync_attunement():                       # v53 : objet lié équipé = harmonisé
             self.sync_magic_gear()
+        self.sync_quick_slots()                          # v53 : emplacements rapides (potions, parchemins)
         over = self.attuned_count() - self.attunement_limit()
         for entry in reversed(ch.objets_magiques):
             if over <= 0:

@@ -404,6 +404,7 @@ class TurnMixin:
                  "une action (« Utiliser un objet »).".format(
                      ", ".join("{} ×{}".format(p["nom"], p["qte"]) for p in drinks) if drinks else "aucune potion"),
                  bool(drinks), "" if drinks else "Aucune potion dans l'inventaire.", "1 potion")
+        self.quick_tiles(tile)                            # v53 : emplacements rapides (potions, parchemins)
         # v52 — inspiration : règle 2014 ou inspiration héroïque 2024 (règle de la table)
         heroic = self.rule_active("inspiration_heroique")
         if self.ch.inspiration:
@@ -434,7 +435,7 @@ class TurnMixin:
             return "reactions"
         if tid.startswith(("arme:", "bete:")):
             return "attaques"
-        if tid.startswith("objet:"):
+        if tid.startswith(("objet:", "rapide:")):
             return "objets"
         if tid.startswith("sort:"):
             return "magie"
@@ -538,6 +539,10 @@ class TurnMixin:
         elif tile_id in ("inspiration:utiliser", "inspiration:recevoir"):
             self.ch.inspiration = tile_id == "inspiration:recevoir"
             res.update(ok=True, message="Inspiration {}.".format("reçue" if self.ch.inspiration else "utilisée"))
+        elif tile_id.startswith("rapide:"):              # v53 : l'effet (potion, sort du parchemin) se fait dans l'interface
+            slot = self.quick_slots()[int(tile_id.split(":")[1])]
+            self.spend_economy(kind)
+            res.update(ok=True, rapide=slot, message="{} : {}.".format(t["nom"], kind.lower()))
         elif tile_id == "potion:boire":                    # le choix et l'effet de la potion se font dans l'interface
             self.spend_economy("Action bonus")
             res.update(ok=True, potion=True, message="Boire une potion : action bonus.")

@@ -1029,6 +1029,38 @@ class CombatTab(BaseTab):
         self.turn_tiles[x["id"]] = b
         return b
 
+    def _use_quick(self, slot: dict, tile_id: str) -> None:
+        """Potion / huile : effet officiel (game_widgets.use_consumable) ; parchemin de sort : choix du sort, le
+        parchemin est consommé puis le sort résolu. Annulé : l'action dépensée est rendue."""
+        eng, win = self.engine, self.win
+
+        def refund() -> None:
+            if slot["type"] == "Action bonus":
+                self.ch.tour_bonus = False
+            else:
+                self.ch.tour_action = False
+        if slot["genre"] != "parchemin":
+            from .game_widgets import use_consumable
+            if not use_consumable(win, slot["source"], slot["index"]):
+                refund()
+                win.statusBar().showMessage("{} : rien n'a été utilisé.".format(slot["nom"]), 6000)
+            return
+        level = eng.scroll_level(slot["nom"])
+        if level is None:                                # parchemin de protection… : effet raconté
+            eng.consume_one(slot["source"], slot["index"])
+            win.statusBar().showMessage("📜 {} lu : appliquez son effet (voir sa description).".format(slot["nom"]),
+                                        8000)
+            return
+        spells = eng.scroll_spells(slot["nom"])
+        picked = ask_choice(win, slot["nom"], "Quel sort ce parchemin contient-il ?", spells) if spells else ""
+        if not picked:
+            refund()
+            return
+        eng.consume_one(slot["source"], slot["index"])
+        from .spell_flow import resolve_spell
+        win.statusBar().showMessage("📜 {} : {} (le parchemin tombe en poussière).".format(slot["nom"], picked), 8000)
+        resolve_spell(win, eng, picked, level, "", self._attack_flow)
+
     # ------------------------------------------------------------------ v53 : ordre des tuiles
     def _on_tile_drop(self, src: str, dst: str, after: bool) -> None:
         from PyQt6.QtCore import QTimer
@@ -1182,6 +1214,10 @@ class CombatTab(BaseTab):
             else:                                        # 3. résolution : attaque, DD de sauvegarde, dégâts, soins
                 resolve_spell(win, eng, spell["nom"], getattr(magic, "last_cast_level", 0) or level or 0, "",
                               self._attack_flow)
+            self.changed()
+            return
+        if res.get("rapide"):                             # v53 : emplacement rapide (potion, huile, parchemin)
+            self._use_quick(res["rapide"], tile_id)
             self.changed()
             return
         if res.get("potion"):                             # v40 : potion bue par une action bonus

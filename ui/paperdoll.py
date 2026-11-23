@@ -129,6 +129,22 @@ class PaperdollPanel(QGroupBox):
         self.attuned = make_label("", "muted", wrap=True)          # objets harmonisés (et portés hors case)
         self.attuned.setTextFormat(Qt.TextFormat.RichText)
         lay.addWidget(self.attuned)
+        # v53 : emplacements rapides (potions, huiles, parchemins) -> tuiles de l'onglet « En partie »
+        quick_head = make_label("⚡ Emplacements rapides", "head")
+        quick_head.setToolTip(rich_tip("Emplacements rapides", "Glissez ici une potion, une huile ou un parchemin "
+                                       "du sac (ou cliquez une case) : sa tuile apparaît dans l'onglet « En partie » "
+                                       "pour l'utiliser. Glissez une case vers le sac pour la vider."))
+        lay.addWidget(quick_head)
+        quick = QHBoxLayout()
+        quick.setSpacing(6)
+        from core.quick_slots import QUICK_SLOTS
+        self.quick_btns = []
+        for n in range(QUICK_SLOTS):
+            b = SlotCard(lambda k=n: self._on_quick(k), 96, 54, slot="rapide:{}".format(n),
+                         on_drop=self.drop_on_quick)
+            quick.addWidget(b)
+            self.quick_btns.append(b)
+        lay.addLayout(quick)
         lay.addStretch(1)
         self.hint = make_label("Glissez un objet du sac sur une case, ou cliquez une case pour choisir parmi les objets qui correspondent à "
                                "son rôle (armures, armes, boucliers, anneaux, capes…). Un objet par case.",
@@ -169,6 +185,7 @@ class PaperdollPanel(QGroupBox):
                 b.set_look(t.muted, dashed=True)
                 b.setToolTip(rich_tip(label, "Case vide." + (" Clic : choisir un objet." if n else "")))
         self._refresh_attunement(doll)
+        self._refresh_quick()
         self._refresh_portrait()
 
     def _refresh_attunement(self, doll: dict) -> None:
@@ -199,6 +216,48 @@ class PaperdollPanel(QGroupBox):
                 html.escape(eng.magic_display_name(e)), " <i>(porté, sans case)</i>" if hors_case else ""))
         self.attuned.setText(" · ".join(parts) if parts else
                              "Aucun objet harmonisé : équipez un objet ✦ (sac ou case) pour l'harmoniser.")
+
+    def _refresh_quick(self) -> None:
+        eng, t = self.engine, theme.current()
+        for n, (b, s) in enumerate(zip(self.quick_btns, eng.quick_slots())):
+            b.filled = bool(s)
+            if s:
+                item = eng.magic_item(s["nom"]) or {}
+                b.setText("{} {}{}".format("📜" if s["genre"] == "parchemin" else "🧪", s["nom"],
+                                           " ×{}".format(s["qte"]) if s["qte"] > 1 else ""))
+                b.set_look(theme.rarity_color(item.get("rarete", ""), t, t.panel2) if item else t.text, bold=True)
+                b.setToolTip(rich_tip(s["nom"], "Emplacement rapide {} — {} dans l'onglet « En partie ». Clic : "
+                                      "changer ou vider ; glisser vers le sac : vider.".format(n + 1, s["type"])))
+            else:
+                b.setText("⚡ {}\n— vide —".format(n + 1))
+                b.set_look(t.muted, dashed=True)
+                b.setToolTip(rich_tip("Emplacement rapide {}".format(n + 1), "Glissez une potion, une huile ou un "
+                                      "parchemin du sac, ou cliquez pour choisir."))
+
+    def drop_on_quick(self, slot: str, key: str) -> bool:
+        ok, msg = self.engine.set_quick_slot(int(slot.split(":")[1]), key)
+        self.win.statusBar().showMessage(msg, 6000)
+        if ok:
+            self.win.changed()
+        return ok
+
+    def _on_quick(self, n: int) -> None:
+        """Case rapide cliquée : potions, huiles et parchemins du sac (ou « Vider la case »)."""
+        eng, win = self.engine, self.win
+        names = list(dict.fromkeys([it["nom"] for it in eng.ch.equipement if eng.is_quick_item(it["nom"])] +
+                                   [e["nom"] for e in eng.ch.objets_magiques if eng.is_quick_item(e["nom"])]))
+        options = names + ([CLEAR] if eng.quick_slots()[n] else [])
+        if not options:
+            win.statusBar().showMessage("Aucune potion, huile ni parchemin dans le sac.", 6000)
+            return
+        picked = ask_choice(win, "Emplacement rapide {}".format(n + 1), "Objet à garder sous la main :", options)
+        if not picked:
+            return
+        if picked == CLEAR:
+            eng.clear_quick_slot(n)
+        else:
+            win.statusBar().showMessage(eng.set_quick_slot(n, picked)[1], 6000)
+        win.changed()
 
     def _refresh_portrait(self) -> None:
         """Portrait du personnage (importé dans l'onglet « Histoire, Portrait »), réduit au cadre ; sinon invitation."""

@@ -219,6 +219,9 @@ def mech(key: str) -> dict:
 POTION_RULES = [   # (fragment de nom normalisé, action) — l'ordre compte
     ("guerison supreme", ("soin", "10d4+20")), ("guerison superieure", ("soin", "8d4+8")),
     ("guerison majeure", ("soin", "4d4+4")), ("guerison", ("soin", "2d4+2")),
+    # v53 : noms « Potion de soins … » (traduction 2024, objets saisis à la main)
+    ("soins suprem", ("soin", "10d4+20")), ("soins superieur", ("soin", "8d4+8")), ("soins major", ("soin", "4d4+4")),
+    ("soins majeur", ("soin", "4d4+4")), ("potion de soins", ("soin", "2d4+2")),
     ("force de geant", ("force", None)), ("vitesse", ("effet", "potion_vitesse")),
     ("vitalite", ("purge", ["empoisonne", "malade", "epuisement_1", "epuisement_2", "epuisement_3", "epuisement_4",
                             "epuisement_5"])),

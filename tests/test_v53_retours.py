@@ -322,3 +322,64 @@ class FiltresDuSacTests(unittest.TestCase):
         e.add_magic_item("Potion de force de géant des collines")
         e.add_magic_item("Bottes elfiques")
         self.assertEqual([o["equipe"] for o in ch.objets_magiques], [False, True])
+
+
+class EmplacementsRapidesTests(unittest.TestCase):
+    """v53 : potions / huiles / parchemins sous la main -> tuiles « En partie »."""
+
+    def fresh(self, edition="2014"):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Magicien", "niveau": 5, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        ch.equipement.append({"nom": "Potion de guérison", "qte": 2})
+        e.add_magic_item("Parchemin de sort (niveau 1)")
+        e.add_magic_item("Anneau de protection")
+        return e, ch
+
+    def test_placer_et_tuiles(self):
+        e, ch = self.fresh()
+        self.assertTrue(e.set_quick_slot(0, "Potion de guérison")[0])
+        self.assertTrue(e.set_quick_slot(1, e.bag_key(0))[0])
+        self.assertFalse(e.set_quick_slot(2, e.bag_key(1))[0])           # un anneau ne va pas là
+        self.assertTrue(e.set_quick_slot(3, "Potion de guérison")[0])    # déplacé : un seul emplacement
+        self.assertEqual(ch.emplacements_rapides, ["", "Parchemin de sort (niveau 1)", "", "Potion de guérison"])
+        tiles = {t["id"]: t for t in e.turn_actions() if t["id"].startswith("rapide:")}
+        self.assertEqual(set(tiles), {"rapide:1", "rapide:3"})
+        self.assertEqual(tiles["rapide:3"]["groupe"], "objets")
+        self.assertEqual(tiles["rapide:3"]["type"], "Action")            # 2014 sans la règle de la table
+        ch.regles_optionnelles["potion_action_bonus"] = True
+        self.assertEqual(e.quick_slots()[3]["type"], "Action bonus")
+
+    def test_utiliser_puis_vider_quand_epuise(self):
+        e, ch = self.fresh()
+        e.set_quick_slot(0, "Potion de guérison")
+        res = e.use_turn_action("rapide:0")
+        self.assertTrue(res["ok"] and ch.tour_action)
+        e.use_consumable(res["rapide"]["source"], res["rapide"]["index"])
+        e.use_consumable("equipement", 0)
+        e.normalize()
+        self.assertEqual(ch.emplacements_rapides[0], "")
+
+    def test_parchemin(self):
+        e, ch = self.fresh()
+        self.assertEqual(e.scroll_level("Parchemin de sort (niveau 3)"), 3)
+        self.assertEqual(e.scroll_level("Parchemin de sort (sort mineur)"), 0)
+        self.assertIsNone(e.scroll_level("Parchemin de protection"))
+        self.assertIn("Projectile magique", e.scroll_spells("Parchemin de sort (niveau 1)"))
+        e.consume_one("objet", 0)
+        self.assertEqual([o["nom"] for o in ch.objets_magiques], ["Anneau de protection"])
+
+    def test_noms_potion_de_soins(self):
+        from core import mechanics as M
+        self.assertEqual(M.potion_action("Potion de soins"), ("soin", "2d4+2"))
+        self.assertEqual(M.potion_action("Potion de soins supérieurs"), ("soin", "8d4+8"))
+
+    def test_sauvegarde(self):
+        import json
+        from core.character import Character
+        e, ch = self.fresh()
+        e.set_quick_slot(2, "Potion de guérison")
+        again = Character.from_dict(json.loads(json.dumps(ch.to_dict())))
+        self.assertEqual(again.emplacements_rapides[2], "Potion de guérison")
+        self.assertEqual(Character.from_dict({}).emplacements_rapides, ["", "", "", ""])
