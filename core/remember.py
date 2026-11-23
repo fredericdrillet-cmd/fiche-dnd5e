@@ -8,6 +8,8 @@ Chaque entrée : (fragments de nom d'aptitude / trait / don, moment, texte, édi
 """
 from __future__ import annotations
 
+import re
+
 from .rules import norm
 
 MOMENTS = ["Avant d'attaquer", "Quand vous touchez", "En défense", "Pour vos alliés", "Déplacement", "Hors combat"]
@@ -54,6 +56,19 @@ ENTRIES = [
     (("race:chanceux",), "En défense", "Chanceux (halfelin) : sur un 1 au d20 d'une attaque, d'un test ou d'un JS, relancez "
      "le dé.", None),
     (("race:brave",), "En défense", "Brave : avantage aux JS contre l'état effrayé.", None),
+    # v53 : traits des races importées (marques draconiques, Wildemount, Fizban, Côte des Épées)
+    (("race:agilite halfeline",), "Déplacement", "Agilité halfeline : vous traversez l'espace de toute créature plus "
+     "grande que vous.", None),
+    (("race:marche sylvestre",), "Déplacement", "Marche sylvestre : désavantage aux tests pour vous pister ; la "
+     "végétation non magique n'est pas un terrain difficile pour vous.", None),
+    (("race:presence imposante",), "Hors combat", "Présence imposante : une fois par repos court ou long, avantage à "
+     "un test de Persuasion ou d'Intimidation.", None),
+    (("race:esprit psionique", "race:discours silencieux"), "Hors combat", "Télépathie raciale : vous parlez par "
+     "télépathie à une créature à 9 m ou moins (elle doit comprendre une langue que vous parlez).", None),
+    (("race:plus ils sont grands",), "Hors combat", "Plus ils sont grands : dès le niveau 3, Amitié avec les animaux "
+     "et Communication avec les animaux ciblent aussi une bête ou une monstruosité d'Intelligence 3 ou plus.", None),
+    (("race:sorts de la marque",), "Hors combat", "Sorts de la Marque : si vous lancez des sorts, ceux de votre "
+     "marque s'ajoutent à la liste de votre classe (déjà proposés dans l'onglet Magie).", None),
     (("race:resistance naine",), "En défense", "Résistance naine : avantage aux JS contre le poison.", None),
     (("race:ascendance feerique",), "En défense", "Ascendance féerique : avantage aux JS contre l'état charmé ; la magie ne "
      "peut pas vous endormir.", None),
@@ -103,6 +118,27 @@ class RememberMixin:
                 continue
             if any(match(f) for f in frags):
                 out[moment].append(text)
+        for name in self.chosen_feats():                # v53 : dons du MJ situationnels -> rappel lisible
+            f = self.db.feats.get(name) or {}
+            if not f.get("mj_seulement"):
+                continue
+            spec = self._gm_spec(name, f) if hasattr(self, "_gm_spec") else {}
+            text = (f.get("description") or "").replace("\n", " ")
+            sentences = [x.strip() for x in re.split(r"(?<=[.!])\s+", text) if x.strip()]
+            first = next((x for x in sentences if re.search(r"avantage|resistance|immunis|pouvez|bonus|gagnez|vous etes",
+                                                             norm(x))), sentences[0] if sentences else "")[:240].rstrip(".")
+            done = any(spec.get(k) for k in ("pv_max", "vitesse", "sorts", "pouvoir", "competences_toutes",
+                                              "vision_veritable", "champion"))
+            mods = spec.get("mods") or {}
+            if not done and not spec.get("emplacement_9") and not (
+                    mods.get("ca") or mods.get("carac") or mods.get("resistances") or mods.get("immunites") or
+                    mods.get("competences")):
+                low = norm(text)
+                moment = "En défense" if re.search(r"jets? de sauvegarde|degats|empoign|entrav", low) else \
+                    "Avant d'attaquer" if "attaque" in low else "Déplacement" if "vitesse" in low else "Hors combat"
+                out[moment].append("{} : {}.".format(name, first))
+            elif spec.get("note_js"):
+                out["En défense"].append("{} : {}.".format(name, spec["note_js"]))
         if self.mastery_count():
             out["Quand vous touchez"].append("Bottes d'arme : chaque attaque avec une arme dont vous maîtrisez la "
                                              "botte applique son effet (Sape, Ouverture, Poussée…).")

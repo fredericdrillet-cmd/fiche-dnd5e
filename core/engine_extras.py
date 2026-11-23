@@ -141,6 +141,33 @@ class ExtrasMixin:
                     "rage", "forme")
 
     @_batch_memo
+    def imported_race_modifiers(self) -> list[tuple[str, dict]]:
+        """v53 — traits des races importées de data/editions (marques draconiques, Wildemount…) lus dans le texte :
+        « vous pouvez lancer un d4 et ajouter le résultat » aux jets de Comp. (X) -> +1d4 ; « avantage aux tests de
+        Carac. (X) et de Carac. (Y) » -> avantage. Les races de Races.json ont leurs propres règles."""
+        race = self.db.races.get(self.ch.race) or {}
+        if "sous_race_de" not in race:
+            return []
+        skills = {norm(s["nom"]): s["nom"] for s in self.db.skills}
+        out = []
+        for c in race.get("capacites", []):
+            d = c.get("description", "")
+            comp = {}
+            for sentence in re.split(r"(?<=[.])\s+", d):
+                n = norm(sentence)
+                named = [skills[norm(x)] for x in re.findall(r"\(([^)]+)\)", sentence) if norm(x) in skills]
+                if not named:
+                    continue
+                if "un d4 et ajouter" in n:
+                    for s in named:
+                        comp.setdefault(s, []).append("+1d4")
+                elif re.match(r"vous avez l'avantage aux (?:tests|jets)", n) and not re.search(r"lorsque|quand|si ", n):
+                    for s in named:
+                        comp.setdefault(s, []).append(M.ADV)
+            if comp:
+                out.append(("Trait racial : " + c.get("nom", ""), {"competences": comp}))
+        return out
+
     def innate_effects(self) -> dict[str, str]:
         """
         Effets permanents conférés par la race et les aptitudes de classe débloquées : {clé: source}.
@@ -282,6 +309,7 @@ class ExtrasMixin:
         out += self.class_modifiers()                    # v52 : Sens du danger
         out += self.subclass_modifiers()                 # v52 : résistances et auras de sous-classe
         out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
+        out += self.imported_race_modifiers()            # v53 : d4 des marques draconiques, Sens incisif…
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = dict(M.item_mech(entry.get("nom", "")) or M.item_mech(item.get("comme", "") or "-"))

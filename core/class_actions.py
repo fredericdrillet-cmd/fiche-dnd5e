@@ -609,6 +609,9 @@ class ClassActionsMixin:
             spent = "{} — {}".format(spent, extra) if spent else extra
         if a.get("pv_temp"):                             # Tombe de Levistus : PV temporaires
             self.apply_temp_hp(int(a["pv_temp"]))
+        if a.get("soin_fixe"):                           # v53 : Faveur de récupération (2014) — moitié des PV max
+            gained = self.heal(int(a["soin_fixe"]))
+            spent = "{} — +{} PV".format(spent, gained) if spent else "+{} PV".format(gained)
         if a.get("rend"):                                # Récupération psionique : un dé revient dans la réserve
             self.set_resource_used(a["rend"], max(0, self.resource_used(a["rend"]) - 1))
         effect = a.get("effet", "")

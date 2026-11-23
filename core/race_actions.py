@@ -66,8 +66,9 @@ def uses_of(description: str, prof: int) -> Optional[int]:
     m = re.search(r"(\d+|une|deux|trois) fois par repos", d) or re.search(r"utilisable (\d+) fois", d)
     if m:
         return {"une": 1, "deux": 2, "trois": 3}.get(m.group(1)) or int(m.group(1))
-    if "revient apres un repos" in d:
-        return 1
+    if "revient apres un repos" in d or re.search(r"(?:ne pouvez plus|ne pourrez plus|ne peut plus)[^.]{0,40}"
+                                                       r"(?:avant|jusqu'a)[^.]{0,40}repos", d):
+        return 1                                         # « Une fois utilisé, … plus avant un repos long »
     return None
 
 
@@ -77,7 +78,7 @@ def recovery_of(description: str) -> str:
 
 
 def min_level(description: str) -> int:
-    m = re.search(r"(?:a partir du niveau|^niveau) (\d+)", norm(description))
+    m = re.search(r"(?:a partir du niveau|^niveau|^au niveau) (\d+)", norm(description))
     return int(m.group(1)) if m else 1
 
 
@@ -124,7 +125,8 @@ class RaceActionsMixin:
             name, desc = c.get("nom", ""), c.get("description", "")
             is_breath = breath is not None and "souffle" in norm(name) and "infini" not in norm(name) and \
                 "metallique" not in norm(name)           # v53 : 2e souffle du drakéide métallique : action à part
-            if not is_breath and not is_race_action(name, desc):
+            second = "souffle metallique" in norm(name)  # v53 : 2e souffle (Fizban), 1 / repos long, niveau 5
+            if not is_breath and not second and not is_race_action(name, desc):
                 continue
             lvl = min_level(desc)
             kind = action_type(desc)
@@ -136,7 +138,7 @@ class RaceActionsMixin:
                     breath["type"] or "(choisissez la couleur du dragon ancestral)")
             else:
                 key = "race:{}:{}".format(_slug(c["_src"] or self.ch.race), _slug(name))
-                uses = uses_of(desc, self.prof)
+                uses = 1 if second else uses_of(desc, self.prof)
                 formula, dtype, heal = self._race_formula(desc)
             jet = "degats" if formula and ("d" in formula or heal) else "aucun"     # bonus fixe : affiché seulement
             out.append({"id": key, "nom": name, "icone": "🐉" if is_breath else _ICONS[kind],

@@ -27,7 +27,7 @@ MENTAL = ["Intelligence", "Sagesse", "Charisme"]
 
 
 def feat_base(name: str) -> str:
-    return norm(re.sub(r"\s*\(2024\)\s*$", "", name or ""))
+    return norm(re.sub(r"\s*\((?:2024|2014)\)\s*$", "", name or ""))
 
 
 def _skills(*names):
@@ -121,6 +121,11 @@ REG: dict[tuple, dict] = {
     ("faveur de resistance aux energies", 2024): {"choix": [{"id": "resistances", "label": "résistances", "n": 2,
                                                              "kind": "liste", "options": DAMAGE_TYPES_BOON}]},
     ("faveur de vigueur", 2024): {"pv_max": 40},
+    ("faveur de haute magie", 2014): {"emplacement_9": True},
+    ("arme de nyx", 2014): {"pouvoir": {"uses": 1, "recover": "repos long", "type": "Action bonus", "effet": "arme_de_nyx",
+                                        "description": "Pendant 1 minute, l'arme que vous tenez inflige 1d8 dégâts "
+                                        "radiants supplémentaires quand elle touche (nécrotiques pour Érébos, foudre "
+                                        "pour Kéranos, feu pour Purphoros). Une fois par repos long."}},
     ("faveur de memoire des sorts", 2024): {"memoire_sorts": True},
     ("faveur de vitesse", 2024): {"vitesse": 9},
     ("faveur de vision veritable", 2024): {"vision_veritable": 18},
@@ -151,10 +156,31 @@ class FeatEffectsMixin:
             seen.add(name)
             f = self.db.feats.get(name) or {}
             spec = dict(spec_for(name, self._feat_edition(name)))
+            if not spec and f.get("mj_seulement"):        # v53 : don du MJ — effets lus dans son texte
+                spec = self._gm_spec(name, f)
             if f.get("categorie") == "Faveur épique":
                 spec["cap30"] = True
             out.append((name, spec))
         return out
+
+    def _gm_spec(self, name: str, feat: dict) -> dict:
+        cache = self.db.__dict__.setdefault("_gm_feat_specs", {})
+        if name not in cache:
+            spells = {norm(n): n for n in self.db.spells if "(2024)" not in n}
+            cache[name] = gm_feat_spec(feat, spells, [s["nom"] for s in self.db.skills])
+        return cache[name]
+
+    def _gm_uses(self, value) -> int:
+        if isinstance(value, str) and value.startswith("mod:"):
+            return max(1, self.mod(value[4:]))
+        return int(value or 1)
+
+    def feat_ability_cap(self, ab: str) -> int:
+        """v53 : plafond relevé par un don (Bénédiction de santé : Constitution jusqu'à 22)."""
+        caps = [int(spec.get("plafond", {}).get(ab, 0)) for _, spec in self.feat_specs()]
+        caps += [22 for name, spec in self.feat_specs() if spec.get("champion") and
+                 self.feat_choice(name, "carac")[:1] == [ab]]
+        return max(caps or [0])
 
     def feat_passive(self, key: str) -> int:
         total = 0
@@ -332,6 +358,12 @@ class FeatEffectsMixin:
             m = {}
             if spec.get("pv_max"):
                 m["pv_max"] = spec["pv_max"]
+            for k, v in (spec.get("mods") or {}).items():  # v53 : dons du MJ (CA, JS, carac., résistances…)
+                m[k] = v
+            if spec.get("champion"):                     # Champions de Theros : +2 à la caractéristique choisie
+                picked = self.feat_choice(name, "carac")
+                if picked:
+                    m.setdefault("carac", {})[picked[0]] = 2
             for c in self._feat_choices(name, spec):
                 if c["id"] == "resistances":
                     m["resistances"] = self.feat_choice(name, "resistances")
@@ -389,6 +421,16 @@ class FeatEffectsMixin:
                     continue
                 key = ""
                 text = usage
+                if usage == "libre jamais":                  # v53 : charme — utilisations comptées en tout
+                    key = "don_mj_" + self.feat_slug(name)
+                    total = self._gm_uses(spec.get("sorts_utilisations") or 1)
+                    left = max(0, total - self.resource_used(key))
+                    out.append({"nom": spell["nom"], "niveau": spell["niveau"], "usage": "{} / {} restant(s)"
+                                .format(left, total), "source": "Don : " + name, "sort": spell, "categorie": "Dons",
+                                "emplacement": True, "limite": "1", "cle": "", "cible": "", "carac": ab,
+                                "dc": R.spell_save_dc(self.prof, m), "attaque": R.spell_attack_bonus(self.prof, m),
+                                "recover": spec.get("sorts_recup") or "jamais", "cle_charme": key})
+                    continue
                 if usage.startswith("libre"):
                     key = "don:{}:{}".format(self.feat_slug(name), self.feat_slug(spell["nom"]))
                     period = "repos court" if usage.endswith("court") else "repos long"
@@ -424,6 +466,18 @@ class FeatEffectsMixin:
                 out.append({"key": "don_" + key, "label": label, "total": total, "kind": "sursaut",
                             "recover": recover, "where": "combat", "de": "d10" if key == "vitalite" else "",
                             "info": "{} — {} (don {})".format(info, recover, name)})
+            pw = spec.get("pouvoir")
+            if pw:                                       # v53 : pouvoir d'un don du MJ (1 / repos, charme…)
+                out.append({"key": "don_mj_" + self.feat_slug(name), "label": name, "total": self._gm_uses(pw["uses"]),
+                            "kind": "sursaut", "recover": pw["recover"], "where": "combat", "de": "",
+                            "info": "{} — {}".format(pw["description"][:200], "ne revient pas" if pw["recover"] ==
+                                                     "jamais" else pw["recover"])})
+            if spec.get("sorts_utilisations"):           # charme / dévot : N lancers
+                rec = spec.get("sorts_recup") or "jamais"
+                out.append({"key": "don_mj_" + self.feat_slug(name), "label": name,
+                            "total": self._gm_uses(spec["sorts_utilisations"]), "kind": "sursaut", "recover": rec,
+                            "where": "combat", "de": "", "info": "Lancers du sort accordé ({})".format(
+                                "ne reviennent pas" if rec == "jamais" else rec)})
             if spec.get("dernier_rempart"):
                 out.append({"key": "don_dernier_rempart", "label": "Dernier rempart", "total": 1, "kind": "sursaut",
                             "recover": "repos long", "where": "combat", "de": "",
@@ -477,6 +531,19 @@ class FeatEffectsMixin:
                             "quand vous touchez au corps à corps : JS de Force DD {} ou la cible est repoussée de "
                             "1,50 m ou tombe à terre.".format(8 + self.prof + self.mod("Force"))))
         for name, spec in self.feat_specs():
+            pw = spec.get("pouvoir")
+            if pw:                                       # v53 : tuile du pouvoir d'un don du MJ
+                key = "don_mj_" + self.feat_slug(name)
+                extra = {}
+                if pw.get("soin_moitie"):
+                    extra = {"soin_fixe": self.hp_max() // 2, "soin": True}
+                if pw.get("pv_temp"):
+                    extra["pv_temp"] = pw["pv_temp"]
+                if pw.get("effet"):
+                    extra["effet"] = pw["effet"]
+                out.append(dict(base, id=key, nom=name, icone="✨", type=pw["type"],
+                                cout={"ressource": key, "n": 1}, jet=pw.get("jet", "aucun"),
+                                degats=pw.get("degats", ""), description=pw["description"], **extra))
             for aid in spec.get("actions", []):
                 if aid == "vitalite":
                     out.append(dict(base, id="don_vitalite", nom="Récupérer la vitalité", icone="💗",
@@ -511,3 +578,119 @@ class FeatEffectsMixin:
     def _hit_die_formula(self) -> str:
         die = self._hit_die_left()
         return "1" + die if die else ""
+
+
+# ---------------------------------------------------------------------------------------------- dons du MJ (v53)
+_NUM = {"une": 1, "un": 1, "deux": 2, "trois": 3, "quatre": 4, "cinq": 5, "six": 6, "sept": 7, "dix": 10}
+_ABILITY_WORDS = {"force": "Force", "dexterite": "Dextérité", "constitution": "Constitution",
+                  "intelligence": "Intelligence", "sagesse": "Sagesse", "charisme": "Charisme"}
+
+
+def gm_feat_spec(feat: dict, spell_names: dict, skill_names: list[str]) -> dict:
+    """v53 — effets d'un don accordé par le MJ (faveurs épiques 2014, bénédictions, charmes, dons de Theros et de
+    Ravenloft) lus dans son texte : caractéristiques (+N, plafond), PV maximum, vitesse, CA et JS, résistances et
+    immunités, avantages, vision véritable, maîtrise de toutes les compétences, sorts accordés, et un « pouvoir »
+    (tuile + compteur) pour ce qui s'utilise une fois par repos, par aube ou un nombre fixe de fois."""
+    desc = (feat or {}).get("description", "") or ""
+    n = norm(desc)
+    spec: dict = {}
+    mods: dict = {}
+    from .item_passives import damage_types_in
+    for w, ab in _ABILITY_WORDS.items():
+        m = re.search(r"valeur de " + w + r" augmente de (\d+)(?:, jusqu'a un maximum de (\d+))?", n)
+        if m:
+            mods.setdefault("carac", {})[ab] = int(m.group(1))
+            if m.group(2):
+                spec.setdefault("plafond", {})[ab] = int(m.group(2))
+    m = re.search(r"maximum de points de vie augmente de (\d+)", n)
+    if m:
+        spec["pv_max"] = int(m.group(1))
+    m = re.search(r"vitesse de marche augmente de (\d+(?:[.,]\d+)?) m", n)
+    if m:
+        spec["vitesse"] = float(m.group(1).replace(",", "."))
+    m = re.search(r"vision (?:lucide|veritable) jusqu'a une portee de (\d+)", n)
+    if m:
+        spec["vision_veritable"] = int(m.group(1))
+    if "maitrise de toutes les competences" in n:
+        spec["competences_toutes"] = True
+    m = re.search(r"^vous gagnez un bonus de \+(\d) a la ca et aux jets de sauvegarde", n)
+    if m:
+        mods["ca"] = int(m.group(1))
+        mods["js"] = {"*": [int(m.group(1))]}
+    if re.search(r"^vous avez l'avantage aux jets de sauvegarde contre les sorts", n):
+        mods.setdefault("js", {})["sorts"] = ["avantage"]
+        spec["note_js"] = "Avantage aux JS contre les sorts et effets magiques"
+    m = re.search(r"avantage aux jets de sauvegarde de (\w+)", n)
+    if m and m.group(1) in _ABILITY_WORDS:
+        mods.setdefault("js", {})[_ABILITY_WORDS[m.group(1)]] = ["avantage"]
+    for mt in re.finditer(r"(?:bonus de \+(\d+)|l'avantage) aux jets de \w+ \(([^)]+)\)", desc, re.I):
+        skill = next((s for s in skill_names if norm(s) == norm(mt.group(2))), "")
+        if skill and not re.search(r"qui reposent|lorsque|quand", norm(desc[mt.end():mt.end() + 40])):
+            mods.setdefault("competences", {})[skill] = [int(mt.group(1)) if mt.group(1) else "avantage"]
+    for mt in re.finditer(r"immunise contre (?:les )?degats (?:de |d')([^.]+)", n):
+        mods.setdefault("immunites", []).extend(damage_types_in(mt.group(1)))
+    if "immunise contre toutes les maladies et tous les poisons" in n:
+        mods.setdefault("immunites", []).append("poison")
+        mods.setdefault("etats_immunises", []).append("empoisonne")
+    if re.search(r"^vous avez la resistance aux degats contondants, perforants et tranchants", n):
+        mods.setdefault("resistances", []).append("contondant, perforant et tranchant (armes non magiques)")
+    else:
+        for mt in re.finditer(r"vous avez (?:aussi |egalement )?la resistance aux degats ([^.;]{0,40})", n):
+            before = n[max(0, mt.start() - 60):mt.start()]
+            if not re.search(r"pendant|lorsque|quand|jusqu'a", before):    # passif (pas l'effet d'un pouvoir)
+                mods.setdefault("resistances", []).extend(damage_types_in(mt.group(1)))
+    # Champions de Theros : +2 à une caractéristique au choix, maximum relevé de 2
+    m = re.search(r"augmenter votre valeur de (\w+) ou de (\w+) de 2 et augmenter egalement votre maximum", n)
+    if m and m.group(1) in _ABILITY_WORDS and m.group(2) in _ABILITY_WORDS:
+        opts = [_ABILITY_WORDS[m.group(1)], _ABILITY_WORDS[m.group(2)]]
+        spec["choix"] = [{"id": "carac", "label": "caractéristique (+2, maximum 22)", "n": 1, "kind": "liste",
+                          "options": opts}]
+        spec["champion"] = True
+    m = re.search(r"(?:la |le )?(force|dexterite|constitution|intelligence|sagesse|charisme) est votre caracteristique "
+                  r"d'incantation", n)
+    if m:
+        spec["carac_sorts"] = _ABILITY_WORDS[m.group(1)]
+    if mods:
+        spec["mods"] = mods
+    # sorts : « lancer le sort X … à volonté » ; « une fois … repos court / long »
+    for mt in re.finditer(r"(?:lancer|lancez)(?: le sort)? ([a-zà-ÿœ'’ -]{3,40}?)(?: \(|,|\.| a volonte| à volonté| par une"
+                          r"| sans| en vous| grâce| grace)", desc, re.I):
+        key = norm(mt.group(1).replace("’", "'")).strip()
+        sp = spell_names.get(key) or spell_names.get(re.sub(r"^frappe ", "chatiment ", key))   # « frappe courroucée »
+        if sp and sp not in [s for s, _u in spec.get("sorts", [])]:
+            usage = "À volonté" if "volonte" in norm(desc[mt.end() - 12:mt.end() + 30]) else \
+                "libre court" if "repos court" in n else "libre"
+            spec.setdefault("sorts", []).append((sp, usage))
+    # pouvoir à usage limité (tuile + compteur)
+    uses, recover = 0, ""
+    m = re.search(r"ne pouvez plus (?:l'|la |le )?(?:utiliser|refaire|faire)[^.]*?avant (?:d'avoir termine un |la fin d'un |"
+                  r"de terminer un )?(repos court|repos long|l'aube|que 7 jours|le prochain coucher|le prochain "
+                  r"crepuscule)", n)
+    if m:
+        uses, recover = 1, {"repos court": "repos court"}.get(m.group(1), "repos long")
+    m = re.search(r"nombre de fois egal a votre modificateur de (\w+)", n)
+    if m and m.group(1) in _ABILITY_WORDS:              # « autant de fois que votre modificateur de Sagesse »
+        uses, recover = "mod:" + _ABILITY_WORDS[m.group(1)], "repos long"
+    m2 = re.search(r"une fois utilise (\w+) fois", n) or re.search(r"possede (\d+) charges", n)
+    if m2:
+        uses, recover = (int(m2.group(1)) if m2.group(1).isdigit() else _NUM.get(m2.group(1), 1)), "jamais"
+    elif "le charme vous quitte" in n and not uses:
+        uses, recover = 1, "jamais"
+    if uses and not spec.get("sorts"):
+        kind = "Réaction" if "votre reaction" in n else "Action bonus" if "action bonus" in n else \
+            "Action" if re.search(r"par une action|utiliser une action|une action pour", n) else "Spécial"
+        power = {"uses": uses, "recover": recover, "type": kind, "description": desc[:400]}
+        if "d10" in n and ("ajouter" in n or "bonus ou malus" in n):
+            power.update(jet="degats", degats="1d10")
+        if "+20" in n:
+            power["note"] = "+20 au jet d'attaque à distance"
+        if "moitie de votre maximum de points de vie" in n:
+            power["soin_moitie"] = True
+        if "potion d'heroisme" in n:
+            power["pv_temp"] = 10
+        spec["pouvoir"] = power
+    elif uses and spec.get("sorts"):                     # sorts à utilisations comptées (charme, dévot…)
+        spec["sorts"] = [(s, "libre jamais") for s, _u in spec["sorts"]]
+        spec["sorts_utilisations"] = uses
+        spec["sorts_recup"] = recover
+    return spec

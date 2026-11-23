@@ -557,3 +557,72 @@ class DonneesReferenceCompleteesTests(unittest.TestCase):
         self.assertTrue(e.add_gm_feat("Faveur de vigueur" if "Faveur de vigueur" in DB.feats else
                                       "Charme de vision dans le noir"))
         self.assertTrue(ch.dons_mj)
+
+
+class AutomatisationAjoutsTests(unittest.TestCase):
+    """v53 : traits des races importées et dons du MJ réellement appliqués."""
+
+    def sheet(self, race="Humain", cls="Guerrier", lvl=5):
+        ch = Engine.new_character(DB)
+        ch.race = race
+        ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        return e, ch
+
+    def test_traits_des_races_importees(self):
+        e, _ = self.sheet("Elfe (Marque de l'ombre)")
+        self.assertEqual([(s["nom"], s["niveau_requis"]) for s in e.racial_spells()],
+                         [("Illusion mineure", 1), ("Invisibilité", 3)])
+        self.assertIn("+1d4", e.imported_race_modifiers()[0][1]["competences"]["Discrétion"])
+        e, _ = self.sheet("Humain (Marque du passage)")
+        self.assertEqual(e.speed(), 10.5)
+        e, _ = self.sheet("Nain (Marque de garde)")
+        self.assertIn("hache d'armes", e.racial_weapon_proficiencies())
+        e, _ = self.sheet("Demi-elfe (Marque de détection)")
+        self.assertIn("Détection du poison et des maladies", [s["nom"] for s in e.racial_spells()])
+        e, ch = self.sheet("Humain (Marque du passage)", "Magicien")
+        self.assertTrue(any(s["nom"] == "Repli expéditif" for s in e.available_spells("Magicien")))
+        e, ch = self.sheet("Drakéide métallique")
+        ch.ascendance_raciale = "Or"
+        e.normalize()
+        second = next(a for a in e.race_actions() if a["nom"] == "Arme de souffle métallique")
+        self.assertEqual((second["utilisations"], second["niveau"]), (1, 5))
+
+    def test_rafale_de_vent_tour_de_magie(self):
+        self.assertEqual(DB.spells["Rafale de vent"]["niveau"], 0)
+        self.assertEqual(DB.spells["Bourrasque"]["niveau"], 2)
+
+    def test_dons_du_mj_appliques(self):
+        e, ch = self.sheet(lvl=20)
+        hp, speed = e.hp_max(), e.speed()
+        e.add_gm_feat("Faveur de vigueur (2014)")
+        e.add_gm_feat("Faveur de vitesse (2014)")
+        self.assertEqual((e.hp_max(), e.speed()), (hp + 40, speed + 9))
+        e.add_gm_feat("Faveur de l'âme ardente")
+        self.assertIn("feu", [t for t, _ in e.defenses()["immunites"]])
+        self.assertIn("Mains brûlantes", [s["nom"] for s in e.feat_spells()])
+        e.add_gm_feat("Faveur de chance")
+        tr = next(t for t in e.resource_trackers() if t["key"] == "don_mj_faveur_de_chance")
+        self.assertEqual((tr["total"], tr["recover"]), (1, "repos court"))
+        e.add_gm_feat("Bénédiction de santé")
+        self.assertEqual(e.feat_ability_cap("Constitution"), 22)
+        ch.pv_actuels = 1
+        e.add_gm_feat("Faveur de récupération (2014)")
+        res = e.use_class_action("don_mj_faveur_de_recuperation_2014")
+        self.assertTrue(res["ok"])
+        self.assertGreater(ch.pv_actuels, 1)
+
+    def test_charme_et_haute_magie(self):
+        e, ch = self.sheet(cls="Magicien", lvl=20)
+        nine = e.spell_slots()[8]
+        e.add_gm_feat("Faveur de haute magie")
+        self.assertEqual(e.spell_slots()[8], nine + 1)
+        e.add_gm_feat("Charme de vision dans le noir")
+        tr = next(t for t in e.resource_trackers() if t["key"] == "don_mj_charme_de_vision_dans_le_noir")
+        self.assertEqual((tr["total"], tr["recover"]), (3, "jamais"))
+
+    def test_rappel_des_dons_narratifs(self):
+        e, ch = self.sheet()
+        e.add_gm_feat("Disciple de Mogis")
+        self.assertTrue(any("charmé ou effrayé" in x for x in e.remember_list().get("En défense", [])))

@@ -26,7 +26,7 @@ SUFFIX_2024 = " (2024)"
 # sorts 2014 des nouvelles données déjà présents dans l'app sous une autre traduction
 SPELL_TRANSLATIONS_2014 = {norm(n) for n in (
     "Lance psychique de Raulothim", "Piques argentées", "Châtiment de stupeur",
-    "Invocation d'esprit draconique", "Préméditation", "Rafale de vent")}
+    "Invocation d'esprit draconique", "Préméditation")}       # v53 : « Rafale de vent » (Gust, tour de magie) importé
 
 # sous-classes 2014 absentes de l'app (identifiées par leur nom anglais ; les autres sont des traductions de
 # sous-classes déjà présentes)
@@ -216,7 +216,7 @@ def _merge_spells(db, cat, stats):
 # v53 : sorts de la référence connus sous un autre nom dans l'application
 SPELL_NAME_MAP = {"lance psychique de raulothim": "Lance d'arçon psychique de Raulothim",
                   "piques argentees": "Barbes argentées", "invocation d'esprit draconique": "Convocation d'esprit draconique",
-                  "rafale de vent": "Bourrasque"}
+                  }
 CLASS_IDS = {"artificer": "Artificier", "druid": "Druide", "ranger": "Rôdeur", "sorcerer": "Ensorceleur",
              "wizard": "Magicien", "cleric": "Clerc", "paladin": "Paladin", "bard": "Barde", "warlock": "Occultiste"}
 
@@ -426,6 +426,44 @@ def _asi_text(text: str) -> str:
     return ", ".join(parts)
 
 
+RACE_TEXT_FIXES = {"tour de magie bourrasque": "tour de magie rafale de vent",   # Marque de la tempête : Gust
+                   "sort rafale de vent": "sort bourrasque",                   # puis Gust of Wind (Bourrasque)
+                   "purification de la nourriture et de l'eau": "purification de nourriture et d'eau"}
+SPELL_STOP = {"une", "grace", "par", "avec", "sans", "lorsque", "quand", "a", "au", "des", "vous", "pour", "sur",
+              "en", "si", "dans", "jusqu'a", "fois"}
+
+
+def _mark_race_spells(text: str, spells: dict) -> str:
+    """Noms de sorts accordés écrits en *italique* (convention de Races.json lue par Engine.racial_spells) :
+    « Vous connaissez le tour de magie illusion mineure. … lancer le sort invisibilité » -> *illusion mineure*…
+    Plusieurs sorts à la suite (« détection de la magie et détection du poison et des maladies ») : le plus long
+    nom reconnu à chaque position."""
+    text = text.replace("’", "'")
+    for bad, good in RACE_TEXT_FIXES.items():
+        text = re.sub(bad, good, text, flags=re.I)
+    out = text
+    for m in re.finditer(r"(?:tour de magie|le sort|les sorts|lancer)\s+([^.;:(]+)", text, re.I):
+        segment = re.sub(r"^(?:aussi\s+|également\s+)?(?:le|les)\s+sorts?\s+", "", m.group(1), flags=re.I)
+        words = segment.replace(",", " , ").split()
+        i = 0
+        while i < len(words):
+            hit = 0
+            for k in range(min(8, len(words) - i), 0, -1):
+                cand = " ".join(words[i:i + k]).strip(" «»\"")
+                if len(cand) >= 4 and norm(cand) in spells:
+                    hit = k
+                    if "*" + cand not in out:
+                        out = out.replace(cand, "*" + cand + "*", 1)
+                    break
+            if hit:
+                i += hit
+            elif norm(words[i]) in ("et", "ou", ","):
+                i += 1
+            else:
+                break                                    # fin de l'énumération des sorts
+    return out
+
+
 def _merge_races_2014(db, cat, stats):
     present = {norm(n) for n in db.races}
     refs = cat.items("races")
@@ -491,18 +529,29 @@ def _merge_races_2014(db, cat, stats):
             or list((parent or {}).get("_langues") or ["Commun"])
         if "autre langue" in norm(lang_text) or "de votre choix" in norm(lang_text):
             langs.append("1 au choix")
-        caps = [{"nom": t.get("nom", ""), "description": t.get("description", "")} for t in merged
-                if not norm(t.get("nom", "")).startswith(DROP_TRAITS)]
+        spell_names = {norm(n): n for n, sp in db.spells.items() if "(2024)" not in n}
+        caps = [{"nom": t.get("nom", ""), "description": _mark_race_spells(t.get("description", ""), spell_names)
+                 if re.search(r"tour de magie|sort", norm(t.get("description", ""))) else t.get("description", "")}
+                for t in merged if not norm(t.get("nom", "")).startswith(DROP_TRAITS)]
         spells = r.get("sorts_de_la_marque")
         if isinstance(spells, dict) and spells:          # sorts de la marque : ajoutés aux listes des lanceurs
             caps.append({"nom": "Sorts de la Marque", "description": "Si vous avez la capacité Incantation, ces "
                          "sorts s'ajoutent à la liste de sorts de votre classe : " + " ; ".join(
                              "niveau {} : {}".format(k[0], ", ".join(v)) for k, v in spells.items())})
+        mark_spells = []
+        if isinstance(spells, dict):                     # noms de l'application (sorts 2014)
+            for group in spells.values():
+                for sp_name in group or []:
+                    app = SPELL_NAME_MAP.get(norm(sp_name)) or spell_names.get(norm(sp_name))
+                    if app:
+                        mark_spells.append(app)
         db.races[name] = {"nom": name, "source": _source(r), "caracteristiques": asi or "+2, +1 (ou +1, +1, +1)",
+                          "sorts_marque": mark_spells,
                           "langues": list(dict.fromkeys(langs)), "capacites": caps, "edition": 2014,
                           "id": r.get("id", ""), "description": r.get("description", ""),
                           "sous_race_de": (parent or {}).get("nom", "")}
-        speed = next((t.get("description", "") for t in merged if norm(t.get("nom", "")).startswith("vitesse")), "")
+        speed = next((t.get("description", "") for t in reversed(merged)        # la sous-race prime (10,50 m)
+                      if "vitesse de marche" in norm(t.get("description", ""))), "")
         m = re.search(r"(\d+(?:[.,]\d+)?)\s*m", speed)
         if m:
             db.speeds[name] = float(m.group(1).replace(",", "."))

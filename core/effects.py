@@ -241,6 +241,8 @@ _e("forme_fantomatique", "Forme fantomatique", "👻", "Bonus", "Tatouage de fou
    "empoigné ni entravé ; vous traversez créatures et objets comme un terrain difficile (1d10 force si vous y "
    "finissez votre tour).", resistances=["contondant, perforant et tranchant (attaques non magiques)"],
    notes=["Immunité : Empoigné, Entravé", "Traverse créatures et objets (terrain difficile)"])
+_e("arme_de_nyx", "Arme de Nyx", "🌌", "Bonus", "Bénédiction divine (Theros)", "1 minute",
+   "L'arme que vous tenez inflige 1d8 dégâts radiants supplémentaires quand elle touche.", degats="+1d8 radiants")
 _e("armure_mage", "Armure du mage", "🧥", "Bonus", _sort(1, "Armure du mage"), "8 heures",
    "Une créature consentante qui ne porte pas d'armure a une CA de base de 13 + son modificateur de "
    "Dextérité. Le sort prend fin si elle enfile une armure.",

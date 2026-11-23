@@ -736,6 +736,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         race = self.race_bonus()[ab]
         asi = self.asi_bonus()[ab]
         champion, cap = self.class_score_bonus(ab)       # Champion primitif, Corps et esprit (2024)
+        cap = max(cap, self.feat_ability_cap(ab))         # v53 : Bénédiction de santé / compréhension (22)
         boon = self.epic_boon_bonus()[ab]                 # v52 : Faveur épique, +1 jusqu'à 30
         raw = min(base + race + asi - boon + champion, cap)
         if boon:
@@ -966,7 +967,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         out = []
         for c in self.race_capacities():
             n = norm(c.get("nom", ""))
-            if "armes" in n and ("entrainement" in n or "maitrise" in n):
+            if ("armes" in n or "combat" in n) and ("entrainement" in n or "maitrise" in n):
                 text = re.sub(r"^.*?(maitrise|maitrisez)\s+", "", norm(c["description"]))
                 for item in re.split(r",|;|\bet\b", text):
                     item = re.sub(r"^\s*((de|des|du|la|le|les)\s+|[ld]')+", "", item).strip(" .")
@@ -1572,7 +1573,11 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
     @memo
     def spell_slots(self) -> list[int]:
         """Emplacements de sorts ; en multiclassage, chaque classe compte selon son édition (core/editions.py)."""
-        return E.spell_slots([(c["kind"], c["niveau"], c.get("edition", E.DEFAULT_EDITION)) for c in self.casters()])
+        slots = E.spell_slots([(c["kind"], c["niveau"], c.get("edition", E.DEFAULT_EDITION)) for c in self.casters()])
+        if len(slots) > 8 and slots[8] and self.feat_flag("emplacement_9"):   # v53 : Faveur de haute magie
+            slots = list(slots)
+            slots[8] += 1
+        return slots
 
     # ------------------------------------------------------------------ v52 : éditions et règles de la table
     @property
@@ -1837,6 +1842,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             return [s for s in self.db.all_spells() if self.allowed(s)]
         pool = self.db.spells_for_class(c["liste"])
         pool += [s for s in self.tasha_extra_spells(class_name) if s not in pool]   # v52 : options de Tasha
+        for name in (self.db.races.get(self.ch.race) or {}).get("sorts_marque") or []:   # v53 : Sorts de la Marque
+            sp = self.db.find_spell(name)
+            if sp and sp not in pool:
+                pool.append(sp)
         return [s for s in pool if (s["niveau"] == 0 or s["niveau"] <= c["niveau_max"]) and self.allowed(s)]
 
     def can_learn(self, class_name: str, spell_name: str) -> bool:
@@ -1962,7 +1971,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         for cap in self.race_capacities():
             desc = cap.get("description", "")
             dn = norm(desc)
-            if not (GRANT_TRAIT.search(norm(cap.get("nom", ""))) or dn.startswith(GRANT_START)):
+            imported = "sous_race_de" in race and "*" in desc     # v53 : races importées (sorts marqués)
+            if not (GRANT_TRAIT.search(norm(cap.get("nom", ""))) or dn.startswith(GRANT_START) or imported):
                 continue
             if any(x in dn for x in GRANT_EXCLUDE):
                 continue
@@ -1976,7 +1986,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 before = desc[clause_start:mt.start()]
                 after = re.match(r"\s*\(([^)]*)\)", desc[mt.end():])
                 paren = after.group(1) if after else ""
-                lvl = re.search(r"niv(?:eau|\.)?\s*(\d+)", paren, re.I) or re.search(r"niveau\s*(\d+)\s*:", before, re.I)
+                lvl = re.search(r"niv(?:eau|\.)?\s*(\d+)", paren, re.I) or re.search(r"niveau\s*(\d+)\s*:", before, re.I) \
+                    or re.search(r"(?:partir du|au) niveau\s*(\d+)", before, re.I)      # v53 : « À partir du niveau 3 »
                 req = int(lvl.group(1)) if lvl else 1
                 if spell["niveau"] == 0:
                     usage = "À volonté"
