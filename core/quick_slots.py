@@ -123,7 +123,7 @@ class QuickSlotsMixin:
                 continue
             item = self.magic_item(s["nom"]) or {}
             info = self.db.catalog.get(s["nom"], {}) if hasattr(self.db, "catalog") else {}
-            desc = (item.get("description") or info.get("description") or "")[:400]
+            desc = item.get("description") or info.get("description") or ""
             what = {"potion": "boire la potion", "huile": "appliquer l'huile",
                     "parchemin": "lire le parchemin : le sort est lancé, le parchemin disparaît. Le sort doit figurer "
                                  "dans la liste de sorts de votre classe ; sinon, s'il est de niveau supérieur à ce que "

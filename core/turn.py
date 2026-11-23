@@ -302,7 +302,8 @@ class TurnMixin:
             origin = ("sort mineur" if lvl == 0 else "sort niv. {}".format(lvl) + (
                 " ⇒ {}".format(eff) if eff > lvl else "")) + (" [Sort Racial]" if racial and not known_normally
                                                              else " (accordé)" if granted else "")
-            desc = (spell.get("description") or "")[:400]
+            full = spell.get("description_complete") or spell.get("description") or ""   # v53 : texte complet
+            desc = full
             if lvl:                                       # niveau effectif : surclassement d'office (pacte)
                 vals = self.spell_values(spell["nom"], eff) or {}
                 text, _ = R.describe_at(spell, eff)
@@ -315,7 +316,8 @@ class TurnMixin:
                     parts.append("PV temporaires : {}".format(vals["pv_temp"]))
                 head = "Niveau {}{} — ".format(eff, " (Magie des pactes)" if vals.get("pacte") else "") \
                     if eff > lvl else ""
-                desc = head + (" — ".join(parts) + "\n" if parts else "") + text[:400]
+                desc = head + (" — ".join(parts) + "\n" if parts else "") + (
+                    full if spell.get("description_complete") else text)   # valeurs surclassées : ligne du dessus
                 save = self.spell_resolution(spell["nom"], eff) if spell.get("test") in SAVE_TESTS else None
                 if save and save.get("ligne_js"):           # v40 : JS de la cible et effet d'une réussite
                     desc += "\n{} — {}".format(save["ligne_js"], save_success_text(spell))
@@ -329,6 +331,7 @@ class TurnMixin:
                         desc = "{} rayon{} — ".format(st["rayons"], "s" * (st["rayons"] > 1)) + desc
                     if spell.get("test") in SAVE_TESTS:
                         desc += "\n" + save_success_text(spell)
+                    desc += "\n\n" + full                    # v53 : règle complète sous les valeurs calculées
             tile("sort:" + spell["nom"], spell["nom"], "✦" if lvl else "✧", kind, origin, desc, ok, why,
                  ("emplacement de Pacte niv. {}".format(eff) if eff > lvl and eff == self.pact()[1]
                   else "emplacement niv. {}+".format(lvl)) if needs_slot else "", ref={"sort": spell["nom"], "niveau": lvl,
@@ -416,11 +419,30 @@ class TurnMixin:
                  "Le MJ vous accorde l'inspiration. " + HR.inspiration_text(heroic))
         order = {k: i for i, k in enumerate(ECONOMY)}
         actions = {a["id"]: a for a in self.class_actions()}
+        rules = self.full_rule_texts()                    # v53 : règle complète sous le résumé de la tuile
         for t in out:                                     # v41 : groupe d'affichage de l'onglet Combat
             t["groupe"] = self.tile_group(t, actions)
+            if not t["id"].startswith(("sort:", "commune:", "arme:")):
+                full = rules.get(norm(t["nom"].lstrip("★ ").split(" — ")[0].split(" (")[0]))
+                if full and len(full) > len(t.get("description") or "") + 20 and \
+                        norm(full[:60]) not in norm(t.get("description") or ""):
+                    t["regle_complete"] = full
         auto_first = [t for t in out if t["nom"].startswith("★ ")]
         rest = [t for t in out if not t["nom"].startswith("★ ")]
         return auto_first + sorted(rest, key=lambda t: order.get(t["type"], 9))
+
+    def full_rule_texts(self) -> dict[str, str]:
+        """{nom normalisé: texte complet} des aptitudes de classe débloquées, traits raciaux et dons choisis."""
+        out: dict[str, str] = {}
+        for e in self.ch.classes:
+            for f in self.features(e):
+                if f.get("debloque"):
+                    out.setdefault(norm(f["nom"]), f.get("description", ""))
+        for c in self.race_capacities():
+            out.setdefault(norm(c.get("nom", "")), c.get("description", ""))
+        for name in self.chosen_feats():
+            out.setdefault(norm(name), (self.db.feats.get(name) or {}).get("description", ""))
+        return out
 
     @staticmethod
     def tile_group(t: dict, actions: dict) -> str:

@@ -32,7 +32,7 @@ def spell_card_html(spell: dict | None) -> str:
     return ("<h3 style='color:{}'>{}</h3><p><i>{}{}</i></p><table cellpadding='2'>{}</table><p>{}</p>{}".format(
         t.accent_text, _esc(spell.get("nom", "")), head,
         " — {}".format(_esc(spell.get("ecole", ""))) if spell.get("ecole") else "", table,
-        _esc(spell.get("description", "")).replace("\n", "<br/>"),
+        _esc(spell.get("description_complete") or spell.get("description", "")).replace("\n", "<br/>"),
         "<p><i>Listes : {}</i></p>".format(_esc(", ".join(classes))) if classes else ""))
 
 

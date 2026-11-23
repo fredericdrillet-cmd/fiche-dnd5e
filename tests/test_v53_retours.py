@@ -626,3 +626,25 @@ class AutomatisationAjoutsTests(unittest.TestCase):
         e, ch = self.sheet()
         e.add_gm_feat("Disciple de Mogis")
         self.assertTrue(any("charmé ou effrayé" in x for x in e.remember_list().get("En défense", [])))
+
+
+class InfobullesCompletesTests(unittest.TestCase):
+    """v53 : les infobulles des tuiles donnent la règle complète (sorts et capacités)."""
+
+    def test_texte_complet(self):
+        self.assertGreater(len(DB.spells["Boule de feu"].get("description_complete", "")), 400)
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Roublard", "niveau": 6, "sous_classe": "Assassin", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        tile = next(t for t in e.turn_actions() if t["id"] == "classe:sournoise")
+        self.assertIn("coup critique", tile["regle_complete"])
+        ch2 = Engine.new_character(DB)
+        ch2.classes = [{"nom": "Magicien", "niveau": 5, "sous_classe": "", "pv_jets": []}]
+        ch2.sorts["Magicien"] = [{"nom": "Boule de feu", "prepare": True}, {"nom": "Trait de feu", "prepare": True}]
+        e2 = Engine(DB, ch2)
+        e2.normalize()
+        tiles = {t["id"]: t for t in e2.turn_actions()}
+        self.assertIn("contourne les angles", tiles["sort:Boule de feu"]["description"])
+        self.assertIn("Dégâts : 8d6", tiles["sort:Boule de feu"]["description"])
+        self.assertIn("inflammable", tiles["sort:Trait de feu"]["description"])

@@ -1016,11 +1016,12 @@ class CombatTab(BaseTab):
                         "QToolButton:hover { background: rgba(255,255,255,0.10); border-radius: 8px; }")
         b.setProperty("indisponible", not x["disponible"])   # v53 : reste déplaçable ; icône assombrie
         b.setCursor(Qt.CursorShape.PointingHandCursor)
-        b.setToolTip(rich_tip("{} {}".format(x["icone"], x["nom"]), "{}{}{}{}{}".format(
+        b.setToolTip(rich_tip("{} {}".format(x["icone"], x["nom"]), "{}{}{}{}{}{}".format(
             "<i>{} — {}</i>\n".format(x["type"], x["origine"]) if x.get("origine") else "<i>{}</i>\n".format(x["type"]),
             x["description"], "\n<b>Coût : {}</b>".format(x["cout"]) if x["cout"] else "",
             "\n<b>Restant : {}</b>".format(res) if res else "",
-            "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "")))
+            "\n<b>🔒 {}</b>".format(x["raison"]) if not x["disponible"] and x["raison"] else "",
+            "\n\n<b>Règle complète</b>\n{}".format(x["regle_complete"]) if x.get("regle_complete") else "")))
         if x["disponible"]:
             b.clicked.connect(lambda _=False, tid=x["id"]: self._on_turn_tile(tid))
         else:                                            # indisponible : raison dans la barre d'état

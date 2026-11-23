@@ -128,6 +128,7 @@ def merge(db) -> dict:
         return stats
     _merge_spells(db, cat, stats)
     _merge_spell_lists(db, cat, stats)
+    _attach_full_spell_texts(db, cat, stats)
     _merge_feats(db, cat, stats)
     _merge_backgrounds(db, cat, stats)
     _merge_subclasses(db, cat, stats)
@@ -219,6 +220,29 @@ SPELL_NAME_MAP = {"lance psychique de raulothim": "Lance d'arçon psychique de R
                   }
 CLASS_IDS = {"artificer": "Artificier", "druid": "Druide", "ranger": "Rôdeur", "sorcerer": "Ensorceleur",
              "wizard": "Magicien", "cleric": "Clerc", "paladin": "Paladin", "bard": "Barde", "warlock": "Occultiste"}
+
+
+def _attach_full_spell_texts(db, cat, stats):
+    """v53 : les sorts de data/Magie-*.json n'ont qu'un résumé d'une ligne ; le texte officiel complet (avec « Aux
+    niveaux supérieurs ») de la référence est rangé dans `description_complete` (infobulles, fiche de sort)."""
+    refs = {}
+    for s in cat.list("sorts", "2014"):
+        refs.setdefault(norm(s.get("nom", "")), s)
+    reverse = {norm(v): k for k, v in SPELL_NAME_MAP.items()}
+    n = 0
+    for name, sp in db.spells.items():
+        if "(2024)" in name or sp.get("description_complete"):
+            continue
+        ref = refs.get(norm(name)) or refs.get(reverse.get(norm(name), ""))
+        if not ref:
+            continue
+        text = _text(ref.get("description", ""))
+        if ref.get("aux_niveaux_superieurs"):
+            text += "\n\n" + _text(ref["aux_niveaux_superieurs"])
+        if len(text) > len(sp.get("description") or ""):
+            sp["description_complete"] = text
+            n += 1
+    stats["textes_sorts"] = n
 
 
 def _merge_spell_lists(db, cat, stats):
