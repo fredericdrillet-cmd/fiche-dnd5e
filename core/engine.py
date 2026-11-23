@@ -2293,8 +2293,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 self.ch.equipement.append({"nom": name, "qte": 10})
             return True
         # v53 : un objet à harmoniser arrive dans le sac (l'équiper prend un emplacement d'harmonisation)
-        entry = {"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0, "equipe": not item["lien"],
-                 "harmonise": False}
+        from . import mechanics as M                    # un consommable se range dans le sac, il ne se porte pas
+        entry = {"nom": name, "bonus": max(1, min(3, bonus)) if item["variable"] else 0,
+                 "equipe": not item["lien"] and not (M.is_consumable(name) or norm(item.get("type", "")) in
+                                                     ("potion", "parchemin")), "harmonise": False}
         elements = self.item_rules(item)["elements"]
         if elements:                                    # v52 : perles… tirées à l'ajout (l'interface fait confirmer)
             from . import dice as D

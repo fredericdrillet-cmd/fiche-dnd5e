@@ -112,7 +112,31 @@ class InventoryTab(BaseTab):
         style_table(self.table, stretch_col=0)
         il.addWidget(self.table)
         self.table.setVisible(False)                      # v53 : modèle caché ; affichage en tuiles
-        from .inventory_grid import InventoryGrid
+        from .inventory_grid import FAMILIES, FAMILY_TIPS, InventoryGrid
+        filt = QVBoxLayout()                              # v53 : filtres du sac (deux rangées) + recherche
+        filt.setSpacing(4)
+        filt_rows = [QHBoxLayout(), QHBoxLayout()]       # largeur naturelle de chaque bouton : rien de rogné
+        for row in filt_rows:
+            row.setSpacing(4)
+            filt.addLayout(row)
+        self.bag_filter = "tout"
+        self.bag_filter_btns = {}
+        for n, (key, label) in enumerate(FAMILIES):
+            b = QPushButton(label)
+            b.setCheckable(True)
+            b.setProperty("role", "toggle")
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+            b.setToolTip(FAMILY_TIPS[key])
+            b.clicked.connect(lambda _=False, k=key: self._on_bag_filter(k))
+            filt_rows[n // 4].addWidget(b, 1)
+            self.bag_filter_btns[key] = b
+        no_truncate(*self.bag_filter_btns.values())
+        il.addLayout(filt)
+        self.bag_search = QLineEdit()
+        self.bag_search.setPlaceholderText("🔍 Chercher dans le sac…")
+        self.bag_search.setClearButtonEnabled(True)
+        self.bag_search.textChanged.connect(lambda _="": self._refresh_grid())
+        il.addWidget(self.bag_search)
         self.grid = InventoryGrid(self)
         il.addWidget(self.grid, 1)
         il.addWidget(make_label("Glissez une tuile sur une case du mannequin pour l'équiper (et une case vers le sac "
@@ -326,7 +350,26 @@ class InventoryTab(BaseTab):
                          "rarete": item.get("rarete", ""), "qte": 1, "equipe": bool(entry.get("equipe")),
                          "magique": True, "ligne": base + i, "epuise": bool(eng.item_state_label(entry)),
                          "tip": self.table.item(base + i, 0).toolTip() if self.table.item(base + i, 0) else label})
+        # v53 : filtre par famille (compteurs sur les boutons) et recherche
+        from .inventory_grid import FAMILIES, item_family
+        for r in rows:
+            r["famille"] = item_family(r["nom"], r["categorie"], r["magique"])
+        counts = {k: sum(1 for r in rows if r["famille"] == k) for k, _l in FAMILIES}
+        counts["tout"] = len(rows)
+        for key, label in FAMILIES:
+            b = self.bag_filter_btns[key]
+            with blocked(b):
+                b.setChecked(key == self.bag_filter)
+            b.setText("{} ({})".format(label, counts[key]))
+            b.setEnabled(key in ("tout", self.bag_filter) or counts[key] > 0)   # famille vide : grisée
+        text = norm(self.bag_search.text())
+        rows = [r for r in rows if (self.bag_filter == "tout" or r["famille"] == self.bag_filter)
+                and (not text or text in norm(r["nom"]))]
         self.grid.set_rows(rows)
+
+    def _on_bag_filter(self, key: str) -> None:
+        self.bag_filter = key
+        self._refresh_grid()
 
     def magic_row(self, row: int) -> int:
         """Indice de l'objet magique de la ligne (-1 = objet courant)."""

@@ -298,3 +298,27 @@ class GlisserDeposerTests(unittest.TestCase):
         ch.ordre_tuiles = ["reaction:opportunite", "arme:mains_nues"]
         self.assertEqual(Character.from_dict(json.loads(json.dumps(ch.to_dict()))).ordre_tuiles,
                          ["reaction:opportunite", "arme:mains_nues"])
+
+
+class FiltresDuSacTests(unittest.TestCase):
+    def test_familles(self):
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.inventory_grid import item_family
+        cases = {("Épée longue", "Arme", False): "armes", ("Flèches", "Équipement", False): "armes",
+                 ("Flèches +1", "", False): "armes", ("Cotte de mailles", "Armure", False): "armures",
+                 ("Bouclier", "Bouclier", False): "armures", ("Potion de soins", "Équipement", False): "consommables",
+                 ("Parchemin de sort", "Parchemin", True): "consommables",
+                 ("Potion de force de géant des collines", "Potion", True): "consommables",
+                 ("Anneau de protection", "Anneau", True): "magiques", ("Épée vorpale", "Arme", True): "armes",
+                 ("Outils de forgeron", "Outil", False): "outils", ("Corde en chanvre (15 m)", "Équipement", False): "divers"}
+        for (n, c, m), want in cases.items():
+            self.assertEqual(item_family(n, c, m), want, n)
+
+    def test_potion_rangee_dans_le_sac(self):
+        ch = Engine.new_character(DB)
+        e = Engine(DB, ch)
+        e.add_magic_item("Potion de force de géant des collines")
+        e.add_magic_item("Bottes elfiques")
+        self.assertEqual([o["equipe"] for o in ch.objets_magiques], [False, True])

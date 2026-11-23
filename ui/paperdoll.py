@@ -189,7 +189,9 @@ class PaperdollPanel(QGroupBox):
             if not e.get("equipe"):
                 continue
             item = eng.magic_item(e["nom"]) or {}
-            hors_case = not e.get("base") and i not in slotted
+            from core import mechanics as M
+            consumable = M.is_consumable(e["nom"]) or item.get("type") in ("Potion", "Parchemin")
+            hors_case = not e.get("base") and i not in slotted and not consumable   # potion : dans le sac
             if not (e.get("harmonise") or hors_case):
                 continue
             parts.append("<span style='color:{}'><b>{}{}</b></span>{}".format(

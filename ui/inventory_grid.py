@@ -10,6 +10,8 @@ from PyQt6.QtCore import QMimeData, QSize, Qt
 from PyQt6.QtGui import QColor, QDrag, QFont, QIcon, QPainter, QPainterPath, QPen
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QMenu
 
+import re
+
 from core.rules import norm
 from core.tile_icons import ITEMS, WEAPONS, _find
 from . import icons as IC
@@ -22,6 +24,35 @@ RARITY = {"commun": "#A8A8A8", "peu commun": "#4CB050", "rare": "#3B82E0", "tres
           "legendaire": "#F0A030", "artefact": "#E2533F"}
 TILE = 60
 KEY_ROLE = 0x0100 + 77                                   # Qt.UserRole + 77 : nom de l'objet (clé)
+
+
+# v53 : filtres du sac (l'inventaire contient tout : objets courants et magiques)
+FAMILIES = [("tout", "Tout"), ("armes", "⚔ Armes"), ("armures", "🛡 Armures"), ("consommables", "🧪 Potions"),
+            ("magiques", "✨ Magiques"), ("outils", "🔧 Outils"), ("divers", "🎒 Divers")]
+FAMILY_TIPS = {"tout": "Tout le contenu du sac.", "armes": "Armes courantes et magiques, munitions comprises.",
+               "armures": "Armures et boucliers, courants et magiques.",
+               "consommables": "Consommables : potions, élixirs, philtres, huiles, antitoxines, parchemins.",
+               "magiques": "Autres objets magiques : anneaux, baguettes, bâtons, capes, bottes, amulettes…",
+               "outils": "Outils et instruments.", "divers": "Équipement courant, paquetages et le reste."}
+
+
+def item_family(name: str, category: str = "", magic: bool = False) -> str:
+    """Famille d'un objet du sac : armes (munitions comprises), armures (boucliers compris), consommables
+    (potions, élixirs, huiles, parchemins…), objets magiques (anneaux, baguettes, capes…), outils, divers.
+    `category` : catégorie du catalogue (objet courant) ou type de l'objet magique."""
+    from core import mechanics as M
+    n, cat = norm(name), norm(category)
+    if M.is_consumable(name) or cat in ("potion", "parchemin") or n.startswith(("parchemin", "philtre")):
+        return "consommables"
+    if cat == "arme" or re.search(r"\b(munitions?|fleches?|carreaux?|billes?|flechettes?)\b", n):
+        return "armes"
+    if cat in ("armure", "bouclier"):
+        return "armures"
+    if magic:
+        return "magiques"
+    if cat == "outil":
+        return "outils"
+    return "divers"
 
 
 def item_icon_name(name: str, category: str = "") -> str:
