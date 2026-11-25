@@ -83,7 +83,7 @@ class RPTab(BaseTab):
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(self.race_summary)
         rbl.addWidget(scroll)
-        self.race_box.setMinimumWidth(300)
+        self.race_box.setMinimumWidth(440)               # v53 : colonne plus large, texte moins haché
         top = QHBoxLayout()
         top.addWidget(box)
         top.addWidget(self.race_box, 1)
@@ -95,7 +95,7 @@ class RPTab(BaseTab):
         self.traits.setPlaceholderText("Traits de personnalité, idéaux, liens et défauts (voir l'historique)…")
         tl.addWidget(self.traits)
         left.addWidget(tbox, 1)
-        root.addLayout(left, 0)
+        root.addLayout(left, 5)
 
         # ---------------- colonne droite : histoire (grand champ) + notes de campagne
         right = QVBoxLayout()
@@ -111,7 +111,7 @@ class RPTab(BaseTab):
         nl.addWidget(self.notes)
         right.addWidget(story, 2)                        # v34 : l'histoire se lit, les notes s'écrivent en séance
         right.addWidget(notes, 3)
-        root.addLayout(right, 1)
+        root.addLayout(right, 4)
 
         self.align.activated.connect(lambda _=0: self._on_align(self.align.currentText()))
         self.import_btn.clicked.connect(self._on_import)

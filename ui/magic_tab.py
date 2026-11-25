@@ -140,6 +140,11 @@ class MagicTab(BaseTab):
         # ---------------- en-tête : classe incantatrice + statistiques
         top = QHBoxLayout()
         self.cls = QComboBox()
+        try:                                              # v53 : nom de classe entier
+            self.cls.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+            self.cls.setMinimumWidth(150)
+        except (AttributeError, TypeError):
+            pass
         top.addWidget(make_label("Classe incantatrice", "title"))
         top.addWidget(self.cls)
         self.info = make_label("", wrap=True)
@@ -297,9 +302,13 @@ class MagicTab(BaseTab):
         for box in self._opaque_boxes:
             box.setObjectName("opaqueBox")
             box.setAutoFillBackground(True)
-        self.racial_box.setMinimumHeight(170)
-        self.granted_box.setMinimumHeight(190)
+        self.racial_box.setMinimumHeight(150)
+        self.granted_box.setMinimumHeight(150)
+        for i, f in enumerate((1, 0, 0)):                 # v53 : la place libre va à la liste des sorts
+            mine.setStretchFactor(i, f)
         mine.setOpaqueResize(True)
+        self._mine = mine
+        self._mine_sized = False
         self.center_tabs.addTab(mine, "📖 Mes sorts")
 
         self.lib_box = lib = QGroupBox("Bibliothèque de sorts (filtrée sur la liste de la classe)")
@@ -1261,8 +1270,20 @@ class MagicTab(BaseTab):
         if self.center_tabs.styleSheet() != pane:
             self.center_tabs.setStyleSheet(pane)
 
+    def _size_mine(self) -> None:
+        """v53 : à la première vraie hauteur, la liste des sorts prend tout ce que les deux encarts laissent."""
+        try:
+            h = self._mine.height()
+            if self._mine_sized or h < 400:
+                return
+            self._mine_sized = True
+            self._mine.setSizes([h - 330, 180, 150])
+        except (AttributeError, TypeError):
+            pass
+
     def refresh(self):
         self._paint_opaque()
+        self._size_mine()
         self.mark_box(self.chosen_box, "Sorts du personnage pour cette classe — par niveau", "magie", "Sorts")
         eng, ch = self.engine, self.ch
         self._manif_stale = True

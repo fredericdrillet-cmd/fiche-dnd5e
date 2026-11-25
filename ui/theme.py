@@ -444,7 +444,7 @@ def build_stylesheet(t: Theme, font_px: int = 14, texture_url: str = "") -> str:
 * {{ font-family: {t.font}; font-size: {font_px}px; }}
 QMainWindow, QDialog {{ background: {window}; {tex} }}
 QTabWidget::pane {{ border: {fw}px {frame} {t.ornament}; background: {panel}; {tex} top: -1px; }}
-QTabBar::tab {{ background: {metal}; color: {t.muted}; padding: 9px 18px; margin-right: 3px;
+QTabBar::tab {{ background: {metal}; color: {t.muted}; padding: 8px 9px; margin-right: 1px;
                border: 1px solid {t.border}; border-bottom: none;
                border-top-left-radius: 8px; border-top-right-radius: 8px; }}
 QTabBar::tab:selected {{ background: {panel}; color: {t.accent_text}; font-weight: bold;

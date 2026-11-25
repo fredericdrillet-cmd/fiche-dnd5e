@@ -136,6 +136,8 @@ class ClassPanel(QWidget):
         self.cast_btn = QPushButton("Gérer les sorts →")
         cl.addWidget(self.cast_label)
         cl.addWidget(self.cast_btn)
+        for lab in (self.hp_label, self.res_label, self.cast_label):   # v53 : texte en haut, sans vide au-dessus
+            lab.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
         self.prof_box = QGroupBox("Maîtrises — armes et armures")   # v43 : multiclassage compris
         self.prof_label = make_label("", "muted", wrap=True)
         self.prof_label.setTextFormat(Qt.TextFormat.RichText)
@@ -177,9 +179,9 @@ class ClassPanel(QWidget):
         self.spell_list = QListWidget()
         sl.addWidget(self.spell_list)
         rl.addWidget(det_box, 3)
-        rl.addWidget(spell_box, 2)
+        rl.addWidget(spell_box, 1)
         split.addWidget(right)
-        split.setSizes([700, 500])
+        split.setSizes([560, 640])                       # v53 : détail lisible sans défiler
         lay.addWidget(split, 1)
 
         # --- connexions (signaux « utilisateur » uniquement)

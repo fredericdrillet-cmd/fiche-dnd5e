@@ -31,7 +31,7 @@ CLEAR = "✖ Vider la case"
 class SlotCard(QLabel):
     """Case cliquable du mannequin : texte AVEC retour à la ligne (un QPushButton tronque les noms longs)."""
 
-    def __init__(self, on_click=None, min_w: int = 150, min_h: int = 66, slot: str = "", on_drop=None):
+    def __init__(self, on_click=None, min_w: int = 140, min_h: int = 54, slot: str = "", on_drop=None):
         super().__init__()
         self.on_click = on_click
         self.slot, self.on_drop, self.filled = slot, on_drop, False      # v53 : glisser-déposer
@@ -90,7 +90,7 @@ class SlotCard(QLabel):
     def set_look(self, color: str, bold: bool = False, dashed: bool = False) -> None:
         t = theme.current()
         self.setStyleSheet("QLabel {{ color: {c}; font-weight: {w}; background: {bg}; border: 1px {st} {b}; "
-                           "border-radius: 6px; padding: 4px 6px; }}".format(
+                           "border-radius: 6px; padding: 2px 5px; }}".format(
                                c=color, w="bold" if bold else "normal", bg=t.panel2, b=t.border,
                                st="dashed" if dashed else "solid"))
 
@@ -100,15 +100,16 @@ class PaperdollPanel(QGroupBox):
         super().__init__("🧍 Mannequin d'équipement")
         self.win = win
         lay = QVBoxLayout(self)
+        lay.setSpacing(4)                                # v53 : compact — tout le mannequin sans défiler
         grid = QGridLayout()
-        grid.setSpacing(6)
+        grid.setSpacing(4)
         self.slot_btns: dict[str, SlotCard] = {}
         for key, (r, c) in LAYOUT.items():
             b = SlotCard(lambda k=key: self._on_slot(k), slot=key, on_drop=self.drop_on_slot)
             grid.addWidget(b, r, c)
             self.slot_btns[key] = b
         # au centre : le portrait DU PERSONNAGE (onglet « Histoire, Portrait »), qu'on équipe
-        self.portrait = SlotCard(self._on_portrait, 170, 230, on_drop=self.drop_on_slot)   # dépôt : case naturelle
+        self.portrait = SlotCard(self._on_portrait, 150, 190, on_drop=self.drop_on_slot)   # dépôt : case naturelle
         self.portrait.setProperty("role", "portrait")
         self._portrait_shown = None
         grid.addWidget(self.portrait, 0, 1, 5, 1)
@@ -140,7 +141,7 @@ class PaperdollPanel(QGroupBox):
         from core.quick_slots import QUICK_SLOTS
         self.quick_btns = []
         for n in range(QUICK_SLOTS):
-            b = SlotCard(lambda k=n: self._on_quick(k), 96, 54, slot="rapide:{}".format(n),
+            b = SlotCard(lambda k=n: self._on_quick(k), 90, 46, slot="rapide:{}".format(n),
                          on_drop=self.drop_on_quick)
             quick.addWidget(b)
             self.quick_btns.append(b)
@@ -164,7 +165,7 @@ class PaperdollPanel(QGroupBox):
         tat.setContentsMargins(0, 0, 0, 0)
         tat.setSpacing(6)
         for key, _lab, _icon in TATTOO_SLOTS:
-            b = SlotCard(lambda k=key: self._on_slot(k), 96, 64, slot=key, on_drop=self.drop_on_slot)
+            b = SlotCard(lambda k=key: self._on_slot(k), 90, 52, slot=key, on_drop=self.drop_on_slot)
             tat.addWidget(b)
             self.slot_btns[key] = b                       # rafraîchies et cliquées comme les autres cases
         lay.addWidget(self.tattoo_row)
@@ -172,7 +173,8 @@ class PaperdollPanel(QGroupBox):
         self.hint = make_label("Glissez un objet du sac sur une case, ou cliquez une case pour choisir parmi les objets qui correspondent à "
                                "son rôle (armures, armes, boucliers, anneaux, capes…). Un objet par case.",
                                "muted", wrap=True)
-        lay.addWidget(self.hint)
+        self.hint.setVisible(False)                      # v53 : aide en infobulle (gain de hauteur)
+        self.setToolTip(rich_tip("Mannequin d'équipement", self.hint.text()))
         self.setMaximumWidth(560)
 
     @property
@@ -326,7 +328,7 @@ class PaperdollPanel(QGroupBox):
             except Exception:                             # pragma: no cover - image illisible
                 pix = None
         if pix is not None:
-            scaled = pix.scaled(160, 220, Qt.AspectRatioMode.KeepAspectRatio,
+            scaled = pix.scaled(140, 184, Qt.AspectRatioMode.KeepAspectRatio,
                                 Qt.TransformationMode.SmoothTransformation)
             self.portrait.setText("")
             self.portrait.setPixmap(scaled)

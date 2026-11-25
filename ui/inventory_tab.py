@@ -139,9 +139,10 @@ class InventoryTab(BaseTab):
         il.addWidget(self.bag_search)
         self.grid = InventoryGrid(self)
         il.addWidget(self.grid, 1)
-        il.addWidget(make_label("Glissez une tuile sur une case du mannequin pour l'équiper (et une case vers le sac "
-                                "pour la vider) ; double-clic : utiliser ou équiper ; clic droit : menu.", "muted",
-                                wrap=True))
+        hint = make_label("Glisser : équiper · double-clic : utiliser · clic droit : menu", "muted")
+        hint.setToolTip("Glissez une tuile sur une case du mannequin pour l'équiper (et une case vers le sac pour la "
+                        "vider) ; double-clic : utiliser ou équiper ; clic droit : menu.")
+        il.addWidget(hint)
         self.del_btn = QPushButton("Retirer la ligne")
         self.bg_btn = QPushButton("📜 Historique")
         self.bg_btn.setToolTip(rich_tip("Équipement de l'historique", "Ajoute au sac l'équipement de départ de "
@@ -167,7 +168,8 @@ class InventoryTab(BaseTab):
 
         # =============================== colonne droite : outils, richesse, notes
         right = QVBoxLayout()
-        wbox = QGroupBox("Armes équipées — réglages (bonus magique, maîtrise, munition) et compétences d'arme")
+        wbox = QGroupBox("Armes équipées — réglages")
+        wbox.setToolTip("Bonus magique, maîtrise, munition et compétences d'arme des armes équipées.")
         self.weapons_grid = QGridLayout(wbox)
         self._weapons_key = None
         right.addWidget(wbox)
@@ -529,8 +531,7 @@ class InventoryTab(BaseTab):
         self._weapons_key = key
         clear_layout(self.weapons_grid)
         if not rows:
-            self.weapons_grid.addWidget(make_label("Aucune arme : équipez-en une dans l'onglet Combat ou ajoutez-la "
-                                                   "à l'inventaire.", "muted", wrap=True), 0, 0)
+            self.weapons_grid.addWidget(make_label("Aucune arme équipée (glissez-en une sur le mannequin).", "muted"), 0, 0)
             return
         for k, (n, st, acts) in enumerate(rows):
             r = 2 * k                                     # v52 : réglages sur la ligne, compétences dessous

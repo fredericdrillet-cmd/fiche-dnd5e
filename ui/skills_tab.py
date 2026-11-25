@@ -53,6 +53,7 @@ class SkillsTab(BaseTab):
         self.saves.setCursor(Qt.CursorShape.PointingHandCursor)
         self.saves.cellClicked.connect(self._on_save_click)
         sl.addWidget(self.saves)
+        sl.addStretch(1)                                  # v53 : tableau calé en haut de l'encart
         right.addWidget(sbox, 3)
         if getattr(win, "no_dice", False) is True:       # v53 : assistant — colonnes utiles seulement, sans coupure
             for c in (5, 6, 7):
@@ -69,6 +70,7 @@ class SkillsTab(BaseTab):
             "surlignées sont celles proposées par votre classe de départ.", "muted", wrap=True)
         pl.addWidget(self.passive)
         pl.addWidget(self.legend)
+        pl.addStretch(1)
         if compact:                                       # v51 : légende réduite à l'essentiel (gain de hauteur)
             self.legend.setText("Clic sur une ligne : maîtrise · colonne « Expertise » : expertise · « Jet » : d20.")
         right.addWidget(pbox, 2)
