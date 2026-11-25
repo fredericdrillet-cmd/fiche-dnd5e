@@ -288,6 +288,16 @@ def pair_for(name: str) -> tuple[str, str]:
     return found[0], found[1] if len(found) > 1 else ""
 
 
+def pair_body(main: str, badge: str = "") -> str:
+    """v53 : icône « dessin + médaillon » à partir de deux dessins du registre G (historiques, classes…)."""
+    out = A.place(G.get(main, A.sparkle)(), 28, 28, 0.7) if badge else A.place(G.get(main, A.sparkle)(), 32, 32, 0.8)
+    if badge:
+        inner = A.place(G.get(badge, A.sparkle)(), 49, 49, 0.3)
+        out += A.circle(49, 49, 14.5, True) + '<g fill="#000000" stroke="#000000">' + \
+            inner.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"') + "</g>"
+    return out
+
+
 def compose(name: str, variant: int = 0) -> str:
     main, badge = pair_for(name)
     out = A.place(G.get(main, A.sparkle)(), 28, 28, 0.7 if badge else 0.8) if badge else \

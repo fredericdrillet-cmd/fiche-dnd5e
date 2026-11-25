@@ -54,6 +54,11 @@ class SkillsTab(BaseTab):
         self.saves.cellClicked.connect(self._on_save_click)
         sl.addWidget(self.saves)
         right.addWidget(sbox, 3)
+        if getattr(win, "no_dice", False) is True:       # v53 : assistant — colonnes utiles seulement, sans coupure
+            for c in (5, 6, 7):
+                self.table.setColumnHidden(c, True)
+            for c in (3, 4):
+                self.saves.setColumnHidden(c, True)
         pbox = QGroupBox("Valeurs passives")
         pl = QVBoxLayout(pbox)
         self.passive = make_label("", "stat")
@@ -158,7 +163,14 @@ class SkillsTab(BaseTab):
         return calc_tip(title, row.get("detail", []), total, notes)
 
     def refresh(self):
-        self.mark_box(self.skills_box, "Compétences", "caracteristiques", "Compétences")
+        n = self.engine.missing_in("caracteristiques", "Compétences")
+        exp = self.engine.expertise_missing()             # v53 : maîtrises et expertises comptées à part
+        parts = []
+        if n - exp > 0:
+            parts.append("○ {} maîtrise{} à choisir".format(n - exp, "s" * (n - exp > 1)))
+        if exp:
+            parts.append("○ {} expertise{} à choisir".format(exp, "s" * (exp > 1)))
+        self.skills_box.setTitle("Compétences" + ("  — " + " · ".join(parts) if parts else ""))
         for w in (self.table, self.saves):               # v52 : Mode guidé
             w.setToolTip(self.GUIDED_TIP if self.guided else "")
         if getattr(self.win, "no_dice", False) is True:   # assistant de création : sauvegardes de la classe
@@ -216,6 +228,10 @@ class SkillsTab(BaseTab):
         off = eng.off_list_skills()                      # v52 : hors liste de classe (avertissement, sans blocage)
         if off:
             warn += "  ⚠ hors des compétences de {} : {}".format(eng.first_class(), ", ".join(off))
-        self.status.setText("Compétences de classe ({}) : {}/{} choisies parmi {}.{}".format(
-            eng.first_class(), n_ok, st["nombre"], ", ".join(st["options"]) or "—", warn))
+        allowed = eng.expertise_allowed()
+        have = allowed - eng.expertise_missing()
+        self.status.setText("Maîtrises de classe ({}) : {}/{} choisies parmi {}.{}{}".format(
+            eng.first_class(), n_ok, st["nombre"], ", ".join(st["options"]) or "—", warn,
+            "\nExpertises : {}/{} — colonne « Expertise », parmi les compétences que vous maîtrisez.".format(
+                have, allowed) if allowed else ""))
         self.passive.setText("Perception passive : {}".format(eng.passive_perception()))

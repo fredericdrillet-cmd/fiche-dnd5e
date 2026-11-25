@@ -28,6 +28,13 @@ def cm_to_px(cm: float, dpi: float) -> int:
 
 
 class RaceIllustration(QWidget):
+    def set_side(self, px: int) -> None:
+        """v53 : côté de l'illustration en pixels (assistant de création : plus petite)."""
+        self.side = int(px)
+        self._cache = {}
+        self._pixmap = self._load(self.path) if self.path else None
+        self.setFixedSize(self.side + 2 * FRAME, self.side + 2 * FRAME)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         try:

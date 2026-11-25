@@ -133,7 +133,8 @@ class CreationWizard(QDialog):
 
         body = QHBoxLayout()
         self.step_list = QListWidget()
-        self.step_list.setFixedWidth(240)
+        self.step_list.setFixedWidth(228)
+        self.step_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.step_list.currentRowChanged.connect(self._on_step_clicked)
         body.addWidget(self.step_list)
         self.pages = QStackedWidget()
@@ -146,8 +147,8 @@ class CreationWizard(QDialog):
         right = QVBoxLayout()
         right.addWidget(make_label("Résumé du personnage", "head"))
         self.summary = QTextBrowser()
-        self.summary.setMinimumWidth(300)
-        self.summary.setMaximumWidth(360)
+        self.summary.setMinimumWidth(270)
+        self.summary.setMaximumWidth(320)
         right.addWidget(self.summary, 1)
         body.addLayout(right)
         lay.addLayout(body, 1)
@@ -201,6 +202,7 @@ class CreationWizard(QDialog):
         area = QScrollArea()
         area.setWidgetResizable(True)
         area.setFrameShape(QFrame.Shape.NoFrame)
+        area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)   # v53 : la page suit la largeur
         area.setWidget(widget)
         return area
 
@@ -219,8 +221,24 @@ class CreationWizard(QDialog):
         self.race_panel = RaceTab(self.host)
         self.race_panel.bg_box.setVisible(False)
         self.race_panel.lang_box.setVisible(False)
-        w, lay = self._page()                             # v52 : + choix de l'espèce (couleur du dragon, don)
+        self.race_panel.cards_mode = True                 # v53 : cartes seules
+        for wdg in (self.race_panel.race, self.race_panel.sub, self.race_panel.sub_label, self.race_panel.race_label):
+            wdg.setVisible(False)
+        self.race_panel.portrait.set_side(200)
+        self.race_panel.setMaximumWidth(370)
+        w = QWidget()                                     # v53 : cartes à gauche, fiche de l'espèce à droite
+        lay = QHBoxLayout(w)
         lay.setContentsMargins(0, 0, 0, 0)
+        from .card_picker import CardPicker               # v53 : cartes d'espèce, de classe et d'historique
+        left = QVBoxLayout()
+        left.addWidget(make_label("Espèce — cliquez une carte", "head"))
+        self.race_cards = CardPicker(self.pick_family, icon=84, cell=(124, 146), height=300)
+        left.addWidget(self.race_cards, 3)
+        self.variant_head = make_label("", "head")
+        left.addWidget(self.variant_head)
+        self.variant_cards = CardPicker(self.pick_variant, icon=64, cell=(124, 122), height=150)
+        left.addWidget(self.variant_cards, 2)
+        lay.addLayout(left, 1)
         lay.addWidget(self.race_panel)
         self.race_choices = QGroupBox("Choix de l'espèce")
         rc = QVBoxLayout(self.race_choices)
@@ -238,35 +256,43 @@ class CreationWizard(QDialog):
                                                keys=lambda: self._feat_keys(self._race_feat()))
         rc.addWidget(self.race_feat_panel)
         self.race_panel.race_box.layout().insertWidget(1, self.race_choices)   # juste sous le choix de la race
-        from .card_picker import CardPicker                 # v53 : cartes d'espèce, de classe et d'historique
-        self.race_cards = CardPicker(self.pick_race, icon=72, cell=(140, 128))
-        self.race_panel.race_box.layout().insertWidget(0, self.race_cards)
-        self.pages.addWidget(self._scroll(w))             # v50 : défilement en fenêtre réduite
+        self.pages.addWidget(w)
         # 2. historique
         self.bg_panel = RaceTab(self.host)
         self.bg_panel.race_box.setVisible(False)
-        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 6
-        w, lay = self._page()                             # v52 : + choix du don d'origine (2024)
+        self.bg_panel.add_inv.setVisible(False)          # l'équipement de l'historique est ajouté à l'étape 7
+        self.bg_panel.bg.setVisible(False)               # v53 : cartes seules
+        try:                                              # fiche puis langues, à droite (absent du faux Qt)
+            from PyQt6.QtWidgets import QBoxLayout
+            self.bg_panel.layout().setDirection(QBoxLayout.Direction.TopToBottom)
+        except (ImportError, AttributeError):
+            pass
+        w = QWidget()                                     # v53 : grande grille de cartes à gauche
+        lay = QHBoxLayout(w)
         lay.setContentsMargins(0, 0, 0, 0)
-        lay.addWidget(self.bg_panel)
-        self.bg_cards = CardPicker(self.pick_background, icon=56, cell=(150, 104), height=230)
-        self.bg_panel.bg_box.layout().insertWidget(0, self.bg_cards)
+        left = QVBoxLayout()
+        left.addWidget(make_label("Historique — cliquez une carte", "head"))
+        self.bg_cards = CardPicker(self.pick_background, icon=64, cell=(124, 122), height=300)
+        left.addWidget(self.bg_cards, 1)
+        lay.addLayout(left, 1)
+        right = QVBoxLayout()
+        self.bg_panel.setMaximumWidth(380)
+        right.addWidget(self.bg_panel, 1)
         self.bg_choices = QGroupBox("Choix du don d'origine")
         bc = QVBoxLayout(self.bg_choices)
         self.bg_feat_panel = OptionSetsPanel(lambda: self.engine, self.host.changed,
                                              keys=lambda: self._feat_keys(self.engine.origin_feat()))
         bc.addWidget(self.bg_feat_panel)
-        lay.addWidget(self.bg_choices)
-        self.pages.addWidget(self._scroll(w))
+        right.addWidget(self.bg_choices)
+        lay.addLayout(right, 2)
+        self.pages.addWidget(w)
         # 3. classe (après l'historique)
         w, lay = self._page()
-        row = QHBoxLayout()
-        row.addWidget(make_label("Classe", "head"))
-        self.class_combo = QComboBox()
-        self.class_combo.activated.connect(lambda _=0: self._on_class(self.class_combo.currentText()))
-        row.addWidget(self.class_combo, 1)
-        lay.addLayout(row)
-        self.class_cards = CardPicker(lambda n: self._on_class(n), icon=64, cell=(136, 100), height=220)
+        lay.addWidget(make_label("Classe — cliquez une carte", "head"))
+        self.class_combo = QComboBox()                    # v53 : conservé pour la logique, caché (cartes seules)
+        self.class_combo.setVisible(False)
+        self.class_cards = CardPicker(lambda n: self._on_class(n), icon=76, cell=(132, 128), height=400,
+                                      max_height=410)          # 13 classes visibles sans défiler
         lay.addWidget(self.class_cards)
         self.class_info = make_label("", "muted", wrap=True)
         lay.addWidget(self.class_info)
@@ -296,6 +322,7 @@ class CreationWizard(QDialog):
         self.pages.addWidget(self._scroll(w))
         # 4. caractéristiques
         self.abilities_panel = AbilitiesTab(self.host)
+        self.abilities_panel.set_columns(3)               # v53 : 3 × 2, pas de défilement horizontal
         self.pages.addWidget(self._scroll(self.abilities_panel))
         # 5. sorts
         w, self.spells_lay = self._page()
@@ -496,6 +523,26 @@ class CreationWizard(QDialog):
             self.engine.change_race(name)
             self.host.changed()
 
+    def pick_family(self, title: str) -> None:
+        """v53 : carte de famille (Elfe, Nain…) : son espèce de base, ou la première variante ; variantes dessous."""
+        from core.race_families import families
+        members = next((m for t, m in families(self.engine.race_options()) if t == title), [title])
+        if self.ch.race not in members:
+            self.pick_race(members[0])
+        else:
+            self._refresh_race()
+
+    def pick_variant(self, key: str) -> None:
+        """v53 : variante cliquée — « race » ou « race|sous-race » (Haut-elfe, Elfe des bois…)."""
+        race, _, subrace = key.partition("|")
+        if race != self.ch.race:
+            self.engine.change_race(race)
+        if subrace != (self.ch.sous_race or ""):
+            self.ch.sous_race = subrace
+            self.engine.apply_race_languages()
+            self.engine.apply_race_skills()
+        self.host.changed()
+
     def pick_background(self, name: str) -> None:
         if name and name != self.ch.historique:
             self.ch.historique = name
@@ -505,10 +552,31 @@ class CreationWizard(QDialog):
     def _refresh_race(self) -> None:
         from .card_picker import race_pixmap
         eng = self.engine
-        self.race_cards.set_items([(r, race_pixmap(r), rich_tip(r, (eng.db.races.get(r) or {}).get("description", "")
-                                                                [:400] if isinstance(eng.db.races.get(r), dict) else ""))
-                                   for r in eng.race_options()])
-        self.race_cards.select(self.ch.race)
+        from core.race_families import families
+        groups = families(eng.race_options())
+        def tip(r):
+            return rich_tip(r, ((eng.db.races.get(r) or {}).get("description") or "")[:500])
+        self.race_cards.set_items([(t, race_pixmap(m[0], 96), tip(m[0]) if len(m) == 1 else rich_tip(
+            t, "Variantes : " + ", ".join(m))) for t, m in groups])
+        current = next(((t, m) for t, m in groups if self.ch.race in m), None)
+        self.race_cards.select(current[0] if current else "")
+        rows = []                                         # variantes : sous-races puis espèces apparentées
+        for r in (current[1] if current else []):
+            subs = eng.db.subraces_of(r)
+            if subs:
+                rows += [("{}|{}".format(r, s["nom"]), s["nom"], race_pixmap(r, 72),
+                          rich_tip(s["nom"], s.get("description", "")[:500])) for s in subs]
+            else:
+                rows.append((r, r, race_pixmap(r, 72), tip(r)))
+        show = len(rows) > 1
+        self.variant_head.setVisible(show)
+        self.variant_cards.setVisible(show)
+        if show:
+            self.variant_head.setText("Variante de {} — {}".format(current[0], "choisissez-en une"))
+            self.variant_cards.set_items([(k, pix, tp) for k, _label, pix, tp in rows],
+                                         labels={k: lab for k, lab, _p, _t in rows})
+            self.variant_cards.select("{}|{}".format(self.ch.race, self.ch.sous_race) if self.ch.sous_race
+                                      else self.ch.race)
         self.race_panel.refresh()
         eng = self.engine
         self.race_color_panel.refresh()
@@ -600,6 +668,7 @@ class CreationWizard(QDialog):
         from .card_picker import class_pixmap
         self.class_cards.set_items([(n, class_pixmap(n), tips.get(n, "")) for n in db.class_names()])
         self.class_cards.select(cls)
+        self._fit_page(self.class_cards.parentWidget().layout())   # v53 : textes repliés sans chevauchement
         info = db.start_info(cls)
         self.class_info.setText("Dé de vie : {} — PV au niveau 1 : {} — Jets de sauvegarde : {}<br/>Armures : {} — "
                                 "Armes : {}".format(info["de_vie"], eng.hp_max(), ", ".join(info["sauvegardes"]),

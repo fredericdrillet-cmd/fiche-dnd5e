@@ -122,6 +122,34 @@ class TurnMixin:
                 "Réaction": bool(self.ch.reaction_utilisee), "Gratuit": False,
                 "deplacement": float(self.ch.tour_deplacement), "vitesse": speed}
 
+    # ------------------------------------------------------------------ v53 : actions d'arme (BG3 adaptées)
+    @staticmethod
+    def weapon_action_key(row: dict) -> str:
+        return "wa:" + norm(row.get("nom", ""))
+
+    def weapon_action_state(self, row: dict) -> tuple[bool, str]:
+        """(disponible, raison) : économie d'action du tour et utilisation par repos court."""
+        kind = row.get("action", "")
+        if kind in ("Action", "Action bonus") and self.turn_state().get(kind):
+            return False, "{} déjà utilisée ce tour.".format(kind)
+        if norm(row.get("recharge", "")).startswith("repos") and self.resource_used(self.weapon_action_key(row)) >= 1:
+            return False, "Déjà utilisée — revient après un {}.".format(row["recharge"].lower())
+        return True, ""
+
+    def use_weapon_action(self, row: dict) -> dict:
+        """Dépense l'action (ou l'action bonus) et l'utilisation de l'action d'arme ; {ok, message}."""
+        ok, why = self.weapon_action_state(row)
+        if not ok:
+            return {"ok": False, "message": "{} : {}".format(row.get("nom", ""), why)}
+        kind = row.get("action", "")
+        if kind == "Action":
+            self.ch.tour_attaques = int(self.ch.tour_attaques) + 1
+        self.spend_economy(kind)
+        if norm(row.get("recharge", "")).startswith("repos"):
+            self.set_resource_used(self.weapon_action_key(row), 1)
+        return {"ok": True, "message": "{} : {}{}.".format(row.get("nom", ""), kind.lower(), " — 1 fois par {}".format(
+            row["recharge"].lower()) if norm(row.get("recharge", "")).startswith("repos") else "")}
+
     def spend_economy(self, kind: str, key: str = "") -> None:
         if kind == "Action":
             self.ch.tour_action = True

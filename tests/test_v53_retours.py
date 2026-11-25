@@ -648,3 +648,50 @@ class InfobullesCompletesTests(unittest.TestCase):
         self.assertIn("contourne les angles", tiles["sort:Boule de feu"]["description"])
         self.assertIn("Dégâts : 8d6", tiles["sort:Boule de feu"]["description"])
         self.assertIn("inflammable", tiles["sort:Trait de feu"]["description"])
+
+
+class RetoursCreationEtPartieTests(unittest.TestCase):
+    """v53 : familles d'espèces, icônes d'historique, actions d'arme décomptées, noms courts des tuiles."""
+
+    def test_familles(self):
+        from core.race_families import families
+        e = Engine(DB, Engine.new_character(DB))
+        e.normalize()
+        groups = dict(families(e.race_options()))
+        for n in ("Elfe des mers", "Elfe pâle", "Elfe astral", "Drow (Elfe noir)"):
+            self.assertIn(n, groups["Elfe"])
+        self.assertIn("Duergar", groups["Nain"])
+
+    def test_icones_historiques_uniques(self):
+        import collections
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.card_picker import background_glyphs
+        seen = collections.defaultdict(set)
+        for n in DB.backgrounds:
+            seen[background_glyphs(n)].add(n.replace(" (2024)", ""))
+        self.assertEqual({k: v for k, v in seen.items() if len(v) > 1}, {})
+        self.assertEqual(background_glyphs("Idiot du village"), ("cerveau", "spirale"))
+
+    def test_actions_d_arme_decomptees(self):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Guerrier", "niveau": 3, "sous_classe": "", "pv_jets": []}]
+        e = Engine(DB, ch)
+        e.normalize()
+        row = {"nom": "Frappe du pommeau", "action": "Action bonus", "recharge": "Repos court"}
+        self.assertTrue(e.use_weapon_action(row)["ok"])
+        self.assertTrue(ch.tour_bonus)
+        self.assertFalse(e.use_weapon_action(row)["ok"])                 # plus de « spam »
+        ch.tour_bonus = False
+        self.assertFalse(e.weapon_action_state(row)[0])                  # 1 fois par repos court
+        e.short_rest()
+        self.assertTrue(e.weapon_action_state(row)[0])
+
+    def test_noms_courts(self):
+        sys.path.insert(0, str(ROOT / "tests"))
+        import qt_stub
+        qt_stub.install()
+        from ui.combat_tab import CombatTab
+        self.assertEqual(CombatTab.short_label("Attaque — Épée longue"), "Épée longue")
+        self.assertEqual(CombatTab.short_label("Conduit divin : Renvoi des morts-vivants"), "Renvoi des\nmorts-vivants")

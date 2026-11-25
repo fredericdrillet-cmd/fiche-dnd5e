@@ -512,6 +512,12 @@ QPushButton[role="toggle"]:disabled {{ background: {vgrad(t.panel, t.panel2)}; c
 QFrame#dialogCard {{ background: {panel}; border: {max(fw, 2)}px {frame} {t.ornament}; border-radius: 14px; }}
 QFrame#themeCard {{ background: transparent; }}
 QCheckBox {{ spacing: 7px; background: transparent; color: {t.text}; }}
+QCheckBox::indicator {{ width: 17px; height: 17px; border: 2px solid {t.ornament or t.border}; border-radius: 4px;
+    background: {t.input_bg}; }}
+QCheckBox::indicator:hover {{ border-color: {t.accent_text}; }}
+QCheckBox::indicator:checked {{ background: {t.accent_text}; border-color: {t.accent_text}; }}
+QCheckBox::indicator:disabled {{ border-color: {t.border}; background: {t.panel}; }}
+QCheckBox:disabled {{ color: {t.muted}; }}
 QTableWidget, QListWidget, QTreeWidget {{ background: {t.input_bg}; alternate-background-color: {t.row_alt};
     color: {t.text}; border: 1px solid {t.border}; gridline-color: {t.panel_alt};
     selection-background-color: {t.select_bg}; selection-color: {t.select_text}; }}

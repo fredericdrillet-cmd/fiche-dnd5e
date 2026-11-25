@@ -44,6 +44,7 @@ class AbilitiesTab(BaseTab):
         box = QGroupBox("Caractéristiques")
         cards = QGridLayout(box)
         cards.setHorizontalSpacing(10)
+        self._cards_grid = cards
         self.rows: dict[str, dict] = {}
         for col, ab in enumerate(ABILITIES):
             w = {"buy": QWidget(), "minus": QPushButton("−"), "plus": QPushButton("+"), "value": center("8", "stat"),
@@ -156,6 +157,15 @@ class AbilitiesTab(BaseTab):
         self.alt_chk.toggled.connect(self._on_alt_rule)
         for i, cb in enumerate(self.free_combos):
             cb.activated.connect(lambda _=0, k=i: self._on_free_pick(k))
+
+    def set_columns(self, n: int) -> None:
+        """v53 : cartes sur n colonnes (assistant de création : 3 × 2, sans défilement horizontal)."""
+        for i, ab in enumerate(ABILITIES):
+            card = self.rows[ab]["card"]
+            self._cards_grid.removeWidget(card)
+            self._cards_grid.addWidget(card, i // n, i % n)
+        for c in range(6):
+            self._cards_grid.setColumnStretch(c, 1 if c < n else 0)
 
     def _apply_guided_locks(self) -> None:
         """v52 : Mode guidé — valeurs de base et bonus raciaux fixés à la création ; seul un choix manquant

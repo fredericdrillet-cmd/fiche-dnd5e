@@ -245,9 +245,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             ch.technique_manoeuvre = ""
         # ressources de classe : jamais plus de dépenses que le total (rage, ki, sorcellerie)
         totals = {t["key"]: t["total"] for t in self.resource_trackers()}
-        if self.has_breath():
-            totals["souffle"] = 1                                       # souffle draconique : 1 / repos court
+        if self.has_breath():                                           # souffle : 1 / repos court (Fizban :
+            totals["souffle"] = int((self.breath_weapon() or {}).get("utilisations") or 1)   # bonus de maîtrise)
         for key in list(ch.ressources_utilisees):
+            if key.startswith("wa:"):                                   # v53 : action d'arme utilisée (1 / repos)
+                ch.ressources_utilisees[key] = min(1, int(ch.ressources_utilisees[key]))
+                continue
             if key not in totals:
                 del ch.ressources_utilisees[key]
             elif totals[key] is None:
@@ -2655,6 +2658,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         for tr in self.race_action_trackers():           # capacités de race rechargées au repos court
             if tr["recover"] == "repos court":
                 self.ch.ressources_utilisees.pop(tr["key"], None)
+        for key in [k for k in self.ch.ressources_utilisees if k.startswith("wa:")]:   # v53 : actions d'arme
+            self.ch.ressources_utilisees.pop(key, None)
         if self.class_level("Barde") >= 5:               # Source d'inspiration : inspiration au repos court
             self.ch.ressources_utilisees.pop("inspiration", None)
         if self.class_level("Ensorceleur") >= 20:

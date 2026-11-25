@@ -115,7 +115,7 @@ class UiTests(unittest.TestCase):
         win.engine = Engine(DB, make("Humain", "Guerrier", 1).ch)
         win.refresh_all()
         win.stats_tab.skills.refresh()
-        self.assertIn("2 à choisir", win.stats_tab.skills.skills_box.title())
+        self.assertIn("2 maîtrises à choisir", win.stats_tab.skills.skills_box.title())   # v53 : à part des expertises
 
     def test_checklist_navigates(self):
         import ui.main_window as mw

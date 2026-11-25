@@ -500,9 +500,12 @@ class CombatTab(BaseTab):
         # --- bandeau du haut
         hdr = QFrame()
         hdr.setObjectName("partyHeader")
-        hl = QHBoxLayout(hdr)
-        hl.setContentsMargins(8, 4, 8, 4)
+        hdr_lines = QVBoxLayout(hdr)                     # v53 : deux lignes — chiffres, puis états du personnage
+        hdr_lines.setContentsMargins(8, 4, 8, 4)
+        hdr_lines.setSpacing(2)
+        hl = QHBoxLayout()
         hl.setSpacing(14)
+        hdr_lines.addLayout(hl)
         self.hp_big = make_label("", "stat")
         self.hp_big.setToolTip(rich_tip("Points de vie", "PV actuels / maximum (+ PV temporaires). Corrections "
                                         "fines dans l'encart « Points de vie » de la colonne de gauche."))
@@ -537,12 +540,33 @@ class CombatTab(BaseTab):
         stat("Vision", self.stat_labels["vision"])
         for key in ("init", "vit", "prof", "perc", "vision", "ca"):
             self.stat_labels[key].setWordWrap(False)
+        hl.addStretch(1)
+        hl = QHBoxLayout()                               # 2e ligne : inspiration, jets contre la mort, épuisement
+        hl.setSpacing(14)
+        hdr_lines.addLayout(hl)
         self.insp_check = QCheckBox("🌟 Inspiration")
         self.insp_check.setToolTip(rich_tip("Inspiration", "Cochée : vous avez un point d'inspiration (accordé par "
                                             "le MJ, ou Ingénieux). Il se dépense dans la fenêtre d'un jet de d20."))
         self.insp_check.toggled.connect(self._on_inspiration)
         no_truncate(self.insp_check)
         hl.addWidget(self.insp_check)
+        # v53 : jets contre la mort dans le bandeau, à droite de l'inspiration (visibles à 0 PV seulement)
+        death = QHBoxLayout()
+        death.setSpacing(4)
+        self.death_labels[0].setText("☠ Réussites")
+        self.death_labels[1].setText("Échecs")
+        self.death_labels[0].setToolTip(rich_tip("Jets contre la mort", "À 0 PV : 3 réussites = stabilisé, "
+                                                 "3 échecs = mort. Les cases se cochent avec le bouton 🎲."))
+        death.addWidget(self.death_labels[0])
+        for b in self.ok_boxes:
+            death.addWidget(b)
+        death.addWidget(self.death_labels[1])
+        for b in self.ko_boxes:
+            death.addWidget(b)
+        self.death_btn.setText("🎲 Jet")
+        death.addWidget(self.death_btn)
+        no_truncate(*self.death_labels, self.death_btn)
+        hl.addLayout(death)
         self.style_badge = make_label("", "muted")
         hl.addWidget(self.style_badge)
         hl.addStretch(1)
@@ -868,6 +892,9 @@ class CombatTab(BaseTab):
                                               "Parade…) puis applique les dégâts."))
         self.attacked_btn.clicked.connect(lambda: self.open_defense("attaque"))
         foot.addWidget(self.attacked_btn)
+        lay.addLayout(foot)
+        foot = QHBoxLayout()                              # v53 : environnement et fin du combat sur une 3e ligne
+        foot.addStretch(1)
         self.env_btn = QPushButton("🌪 Environnement…")             # v52 : chute, suffocation
         self.env_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         self.env_btn.setToolTip(rich_tip("Environnement", "Chute (1d6 par 3 m, À terre, Chute ralentie, Feuille "
@@ -900,7 +927,8 @@ class CombatTab(BaseTab):
             (self.turn_filter, t.key)
         spheres = self._tile_spheres()
         key = key + (tuple(sorted(spheres.items())),
-                     tuple((k, i, r["cle"], r.get("dd")) for k, i, r, _w in self._weapon_action_rows()))
+                     tuple((k, i, r["cle"], r.get("dd"), self.engine.weapon_action_state(r))
+                           for k, i, r, _w in self._weapon_action_rows()))
         if key != self._turn_key:
             self._turn_key = key
             self._render_turn_columns(shown, spheres)
@@ -957,6 +985,27 @@ class CombatTab(BaseTab):
 
     ICON_SIZE = 56                                       # v53 : icônes carrées façon jeu de rôle
 
+    @classmethod
+    def short_label(cls, name: str) -> str:
+        """v53 : nom court de tuile — « Attaque — Épée longue » -> « Épée longue », « Utiliser — Baguette de
+        boules de feu » -> « Baguette de boules de feu », parenthèses retirées, coupé sur deux lignes."""
+        n = (name or "").replace(" (2024)", "").lstrip("★ ").strip()
+        n = cls.SHORT_COMMON.get(n, n)
+        if " — " in n:
+            left, right = n.split(" — ", 1)
+            n = right if left in ("Attaque", "Utiliser", "Lancer") else left
+        if " : " in n:                                   # « Conduit divin : Renvoi des morts-vivants »
+            n = n.split(" : ", 1)[1]
+        n = re.sub(r"\s*\(.*?\)", "", n).replace("_", "").replace("*", "").strip()
+        n = n[:1].upper() + n[1:]
+        if len(n) > 26:
+            n = n[:25].rstrip() + "…"
+        if len(n) > 12 and " " in n:                    # retour à la ligne au plus près du milieu
+            spaces = [i for i, ch in enumerate(n) if ch == " "]
+            cut = min(spaces, key=lambda i: abs(i - len(n) / 2))
+            n = n[:cut] + "\n" + n[cut + 1:]
+        return n
+
     def _tile_pixmap(self, x: dict, res: str = ""):
         """Icône de la tuile (core/tile_icons) dans la couleur de sa catégorie ; ressource restante en coin."""
         from core.tile_icons import tile_icon
@@ -999,20 +1048,21 @@ class CombatTab(BaseTab):
         from PyQt6.QtGui import QIcon
         res = spheres.get(x["id"], "")
         x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
-        names = bool((getattr(self.win, "settings", {}) or {}).get("icones_noms", False))
+        names = bool((getattr(self.win, "settings", {}) or {}).get("icones_noms", True))   # v53 : nom sous l'icône
         from .tile_button import TileButton
         b = TileButton(x["id"], self._on_tile_drop)      # v53 : déplaçable (glisser sur une autre tuile)
         b.setIcon(QIcon(self._tile_pixmap(x, res)))
         b.setIconSize(QSize(self.ICON_SIZE, self.ICON_SIZE))
         b.setAutoRaise(True)
-        if names:
-            b.setText(self.SHORT_COMMON.get(x["nom"], x["nom"]))
+        if names:                                        # v53 : icône + nom le plus court possible (2 lignes)
+            b.setText(self.short_label(x["nom"]))
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-            b.setFixedSize(self.ICON_SIZE + 26, self.ICON_SIZE + 30)
+            b.setIconSize(QSize(self.ICON_SIZE - 8, self.ICON_SIZE - 8))
+            b.setFixedSize(self.ICON_SIZE + 40, self.ICON_SIZE + 34)
         else:
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
             b.setFixedSize(self.ICON_SIZE + 6, self.ICON_SIZE + 6)
-        b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; }"
+        b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; font-size: 11px; }"
                         "QToolButton:hover { background: rgba(255,255,255,0.10); border-radius: 8px; }")
         b.setProperty("indisponible", not x["disponible"])   # v53 : reste déplaçable ; icône assombrie
         b.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -1093,7 +1143,7 @@ class CombatTab(BaseTab):
             return "reaction"
         return "capacite"
 
-    ICON_COLS = 15
+    ICON_COLS = 10                                       # v53 : tuiles icône + nom (largeur d'écran courante)
 
     def _render_turn_columns(self, shown: list, spheres: dict) -> None:
         """v53 : barre d'icônes carrées, regroupées par catégorie (attaques, capacités, magie, objets, réactions,
@@ -1109,12 +1159,16 @@ class CombatTab(BaseTab):
         cells = [self._make_tile(x, spheres) for x in items if self._tile_cat(x) != "commune"]
         if self.turn_filter in ("Tout", "Action"):        # v52 : actions d'arme (bottes, actions BG3)
             for key, i, row, weapon in self._weapon_action_rows():
+                if R.norm(row.get("action", "")) == "passive":   # botte passive : appliquée à chaque attaque
+                    continue
+                ok, why = self.engine.weapon_action_state(row)   # v53 : économie d'action et 1 / repos court
                 fake = {"id": "arme_action:{}:{}:{}".format(key, i, row["cle"]), "nom": row["nom"], "arme": weapon,
-                        "icone": row.get("icone", "⚔"), "type": "Action", "origine": weapon, "groupe": "",
-                        "disponible": True, "description": "", "cout": "", "raison": ""}
+                        "icone": row.get("icone", "⚔"), "type": row.get("action") or "Action", "origine": weapon,
+                        "groupe": "", "disponible": ok, "description": "", "cout": "", "raison": why}
                 b = self._make_tile(fake, {})
-                b.setToolTip(WA.tooltip_html(row, theme.current().accent_text) +
-                             "<p style='color:gray'><i>🎲 Clic : jet d'attaque avec cette arme.</i></p>")
+                b.setToolTip(WA.tooltip_html(row, theme.current().accent_text) + (
+                             "<p style='color:gray'><i>🎲 Clic : jet d'attaque avec cette arme.</i></p>" if ok else
+                             "<p><b>🔒 {}</b></p>".format(why)))
                 b.clicked.disconnect()
                 b.clicked.connect(lambda _=False, k=key, idx=i, r=row: self._on_weapon_action(k, idx, r))
                 cells.append(b)
@@ -2271,9 +2325,15 @@ class CombatTab(BaseTab):
         self.changed()
 
     def _on_weapon_action(self, key: str, i: int, row: dict):
-        """Action d'arme (Sape, Brise-crâne, Frappe affaiblissante…) : jet d'attaque immédiat de l'arme équipée."""
+        """Action d'arme (Sape, Brise-crâne, Frappe affaiblissante…) : dépense l'action (ou l'action bonus) et son
+        utilisation (1 / repos court), puis jet d'attaque de l'arme équipée."""
+        res = self.engine.use_weapon_action(row)          # v53 : plus de « spam » des actions d'arme
+        self.win.statusBar().showMessage(res["message"], 6000)
+        if not res["ok"]:
+            return
         slot = getattr(self.ch, key)[i]
         self._attack_flow(self.engine.weapon_action_spec(slot, row), self.engine.weapon_damage_spec(slot), slot)
+        self.changed()
 
     def _attack_flow(self, attack_spec, damage_spec=None, slot=None) -> bool:
         """Jet de toucher (d20 animé) puis « L'attaque touche-t-elle ? » : OUI -> dés de dégâts animés (dés doublés

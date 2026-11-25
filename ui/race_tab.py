@@ -25,7 +25,9 @@ class RaceTab(BaseTab):
         self.race = QComboBox()
         self.sub = QComboBox()
         self.sub_label = make_label("Sous-race")
-        form.addWidget(make_label("Race"), 0, 0)
+        self.race_label = make_label("Race")
+        self.cards_mode = False                          # v53 : assistant — choix par cartes, sans menus
+        form.addWidget(self.race_label, 0, 0)
         form.addWidget(self.race, 0, 1)
         form.addWidget(self.sub_label, 1, 0)
         form.addWidget(self.sub, 1, 1)
@@ -203,8 +205,8 @@ class RaceTab(BaseTab):
         races = eng.race_options()                                   # v52 : filtrées selon l'édition
         fill_combo(self.race, races, ch.race, tips=eng.edition_tips({n: db.races[n] for n in races}))
         subs = db.subraces_of(ch.race)
-        self.sub.setVisible(bool(subs))
-        self.sub_label.setVisible(bool(subs))
+        self.sub.setVisible(bool(subs) and not self.cards_mode)
+        self.sub_label.setVisible(bool(subs) and not self.cards_mode)
         if subs:
             fill_combo(self.sub, ["— aucune —"] + [s["nom"] for s in subs], ch.sous_race or "— aucune —")
         self.portrait.set_race(ch.race, ch.sous_race)
