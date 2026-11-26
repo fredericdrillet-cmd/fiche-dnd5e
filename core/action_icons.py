@@ -36,6 +36,9 @@ G: dict[str, Callable[[], str]] = {
     "soin": A.ICONS["effet_soins"], "fleche": A.ICONS["effet_perforant"], "rune": A.ICONS["rune"],
     "tentacules": A.tentacles, "meteores": A.meteors, "glyphe": lambda: A.rect(10, 10, 44, 44, 6, False, 3) +
     A.path("M20 20 L44 44 M44 20 L20 44 M32 14 V50", w=3), "bete": A.ICONS["forme_sauvage"],
+    # v53 : dessins des icônes de classe
+    "epee_longue": lambda: A.rot(A.sword(60, 10), 35), "serpe": A.sickle, "cle": A.key, "cle_plate": A.wrench,
+    "grande_hache": A.greataxe_double, "ecu": A.heater_shield, "magie": A.magic_sparkles, "sang": A.blood_drops,
 }
 
 # --- choix explicites (dessin principal, médaillon) pour les familles importantes
@@ -299,6 +302,21 @@ def pair_body(main: str, badge: str = "") -> str:
     cut = second.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"')
     return (out + '<g fill="#000000" stroke="#000000" stroke-width="9" stroke-linejoin="round">' + cut + "</g>"
             + second)
+
+
+def layered_body(layers) -> str:
+    """v53 : icône composée librement — [(dessin du registre G, x, y, échelle, angle)], dans l'ordre de dessin ;
+    chaque dessin après le premier est détouré d'un fin liseré vide qui le sépare de ceux de dessous."""
+    out = ""
+    for i, (name, x, y, s, angle) in enumerate(layers):
+        part = A.place(G.get(name, A.sparkle)(), x, y, s)
+        if angle:
+            part = A.rot(part, angle, x, y)
+        if i:
+            cut = part.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"')
+            out += '<g fill="#000000" stroke="#000000" stroke-width="9" stroke-linejoin="round">' + cut + "</g>"
+        out += part
+    return out
 
 
 def compose(name: str, variant: int = 0) -> str:

@@ -149,6 +149,52 @@ def shield() -> str:
     return path("M32 6 L52 13 C52 34 46 48 32 58 C18 48 12 34 12 13 Z", True)
 
 
+def heater_shield() -> str:
+    """v53 : grand écu de chevalier (Paladin) — bordure et croix évidées."""
+    outer = "M7 7 H57 V28 C57 45 46 54 32 61 C18 54 7 45 7 28 Z"
+    inner = "M13 13 H51 V28 C51 41 43 48 32 54 C21 48 13 41 13 28 Z"
+    return (path(outer, True) + '<path d="{}" fill="none" stroke="#000000" stroke-width="3"/>'.format(inner)
+            + '<path d="M32 17 V47 M20 27 H44" fill="none" stroke="#000000" stroke-width="4" '
+              'stroke-linecap="round"/>')
+
+
+def sickle() -> str:
+    """v53 : serpe (Druide) — lame en croissant, manche en bas à gauche."""
+    blade = path("M22 46 C42 46 58 34 58 18 C58 8 50 2 38 4 C48 9 51 15 50 21 C48 33 38 40 22 40 Z", True)
+    return blade + rot(rect(8, 40, 22, 7, 3), -40, 22, 43)
+
+
+def key() -> str:
+    """v53 : clé (Roublard)."""
+    return (circle(32, 14, 9, False, 5.5) + rect(29, 22, 6, 36, 2)
+            + rect(35, 44, 10, 5, 1) + rect(35, 52, 7, 5, 1))
+
+
+def wrench() -> str:
+    """v53 : clé plate (Artificier) — mâchoire ouverte en haut, œillet en bas."""
+    return (rect(28, 22, 8, 32, 4) + circle(32, 15, 12, True) + circle(32, 54, 7, True)
+            + '<rect x="27.5" y="0" width="9" height="15" fill="#000000"/>'
+            + '<circle cx="32" cy="54" r="3" fill="#000000"/>')
+
+
+def greataxe_double() -> str:
+    """v53 : hache à deux mains (Barbare) — long manche, deux lames."""
+    return (rect(30, 3, 4, 59, 2)
+            + path("M34 16 L46 5 C56 11 61 19 61 25 C61 31 56 39 46 45 L34 32 Z", True)
+            + path("M30 16 L18 5 C8 11 3 19 3 25 C3 31 8 39 18 45 L30 32 Z", True)
+            + circle(32, 60, 3.5, True))
+
+
+def magic_sparkles() -> str:
+    """v53 : éclats de magie (au-dessus d'un œil, d'un livre…)."""
+    return sparkle(32, 30, 20) + sparkle(12, 14, 9) + sparkle(52, 12, 8) + sparkle(54, 50, 7) + sparkle(10, 50, 6)
+
+
+def blood_drops() -> str:
+    """v53 : gouttes de sang (Ensorceleur)."""
+    return drop() + place(drop(), 50, 50, 0.45)
+
+
 def shield_outline(w=3.5) -> str:
     return path("M32 6 L52 13 C52 34 46 48 32 58 C18 48 12 34 12 13 Z", w=w)
 

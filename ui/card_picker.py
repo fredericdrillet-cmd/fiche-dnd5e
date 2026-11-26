@@ -15,12 +15,22 @@ from . import icons as IC
 from . import theme
 from .common import blocked
 
-# v53 : dessin + médaillon (core/action_icons.G) — une icône qui parle pour chaque classe et chaque historique
-CLASS_GLYPHS = {"artificier": ("marteau", "etoile"), "barbare": ("hache", "flamme"), "barde": ("note", ""),
-                "clerc": ("soleil", ""), "druide": ("feuille", "patte"), "ensorceleur": ("spirale", "eclat"),
-                "guerrier": ("epee", "bouclier"), "magicien": ("livre", "etoile"), "moine": ("poing", "cycle"),
-                "occultiste": ("oeil", "glyphe"), "paladin": ("bouclier", "soleil"), "rodeur": ("arc", "feuille"),
-                "roublard": ("dague", "masque")}
+# v53 : icône de chaque classe — [(dessin de core/action_icons.G, x, y, échelle, angle)], dessinés dans l'ordre
+CLASS_LAYERS = {
+    "artificier": [("marteau", 23, 30, 0.7, -25), ("cle_plate", 42, 28, 0.6, 25), ("fiole", 47, 48, 0.42, 0)],
+    "barbare": [("grande_hache", 32, 32, 0.95, 28)],
+    "barde": [("note", 32, 32, 0.88, 0)],
+    "clerc": [("masse", 32, 32, 0.95, 30)],
+    "druide": [("serpe", 30, 31, 0.86, 0), ("feuille", 47, 46, 0.5, -10)],
+    "ensorceleur": [("flamme", 27, 29, 0.8, 0), ("sang", 47, 46, 0.45, 0)],
+    "guerrier": [("epee_longue", 32, 32, 1.0, 0)],
+    "magicien": [("magie", 32, 18, 0.58, 0), ("livre", 32, 42, 0.68, 0)],
+    "moine": [("main", 32, 32, 0.88, 0)],
+    "occultiste": [("magie", 32, 20, 0.62, 0), ("oeil", 32, 40, 0.8, 0)],
+    "paladin": [("ecu", 32, 32, 0.92, 0)],
+    "rodeur": [("arc", 27, 30, 0.8, 0), ("patte", 47, 47, 0.42, 0)],
+    "roublard": [("dague", 26, 33, 0.85, 0), ("masque", 45, 16, 0.42, 0), ("cle", 47, 45, 0.5, 35)],
+}
 
 BACKGROUND_GLYPHS = [   # (fragment du nom normalisé, dessin, médaillon) — le plus précis d'abord
     ("idiot du village", "cerveau", "spirale"), ("enfant trouve des geants", "pierres", "main"),
@@ -115,8 +125,9 @@ def _glyph_pixmap(main: str, badge: str, category: str, size: int) -> QPixmap:
 
 
 def class_pixmap(name: str, size: int = 72) -> QPixmap:
-    main, badge = CLASS_GLYPHS.get(norm(name.split(" (")[0]), ("etoile", ""))
-    return _glyph_pixmap(main, badge, "capacite", size)
+    from core.action_icons import layered_body
+    layers = CLASS_LAYERS.get(norm(name.split(" (")[0]), [("etoile", 32, 32, 0.8, 0)])
+    return IC._render(layered_body(layers), "capacite", size, theme.current().key, False)
 
 
 def background_pixmap(name: str, size: int = 72) -> QPixmap:

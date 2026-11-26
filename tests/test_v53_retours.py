@@ -695,3 +695,23 @@ class RetoursCreationEtPartieTests(unittest.TestCase):
         from ui.combat_tab import CombatTab
         self.assertEqual(CombatTab.short_label("Attaque — Épée longue"), "Épée longue")
         self.assertEqual(CombatTab.short_label("Conduit divin : Renvoi des morts-vivants"), "Renvoi des\nmorts-vivants")
+
+
+class IconesDeClasseTests(unittest.TestCase):
+    """v53 : chaque classe a son icône composée (épée, masse, serpe et feuille, hache à deux mains…)."""
+
+    def test_toutes_les_classes_ont_leur_icone(self):
+        import qt_stub
+        qt_stub.install()
+        from core.action_icons import G, layered_body
+        from core.rules import norm
+        from ui.card_picker import CLASS_LAYERS
+        for name in DB.class_names():
+            key = norm(name.split(" (")[0])
+            self.assertIn(key, CLASS_LAYERS, name)
+            for part in CLASS_LAYERS[key]:
+                self.assertIn(part[0], G, (name, part[0]))
+            self.assertIn("<", layered_body(CLASS_LAYERS[key]))
+        self.assertEqual([p[0] for p in CLASS_LAYERS["druide"]], ["serpe", "feuille"])
+        self.assertEqual([p[0] for p in CLASS_LAYERS["roublard"]], ["dague", "masque", "cle"])
+        self.assertEqual([p[0] for p in CLASS_LAYERS["artificier"]], ["marteau", "cle_plate", "fiole"])
