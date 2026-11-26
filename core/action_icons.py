@@ -289,13 +289,16 @@ def pair_for(name: str) -> tuple[str, str]:
 
 
 def pair_body(main: str, badge: str = "") -> str:
-    """v53 : icône « dessin + médaillon » à partir de deux dessins du registre G (historiques, classes…)."""
-    out = A.place(G.get(main, A.sparkle)(), 28, 28, 0.7) if badge else A.place(G.get(main, A.sparkle)(), 32, 32, 0.8)
-    if badge:
-        inner = A.place(G.get(badge, A.sparkle)(), 49, 49, 0.3)
-        out += A.circle(49, 49, 14.5, True) + '<g fill="#000000" stroke="#000000">' + \
-            inner.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"') + "</g>"
-    return out
+    """v53 : icône « dessin + second dessin » à partir de deux dessins du registre G (historiques, classes…).
+    Le second dessin (bouclier, étoile, flamme…) est posé tel quel en bas à droite, détouré d'un fin liseré vide
+    qui le sépare du premier — sans médaillon rond."""
+    if not badge:
+        return A.place(G.get(main, A.sparkle)(), 32, 32, 0.8)
+    out = A.place(G.get(main, A.sparkle)(), 27, 27, 0.7)
+    second = A.place(G.get(badge, A.sparkle)(), 46, 46, 0.5)
+    cut = second.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"')
+    return (out + '<g fill="#000000" stroke="#000000" stroke-width="9" stroke-linejoin="round">' + cut + "</g>"
+            + second)
 
 
 def compose(name: str, variant: int = 0) -> str:
