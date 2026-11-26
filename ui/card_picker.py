@@ -96,9 +96,9 @@ def _rounded(src: QPixmap, size: int) -> QPixmap:
     return out
 
 
-def race_pixmap(race: str, size: int = 72) -> QPixmap:
+def race_pixmap(race: str, size: int = 72, subrace: str = "") -> QPixmap:
     from .race_portrait import find_race_image
-    path = find_race_image(race, "")
+    path = find_race_image(race, subrace)            # v53 : la sous-race a son propre portrait (Elfe des bois…)
     if path and IC.HAS_SVG:
         src = QPixmap(str(path))
         try:

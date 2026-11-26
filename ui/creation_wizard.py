@@ -564,7 +564,7 @@ class CreationWizard(QDialog):
         for r in (current[1] if current else []):
             subs = eng.db.subraces_of(r)
             if subs:
-                rows += [("{}|{}".format(r, s["nom"]), s["nom"], race_pixmap(r, 72),
+                rows += [("{}|{}".format(r, s["nom"]), s["nom"], race_pixmap(r, 72, s["nom"]),
                           rich_tip(s["nom"], s.get("description", "")[:500])) for s in subs]
             else:
                 rows.append((r, r, race_pixmap(r, 72), tip(r)))
