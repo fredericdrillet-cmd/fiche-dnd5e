@@ -91,9 +91,34 @@ class EffectBadge(InstantTip, QWidget):
                                         " Clic droit : prolonger (durée complète)." if on_extend else ""))
         self.on_remove = on_remove
         self._hover = False
-        self.setFixedSize(self.SIZE)
+        self.lines = self.wrap(name)                     # v53 : nom entier, sur plusieurs lignes
+        w, h = self.SIZE.width(), self.SIZE.height()
+        try:
+            from PyQt6.QtGui import QFontMetrics
+            f = QFont(self.font())
+            f.setPixelSize(10)
+            f.setBold(True)
+            fm = QFontMetrics(f)
+            w = max(w, max(fm.horizontalAdvance(t) for t in self.lines) + 6)
+            h = 53 + len(self.lines) * fm.lineSpacing() + 4
+        except (AttributeError, TypeError, ValueError, ImportError):   # faux Qt des tests
+            h = 53 + len(self.lines) * 13 + 4
+        try:
+            self.setFixedSize(QSize(int(w), int(max(h, self.SIZE.height()))))
+        except (TypeError, ValueError):                  # faux Qt des tests
+            self.setFixedSize(self.SIZE)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setMouseTracking(True)
+
+    @staticmethod
+    def wrap(name: str, width: int = 12) -> list[str]:
+        lines: list[str] = []
+        for word in (name or "").split(" "):
+            if lines and len(lines[-1]) + 1 + len(word) <= width:
+                lines[-1] += " " + word
+            else:
+                lines.append(word)
+        return lines or [""]
 
     def enterEvent(self, event):  # noqa: N802
         self._hover = True
@@ -119,7 +144,8 @@ class EffectBadge(InstantTip, QWidget):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         color = QColor(CATEGORY_COLORS.get(self.category, t.ornament))
-        tile = QRectF(9, 3, 48, 48)
+        x0 = (self.width() - 48) / 2                     # tuile centrée (la largeur suit le nom)
+        tile = QRectF(x0, 3, 48, 48)
         path = QPainterPath()
         path.addRoundedRect(tile, 10, 10)
         grad = QLinearGradient(tile.topLeft(), tile.bottomLeft())
@@ -137,21 +163,21 @@ class EffectBadge(InstantTip, QWidget):
         f.setBold(True)
         p.setFont(f)
         p.setPen(QColor(t.text))
-        label = self.name if len(self.name) <= 11 else self.name[:10] + "…"
-        p.drawText(QRectF(0, 53, self.width(), 17), int(Qt.AlignmentFlag.AlignCenter), label)
+        p.drawText(QRectF(0, 52, self.width(), self.height() - 52),
+                   int(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop), "\n".join(self.lines))
         if self.permanent:                               # cadenas : trait racial / aptitude de classe permanente
             p.setBrush(QColor(t.panel))
             p.setPen(QPen(QColor(t.accent_text), 1.2))
-            p.drawEllipse(QRectF(4, 0, 16, 16))
+            p.drawEllipse(QRectF(x0 - 5, 0, 16, 16))
             f.setPixelSize(10)
             p.setFont(f)
-            p.drawText(QRectF(4, 0, 16, 16), int(Qt.AlignmentFlag.AlignCenter), "🔒")
+            p.drawText(QRectF(x0 - 5, 0, 16, 16), int(Qt.AlignmentFlag.AlignCenter), "🔒")
         if self.timer:                                   # v52 : pastille de durée restante
             f.setPixelSize(9)
             f.setBold(True)
             p.setFont(f)
             w = max(22, 7 * len(self.timer))
-            pill = QRectF(57 - w, 38, w, 13)
+            pill = QRectF(x0 + 48 - w, 38, w, 13)
             p.setBrush(QColor(t.panel))
             p.setPen(QPen(QColor(t.accent_text), 1.0))
             p.drawRoundedRect(pill, 6, 6)
@@ -160,10 +186,10 @@ class EffectBadge(InstantTip, QWidget):
         if self._hover:                                  # pastille ✕ de retrait
             p.setBrush(QColor(t.warn))
             p.setPen(QPen(QColor("#ffffff"), 1.2))
-            p.drawEllipse(QRectF(46, 0, 16, 16))
+            p.drawEllipse(QRectF(x0 + 37, 0, 16, 16))
             f.setPixelSize(11)
             p.setFont(f)
-            p.drawText(QRectF(46, 0, 16, 16), int(Qt.AlignmentFlag.AlignCenter), "✕")
+            p.drawText(QRectF(x0 + 37, 0, 16, 16), int(Qt.AlignmentFlag.AlignCenter), "✕")
         p.end()
 
 

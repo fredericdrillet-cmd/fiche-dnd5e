@@ -31,12 +31,15 @@ class AbilitiesTab(BaseTab):
         self.reset_btn = QPushButton("Réinitialiser (8 partout)")
         self.reset_btn.setToolTip(rich_tip("Réinitialiser", "Remet toutes les valeurs à leur minimum et rend "
                                            "les 27 points."))
-        for b in (self.roll_btn, self.auto_btn, self.reset_btn):
-            top.addWidget(b)
         top.addStretch(1)
-        self.points_label = make_label("", "stat")
-        top.addWidget(self.points_label)
         root.addLayout(top)
+        self.points_label = make_label("", "stat", wrap=True)   # v53 : sa propre ligne (largeur de l'assistant)
+        root.addWidget(self.points_label)
+        btns = QHBoxLayout()                             # v53 : boutons sur leur ligne (rien ne sort à droite)
+        for b in (self.roll_btn, self.auto_btn, self.reset_btn):
+            btns.addWidget(b)
+        btns.addStretch(1)
+        root.addLayout(btns)
         self.rolls_label = make_label("", "muted", wrap=True)
         root.addWidget(self.rolls_label)
 
@@ -137,11 +140,19 @@ class AbilitiesTab(BaseTab):
         self.free_labels = [make_label("+2"), make_label("+1"), make_label("+1")]
         free.addWidget(self.free_chk)
         free.addWidget(self.alt_chk)
-        for lab, cb in zip(self.free_labels, self.free_combos):
-            free.addWidget(lab)
-            free.addWidget(cb)
         free.addStretch(1)
         rl.addLayout(free)
+        picks = QHBoxLayout()                            # v53 : listes sur leur propre ligne, noms entiers
+        for lab, cb in zip(self.free_labels, self.free_combos):
+            try:
+                cb.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+                cb.setMinimumWidth(160)
+            except (AttributeError, TypeError):
+                pass
+            picks.addWidget(lab)
+            picks.addWidget(cb)
+        picks.addStretch(1)
+        rl.addLayout(picks)
         root.addWidget(rbox)
 
         self.warn = make_label("", "warn", wrap=True)

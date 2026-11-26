@@ -163,10 +163,12 @@ class CardPicker(QListWidget):
     """Grille de cartes à sélection unique : set_items([(nom, pixmap, infobulle)]), select(nom) ; on_pick(nom)."""
 
     def __init__(self, on_pick: Callable[[str], None], icon: int = 72, cell=(122, 116), height: int = 270,
-                 max_height: Optional[int] = None):
+                 max_height: Optional[int] = None, fit_rows: bool = False):
         super().__init__()
         self._on_pick = on_pick
         self._key = None
+        self._cell = cell
+        self._fit_rows = fit_rows                        # v53 : hauteur = nombre réel de rangées (sans vide)
         IC.card_grid(self, icon, cell)
         try:
             self.setMinimumHeight(height)
@@ -196,6 +198,31 @@ class CardPicker(QListWidget):
                 if tip:
                     it.setToolTip(tip)
                 self.addItem(it)
+        self._fit()
+
+    def rows_height(self, width: int) -> int:
+        """Hauteur juste suffisante pour toutes les cartes à cette largeur (marges et espacement compris)."""
+        cw, ch = self._cell
+        per_row = max(1, (width - 8) // cw)
+        rows = max(1, -(-self.count() // per_row))
+        return rows * ch + 12
+
+    def _fit(self) -> None:
+        if not self._fit_rows:
+            return
+        try:
+            h = self.rows_height(self.viewport().width() or self.width())
+            if h != self.height():
+                self.setFixedHeight(h)
+        except (AttributeError, TypeError):
+            pass
+
+    def resizeEvent(self, event) -> None:              # noqa: N802 - nom Qt
+        try:
+            super().resizeEvent(event)
+        except (AttributeError, TypeError):
+            pass
+        self._fit()
 
     def select(self, name: str) -> None:
         with blocked(self):

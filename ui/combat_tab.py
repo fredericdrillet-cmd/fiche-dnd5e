@@ -998,13 +998,13 @@ class CombatTab(BaseTab):
             n = n.split(" : ", 1)[1]
         n = re.sub(r"\s*\(.*?\)", "", n).replace("_", "").replace("*", "").strip()
         n = n[:1].upper() + n[1:]
-        if len(n) > 26:
-            n = n[:25].rstrip() + "…"
-        if len(n) > 12 and " " in n:                    # retour à la ligne au plus près du milieu
-            spaces = [i for i, ch in enumerate(n) if ch == " "]
-            cut = min(spaces, key=lambda i: abs(i - len(n) / 2))
-            n = n[:cut] + "\n" + n[cut + 1:]
-        return n
+        lines: list[str] = []                           # v53 : nom entier, sur plusieurs lignes de ~13 signes
+        for word in n.split(" "):
+            if lines and len(lines[-1]) + 1 + len(word) <= 13:
+                lines[-1] += " " + word
+            else:
+                lines.append(word)
+        return "\n".join(lines)
 
     def _tile_pixmap(self, x: dict, res: str = ""):
         """Icône de la tuile (core/tile_icons) dans la couleur de sa catégorie ; ressource restante en coin."""
@@ -1048,17 +1048,28 @@ class CombatTab(BaseTab):
         from PyQt6.QtGui import QIcon
         res = spheres.get(x["id"], "")
         x = dict(x, nom=x["nom"].replace(" (2024)", ""))  # l'édition est celle de la fiche : inutile de la répéter
-        names = bool((getattr(self.win, "settings", {}) or {}).get("icones_noms", True))   # v53 : nom sous l'icône
+        names = True                                     # v53 : le nom est toujours affiché sous l'icône
         from .tile_button import TileButton
         b = TileButton(x["id"], self._on_tile_drop)      # v53 : déplaçable (glisser sur une autre tuile)
         b.setIcon(QIcon(self._tile_pixmap(x, res)))
         b.setIconSize(QSize(self.ICON_SIZE, self.ICON_SIZE))
         b.setAutoRaise(True)
         if names:                                        # v53 : icône + nom le plus court possible (2 lignes)
-            b.setText(self.short_label(x["nom"]))
+            label = self.short_label(x["nom"])
+            b.setText(label)
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
             b.setIconSize(QSize(self.ICON_SIZE - 8, self.ICON_SIZE - 8))
-            b.setFixedSize(self.ICON_SIZE + 20, self.ICON_SIZE + 30)   # v53 : tuiles rapprochées
+            w, n_lines = self.ICON_SIZE + 20, label.count("\n") + 1   # v53 : tuiles rapprochées, nom jamais coupé
+            try:
+                from PyQt6.QtGui import QFont, QFontMetrics
+                f = QFont(b.font())
+                f.setPixelSize(10)
+                fm = QFontMetrics(f)
+                w = max(w, max(fm.horizontalAdvance(t) for t in label.split("\n")) + 8)
+                line_h = fm.lineSpacing()
+            except (AttributeError, TypeError, ValueError, ImportError):   # faux Qt des tests
+                line_h = 13
+            b.setFixedSize(int(w), int(self.ICON_SIZE - 8 + n_lines * line_h + 12))
         else:
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
             b.setFixedSize(self.ICON_SIZE + 6, self.ICON_SIZE + 6)

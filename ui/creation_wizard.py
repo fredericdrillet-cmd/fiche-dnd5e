@@ -242,7 +242,8 @@ class CreationWizard(QDialog):
         lay.addWidget(self.race_panel)
         self.race_choices = QGroupBox("Choix de l'espèce")
         rc = QVBoxLayout(self.race_choices)
-        self.race_color_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys={"ascendance_raciale"})
+        self.race_color_panel = OptionSetsPanel(lambda: self.engine, self.host.changed, keys={"ascendance_raciale"},
+                                               stacked=True)
         rc.addWidget(self.race_color_panel)
         self.race_feat_row = QHBoxLayout()
         self.race_feat_label = make_label("", "head")
@@ -291,8 +292,8 @@ class CreationWizard(QDialog):
         lay.addWidget(make_label("Classe — cliquez une carte", "head"))
         self.class_combo = QComboBox()                    # v53 : conservé pour la logique, caché (cartes seules)
         self.class_combo.setVisible(False)
-        self.class_cards = CardPicker(lambda n: self._on_class(n), icon=76, cell=(132, 128), height=400,
-                                      max_height=410)          # 13 classes visibles sans défiler
+        self.class_cards = CardPicker(lambda n: self._on_class(n), icon=76, cell=(132, 128), height=150,
+                                      fit_rows=True)           # 13 classes visibles, cadre à leur hauteur
         lay.addWidget(self.class_cards)
         self.class_info = make_label("", "muted", wrap=True)
         lay.addWidget(self.class_info)
@@ -322,7 +323,7 @@ class CreationWizard(QDialog):
         self.pages.addWidget(self._scroll(w))
         # 4. caractéristiques
         self.abilities_panel = AbilitiesTab(self.host)
-        self.abilities_panel.set_columns(3)               # v53 : 3 × 2, pas de défilement horizontal
+        self.abilities_panel.set_columns(3)               # v53 : 3 × 2, rien ne sort à droite
         self.pages.addWidget(self._scroll(self.abilities_panel))
         # 5. sorts
         w, self.spells_lay = self._page()

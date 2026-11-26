@@ -33,8 +33,9 @@ class OptionSetsPanel(QWidget):
     `keys` : ne montrer que ces ensembles (None = tous) ; `on_change` est appelé après chaque choix."""
 
     def __init__(self, engine_getter: Callable, on_change: Callable[[], None], keys=None,
-                 locked: Optional[Callable[[str], set]] = None):
+                 locked: Optional[Callable[[str], set]] = None, stacked: bool = False):
         super().__init__()
+        self.stacked = stacked                           # v53 : colonne étroite — description sous la liste
         self._engine = engine_getter
         self._on_change = on_change
         self.keys = keys
@@ -61,15 +62,15 @@ class OptionSetsPanel(QWidget):
         self.combos = {}
         row = 0
         for s in sets:
-            self.grid.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]), "head"),
-                                row, 0, 1, 2)
+            self.grid.addWidget(make_label("{} — {} / {}".format(s["label"], len(s["chosen"]), s["total"]), "head",
+                                           wrap=True), row, 0, 1, 2)      # v53 : titre entier, sur deux lignes
             row += 1
             for i in range(s["total"]):
                 current = s["chosen"][i] if i < len(s["chosen"]) else ""
                 taken = {c for j, c in enumerate(s["chosen"]) if j != i}
                 names = [n for n in s["options"] if n not in taken]
                 combo = QComboBox()
-                combo.setMinimumWidth(280)
+                combo.setMinimumWidth(200 if self.stacked else 280)
                 fill_combo(combo, [NO_OPTION] + names, current or NO_OPTION,
                            {n: rich_tip(n, s["options"][n]) for n in names})
                 combo.activated.connect(lambda _=0, k=s["key"], idx=i, c=combo: self.choose(k, idx, c.currentText()))
@@ -78,9 +79,14 @@ class OptionSetsPanel(QWidget):
                     combo.setToolTip("Choix d'un niveau précédent (voir « Remplacer un choix » si la règle le permet).")
                 self.combos[(s["key"], i)] = combo
                 desc = make_label((s["options"].get(current, "") or "").split("\n")[0], "muted", wrap=True)
-                self.grid.addWidget(combo, row, 0)
-                self.grid.addWidget(desc, row, 1)
-                row += 1
+                if self.stacked:
+                    self.grid.addWidget(combo, row, 0, 1, 2)
+                    self.grid.addWidget(desc, row + 1, 0, 1, 2)
+                    row += 2
+                else:
+                    self.grid.addWidget(combo, row, 0)
+                    self.grid.addWidget(desc, row, 1)
+                    row += 1
         self.grid.setColumnStretch(1, 1)
 
     def choose(self, key: str, index: int, name: str) -> None:

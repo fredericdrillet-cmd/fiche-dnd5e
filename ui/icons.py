@@ -269,7 +269,7 @@ def icon_file(name: str) -> str:
 
 
 # ---------------------------------------------------------------------------------------------- cartes de sorts
-def card_grid(lst, icon: int = 52, cell=(118, 92)) -> None:
+def card_grid(lst, icon: int = 52, cell=(124, 116)) -> None:
     """v53 : liste en grille de cartes (icône carrée, nom dessous) — mêmes éléments, mêmes signaux qu'avant."""
     try:
         from PyQt6.QtCore import QSize
@@ -280,7 +280,8 @@ def card_grid(lst, icon: int = 52, cell=(118, 92)) -> None:
         lst.setResizeMode(QListView.ResizeMode.Adjust)
         lst.setMovement(QListView.Movement.Static)
         lst.setWordWrap(True)
-        lst.setUniformItemSizes(True)
+        lst.setUniformItemSizes(False)                   # v53 : chaque nom a la hauteur qu'il lui faut
+        lst.setTextElideMode(Qt.TextElideMode.ElideNone)  # v53 : nom entier, sur trois lignes au besoin
     except (AttributeError, TypeError, ImportError):     # faux Qt des tests
         pass
 
