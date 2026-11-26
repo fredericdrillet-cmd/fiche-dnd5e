@@ -169,6 +169,72 @@ def _render(body: str, category: str, size: int, theme_key: str, dim: bool) -> Q
     return QPixmap.fromImage(img)
 
 
+@lru_cache(maxsize=512)
+def tinted_stone_pixmap(mask_path: str, color: str, size: int, theme_key: str = "") -> QPixmap:
+    """v53 : pierre runique teintée de `color`, dessin blanc gravé d'après un masque en niveaux de gris (blanc =
+    dessin) — icônes de classe de l'assistant. Pixmap vide si le masque est illisible."""
+    if not HAS_SVG:
+        return QPixmap()
+    import colorsys
+    m = QImage(mask_path)
+    if m.isNull():
+        return QPixmap()
+    g = int(size * 0.66)
+    m = m.convertToFormat(QImage.Format.Format_Grayscale8).scaled(
+        g, g, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+
+    def paint(top: str, bottom: str = "") -> QImage:
+        out = QImage(m.width(), m.height(), QImage.Format.Format_ARGB32)
+        out.fill(Qt.GlobalColor.transparent)
+        p = QPainter(out)
+        if bottom:
+            grad = QLinearGradient(0, 0, 0, m.height())
+            grad.setColorAt(0, QColor(top))
+            grad.setColorAt(1, QColor(bottom))
+            p.fillRect(0, 0, m.width(), m.height(), grad)
+        else:
+            p.fillRect(0, 0, m.width(), m.height(), QColor(top))
+        p.end()
+        out.setAlphaChannel(m)
+        return out
+
+    c = QColor(color)
+    h, _l, s = colorsys.rgb_to_hls(c.redF(), c.greenF(), c.blueF())
+    img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
+    img.fill(Qt.GlobalColor.transparent)
+    p = QPainter(img)
+    p.setRenderHint(QPainter.RenderHint.Antialiasing)
+    stone = _octagon(size, 1)
+    grad = QLinearGradient(0, 0, size, size)             # pierre de la couleur de la classe
+    grad.setColorAt(0, _hls(h * 360, 0.50, s))
+    grad.setColorAt(1, _hls(h * 360, 0.22, s))
+    p.fillPath(stone, grad)
+    p.setClipPath(stone)
+    o = _seed(mask_path) % (_GRAIN - size) if size < _GRAIN else 0
+    p.drawImage(QPointF(0, 0), _grain(70, False), QRectF(o, o, size, size))
+    p.drawImage(QPointF(0, 0), _grain(30, True), QRectF(0, o, size, size))
+    p.setClipping(False)
+    inner = _octagon(size, size * 0.09)
+    p.setPen(QPen(QColor(255, 255, 255, 60), max(1.0, size / 45)))
+    p.drawPath(inner.translated(-0.7, -0.7))
+    p.setPen(QPen(QColor(0, 0, 0, 140), max(1.0, size / 45)))
+    p.drawPath(inner.translated(0.7, 0.7))
+    silver = QLinearGradient(0, 0, size, size)
+    for pos, col in ((0, "#FFFFFF"), (0.4, "#D6D9DE"), (0.7, "#8C939C"), (1, "#4A5058")):
+        silver.setColorAt(pos, QColor(col))
+    p.setPen(QPen(QBrush(silver), max(2.0, size / 18)))
+    p.drawPath(stone)
+    x, y = (size - m.width()) / 2, (size - m.height()) / 2
+    p.setOpacity(0.6)                                    # ombre gravée
+    p.drawImage(QPointF(x + size / 60, y + size / 35), paint("#000000"))
+    p.setOpacity(1.0)
+    p.drawImage(QPointF(x, y), paint("#FFFFFF", "#E9E4DA"))
+    p.setPen(QPen(QColor("#0E0E0E"), max(1.0, size / 60)))
+    p.drawPath(stone)
+    p.end()
+    return QPixmap.fromImage(img)
+
+
 def icon_pixmap(name: str, category: str, size: int = 56, dim: bool = False) -> QPixmap:
     """Icône nommée (data/icons) rendue dans le style de la catégorie et du thème courant."""
     return _render(named_body(name), category, size, theme.current().key, dim)

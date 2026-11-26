@@ -715,3 +715,14 @@ class IconesDeClasseTests(unittest.TestCase):
         self.assertEqual([p[0] for p in CLASS_LAYERS["druide"]], ["serpe", "feuille"])
         self.assertEqual([p[0] for p in CLASS_LAYERS["roublard"]], ["dague", "masque", "cle"])
         self.assertEqual([p[0] for p in CLASS_LAYERS["artificier"]], ["marteau", "cle_plate", "fiole"])
+
+    def test_dessins_de_classe_fournis(self):
+        """Chaque classe a son dessin (data/images/classes) et sa couleur de pierre."""
+        import qt_stub
+        qt_stub.install()
+        from core.rules import norm
+        from ui.card_picker import CLASS_COLORS, class_icon_path
+        for name in DB.class_names():
+            self.assertIsNotNone(class_icon_path(name), name)
+            self.assertIn(norm(name.split(" (")[0]), CLASS_COLORS, name)
+        self.assertIsNone(class_icon_path("Classe inconnue"))

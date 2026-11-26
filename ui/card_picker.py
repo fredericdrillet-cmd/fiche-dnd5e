@@ -15,7 +15,22 @@ from . import icons as IC
 from . import theme
 from .common import blocked
 
-# v53 : icône de chaque classe — [(dessin de core/action_icons.G, x, y, échelle, angle)], dessinés dans l'ordre
+# v53 : icône de chaque classe — dessin data/images/classes/<classe>.png (blanc = dessin) gravé sur une pierre de
+# la couleur de la classe ; à défaut, composition de secours ci-dessous.
+CLASS_COLORS = {"artificier": "#A88F52", "barbare": "#C87253", "barde": "#B186B4", "clerc": "#898D90",
+                "druide": "#939D5C", "ensorceleur": "#C45659", "guerrier": "#5F3E35", "magicien": "#3265BA",
+                "moine": "#4198B1", "occultiste": "#7E4EB1", "paladin": "#AC9C4A", "rodeur": "#4A785B",
+                "roublard": "#555650"}
+
+
+def class_icon_path(name: str) -> Optional[str]:
+    from core.paths import get_resource_path
+    from pathlib import Path
+    path = Path(get_resource_path(str(Path("data") / "images" / "classes" / (norm(name.split(" (")[0]) + ".png"))))
+    return str(path) if path.is_file() else None
+
+
+# Secours : [(dessin de core/action_icons.G, x, y, échelle, angle)], dessinés dans l'ordre
 CLASS_LAYERS = {
     "artificier": [("marteau", 23, 30, 0.7, -25), ("cle_plate", 42, 28, 0.6, 25), ("fiole", 47, 48, 0.42, 0)],
     "barbare": [("grande_hache", 32, 32, 0.95, 28)],
@@ -125,6 +140,15 @@ def _glyph_pixmap(main: str, badge: str, category: str, size: int) -> QPixmap:
 
 
 def class_pixmap(name: str, size: int = 72) -> QPixmap:
+    key = norm(name.split(" (")[0])
+    path = class_icon_path(name)
+    if path:
+        pix = IC.tinted_stone_pixmap(path, CLASS_COLORS.get(key, "#6E6A66"), size, theme.current().key)
+        try:
+            if not pix.isNull():
+                return pix
+        except (AttributeError, TypeError):
+            pass
     from core.action_icons import layered_body
     layers = CLASS_LAYERS.get(norm(name.split(" (")[0]), [("etoile", 32, 32, 0.8, 0)])
     return IC._render(layered_body(layers), "capacite", size, theme.current().key, False)
