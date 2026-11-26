@@ -7,7 +7,7 @@ clic droit : menu. La table de l'inventaire reste le modèle (sélection synchro
 from __future__ import annotations
 
 from PyQt6.QtCore import QMimeData, QSize, Qt
-from PyQt6.QtGui import QColor, QDrag, QFont, QIcon, QPainter, QPainterPath, QPen
+from PyQt6.QtGui import QColor, QDrag, QFont, QIcon, QPainter, QPen
 from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QMenu
 
 import re
@@ -85,9 +85,8 @@ def tile_pixmap(name: str, category: str, rarity: str, qty: int, equipped: bool,
     p = QPainter(pix)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
     color = RARITY.get(theme.rarity_key(rarity))
-    if color:                                            # bordure de rareté, épaisse
-        path = QPainterPath()
-        path.addRoundedRect(2, 2, TILE - 4, TILE - 4, TILE * 0.14, TILE * 0.14)
+    if color:                                            # sertissure de la couleur de la rareté (pierre runique)
+        path = IC._octagon(TILE, 2)
         p.setPen(QPen(QColor(color), 3.2))
         p.drawPath(path)
     f = QFont()

@@ -1,7 +1,6 @@
 """
-Rendu des icônes (v53) : carré plein façon jeu de rôle — fond en dégradé de la couleur de la catégorie (attaque
-rouge, magie bleue, soins verts, action commune brune… accordée au thème), cadre fin, dessin clair avec ombre
-portée et légère lueur. Les dessins viennent de data/icons (actions, armes, objets…) ou de core/spell_icons
+Rendu des icônes (v53) : « pierre runique » — octogone de pierre grise sertie d'argent, rune gravée qui luit de
+la couleur de la catégorie (attaque rouge, magie de l'école, soins verts, action commune brune, rareté…). Les dessins viennent de data/icons (actions, armes, objets…) ou de core/spell_icons
 (un dessin par sort). Cache par (dessin, catégorie, taille, thème).
 """
 from __future__ import annotations
@@ -9,7 +8,8 @@ from __future__ import annotations
 from functools import lru_cache
 
 from PyQt6.QtCore import QByteArray, QPointF, QRectF, Qt
-from PyQt6.QtGui import QColor, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap, QRadialGradient
+from PyQt6.QtGui import (QBrush, QColor, QImage, QLinearGradient, QPainter, QPainterPath, QPen, QPixmap,
+                         QRadialGradient)
 
 try:                                                     # absent du faux Qt des tests : icônes vides
     from PyQt6.QtSvg import QSvgRenderer
@@ -53,41 +53,118 @@ def named_body(name: str) -> str:
     return fn()
 
 
+# v53 : style « pierre runique » — octogone de pierre grise sertie d'argent, rune gravée qui luit de la couleur
+# de la catégorie (attaque rouge, magie de l'école, soins verts, rareté de l'objet…).
+_GRAIN = 256                                             # texture de grain partagée (tirée une fois, sans numpy)
+
+
+@lru_cache(maxsize=4)
+def _grain(strength: int, light: bool) -> QImage:
+    """Grain de pierre : points noirs (ou blancs) d'opacité aléatoire ; une seule texture, décalée par icône."""
+    import random
+    rng = random.Random(4217 + strength + light)
+    level = 255 if light else 0
+    data = bytearray(_GRAIN * _GRAIN * 4)
+    alphas = rng.randbytes(_GRAIN * _GRAIN)
+    for i, a in enumerate(alphas):
+        a = a * strength // 256
+        v = level * a // 255                              # prémultiplié
+        data[4 * i:4 * i + 4] = bytes((v, v, v, a))
+    return QImage(bytes(data), _GRAIN, _GRAIN, _GRAIN * 4, QImage.Format.Format_ARGB32_Premultiplied).copy()
+
+
+def _seed(body: str) -> int:
+    import zlib
+    return zlib.crc32(body.encode("utf-8"))
+
+
+def _hls(h: float, l: float, s: float) -> QColor:
+    import colorsys
+    r, g, b = colorsys.hls_to_rgb(h / 360, max(0.0, min(1.0, l)), max(0.0, min(1.0, s)))
+    return QColor(round(r * 255), round(g * 255), round(b * 255))
+
+
+def _glyph_gradient(body: str, size: int, top: QColor, bottom: QColor) -> QImage:
+    out = QImage(size, size, QImage.Format.Format_ARGB32)
+    out.fill(Qt.GlobalColor.transparent)
+    p = QPainter(out)
+    grad = QLinearGradient(0, 0, 0, size)
+    grad.setColorAt(0, top)
+    grad.setColorAt(1, bottom)
+    p.fillRect(0, 0, size, size, grad)
+    p.end()
+    out.setAlphaChannel(_glyph_mask(body, size))
+    return out
+
+
+def _octagon(size: int, m: float) -> QPainterPath:
+    from PyQt6.QtGui import QPolygonF
+    k = size * 0.29
+    pts = [(k, m), (size - k, m), (size - m, k), (size - m, size - k), (size - k, size - m), (k, size - m),
+           (m, size - k), (m, k)]
+    path = QPainterPath()
+    path.addPolygon(QPolygonF([QPointF(x, y) for x, y in pts]))
+    path.closeSubpath()
+    return path
+
+
 @lru_cache(maxsize=4096)
 def _render(body: str, category: str, size: int, theme_key: str, dim: bool) -> QPixmap:
     if not HAS_SVG:
         return QPixmap()
-    t = theme.THEMES.get(theme_key) or theme.current()
-    pal = theme.icon_palette(t).get(category) or theme.icon_palette(t)["commune"]
+    import random
+    hue, sat = theme.ICON_HUES.get(category) or theme.ICON_HUES["commune"]
+    seed = _seed(body)
     img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
     img.fill(Qt.GlobalColor.transparent)
     p = QPainter(img)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
-    r = QRectF(1, 1, size - 2, size - 2)
-    radius = size * 0.14
-    shape = QPainterPath()
-    shape.addRoundedRect(r, radius, radius)
-    grad = QLinearGradient(r.topLeft(), r.bottomRight())
-    grad.setColorAt(0, QColor(pal["haut"]))
-    grad.setColorAt(1, QColor(pal["bas"]))
-    p.fillPath(shape, grad)
-    hi = QRadialGradient(QPointF(size * 0.35, size * 0.25), size * 0.7)    # reflet doux en haut à gauche
-    hi.setColorAt(0, QColor(255, 255, 255, 46))
-    hi.setColorAt(1, QColor(255, 255, 255, 0))
-    p.fillPath(shape, hi)
-    g = int(size * 0.74)
-    off = (size - g) // 2
-    glow = _tinted(body, g, pal["glyphe"])               # lueur : dessin agrandi, très transparent
-    p.setOpacity(0.28)
-    p.drawImage(QRectF(off - size * 0.04, off - size * 0.04, g + size * 0.08, g + size * 0.08), glow)
-    p.setOpacity(0.55)                                   # ombre portée
-    p.drawImage(QRectF(off + size * 0.03, off + size * 0.04, g, g), _tinted(body, g, "#000000"))
+    stone = _octagon(size, 1)
+    grad = QLinearGradient(0, 0, size, size)             # pierre grise, plus claire en haut à gauche
+    grad.setColorAt(0, QColor("#7C7A76"))
+    grad.setColorAt(1, QColor("#2E2C2A"))
+    p.fillPath(stone, grad)
+    p.setClipPath(stone)
+    ox, oy = seed % (_GRAIN - size) if size < _GRAIN else 0, (seed >> 8) % (_GRAIN - size) if size < _GRAIN else 0
+    p.drawImage(QPointF(0, 0), _grain(70, False), QRectF(ox, oy, size, size))
+    p.drawImage(QPointF(0, 0), _grain(30, True), QRectF(oy, ox, size, size))
+    rng = random.Random(seed)                            # deux fissures, propres à chaque dessin
+    p.setPen(QPen(QColor(0, 0, 0, 90), max(0.8, size / 90)))
+    for _ in range(2):
+        x, y = rng.random() * size, rng.random() * size
+        crack = QPainterPath(QPointF(x, y))
+        for _ in range(4):
+            x += (rng.random() - 0.5) * size * 0.3
+            y += (rng.random() - 0.5) * size * 0.3
+            crack.lineTo(x, y)
+        p.drawPath(crack)
+    p.setClipping(False)
+    inner = _octagon(size, size * 0.09)                  # biseau intérieur
+    p.setPen(QPen(QColor(255, 255, 255, 60), max(1.0, size / 45)))
+    p.drawPath(inner.translated(-0.7, -0.7))
+    p.setPen(QPen(QColor(0, 0, 0, 140), max(1.0, size / 45)))
+    p.drawPath(inner.translated(0.7, 0.7))
+    silver = QLinearGradient(0, 0, size, size)           # sertissure d'argent
+    for pos, col in ((0, "#FFFFFF"), (0.4, "#D6D9DE"), (0.7, "#8C939C"), (1, "#4A5058")):
+        silver.setColorAt(pos, QColor(col))
+    p.setPen(QPen(QBrush(silver), max(2.0, size / 18)))
+    p.drawPath(stone)
+    g = int(size * 0.60)
+    off = (size - g) / 2
+    rect = QRectF(off, off, g, g)
+    # rune gravée : lueur de la catégorie, lèvre claire dessous, creux sombre, puis la rune lumineuse
+    p.setOpacity(0.55)
+    p.drawImage(rect.adjusted(-size * 0.06, -size * 0.06, size * 0.06, size * 0.06),
+                _tinted(body, g, _hls(hue, 0.62, sat + 0.2).name()))
+    p.setOpacity(0.8)
+    p.drawImage(rect.translated(0, size / 40), _tinted(body, g, "#EDEDED"))
     p.setOpacity(1.0)
-    p.drawImage(QRectF(off, off, g, g), _tinted(body, g, pal["glyphe"]))
-    p.setPen(QPen(QColor(pal["cadre"]), max(1.5, size / 28)))
-    p.drawPath(shape)
+    p.drawImage(rect.translated(0, -size / 70), _tinted(body, g, "#141210"))
+    p.drawImage(rect, _glyph_gradient(body, g, _hls(hue, 0.85, sat), _hls(hue, 0.55, sat + 0.2)))
+    p.setPen(QPen(QColor("#0E0E0E"), max(1.0, size / 60)))
+    p.drawPath(stone)
     if dim:                                              # indisponible : voile sombre
-        p.fillPath(shape, QColor(0, 0, 0, 140))
+        p.fillPath(stone, QColor(0, 0, 0, 150))
     p.end()
     return QPixmap.fromImage(img)
 

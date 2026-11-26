@@ -835,8 +835,8 @@ class CombatTab(BaseTab):
         holder = QWidget()
         self.turn_flow = QGridLayout(holder)
         self.turn_flow.setContentsMargins(0, 0, 0, 0)
-        self.turn_flow.setHorizontalSpacing(5)
-        self.turn_flow.setVerticalSpacing(5)
+        self.turn_flow.setHorizontalSpacing(2)
+        self.turn_flow.setVerticalSpacing(2)
         lay.addWidget(holder)
         self.turn_cols = {}                               # compatibilité
         self.turn_empty = make_label("Rien à faire dans cette catégorie.", "muted")
@@ -1058,11 +1058,11 @@ class CombatTab(BaseTab):
             b.setText(self.short_label(x["nom"]))
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
             b.setIconSize(QSize(self.ICON_SIZE - 8, self.ICON_SIZE - 8))
-            b.setFixedSize(self.ICON_SIZE + 40, self.ICON_SIZE + 34)
+            b.setFixedSize(self.ICON_SIZE + 20, self.ICON_SIZE + 30)   # v53 : tuiles rapprochées
         else:
             b.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
             b.setFixedSize(self.ICON_SIZE + 6, self.ICON_SIZE + 6)
-        b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; font-size: 11px; }"
+        b.setStyleSheet("QToolButton { border: none; background: transparent; padding: 0px; font-size: 10px; }"
                         "QToolButton:hover { background: rgba(255,255,255,0.10); border-radius: 8px; }")
         b.setProperty("indisponible", not x["disponible"])   # v53 : reste déplaçable ; icône assombrie
         b.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -1143,7 +1143,7 @@ class CombatTab(BaseTab):
             return "reaction"
         return "capacite"
 
-    ICON_COLS = 10                                       # v53 : tuiles icône + nom (largeur d'écran courante)
+    ICON_COLS = 14                                       # v53 : tuiles icône + nom, rapprochées
 
     def _render_turn_columns(self, shown: list, spheres: dict) -> None:
         """v53 : barre d'icônes carrées, regroupées par catégorie (attaques, capacités, magie, objets, réactions,
