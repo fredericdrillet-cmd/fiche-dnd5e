@@ -812,3 +812,6 @@ def _glowball():
 from .art_scenes2 import SCENES as _SCENES2  # noqa: E402
 
 SPELLS.update(_SCENES2)
+from .art_scenes13 import SCENES as _SCENES13  # noqa: E402
+
+SPELLS.update(_SCENES13)
