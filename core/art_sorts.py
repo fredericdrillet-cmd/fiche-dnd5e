@@ -821,3 +821,6 @@ SPELLS.update(_SCENES4)
 from .art_scenes5 import SCENES as _SCENES5  # noqa: E402
 
 SPELLS.update(_SCENES5)
+from .art_scenes69 import SCENES as _SCENES69  # noqa: E402
+
+SPELLS.update(_SCENES69)
