@@ -169,22 +169,60 @@ def _shape_layer(shape: str) -> str:
     return ""
 
 
+def _effect_motif(effect: str):
+    """v53 : motif soigné (core/art_motifs) de l'effet du sort, sinon dessin d'origine."""
+    from .art_motifs import MOTIFS as M
+    from . import art_motifs as AM
+    table = {"feu": "flamme", "froid": "flocon", "foudre": "eclair", "necrotique": "crane", "radiant": "soleil",
+             "force": "diamant", "psychique": "cerveau", "contondant": "marteau", "perforant": "fleche",
+             "tranchant": "epee", "soins": "soin", "controle": "chaine", "protection": "bouclier", "deplacement": "aile",
+             "information": "oeil", "amelioration": "fleche_haut", "lumiere": "ampoule", "invocation": "portail",
+             "illusion": "masque", "transformation": "cycle", "creation": "outil", "communication": "bulle",
+             "ombre": "lune", "temps": "sablier", "terrain": "terre", "nature": "feuille", "eau": "vague"}
+    if effect in table:
+        return M[table[effect]]
+    extra = {"tonnerre": AM._waves, "acide": lambda: AM._drop() + A.bubbles(), "poison": M["fiole"], "vie": M["coeur"]}
+    return extra.get(effect)
+
+
+def _motif_glyph(key: str):
+    """v53 : élément reconnaissable (bête, arme, porte…) en motif soigné, sinon dessin d'origine."""
+    from .art_motifs import MOTIFS as M
+    table = {"bete": "bete", "arme": "epee", "porte": "porte", "oeil": "oeil", "main": "main", "plante": "feuille",
+             "pierre": "pierres", "vent": "vent", "mort": "crane", "esprit": "aile", "glace": "flocon", "feu": "flamme",
+             "etoile": "etoile"}
+    if key in table:
+        return M[table[key]]
+    return next((f for k, _rx, f in MOTIFS if k == key), None)
+
+
 def compose(spell: dict, variant: int = 0) -> str:
-    """Effet au centre (grand), forme du sort en fond, élément reconnaissable en haut à gauche. L'école est donnée
-    par la COULEUR de l'icône (ui/icons) : pas de badge, rien de superflu. `variant` ajoute une petite marque
-    distinctive quand deux sorts tomberaient sur le même dessin."""
+    """Effet au centre (grand motif soigné), élément reconnaissable en bas à droite, détouré (sans médaillon).
+    L'école est donnée par la COULEUR de l'icône (ui/icons). `variant` ajoute une petite marque distinctive quand
+    deux sorts tomberaient sur le même dessin."""
     t = spell_traits(spell)
-    effect = EFFECT_GLYPH.get(t["effet"]) or SCHOOL_GLYPH.get(t["ecole"]) or A.sparkle
-    layer = _shape_layer(t["forme"])
-    out = layer + A.place(effect(), 32, 32, 0.7 if layer else 0.82)
-    motif = next((f for k, _rx, f in MOTIFS if k == t["motif"]), None)
+    effect = _effect_motif(t["effet"]) or EFFECT_GLYPH.get(t["effet"]) or SCHOOL_GLYPH.get(t["ecole"]) or A.sparkle
+    motif = _motif_glyph(t["motif"])
     if motif is not None and t["motif"] != t["effet"]:
-        out += A.place(motif(), 13, 13, 0.32)
+        out = A.place(effect(), 26, 26, 0.72)
+        second = A.place(motif(), 46, 46, 0.46)
+        cut = second.replace('fill="#FFFFFF"', 'fill="#000000"').replace('stroke="#FFFFFF"', 'stroke="#000000"')
+        out += '<g fill="#000000" stroke="#000000" stroke-width="9" stroke-linejoin="round">' + cut + "</g>" + second
+    else:
+        out = A.place(effect(), 32, 32, 0.84) + _shape_mark(t["forme"])
     if variant:
         out += ACCENTS[(variant - 1) % len(ACCENTS)]()
         if variant > len(ACCENTS):                       # encore identique : seconde marque, en haut à droite
             out += A.place(ACCENTS[(variant // len(ACCENTS)) % len(ACCENTS)](), 54, 10, 1.0)
     return out
+
+
+def _shape_mark(shape: str) -> str:
+    """Petite marque de la forme du sort (rayon, cône, sphère…) dans un coin, sans charger le dessin."""
+    marks = {"rayon": A.line(50, 60, 62, 48, 3), "cone": A.path("M48 56 L62 50 M48 56 L62 62", w=2.6),
+             "sphere": A.circle(56, 56, 5, False, 2.4), "mur": A.rect(48, 56, 14, 6, 1, False, 2),
+             "projectiles": A.line(48, 62, 54, 56, 2.4) + A.line(54, 62, 60, 56, 2.4)}
+    return marks.get(shape, "")
 
 
 _CACHE: dict = {}
