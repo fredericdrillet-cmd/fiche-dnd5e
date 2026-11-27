@@ -137,3 +137,35 @@ OBJECTS = {"objet_potion": _potion, "objet_parchemin": _scroll, "objet_anneau": 
            "objet_outil": _tools, "objet_torche": _torch, "objet_ration": _ration, "objet_corde": _rope,
            "objet_lanterne": _lantern, "objet_instrument": _instrument, "objet_gourde": _waterskin,
            "objet_coffre": _chest, "objet_cle": _key, "objet": _generic}
+
+
+# v53 : icônes génériques (repli quand aucun dessin propre n'existe)
+def _generic_spell():
+    from .art_armes import star4 as _s
+    return (P("M32 4 C36 18 46 28 60 32 C46 36 36 46 32 60 C28 46 18 36 4 32 C18 28 28 18 32 4 Z")
+            + P("M32 20 C34 27 37 30 44 32 C37 34 34 37 32 44 C30 37 27 34 20 32 C27 30 30 27 32 20 Z", K) + _s(52, 12, 4))
+
+
+def _generic_attack():
+    from .art_armes import G as _G, blade_sword as _b
+    return _G(_b(30, 8.5, 20, 9, 3.6), 24, 34, 45, 0.95) + _G(_b(30, 8.5, 20, 9, 3.6), 40, 34, -45, 0.95)
+
+
+def _species():
+    head = P("M32 6 C44 6 52 16 52 28 C52 42 44 54 32 58 C20 54 12 42 12 28 C12 16 20 6 32 6 Z")
+    ears = P("M14 24 L2 12 L16 18 Z") + P("M50 24 L62 12 L48 18 Z")
+    eyes = P("M20 28 L28 30 L21 33 Z", K) + P("M44 28 L36 30 L43 33 Z", K)
+    return ears + head + eyes + S("M26 44 Q32 48 38 44", 2.4, K)
+
+
+def _unknown():
+    return (Cc(32, 32, 26) + Cc(32, 32, 20, K) + S("M24 24 C24 16 40 16 40 24 C40 30 32 30 32 38", 5.4) + Cc(32, 47, 3.6))
+
+
+def _action_type():
+    from .art_armes import star4 as _s
+    return _s(32, 32, 26) + Cc(32, 32, 5, K)
+
+
+OBJECTS.update({"sort": _generic_spell, "attaque_generique": _generic_attack, "capacite_espece": _species,
+                "inconnu": _unknown, "type_action": _action_type})

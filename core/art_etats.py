@@ -87,9 +87,12 @@ def _petrified():
 
 
 def _exhaustion():
-    return (G(Cc(0, -20, 6) + P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 30, 34, 20, 1.0)
-            + P("M46 18 C52 26 54 32 50 38 C46 40 42 36 44 30 Z") + P("M54 34 C57 38 58 42 55 44 C52 45 51 42 52 40 Z"))
-
+    """Silhouette voûtée, appuyée sur un bâton, gouttes de sueur."""
+    body = (Cc(26, 14, 6) + P("M18 22 C22 20 30 20 34 24 L40 34 L36 36 L31 30 L30 42 L36 58 H30 L25 46 L20 58 H14 L20 40 "
+                              "L18 30 L12 36 L8 33 Z"))
+    staff = R(44, 22, 4, 38, 2)
+    sweat = P("M38 8 C41 13 42 16 40 18 C38 20 35 19 35 16 Z") + P("M46 14 C48 17 48 19 47 20 C45 21 44 20 44 18 Z")
+    return body + staff + sweat
 
 def _surprised():
     return (R(26, 4, 12, 36, 6) + Cc(32, 52, 7) + star4(10, 14, 5) + star4(54, 14, 5))
@@ -190,8 +193,7 @@ def _special(key: str):
         "agrandissement": lambda: figure(32, 36, 1.0) + P("M32 0 L40 10 H24 Z") + L([(32, 8), (32, 12)], 3),
         "rapetissement": lambda: figure(32, 42, 0.6) + P("M32 22 L40 12 H24 Z"),
         "pattes_araignee": lambda: AS.SPELLS["Toile d'araignée"](), "toile": lambda: M["toile"](),
-        "liberte_mouvement": lambda: M["chaine_brisee"](), "fausse_vie": lambda: over(M["coeur"](), G(M["crane"](), 32, 32, 0, 0.45)
-                                                                                     .replace("translate(32 32)", "translate(17 17)")),
+        "liberte_mouvement": lambda: M["chaine_brisee"](), "fausse_vie": lambda: over(M["crane"](), G(M["coeur"](), 32, 32, 0, 0.42).replace("translate(32 32)", "translate(31 31)"), 7),
         "lethargie": lambda: _slowed(), "confusion": lambda: M["spirale"](), "cecite_surdite": lambda: _blinded(),
         "eclair_tracant": lambda: M["eclair"]() + star4(52, 12, 5), "cercle_pouvoir": lambda: AS.SPELLS["Cercle magique"](),
         "rage": lambda: AC.FEATURES["Entrer en rage"](), "frenesie": lambda: AC.FEATURES["Attaque téméraire"](),

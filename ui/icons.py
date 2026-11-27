@@ -216,7 +216,7 @@ def spell_pixmap(db, spell_name: str, category: str = "", size: int = 56, dim: b
     """Icône unique d'un sort : couleur de son école (verte pour un sort de soins)."""
     from core import spell_icons as SI
     from core.rules import norm
-    body = SI.spell_icon(db.spells, spell_name) or ICONS["sort"]()
+    body = SI.spell_icon(db.spells, spell_name) or named_body("sort")
     if not category:
         sp = db.find_spell(spell_name) or {}
         category = "soins" if SI.is_healing(sp) else theme.SCHOOL_KEYS.get(norm(sp.get("ecole", "")), "magie")
@@ -232,7 +232,7 @@ def action_pixmap(name: str, category: str, size: int = 56, dim: bool = False) -
 def weapon_pixmap(weapon_text: str, size: int = 56, dim: bool = False) -> QPixmap:
     """v53 : dessin propre à l'arme (épée longue, rapière, hache d'armes…), en rouge « attaque »."""
     from core.action_icons import weapon_body
-    body = weapon_body(weapon_text) or ICONS["attaque_generique"]()
+    body = weapon_body(weapon_text) or named_body("attaque_generique")
     return _render(body, "attaque", size, theme.current().key, dim)
 
 
