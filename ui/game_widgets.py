@@ -110,6 +110,23 @@ class EffectBadge(InstantTip, QWidget):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         self.setMouseTracking(True)
 
+    def _pixmap(self, color: QColor):
+        """Icône soignée de l'effet (core/art_etats), en ×2 pour les écrans haute densité ; None sans dessin."""
+        try:
+            from core.art_etats import effect_body
+            from . import icons as IC
+            body = effect_body(self.key, self.name)
+            if not body or not IC.HAS_SVG:
+                return None
+            key = "effet_" + self.category
+            if key not in theme.ICON_HUES:                   # teinte de la catégorie (vert bonus, rouge malus…)
+                import colorsys
+                h, _l, s_ = colorsys.rgb_to_hls(color.redF(), color.greenF(), color.blueF())
+                theme.ICON_HUES[key] = (h * 360, s_)
+            return IC._render(body, key, 96, theme.current().key, False)
+        except (ImportError, AttributeError, TypeError, KeyError):
+            return None
+
     @staticmethod
     def wrap(name: str, width: int = 12) -> list[str]:
         lines: list[str] = []
@@ -147,18 +164,24 @@ class EffectBadge(InstantTip, QWidget):
         x0 = (self.width() - 48) / 2                     # tuile centrée (la largeur suit le nom)
         tile = QRectF(x0, 3, 48, 48)
         path = QPainterPath()
-        path.addRoundedRect(tile, 10, 10)
-        grad = QLinearGradient(tile.topLeft(), tile.bottomLeft())
-        grad.setColorAt(0.0, color.lighter(135))
-        grad.setColorAt(1.0, color.darker(170))
-        p.fillPath(path, grad)
-        p.setPen(QPen(QColor(t.accent_text) if self._hover else color.lighter(160), 2.4 if self._hover else 1.6))
-        p.drawPath(path)
+        path.addRoundedRect(tile, 4.3, 4.3)
+        pix = self._pixmap(color)
+        if pix is not None:                              # v53 : dessin soigné « carré peint sombre »
+            p.drawPixmap(tile.toRect(), pix)
+        else:                                            # repli : emoji sur dégradé
+            grad = QLinearGradient(tile.topLeft(), tile.bottomLeft())
+            grad.setColorAt(0.0, color.lighter(135))
+            grad.setColorAt(1.0, color.darker(170))
+            p.fillPath(path, grad)
+            f0 = QFont(self.font())
+            f0.setPixelSize(24)
+            p.setFont(f0)
+            p.setPen(QColor("#ffffff"))
+            p.drawText(tile, int(Qt.AlignmentFlag.AlignCenter), self.icon)
+        if self._hover:
+            p.setPen(QPen(QColor(t.accent_text), 2.4))
+            p.drawPath(path)
         f = QFont(self.font())
-        f.setPixelSize(24)
-        p.setFont(f)
-        p.setPen(QColor("#ffffff"))
-        p.drawText(tile, int(Qt.AlignmentFlag.AlignCenter), self.icon)
         f.setPixelSize(10)
         f.setBold(True)
         p.setFont(f)

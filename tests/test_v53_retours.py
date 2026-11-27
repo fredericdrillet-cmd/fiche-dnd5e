@@ -778,3 +778,8 @@ class IconesSoigneesTests(unittest.TestCase):
             self.assertIn(icon, AO.OBJECTS, icon)
         self.assertIs(AI.G["flamme"], AM.MOTIFS["flamme"])
         self.assertNotIn("<circle cx=\"49\" cy=\"49\"", AI.action_body("Pas du vent (2024)"))   # plus de médaillon
+
+    def test_chaque_effet_a_son_dessin(self):
+        from core import art_etats as AE, effects as FX
+        for key, e in FX.EFFECTS.items():
+            self.assertTrue(AE.effect_body(key, e["nom"]), key)
