@@ -513,13 +513,17 @@ class CombatTab(BaseTab):
         self.dmg_open_btn.setToolTip(rich_tip("Dégâts subis", "Demande le montant et le type : résistances, "
                                               "immunités et réactions sont appliquées (Ctrl+D)."))
         self.heal_open_btn = QPushButton("💚 Soins")
-        self.heal_open_btn.setToolTip(rich_tip("Soins reçus", "Demande le nombre de PV regagnés (ou de PV "
-                                               "temporaires)."))
+        self.heal_open_btn.setToolTip(rich_tip("Soins reçus", "Demande le nombre de PV regagnés."))
+        self.temp_open_btn = QPushButton("🛡 PV temp.")      # v53 : PV temporaires à part des soins
+        self.temp_open_btn.setToolTip(rich_tip("PV temporaires", "Demande le nombre de PV temporaires gagnés "
+                                               "(ils ne se cumulent pas : on garde le plus élevé)."))
         self.dmg_open_btn.clicked.connect(self.open_damage)
         self.heal_open_btn.clicked.connect(self.open_heal)
+        self.temp_open_btn.clicked.connect(self.open_temp_hp)
         hl.addWidget(self.hp_big)
         hl.addWidget(self.dmg_open_btn)
         hl.addWidget(self.heal_open_btn)
+        hl.addWidget(self.temp_open_btn)
 
         def stat(caption: str, *widgets):
             box = QVBoxLayout()
@@ -640,8 +644,8 @@ class CombatTab(BaseTab):
             park.addWidget(w)
 
     def _abilities_box(self) -> QGroupBox:
-        """Caractéristiques avec leur jet de sauvegarde sur la même ligne (le dé juste à côté)."""
-        box = QGroupBox("Caractéristiques et jets de sauvegarde")
+        """Jets de sauvegarde (v53 : intitulé) — valeur de la caractéristique en rappel, le dé juste à côté."""
+        box = QGroupBox("Jets de sauvegarde")
         g = QGridLayout(box)
         g.setHorizontalSpacing(8)
         g.setVerticalSpacing(2)
@@ -720,6 +724,14 @@ class CombatTab(BaseTab):
             return False
         amount, temp = dlg.values()
         return self.apply_heal(amount, temp)
+
+    def open_temp_hp(self) -> bool:
+        from .hp_dialogs import HealDialog
+        dlg = HealDialog(self.win, temp=True)
+        if not dlg.exec():
+            return False
+        amount, _temp = dlg.values()
+        return self.apply_heal(amount, True)
 
     def apply_heal(self, amount: int, temp: bool = False) -> bool:
         if amount <= 0:
@@ -1268,7 +1280,8 @@ class CombatTab(BaseTab):
                 level = choose_slot_level(win, eng, spell)            # 1. niveau d'emplacement (surclassement)
                 ok = level is not None
             if ok:                                                     # 2. lancement : emplacement dépensé
-                ok = magic.cast(res["sort"], res.get("emplacement", True), level or 0, limit_key=res.get("limite", ""))
+                ok = magic.cast(res["sort"], res.get("emplacement", True), level or 0, limit_key=res.get("limite", ""),
+                                effect=res.get("effet", ""))
             if not ok:                                   # lancement annulé : l'économie d'action est rendue
                 from core.turn import spell_economy
                 kind = spell_economy(spell)
@@ -2368,7 +2381,7 @@ class CombatTab(BaseTab):
         crit = r.critical == "succes"
         question = "d20 = {} → total {}{}. Comparez à la CA de la cible : l'attaque touche-t-elle ?".format(
             r.natural, r.total, " — 20 naturel : coup critique, les dés de dégâts sont doublés" if crit else "")
-        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [])
+        options = self.engine.on_hit_options(slot, getattr(damage_spec, "options", []) or [], crit)
         mastery = self.engine.mastery_on_hit(slot)       # v52 : rappel de la botte d'arme
         if options:                                      # v53 : « touche ? » + bonus au toucher, une seule fenêtre
             from .on_hit_dialog import ask_hit
@@ -2389,6 +2402,9 @@ class CombatTab(BaseTab):
         if mastery:
             spec.note = (spec.note + " ; " if spec.note else "") + mastery
         added = self.engine.apply_on_hit(options, chosen)
+        if getattr(self.engine, "last_on_hit_temp", 0):   # v53 : Épée voleuse de vie — PV temporaires gagnés
+            win.statusBar().showMessage("{} PV temporaires gagnés (20 naturel).".format(
+                self.engine.last_on_hit_temp), 8000)
         drain = [a for a in added if a[0].startswith("Fureur sanglante")]     # v53 : en dernier (soins = ces dés)
         for label, dice in [a for a in added if a not in drain] + drain:
             spec.formula += "+" + dice

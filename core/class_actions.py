@@ -607,8 +607,10 @@ class ClassActionsMixin:
         if harness:                                      # v52 : pouvoir divin (Tasha) — un emplacement revient
             extra = self.harness_divine_power()
             spent = "{} — {}".format(spent, extra) if spent else extra
-        if a.get("pv_temp"):                             # Tombe de Levistus : PV temporaires
+        if a.get("pv_temp"):                             # Tombe de Levistus, Poussée d'adrénaline : PV temporaires
             self.apply_temp_hp(int(a["pv_temp"]))
+            spent = "{} — {} PV temporaires".format(spent, a["pv_temp"]) if spent else \
+                "{} PV temporaires".format(a["pv_temp"])
         if a.get("soin_fixe"):                           # v53 : Faveur de récupération (2014) — moitié des PV max
             gained = self.heal(int(a["soin_fixe"]))
             spent = "{} — +{} PV".format(spent, gained) if spent else "+{} PV".format(gained)

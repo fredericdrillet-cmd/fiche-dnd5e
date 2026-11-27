@@ -5,7 +5,7 @@ clés normalisées). Grille 64 × 64, blanc = dessin, noir = découpe.
 """
 from __future__ import annotations
 
-from .art_armes import Cc, G, L, P, R, S, burst, dagger, fist, over, star4
+from .art_armes import Cc, G, L, P, R, S, arrow, burst, dagger, fist, over, star4
 from .art_kit import black, cloud, dragon_head, figure, place, tree
 from .art_motifs import MOTIFS as M
 from .art_scenes2 import _drop, _flame, _hand, _rays, _snow, _sword
@@ -88,3 +88,12 @@ CAP_FIX = {
     "deviation d'assaut": lambda: place(M["bouclier"](), 22, 34, 0.7) + _sword(50, 26, 135, 0.5) + burst(36, 32, 6, 6),
 }
 
+
+
+# v53 — variantes d'un même sort, tuiles séparées dans l'onglet En partie (« Sort#effet ») : flèches inversées
+SPELL_VARIANTS = {
+    "agrandissement": lambda: (figure(32, 34, 0.85) + arrow(15, 15, 3, 3, 4.2, 10) + arrow(49, 15, 61, 3, 4.2, 10)
+                               + arrow(15, 51, 3, 63, 4.2, 10) + arrow(49, 51, 61, 63, 4.2, 10)),
+    "rapetissement": lambda: (figure(32, 35, 0.48) + arrow(3, 3, 18, 18, 4.2, 10) + arrow(61, 3, 46, 18, 4.2, 10)
+                              + arrow(3, 63, 18, 48, 4.2, 10) + arrow(61, 63, 46, 48, 4.2, 10)),
+}

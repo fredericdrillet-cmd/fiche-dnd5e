@@ -696,20 +696,21 @@ class MagicTab(BaseTab):
                               getattr(combat, "_attack_flow", None))
 
     def cast(self, name: str, use_slot: bool = True, slot_level: int = 0, limit_key: str = "",
-             self_only: bool = False) -> bool:
+             self_only: bool = False, effect: str = "") -> bool:
         """Lance un sort ; demande confirmation s'il rompt une concentration en cours.
         `limit_key` : compteur d'un sort accordé 1 fois par repos long (manifestation), dépensé si le sort part."""
         if limit_key and not self.engine.granted_limit_left(limit_key):
             self.win.statusBar().showMessage("{} : déjà utilisé — récupéré au repos long.".format(name), 6000)
             return False
         self.last_cast_level = 0
-        ok = self._cast(name, use_slot, slot_level, self_only)
+        ok = self._cast(name, use_slot, slot_level, self_only, effect)
         if ok and limit_key:
             self.engine.spend_granted_limit(limit_key)
             self.changed()
         return ok
 
-    def _cast(self, name: str, use_slot: bool = True, slot_level: int = 0, self_only: bool = False) -> bool:
+    def _cast(self, name: str, use_slot: bool = True, slot_level: int = 0, self_only: bool = False,
+              preset: str = "") -> bool:
         old = self.engine.concentration_conflict(name)
         if old and not ask_yes_no(
                 self.win, "Briser la concentration ?",
@@ -748,7 +749,9 @@ class MagicTab(BaseTab):
         buffs = eng.buff_options(name)
         if buffs:
             effect = buffs[0]
-            if len(buffs) > 1:
+            if preset in buffs:                            # v53 : tuile de variante (En partie) : effet déjà choisi
+                effect = preset
+            elif len(buffs) > 1:
                 labels = {FX.EFFECTS[k]["nom"]: k for k in buffs}
                 picked = ask_choice(self.win, name, "Choisissez l'effet du sort :", list(labels))
                 if not picked:

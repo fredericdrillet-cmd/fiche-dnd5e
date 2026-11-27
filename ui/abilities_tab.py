@@ -31,10 +31,11 @@ class AbilitiesTab(BaseTab):
         self.reset_btn = QPushButton("Réinitialiser (8 partout)")
         self.reset_btn.setToolTip(rich_tip("Réinitialiser", "Remet toutes les valeurs à leur minimum et rend "
                                            "les 27 points."))
+        self.points_label = make_label("", "head")       # v53 : à côté du menu déroulant (moins de hauteur)
+        top.addSpacing(12)
+        top.addWidget(self.points_label)
         top.addStretch(1)
         root.addLayout(top)
-        self.points_label = make_label("", "stat", wrap=True)   # v53 : sa propre ligne (largeur de l'assistant)
-        root.addWidget(self.points_label)
         btns = QHBoxLayout()                             # v53 : boutons sur leur ligne (rien ne sort à droite)
         for b in (self.roll_btn, self.auto_btn, self.reset_btn):
             btns.addWidget(b)
@@ -62,10 +63,24 @@ class AbilitiesTab(BaseTab):
             cl.setSpacing(2)
             # en-tête : abréviation + dé de test (taille fixe, toujours au même endroit)
             top_row = QHBoxLayout()
-            from .ability_icons import icon_label         # v53 : symbole de la caractéristique
-            top_row.addWidget(icon_label(ab, 30))
-            top_row.addWidget(make_label(R.ABBR.get(ab, ab[:3].upper()), "abbr"))
-            top_row.addStretch(1)
+            top_row.setSpacing(6)
+            from .ability_icons import icon_button, icon_label   # v53 : symbole (plus grand), cliquable = test
+            if getattr(self.win, "no_dice", False) is True:
+                top_row.addWidget(icon_label(ab, 44))
+            else:
+                top_row.addWidget(icon_button(ab, 44, self._roll_check))
+            names = QVBoxLayout()                         # v53 : abréviation + badge, puis nom, sur l'en-tête
+            names.setSpacing(0)
+            abbr_row = QHBoxLayout()
+            abbr_row.setSpacing(6)
+            abbr_row.addWidget(make_label(R.ABBR.get(ab, ab[:3].upper()), "abbr"))
+            # v49 : badge de recommandation selon la classe / la sous-classe visée (infobulle : pourquoi)
+            w["badge"] = make_label("", "head")
+            abbr_row.addWidget(w["badge"])
+            abbr_row.addStretch(1)
+            names.addLayout(abbr_row)
+            names.addWidget(make_label(ab, "muted"))
+            top_row.addLayout(names, 1)
             w["d20"] = d20_button("Test de " + ab)
             w["d20"].clicked.connect(lambda _=False, a=ab: roll_dice(self.win, self.engine.ability_check_spec(a)))
             top_row.addWidget(w["d20"])
@@ -73,14 +88,11 @@ class AbilitiesTab(BaseTab):
                 retain_when_hidden(w["d20"], True)
                 w["d20"].setVisible(False)
             cl.addLayout(top_row)
-            cl.addWidget(make_label(ab, "muted"))
-            # v49 : badge de recommandation selon la classe / la sous-classe visée (infobulle : pourquoi)
-            w["badge"] = make_label("", "head", align=CENTER)
-            cl.addWidget(w["badge"])
-            # valeur finale + modificateur
-            cl.addWidget(w["total"])
+            # valeur finale + modificateur, sur la même ligne (v53 : carte moins haute)
             mod_row = QHBoxLayout()
             mod_row.addStretch(1)
+            mod_row.addWidget(w["total"])
+            mod_row.addSpacing(8)
             mod_row.addWidget(w["mod"])
             mod_row.addStretch(1)
             cl.addLayout(mod_row)
@@ -102,22 +114,23 @@ class AbilitiesTab(BaseTab):
             gen_lay.setContentsMargins(0, 0, 0, 0)
             for key in ("buy", "roll", "manual"):
                 gen_lay.addWidget(w[key])
-            gen_lay.addWidget(w["cost"])
             cl.addWidget(gen)
             # bonus : race | améliorations / dons | divers — compacts, côte à côte
             parts = QGridLayout()
             parts.setHorizontalSpacing(6)
             parts.setVerticalSpacing(2)
-            for c, (h, tip) in enumerate((("Race", "Bonus racial (race, sous-race, bonus libres)"),
+            for c, (h, tip) in enumerate((("Coût", "Points dépensés pour cette valeur (achat de points)"),
+                                          ("Race", "Bonus racial (race, sous-race, bonus libres)"),
                                           ("Amél.", "Améliorations de caractéristiques et dons"),
                                           ("Divers", "Ajustement manuel (objet, bénédiction du MJ…)"))):
                 lab = make_label(h, "abpart", align=CENTER)
                 lab.setToolTip(tip)
                 parts.addWidget(lab, 0, c)
-            parts.addWidget(w["race"], 1, 0)
-            parts.addWidget(w["asi"], 1, 1)
-            parts.addWidget(w["misc"], 1, 2)
-            for c in range(3):
+            parts.addWidget(w["cost"], 1, 0)              # v53 : coût dans la ligne des bonus
+            parts.addWidget(w["race"], 1, 1)
+            parts.addWidget(w["asi"], 1, 2)
+            parts.addWidget(w["misc"], 1, 3)
+            for c in range(4):
                 parts.setColumnStretch(c, 1)
             cl.addLayout(parts)
             cards.addWidget(card, 0, col)
@@ -170,6 +183,9 @@ class AbilitiesTab(BaseTab):
         self.alt_chk.toggled.connect(self._on_alt_rule)
         for i, cb in enumerate(self.free_combos):
             cb.activated.connect(lambda _=0, k=i: self._on_free_pick(k))
+
+    def _roll_check(self, ab: str) -> None:
+        roll_dice(self.win, self.engine.ability_check_spec(ab))
 
     def set_columns(self, n: int) -> None:
         """v53 : cartes sur n colonnes (assistant de création : 3 × 2, sans défilement horizontal)."""
@@ -333,9 +349,8 @@ class AbilitiesTab(BaseTab):
             w["buy"].setVisible(m == "achat")
             w["roll"].setVisible(m == "des")
             w["manual"].setVisible(m == "manuel")
-            w["cost"].setText("Coût : {} pt{}".format(R.POINT_BUY_COST[score], "s" if R.POINT_BUY_COST[score] > 1
-                                                       else "") if m == "achat" else "")
-            w["cost"].setVisible(m == "achat")
+            w["cost"].setText("{} pt{}".format(R.POINT_BUY_COST[score], "s" if R.POINT_BUY_COST[score] > 1
+                                               else "") if m == "achat" else "—")
             w["race"].setText(R.fmt_bonus(race[ab]) if race[ab] else "—")
             w["asi"].setText(R.fmt_bonus(asi[ab]) if asi[ab] else "—")
             boosted = parts.get("effets", 0)

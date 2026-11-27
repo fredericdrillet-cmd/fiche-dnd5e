@@ -62,25 +62,29 @@ class DamageDialog(QDialog):
 
 
 class HealDialog(QDialog):
-    def __init__(self, win):
+    """Soins reçus — ou, avec temp=True, PV temporaires gagnés (v53 : bouton à part dans le bandeau)."""
+
+    def __init__(self, win, temp: bool = False):
         super().__init__(win)
         self.win = win
-        self.setWindowTitle("💚 Soins reçus")
+        self.is_temp = bool(temp)
+        self.setWindowTitle("🛡 PV temporaires" if temp else "💚 Soins reçus")
         lay = QVBoxLayout(self)
         grid = QGridLayout()
-        grid.addWidget(make_label("PV regagnés"), 0, 0)
+        grid.addWidget(make_label("PV temporaires gagnés" if temp else "PV regagnés"), 0, 0)
         self.amount = QSpinBox()
         self.amount.setRange(0, 999)
         grid.addWidget(self.amount, 0, 1)
-        self.temp = QCheckBox("PV temporaires (ne se cumulent pas : on garde le plus élevé)")
-        grid.addWidget(self.temp, 1, 0, 1, 2)
+        if temp:
+            grid.addWidget(make_label("Les PV temporaires ne se cumulent pas : on garde le plus élevé.", "muted",
+                                      wrap=True), 1, 0, 1, 2)
         lay.addLayout(grid)
         row = QHBoxLayout()
         row.addStretch(1)
         cancel = QPushButton("Annuler")
         cancel.setProperty("role", "ghost")
         cancel.clicked.connect(self.reject)
-        ok = QPushButton("💚 Appliquer")
+        ok = QPushButton("🛡 Appliquer" if temp else "💚 Appliquer")
         ok.clicked.connect(self.accept)
         row.addWidget(cancel)
         row.addWidget(ok)
@@ -89,4 +93,4 @@ class HealDialog(QDialog):
         self.amount.selectAll()
 
     def values(self) -> tuple[int, bool]:
-        return self.amount.value(), self.temp.isChecked()
+        return self.amount.value(), self.is_temp

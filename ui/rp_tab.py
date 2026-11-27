@@ -83,7 +83,7 @@ class RPTab(BaseTab):
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(self.race_summary)
         rbl.addWidget(scroll)
-        self.race_box.setMinimumWidth(440)               # v53 : colonne plus large, texte moins haché
+        self.race_box.setMinimumWidth(400)               # v53 : un tiers plus étroit (place à l'histoire / aux notes)
         top = QHBoxLayout()
         top.addWidget(box)
         top.addWidget(self.race_box, 1)
@@ -95,7 +95,7 @@ class RPTab(BaseTab):
         self.traits.setPlaceholderText("Traits de personnalité, idéaux, liens et défauts (voir l'historique)…")
         tl.addWidget(self.traits)
         left.addWidget(tbox, 1)
-        root.addLayout(left, 5)
+        root.addLayout(left, 3)                          # v53 : 3 / 4 (résumé de race réduit d'un tiers)
 
         # ---------------- colonne droite : histoire (grand champ) + notes de campagne
         right = QVBoxLayout()

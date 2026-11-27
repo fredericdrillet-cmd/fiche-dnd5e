@@ -112,10 +112,10 @@ class V16Tests(unittest.TestCase):
             self.assertIn("d20", w)
         self.win.ch.methode = "achat"
         self.win.changed()
-        self.assertTrue(tab.rows["Force"]["cost"].text().startswith("Coût :"))
+        self.assertTrue(tab.rows["Force"]["cost"].text().endswith("pt"))     # v53 : colonne « Coût »
         self.win.ch.methode = "manuel"
         self.win.changed()
-        self.assertEqual(tab.rows["Force"]["cost"].text(), "")
+        self.assertEqual(tab.rows["Force"]["cost"].text(), "—")
 
 
 if __name__ == "__main__":

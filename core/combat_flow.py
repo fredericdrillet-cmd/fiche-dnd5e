@@ -389,10 +389,14 @@ class OnHitMixin:
 
     _HIT_WORDS = ("quand vous touchez", "lorsque vous touchez", "si l'attaque touche", "quand l'attaque touche")
 
-    def on_hit_options(self, slot: Optional[dict] = None, riders: Optional[list] = None) -> list[dict]:
-        """[{key, label, dice, cout, action, niveau}] proposés après un coup réussi."""
+    def on_hit_options(self, slot: Optional[dict] = None, riders: Optional[list] = None,
+                       crit: bool = False) -> list[dict]:
+        """[{key, label, dice, cout, action, niveau}] proposés après un coup réussi (crit : effets d'un 20 naturel
+        de l'arme magique, cochés d'office — v53)."""
         out = [{"key": "rider:{}".format(i), "label": label, "dice": dice, "cout": "", "action": "", "niveau": 0}
                for i, (label, dice) in enumerate(riders or [])]
+        if crit and slot is not None:
+            out += self.item_crit_options(slot)
         w = self.db.weapons.get((slot or {}).get("nom", ""), {}) if slot else {}
         props = self._props(slot) if slot else []
         acts = {a["id"]: a for a in self.class_actions()}
@@ -477,6 +481,7 @@ class OnHitMixin:
     def apply_on_hit(self, options: list[dict], chosen: list[str]) -> list[tuple[str, str]]:
         """Dépense les coûts des bonus choisis et renvoie [(libellé, dés)] à ajouter aux dégâts."""
         out, smite_done, man_done = [], False, False
+        self.last_on_hit_temp = 0
         for o in options:
             if o["key"] not in chosen:
                 continue
@@ -492,6 +497,11 @@ class OnHitMixin:
                 continue                                  # v53 : charge de l'objet (Fureur sanglante)
             if o.get("tour"):
                 self.mark_per_turn(o["tour"])
+            if o.get("pv_temp"):                          # v53 : Épée voleuse de vie, Cri du faucheur
+                self.apply_temp_hp(int(o["pv_temp"]))
+                self.last_on_hit_temp = int(o["pv_temp"])
+            if o["key"].startswith("crit:") and not o.get("dice"):
+                continue                                  # PV temporaires seuls (Cri du faucheur)
             if o["action"] == "sournoise_hit":
                 self.mark_per_turn("sournoise")
             elif o["action"]:

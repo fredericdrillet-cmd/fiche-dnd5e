@@ -9,6 +9,7 @@ from typing import Optional
 
 from .art_actions import figure, hand, lightning
 from .art_armes import Cc, G, K, L, P, R, S, eye, heart, over, star4
+from .art_kit import black
 from .art_motifs import MOTIFS as M
 
 
@@ -129,7 +130,11 @@ def _sick():
 
 
 def _concentration():
-    return M["cerveau"]() + '<circle cx="32" cy="32" r="29" fill="none" stroke="#FFFFFF" stroke-width="2"/>'
+    """v53 : tête de profil, étoile de l'esprit au front, halo d'ondes au-dessus (remplace le cerveau)."""
+    return (P("M26 18 C37 16 46 23 46 33 L50 39 L46 41 L47 46 C47 50 44 52 40 51 L38 51 L38 60 H20 L21 51 "
+              "C14 46 12 39 13 32 C14 23 19 19 26 18 Z")
+            + black(star4(36, 30, 5.5)) + S("M10 14 C18 4 40 2 52 12", 2.6) + S("M16 20 C22 13 36 11 44 16", 2.2)
+            + star4(56, 20, 3.4))
 
 
 def _drunk():

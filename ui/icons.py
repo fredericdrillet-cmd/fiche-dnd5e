@@ -216,7 +216,12 @@ def spell_pixmap(db, spell_name: str, category: str = "", size: int = 56, dim: b
     """Icône unique d'un sort : couleur de son école (verte pour un sort de soins)."""
     from core import spell_icons as SI
     from core.rules import norm
-    body = SI.spell_icon(db.spells, spell_name) or named_body("sort")
+    variant = ""
+    if "#" in spell_name:                                # v53 : « Sort#effet » — tuile d'une variante du sort
+        spell_name, variant = spell_name.split("#", 1)
+    from core.art_finitions import SPELL_VARIANTS
+    body = SPELL_VARIANTS[variant]() if variant in SPELL_VARIANTS else \
+        (SI.spell_icon(db.spells, spell_name) or named_body("sort"))
     if not category:
         sp = db.find_spell(spell_name) or {}
         category = "soins" if SI.is_healing(sp) else theme.SCHOOL_KEYS.get(norm(sp.get("ecole", "")), "magie")

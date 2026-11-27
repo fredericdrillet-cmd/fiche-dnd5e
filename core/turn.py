@@ -20,6 +20,7 @@ import re
 from typing import Optional
 
 from . import dice as D
+from . import effects as FX
 from . import rules as R
 from .rules import norm
 from .data_loader import SAVE_TESTS, save_success_text
@@ -213,6 +214,15 @@ class TurnMixin:
         return next((r for r in self.reactions() if self.reaction_mode(r["cle"]) == "auto"), None)
 
     # ------------------------------------------------------------------ tuiles
+    def spell_tile_variants(self, spell_name: str) -> list[tuple[str, str]]:
+        """v53 — sorts à variantes affichés en tuiles séparées (onglet En partie) : [(clé d'effet, nom court)].
+        Seules les variantes dessinées (core/art_finitions.SPELL_VARIANTS) sont séparées."""
+        from .art_finitions import SPELL_VARIANTS
+        keys = self.buff_options(spell_name) if hasattr(self, "buff_options") else []
+        if len(keys) < 2 or not all(k in SPELL_VARIANTS for k in keys):
+            return []
+        return [(k, FX.EFFECTS[k]["nom"]) for k in keys]
+
     def turn_actions(self) -> list[dict]:
         out: list[dict] = []
         state = self.turn_state()
@@ -360,12 +370,19 @@ class TurnMixin:
                     if spell.get("test") in SAVE_TESTS:
                         desc += "\n" + save_success_text(spell)
                     desc += "\n\n" + full                    # v53 : règle complète sous les valeurs calculées
-            tile("sort:" + spell["nom"], spell["nom"], "✦" if lvl else "✧", kind, origin, desc, ok, why,
-                 ("emplacement de Pacte niv. {}".format(eff) if eff > lvl and eff == self.pact()[1]
-                  else "emplacement niv. {}+".format(lvl)) if needs_slot else "", ref={"sort": spell["nom"], "niveau": lvl,
-                                                                               "emplacement": needs_slot,
-                                                                               "limite": limit_key,
-                                                                               "niveau_effectif": eff})
+            cost = ("emplacement de Pacte niv. {}".format(eff) if eff > lvl and eff == self.pact()[1]
+                    else "emplacement niv. {}+".format(lvl)) if needs_slot else ""
+            ref = {"sort": spell["nom"], "niveau": lvl, "emplacement": needs_slot, "limite": limit_key,
+                   "niveau_effectif": eff}
+            variants = self.spell_tile_variants(spell["nom"])
+            for key, label in variants:                  # v53 : Agrandissement / Rapetissement en deux tuiles
+                fx = FX.EFFECTS[key]
+                tile("sort:{}#{}".format(spell["nom"], key), label, "✦", kind, origin,
+                     "{} ({}) — {}\n\n{}".format(label, spell["nom"], fx.get("description", ""), desc), ok, why, cost,
+                     ref=dict(ref, effet=key))
+            if not variants:
+                tile("sort:" + spell["nom"], spell["nom"], "✦" if lvl else "✧", kind, origin, desc, ok, why, cost,
+                     ref=ref)
         # actions de classe et de race
         for a in self.class_actions():
             kind = class_economy(a.get("type", ""))
@@ -575,7 +592,7 @@ class TurnMixin:
         elif tile_id.startswith("sort:"):
             res.update(ok=True, sort=ref["sort"], message="{} : lancement.".format(t["nom"]),
                        emplacement=ref.get("emplacement", True), limite=ref.get("limite", ""),
-                       niveau_effectif=ref.get("niveau_effectif", 0))
+                       niveau_effectif=ref.get("niveau_effectif", 0), effet=ref.get("effet", ""))
             self.spend_economy(kind, "sort:" + ref["sort"])   # l'emplacement est dépensé par le lancement
         elif tile_id.startswith("classe:"):
             out = self.use_class_action(ref["action"])

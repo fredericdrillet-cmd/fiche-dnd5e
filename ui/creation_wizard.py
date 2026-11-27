@@ -224,8 +224,9 @@ class CreationWizard(QDialog):
         self.race_panel.cards_mode = True                 # v53 : cartes seules
         for wdg in (self.race_panel.race, self.race_panel.sub, self.race_panel.sub_label, self.race_panel.race_label):
             wdg.setVisible(False)
-        self.race_panel.portrait.set_side(200)
-        self.race_panel.setMaximumWidth(370)
+        self.race_panel.portrait.set_side(290)           # v53 : portrait en grand, colonne Race plus large
+        self.race_panel.setMinimumWidth(470)
+        self.race_panel.setMaximumWidth(520)
         w = QWidget()                                     # v53 : cartes à gauche, fiche de l'espèce à droite
         lay = QHBoxLayout(w)
         lay.setContentsMargins(0, 0, 0, 0)

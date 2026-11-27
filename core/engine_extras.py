@@ -1037,7 +1037,7 @@ class ExtrasMixin:
             st["degats"], st["type_degats"], " (critique : doublez les dés)" if st["degats"] else "")
         spec = D.spec_from_detail("Attaque — " + st.get("affichage", st["nom"]), "attaque", detail + fx["detail"],
                                   fx["avantage"], fx["desavantage"], fx["echec"], note)
-        spec.crit_min = self.crit_min()                  # v52 : Champion (19-20, puis 18-20)
+        spec.crit_min = min(self.crit_min(), self.item_crit_min(slot))   # v52 : Champion ; v53 : Lamelune…
         if spec.crit_min < 20:
             spec.note += " — critique sur {}-20".format(spec.crit_min)
         return spec

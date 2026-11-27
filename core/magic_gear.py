@@ -254,6 +254,62 @@ class MagicGearMixin:
             if holder is not None:
                 holder.update(nom=entry["base"], bonus=bonus, objet=entry["uid"], affichage=label)
 
+    # ------------------------------------------------------------------ v53 : effets de l'arme sur un 20 naturel
+    def _slot_magic(self, slot: Optional[dict]) -> tuple[Optional[dict], dict]:
+        """(entrée, objet du catalogue) de l'arme magique tenue dans la case — (None, {}) si non harmonisée."""
+        entry = self.gear_entry((slot or {}).get("objet", "")) if slot else None
+        if entry is None:
+            return None, {}
+        item = self.magic_item(entry.get("nom", "")) or {}
+        if item.get("lien") and not entry.get("harmonise"):
+            return None, {}
+        return entry, item
+
+    def item_crit_min(self, slot: Optional[dict]) -> int:
+        """Critique dès 19 avec l'arme tenue (Lamelune, Épée de Kas, Ephixis…), 20 sinon."""
+        _, item = self._slot_magic(slot)
+        n = norm(item.get("description", "") or "")
+        return 19 if re.search(r"(?:coup critique|plage de coup critique)[^.]{0,40}19 ou (?:un )?20|"
+                               r"critique sur un (?:jet de d20 de )?19 ou", n) else 20
+
+    def item_crit_options(self, slot: Optional[dict]) -> list[dict]:
+        """Bonus d'un 20 naturel avec l'arme tenue, cochés d'office dans la fenêtre « touche ? » : dégâts fixes
+        (Épée acérée +14, Arme vicieuse +7, Masse destructrice +7) et PV temporaires (Épée voleuse de vie : +10
+        nécrotiques et autant de PV temporaires ; Cri du faucheur : 10 PV temporaires). Une condition sur la cible
+        (« pas un artificiel ni un mort-vivant ») est rappelée : décochez si elle n'est pas remplie."""
+        entry, item = self._slot_magic(slot)
+        if entry is None:
+            return []
+        name, out = self.magic_display_name(entry), []
+        w = self.db.weapons.get((slot or {}).get("nom", ""), {})
+        for sentence in re.split(r"(?<=[.!?])\s+", item.get("description", "") or ""):
+            n = norm(sentence)
+            if not re.search(r"(?:obtenez|faites) (?:un|de nouveau un) 20", n) or "de nouveau" in n or \
+                    "jet d'attaque" not in n:
+                continue
+            if re.search(r"contre un (?:geant|orc)|qui possede", n):  # Marteau de tonnerre, Fendeur d'orcs, Vorpale
+                continue
+            dmg = re.search(r"(\d+) degats (?:(\w+) )?supplementaires(?: du type (?:correspondant a|de) l'arme)?", n)
+            temp = re.search(r"vous gagnez (\d+) points de vie temporaires", n)
+            steal = "points de vie temporaires egal aux degats supplementaires" in norm(item.get("description", ""))
+            cond = re.search(r"a condition qu'elle ne soit pas ([^.]+)", n)
+            label = "{} — 20 naturel".format(name)
+            if dmg:
+                orig = re.search(r"\d+ d[ée]g[âa]ts ([^\W\d_]+) suppl", sentence)
+                kind = orig.group(1) if orig and dmg.group(2) else (w.get("type_degats", "") or "").lower()
+                amount = int(dmg.group(1))
+                pv = amount if steal else 0
+                text = "{} : {} dégâts {}{}".format(label, amount, kind, " et autant de PV temporaires" if pv else "")
+                if cond:
+                    text += " (si la cible n'est pas {})".format(cond.group(1).strip())
+                out.append({"key": "crit:{}".format(len(out)), "label": text, "dice": str(amount), "cout": "",
+                            "action": "", "niveau": 0, "coche": True, "pv_temp": pv})
+            elif temp:
+                out.append({"key": "crit:{}".format(len(out)), "label": "{} : {} PV temporaires".format(
+                    label, temp.group(1)), "dice": "", "cout": "", "action": "", "niveau": 0, "coche": True,
+                    "pv_temp": int(temp.group(1))})
+        return out
+
     # ------------------------------------------------------------------ v52 : dégâts supplémentaires des armes
     def item_damage_riders(self, slot: dict) -> tuple[list, list]:
         """Dégâts supplémentaires de l'arme magique tenue : ([(libellé, dés, type)] toujours appliqués,

@@ -10,14 +10,13 @@ ou tant qu'un choix de caractéristique reste à faire (ancienne fiche).
 """
 from __future__ import annotations
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFrame, QGridLayout, QGroupBox, QScrollArea, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QFrame, QGridLayout, QGroupBox, QHBoxLayout, QScrollArea, QVBoxLayout, QWidget
 
 from core import rules as R
 from core.rules import ABILITIES
 
 from .abilities_tab import AbilitiesTab
-from .common import BaseTab, center, make_label, rich_tip
+from .common import BaseTab, make_label, rich_tip
 from .skills_tab import SkillsTab
 
 
@@ -42,11 +41,19 @@ class StatsTab(BaseTab):
         g = QGridLayout(self.summary)
         self.summary_cells = {}
         for i, ab in enumerate(ABILITIES):
-            from .ability_icons import with_icon          # v53 : symbole devant l'abréviation
-            head = with_icon(ab, center(R.ABBR[ab], "head"), 34, 6)
-            g.addWidget(head, 0, i, Qt.AlignmentFlag.AlignHCenter)
-            val = center("", "stat")
-            g.addWidget(val, 1, i)
+            from .ability_icons import icon_button        # v53 : grande icône cliquable = test de caractéristique
+            head = QHBoxLayout()
+            head.setSpacing(8)
+            head.addStretch(1)
+            head.addWidget(icon_button(ab, 52, self._roll_check))
+            names = QVBoxLayout()
+            names.setSpacing(0)
+            names.addWidget(make_label(R.ABBR[ab], "head"))
+            val = make_label("", "stat")
+            names.addWidget(val)
+            head.addLayout(names)
+            head.addStretch(1)
+            g.addLayout(head, 0, i)
             self.summary_cells[ab] = val
         self.summary.setToolTip(rich_tip("Caractéristiques", "Valeurs choisies dans l'assistant de création ; les "
                                          "améliorations passent par « ▲ Niveau supérieur ». Mode libre (Options) : "
@@ -55,6 +62,10 @@ class StatsTab(BaseTab):
         lay.addWidget(self.abilities)
         lay.addWidget(self.skills)
         lay.addStretch(1)
+
+    def _roll_check(self, ab: str) -> None:
+        from .dice_dialog import roll_dice
+        roll_dice(self.win, self.engine.ability_check_spec(ab))
 
     def editors_visible(self) -> bool:
         if getattr(self.win, "free_mode", True):

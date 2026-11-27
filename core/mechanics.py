@@ -415,7 +415,7 @@ def spell_buffs(db) -> dict:
     """{nom normalisé du sort: [clés d'effets bénéfiques (catégories Bonus / Aura)]} pour la bibliothèque."""
     out: dict = {}
     for key, e in FX.EFFECTS.items():
-        if e["categorie"] not in ("Bonus", "Aura"):
+        if e["categorie"] not in ("Bonus", "Aura") and key not in SPELL_ALIASES:   # v53 : Rapetissement (sur soi)
             continue
         name = SPELL_ALIASES.get(key)
         if not name:

@@ -64,3 +64,26 @@ def with_icon(ability: str, widget: QWidget, size: int = 24, spacing: int = 6) -
     except (AttributeError, TypeError):
         pass
     return box
+
+
+def icon_button(ability: str, size: int, on_click) -> QWidget:
+    """v53 : icône cliquable de la caractéristique — un clic lance le test de caractéristique pur (d20 + mod.)."""
+    from PyQt6.QtCore import QSize
+    from PyQt6.QtGui import QIcon
+    from PyQt6.QtWidgets import QToolButton
+    b = QToolButton()
+    try:
+        pix = ability_pixmap(ability, size * 2)
+        if pix is not None and not pix.isNull():
+            pix.setDevicePixelRatio(2)
+            b.setIcon(QIcon(pix))
+        b.setIconSize(QSize(size, size))
+        b.setFixedSize(QSize(size + 4, size + 4))
+        b.setAutoRaise(True)
+        b.setCursor(Qt.CursorShape.PointingHandCursor)
+    except (AttributeError, TypeError):                  # faux Qt des tests
+        pass
+    b.setToolTip("<qt><b>🎲 Test de {}</b><br/>Cliquez pour lancer le d20 : test de caractéristique pur "
+                 "(modificateur de {} et effets en cours).</qt>".format(ability, ability))
+    b.clicked.connect(lambda _=False: on_click(ability))
+    return b

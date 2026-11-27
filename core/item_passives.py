@@ -26,6 +26,13 @@ ACTIVE_WORDS = ("une action", "action bonus", "reaction", "charge", "pendant 1",
 CHOSEN_TYPE = re.compile(r"r[ée]sistance [àa] un type de d[ée]g[âa]ts", re.I)
 
 
+_ABILITY = {"force": "Force", "dexterite": "Dextérité", "constitution": "Constitution",
+            "intelligence": "Intelligence", "sagesse": "Sagesse", "charisme": "Charisme"}
+SKILLS = ["Acrobaties", "Arcanes", "Athlétisme", "Discrétion", "Dressage", "Escamotage", "Histoire", "Intimidation",
+          "Investigation", "Médecine", "Nature", "Perception", "Perspicacité", "Persuasion", "Religion", "Représentation",
+          "Survie", "Tromperie"]
+
+
 def damage_types_in(text: str) -> list[str]:
     n = norm(text)
     return [t for t in DAMAGE_TYPES if re.search(r"\b{}s?\b".format(norm(t)), n)]
@@ -82,6 +89,8 @@ class ItemPassivesMixin:
                         m["js"] = {"*": [int(mt.group(1))]}
                         if "jets de caracteristique" in n:
                             m["tests"] = {"*": [int(mt.group(1))]}
+            if not re.match(r"potion|parchemin", norm(item.get("type", "") or "")):
+                self._item_advantages(desc, m)            # v53 : Armure du zéphyr, Bouclier sentinelle…
             if needs_resistance_choice(item) and entry.get("resistance_choisie"):
                 res.append(entry["resistance_choisie"])
         if res:
@@ -91,6 +100,41 @@ class ItemPassivesMixin:
         if cond:
             m["etats_immunises"] = list(dict.fromkeys(cond))
         return m
+
+    def _item_advantages(self, desc: str, m: dict) -> None:
+        """v53 — avantages passifs d'un objet porté : « l'avantage aux jets de Dextérité (Acrobaties) et aux jets
+        de sauvegarde de Dextérité » (Armure du zéphyr), « à vos jets d'initiative » (Bouclier sentinelle).
+        Un avantage restreint (« basés sur la vue », « pour vous cacher », « contre les sorts »…) n'est pas
+        appliqué d'office : il reste lisible dans la description de l'objet."""
+        from .mechanics import ADV
+        skills = {norm(s): s for s in (getattr(self.db, "skill_names", None) or SKILLS)}
+        skills.setdefault("intuition", skills.get("perspicacite", "Perspicacité"))   # nom 2024 / autres traductions
+        for sentence in re.split(r"(?<=[.!?])\s+|\n", desc):
+            n = re.split(r",? et vous pouvez ", norm(sentence))[0]   # Voile kagonesti : « …, et vous pouvez … »
+            mt = re.search(r"(?<!des)avantage (?:a|aux|sur) ", n)
+            if not mt or not re.search(r"\bvous\b", n[:mt.start()]) or any(w in n for w in ACTIVE_WORDS) or \
+                    re.search(r"tant que vous (?:beneficiez|etes sous|jouez)|si vous|lorsque vous (?:lancez|utilisez)",
+                              n[:mt.start()]):
+                continue
+            cond = r"^\s*(?:qui|bases|basees|lies|liees|effectues|faits|pour|lorsque|quand|contre|dirige|" \
+                   r"concernant|visant|avec)"
+            for part in re.split(r",| et (?=(?:a |aux )?(?:vos |tous les |les )?(?:jets|tests))", n[mt.end():]):
+                found = list(re.finditer(r"(?:force|dexterite|constitution|intelligence|sagesse|charisme) "
+                                         r"\(([^)]+)\)", part))
+                if found:
+                    if not re.search(cond, part[found[-1].end():]):
+                        for f in found:
+                            name = skills.get(norm(f.group(1)), "")
+                            if name:
+                                m.setdefault("competences", {})[name] = [ADV]
+                    continue
+                sv = re.search(r"jets? de sauvegarde (?:de |d')(force|dexterite|constitution|intelligence|sagesse|"
+                               r"charisme)(.*)$", part)
+                if sv and not re.search(cond, sv.group(2)):
+                    m.setdefault("js", {})[_ABILITY[sv.group(1)]] = [ADV]
+                    continue
+                if re.search(r"jets? d'initiative", part):
+                    m["initiative"] = [ADV]
 
     def item_condition_immunities(self) -> dict[str, str]:
         """États contre lesquels un objet porté (et harmonisé si besoin) vous immunise : {clé: source}."""

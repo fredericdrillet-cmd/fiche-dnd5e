@@ -100,6 +100,8 @@ def tile_icon(x: dict) -> tuple[str, str, str]:
     l'arme, core/action_icons.WEAPON_ART), « action » (icône unique de l'action, core/action_icons)."""
     tid, name, group = x.get("id", ""), x.get("nom", ""), x.get("groupe", "")
     base = name.replace(" (2024)", "")
+    if tid.startswith("sort:") and "#" in tid:          # v53 : variante (Agrandissement / Rapetissement)
+        return "sort", tid[5:], ""
     if tid.startswith("sort:") or group == "magie" and x.get("sort"):
         return "sort", (x.get("sort") or tid[5:]), ""
     if tid.startswith("arme_action:"):

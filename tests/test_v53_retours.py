@@ -806,3 +806,116 @@ class CompatibiliteWindowsTests(unittest.TestCase):
             dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "venv", ".venv", "build", "dist")]
             found += [os.path.join(base, n) for n in dirs + files if bad.match(n) or n.endswith((".", " "))]
         self.assertEqual(found, [])
+
+
+def _race_sheet(race, cls="Guerrier", lvl=5, edition=""):
+    ch = Engine.new_character(DB)
+    ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": "", "pv_jets": []}]
+    ch.race = race
+    eng = Engine(DB, ch)
+    if edition:
+        eng.set_edition_mode(edition)
+    eng.normalize()
+    return eng
+
+
+class ReglesRetours53Tests(unittest.TestCase):
+    """v53 : Poussée d'adrénaline (PV temporaires), avantages des objets portés (Armure du zéphyr…), effets d'un
+    20 naturel des armes magiques (Épée voleuse de vie…), Agrandissement / Rapetissement en deux tuiles."""
+
+    def test_poussee_d_adrenaline_donne_des_pv_temporaires(self):
+        for race, ed in (("Orc", ""), ("Orc (2024)", "2024")):
+            eng = _race_sheet(race, edition=ed)
+            act = next(a for a in eng.race_actions() if "adrenaline" in a["id"])
+            self.assertEqual(act["pv_temp"], eng.prof, race)
+            res = eng.use_class_action(act["id"])
+            self.assertTrue(res["ok"])
+            self.assertEqual(eng.ch.pv_temporaires, eng.prof)
+            self.assertIn("PV temporaires", res["message"])
+
+    def test_pv_temporaires_conditionnels_non_appliques(self):
+        eng = _race_sheet("Homme lézard")
+        act = next(a for a in eng.race_actions() if "machoires" in a["id"])
+        self.assertFalse(act["pv_temp"])                 # « si elle touche » : à la main
+
+    def _wear(self, eng, name):
+        eng.ch.objets_magiques.append({"nom": name, "equipe": True, "harmonise": True})
+        return Engine(DB, eng.ch)
+
+    def test_armure_du_zephyr_avantage_acrobaties_et_js_dex(self):
+        eng = self._wear(_race_sheet("Humain"), "Armure du zéphyr")
+        self.assertIn("Objet : Armure du zéphyr", eng.check_mods("Dextérité", "Acrobaties")["avantage"])
+        self.assertIn("Objet : Armure du zéphyr", eng.save_mods("Dextérité")["avantage"])
+        self.assertFalse(eng.check_mods("Dextérité", "Discrétion")["avantage"])
+
+    def test_bouclier_sentinelle_initiative_et_perception(self):
+        eng = self._wear(_race_sheet("Humain"), "Bouclier sentinelle")
+        self.assertIn("Objet : Bouclier sentinelle", eng.initiative_detail()["avantage"])
+        self.assertIn("Objet : Bouclier sentinelle", eng.check_mods("Sagesse", "Perception")["avantage"])
+
+    def test_avantage_restreint_non_applique(self):
+        eng = self._wear(_race_sheet("Humain"), "Visière de Danoth")     # « qui reposent sur la vue »
+        self.assertFalse(eng.check_mods("Sagesse", "Perception")["avantage"])
+
+    def _sword(self, name, base="Épée longue"):
+        eng = _race_sheet("Humain")
+        self.assertTrue(eng.add_magic_gear(name, base))
+        eng.ch.objets_magiques[-1]["harmonise"] = True
+        eng.equip_magic_gear(len(eng.ch.objets_magiques) - 1)
+        return eng, eng.ch.armes_cac[0]
+
+    def test_epee_voleuse_de_vie_sur_un_20(self):
+        eng, slot = self._sword("Épée voleuse de vie")
+        self.assertFalse([o for o in eng.on_hit_options(slot, [], False) if o["key"].startswith("crit")])
+        opts = eng.on_hit_options(slot, [], True)
+        crit = [o for o in opts if o["key"].startswith("crit")]
+        self.assertEqual(len(crit), 1)
+        self.assertTrue(crit[0]["coche"])
+        added = eng.apply_on_hit(opts, [o["key"] for o in crit])
+        self.assertEqual(added, [("Épée voleuse de vie", "10")])
+        self.assertEqual(eng.ch.pv_temporaires, 10)
+
+    def test_autres_armes_sur_un_20(self):
+        eng, slot = self._sword("Épée acérée")
+        self.assertEqual([o["dice"] for o in eng.on_hit_options(slot, [], True) if o["key"].startswith("crit")], ["14"])
+        eng, slot = self._sword("Cri du faucheur")
+        opts = eng.on_hit_options(slot, [], True)
+        self.assertEqual(eng.apply_on_hit(opts, [o["key"] for o in opts if o["key"].startswith("crit")]), [])
+        self.assertEqual(eng.ch.pv_temporaires, 10)
+        eng, slot = self._sword("Lamelune")
+        self.assertEqual(eng.weapon_attack_spec(slot).crit_min, 19)
+
+    def test_agrandissement_rapetissement_deux_tuiles(self):
+        eng = _race_sheet("Humain", "Magicien", 3)
+        eng.ch.sorts["Magicien"] = [{"nom": "Agrandissement/Rapetissement", "prepare": True}]
+        eng = Engine(DB, eng.ch)
+        tiles = {t["nom"]: t for t in eng.turn_actions() if t["id"].startswith("sort:Agrandissement")}
+        self.assertEqual(set(tiles), {"Agrandissement", "Rapetissement"})
+        res = eng.use_turn_action(tiles["Rapetissement"]["id"])
+        self.assertEqual(res["effet"], "rapetissement")
+        from core import tile_icons as TI
+        from core.art_finitions import SPELL_VARIANTS
+        kind, name, _ = TI.tile_icon(tiles["Agrandissement"])
+        self.assertEqual((kind, name.split("#")[1]), ("sort", "agrandissement"))
+        self.assertNotEqual(SPELL_VARIANTS["agrandissement"](), SPELL_VARIANTS["rapetissement"]())
+
+
+class EnPartieRetours53Tests(unittest.TestCase):
+    def setUp(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        self.win = MainWindow(DB)
+
+    def test_bouton_pv_temporaires_et_encart_js(self):
+        tab = self.win.combat_tab
+        self.assertTrue(hasattr(tab, "temp_open_btn"))
+        self.assertTrue(tab.apply_heal(5, True))
+        self.assertEqual(self.win.ch.pv_temporaires, 5)
+        from ui.hp_dialogs import HealDialog
+        self.assertEqual(HealDialog(self.win, temp=True).values()[1], True)
+        self.assertEqual(HealDialog(self.win).values()[1], False)
+
+    def test_icones_de_caracteristiques_cliquables(self):
+        tab = self.win.stats_tab
+        self.assertTrue(hasattr(tab, "_roll_check"))

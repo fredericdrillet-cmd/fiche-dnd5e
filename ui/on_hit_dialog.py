@@ -32,7 +32,10 @@ class OnHitDialog(QDialog):
         for o in options:
             if o.get("groupe") == "chatiment":
                 continue
-            cb = QCheckBox("{} : +{}{}".format(o["label"], o["dice"], " — " + o["cout"] if o["cout"] else ""))
+            cb = QCheckBox("{}{}{}".format(o["label"], " : +" + o["dice"] if o["dice"] and not o.get("pv_temp")
+                                           else "", " — " + o["cout"] if o["cout"] else ""))
+            if o.get("coche"):                            # v53 : effet d'un 20 naturel de l'arme, coché d'office
+                cb.setChecked(True)
             cb.setToolTip(rich_tip(o["label"], "+{} aux dégâts{}.".format(o["dice"], (" (" + o["cout"] + ")")
                                                                          if o["cout"] else "")))
             lay.addWidget(cb)
