@@ -49,7 +49,7 @@ SCENES = {
                                   + _flame(32, 12, 0.42) + R(10, 58, 44, 4, 2)),
     "Communion": lambda: (_figure_kneel(32, 44, 0.9) + P("M24 2 H40 L44 30 H20 Z") + black(P("M28 4 H36 L38 26 H26 Z"))
                           + star4(32, 14, 4)),
-    "Communion avec la nature": lambda: (tree() + black(place(M["oeil"](), 32, 24, 0.3))),
+    "Communion avec la nature": lambda: (place(tree(), 40, 30, 0.65) + G(Cc(0, -14, 6) + P("M-9 -6 H9 L10 8 L16 22 H9 L4 12 L-4 12 L-6 24 H-12 L-10 8 Z"), 14, 42, 0, 0.6)),
     "Contact avec un autre plan": lambda: (_head(18, 40, 0.6) + '<ellipse cx="46" cy="22" rx="14" ry="18" fill="#FFFFFF"/>'
                                            + black('<ellipse cx="46" cy="22" rx="9" ry="13" fill="#FFFFFF"/>') + star4(46, 22, 5)
                                            + S("M26 30 C32 24 34 24 36 26", 2.2)),
@@ -59,8 +59,8 @@ SCENES = {
                         + S("M16 46 C22 40 26 52 32 44", 2.4) + Cc(46, 50, 9) + black(Cc(46, 50, 5)) + star4(46, 50, 3.4)),
     "Contrôle des vents": lambda: (_hand(16, 44, 0.55, 30) + S("M24 14 H50 C58 14 60 4 52 2", 4) + S("M28 26 H58", 4)
                                    + S("M24 38 H46 C54 38 56 48 48 50", 4)),
-    "Convocation d'esprit draconique": lambda: (_dashed(dragon_head(), "3 2", 2.2) + star4(8, 54, 5) + star4(54, 54, 4)),
-    "Convocation de céleste": lambda: (angel_wings() + _rays(32, 16, 10, 14, 8, 2)),
+    "Convocation d'esprit draconique": lambda: (_dashed(dragon_head(), "3 2", 2.2) + '<ellipse cx="32" cy="60" rx="24" ry="3.4" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>'),
+    "Convocation de céleste": lambda: (angel_wings() + '<ellipse cx="32" cy="58" rx="24" ry="4" fill="none" stroke="#FFFFFF" stroke-width="2.6"/>'),
     "Convocation de dragon": lambda: (dragon_head() + _flame(56, 52, 0.22) + star4(6, 8, 4)),
     "Coquille antivie": lambda: ('<circle cx="32" cy="34" r="24" fill="none" stroke="#FFFFFF" stroke-width="4"/>' + figure(32, 36, 0.7)
                                  + place(M["bete"](), 8, 12, 0.24) + place(M["bete"](), 56, 12, 0.24)),
@@ -133,5 +133,5 @@ SCENES = {
         '<path d="M{} 50 A{} {} 0 0 1 {} 50" fill="none" stroke="#FFFFFF" stroke-width="{}"/>'.format(32 - r, r, r, 32 + r, w)
         for r, w in ((14, 4), (22, 3.4), (30, 2.8))) + R(2, 52, 60, 4, 2)),
     "Énervation": lambda: (figure(20, 34, 0.85) + S("M28 26 C36 22 40 30 48 24", 3) + Cc(52, 22, 6) + black(Cc(52, 22, 3))),
-    "Éveil": lambda: (tree() + black(Cc(26, 24, 2.4) + Cc(38, 24, 2.4) + S("M26 32 Q32 36 38 32", 2)) + star4(56, 8, 4)),
+    "Éveil": lambda: (place(tree(), 28, 36, 0.8) + black(Cc(22, 26, 2.2) + Cc(34, 26, 2.2) + S("M22 34 Q28 38 34 34", 2)) + _rays(52, 12, 4, 10, 8, 2.2) + Cc(52, 12, 2.6)),
 }

@@ -422,10 +422,10 @@ def souffle_dragon_sort():
 
 
 def tourbillon_poussiere():
-    """Tourbillon de sable qui soulève des graviers."""
+    """Petit tourbillon de sable qui soulève graviers et poussière au ras du sol."""
     from .art_kit import tornado
-    return tornado() + Cc(10, 20, 2.4) + Cc(54, 14, 2.2) + Cc(56, 34, 1.8) + Cc(8, 40, 2)
-
+    return (place(tornado(), 26, 30, 0.75) + "".join(Cc(x, y, r) for x, y, r in ((48, 40, 3.4), (54, 30, 2.4), (44, 22, 2), (56, 50, 2.6)))
+            + S("M2 60 C14 54 30 54 40 58 C48 60 56 56 62 58", 3))
 
 def vent_protecteur():
     """Tourbillon de vent qui entoure une silhouette."""

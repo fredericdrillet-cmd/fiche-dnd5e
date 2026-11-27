@@ -185,8 +185,11 @@ def _clean(f: str) -> str:
 @lru_cache(maxsize=1)
 def drawings() -> dict:
     """{nom normalisé de la capacité : fonction → corps SVG}."""
+    from . import art_capscenes as CS
     out = {}
     for name, f in FORMULES.items():
         formula = _clean(f)
         out[norm(name)] = (lambda fm=formula: build(fm))
+    for name, fn in CS.scenes().items():                 # v53 : scène dessinée prioritaire sur la formule
+        out[norm(name)] = fn
     return out

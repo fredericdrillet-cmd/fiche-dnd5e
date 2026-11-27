@@ -38,7 +38,7 @@ def _rainbow(n, w):
 
 SCENES = {
     # ------------------------------------------------------------------ niveau 6
-    "Allié planaire": lambda: angel_wings() + '<ellipse cx="32" cy="58" rx="22" ry="4" fill="none" stroke="#FFFFFF" stroke-width="2.4"/>',
+    "Allié planaire": lambda: figure(14, 40, 0.65) + place(angel_wings(), 42, 30, 0.7) + R(20, 30, 10, 3, 1.5),
     "Barrière de lames": lambda: ("".join(G(P("M0 -18 L4 -8 L2 12 H-2 L-4 -8 Z") + R(-6, 12, 12, 3, 1.5), x, 30, a, 1.0)
                                           for x, a in ((10, -20), (22, 10), (34, -15), (46, 20), (56, -10)))
                                   + S("M4 52 C16 46 26 58 36 52 C46 46 54 56 62 50", 3) + S("M4 8 C16 2 26 12 36 6 C46 0 54 10 62 4", 2.4)),
@@ -132,7 +132,7 @@ SCENES = {
     "Forme éthérée": lambda: (_dashed(figure(32, 30, 1.1), "3 3", 2.4) + S("M6 54 C14 50 22 58 32 54 C42 50 50 58 58 54", 2.6) + star4(54, 10, 4)),
     "Inversion de la gravité": lambda: (G(figure(0, 0, 0.9), 32, 34, 180) + R(2, 2, 60, 4, 2) + R(2, 58, 60, 4, 2)
                                         + G(R(-3, -8, 6, 10, 2) + P("M-8 -8 H8 L0 -16 Z"), 54, 40, 0, 1.0) + G(R(-3, -8, 6, 10, 2) + P("M-8 -8 H8 L0 -16 Z"), 10, 40, 0, 1.0)),
-    "Invocation de céleste": lambda: angel_wings() + star4(54, 52, 5) + star4(10, 52, 4) + _rays(32, 16, 10, 14, 8, 2),
+    "Invocation de céleste": lambda: place(angel_wings(), 32, 26, 0.8) + _rays(32, 26, 26, 30, 12, 2) + R(10, 56, 44, 4, 2),
     "Lien d'essence": lambda: (place(M["coeur"](), 16, 30, 0.4) + place(M["coeur"](), 48, 30, 0.4) + L([(26, 30), (38, 30)], 3)
                                + Cc(32, 30, 3) + star4(32, 52, 5)),
     "Manoir somptueux de Mordenkainen": lambda: (doorway() + black(P("M24 60 V40 H40 V60 Z")) + P("M26 60 V42 H38 V60 Z") + R(2, 58, 60, 4, 1)
@@ -156,26 +156,25 @@ SCENES = {
     "Temple des dieux": lambda: (P("M6 22 L32 6 L58 22 Z") + R(6, 24, 52, 4, 1) + "".join(R(x, 30, 6, 22, 1) for x in (10, 22, 36, 48))
                                  + R(4, 54, 56, 6, 1) + black(Cc(32, 16, 3))),
     "Tempête de feu": lambda: _flame(14, 34, 0.5) + _flame(32, 26, 0.65) + _flame(50, 34, 0.5) + R(2, 58, 60, 4, 2),
-    "Tourbillon": lambda: tornado() + Cc(12, 24, 2.6) + Cc(52, 40, 2.4) + figure(50, 14, 0.3),
+    "Tourbillon": lambda: tornado() + G(figure(0, 0, 0.36), 52, 14, 40) + G(figure(0, 0, 0.3), 12, 22, -30),
     "Transformation draconique": lambda: (figure(18, 36, 0.8) + place(dragon_head(), 46, 28, 0.55) + P("M24 26 C30 16 36 14 40 16 L38 22 Z")),
     "Téléportation": lambda: (_dashed(figure(16, 32, 0.8), "3 3", 2.2) + figure(48, 32, 0.8) + star4(32, 14, 6) + star4(32, 52, 4)
                               + curved_arrow("M20 8 C28 2 36 2 44 8", (44, 8), 40, 2.2, 6)),
     "Épée de Mordenkainen": lambda: (_sword(32, 32, 45, 1.3) + _rays(32, 32, 26, 30, 8, 2) + star4(10, 10, 4)),
     # ------------------------------------------------------------------ niveau 8
-    "Aliénation": lambda: (_head(28, 36, 0.8) + black(place(M["tentacules"](), 30, 26, 0.3)) + star4(54, 10, 4)),
+    "Aliénation": lambda: _head(26, 38, 0.7) + S("M36 24 C44 18 46 8 56 8", 4) + S("M38 32 C48 30 52 22 60 24", 3.4) + black(Cc(26, 30, 2.4)),
     "Aura sacrée": lambda: (figure(32, 36, 0.75) + _circle(26, 3.4) + _rays(32, 32, 28, 31, 16, 2)),
     "Aversion/Attirance": lambda: (place(M["coeur"](), 32, 34, 0.5) + curved_arrow("M6 20 C10 30 14 32 20 32", (20, 32), 0, 2.6, 7)
                                    + curved_arrow("M44 32 C52 32 56 28 60 20", (60, 20), -60, 2.6, 7)),
-    "Aversion/attirance": lambda: (place(M["coeur"](), 32, 34, 0.5) + curved_arrow("M20 32 C14 32 10 28 6 20", (6, 20), 240, 2.6, 7)
-                                   + curved_arrow("M60 20 C56 28 52 32 44 32", (44, 32), 180, 2.6, 7)),
-    "Bagou": lambda: (_bubble(32, 26, 0.95) + black(place(M["couronne"](), 32, 24, 0.36)) + star4(56, 50, 4)),
+    "Aversion/attirance": lambda: (S("M16 10 V32 C16 46 48 46 48 32 V10", 9) + black(R(10, 10, 12, 8, 0) + R(42, 10, 12, 8, 0)) + R(11, 4, 10, 5, 1) + R(43, 4, 10, 5, 1) + place(M["coeur"](), 32, 58, 0.16)),
+    "Bagou": lambda: (figure(22, 38, 0.8) + place(M["couronne"](), 22, 10, 0.24) + _bubble(48, 22, 0.4)),
     "Champ antimagie": lambda: (_circle(26, 4) + star4(32, 32, 14) + L([(12, 12), (52, 52)], 5)),
     "Clone": lambda: (figure(20, 32, 1.0) + figure(44, 32, 1.0) + '<ellipse cx="44" cy="56" rx="12" ry="3" fill="#FFFFFF"/>' + L([(32, 6), (32, 58)], 1.6)),
     "Contrôle du climat": lambda: (cloud(30, 0.9) + place(M["soleil"](), 48, 14, 0.3) + L([(16, 44), (12, 54)], 2.6) + L([(28, 44), (24, 54)], 2.6)
                                    + _snow(44, 52, 0.16)),
     "Demi-plan": lambda: (doorway() + black(Cc(32, 36, 9)) + star4(32, 36, 5) + star4(10, 10, 4) + star4(54, 10, 4)),
     "Domination de monstre": lambda: (place(dragon_head(), 30, 38, 0.75) + place(M["couronne"](), 26, 10, 0.3)),
-    "Dragon illusoire": lambda: _dashed(dragon_head(), "3 2", 2.4) + star4(8, 54, 4),
+    "Dragon illusoire": lambda: _dashed(dragon_head(), "3 2", 2.4) + place(M["masque"](), 52, 52, 0.26),
     "Dédale": lambda: "".join(L(p, 4) for p in (((6, 6), (58, 6), (58, 58), (6, 58), (6, 14)), ((14, 14), (50, 14), (50, 50), (14, 50), (14, 22)),
                                                  ((22, 22), (42, 22), (42, 42), (22, 42)))) + Cc(32, 32, 3.4),
     "Esprit faible": lambda: (_head(30, 36, 0.8) + black(S("M26 24 C30 20 34 28 38 24", 2.2)) + G(R(-3, -8, 6, 10, 2) + P("M-8 2 H8 L0 10 Z"), 54, 14, 0, 0.8)),
