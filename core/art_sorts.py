@@ -807,3 +807,8 @@ def _glowball():
     """Lumière (tour de magie) : orbe rayonnant au bout d'un bâton."""
     return _C(30, 18, 10) + _C(30, 18, 5, _K) + _C(30, 18, 2.4) + "".join(
         _G(_P("M-1.4 -17 L1.4 -17 L0.8 -12 L-0.8 -12 Z"), 30, 18, a) for a in range(0, 360, 45))
+
+# v53 : scènes dessinées (remplacent les compositions à deux éléments)
+from .art_scenes2 import SCENES as _SCENES2  # noqa: E402
+
+SPELLS.update(_SCENES2)
