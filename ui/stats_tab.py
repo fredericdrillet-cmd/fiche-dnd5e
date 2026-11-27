@@ -10,6 +10,7 @@ ou tant qu'un choix de caractéristique reste à faire (ancienne fiche).
 """
 from __future__ import annotations
 
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFrame, QGridLayout, QGroupBox, QScrollArea, QVBoxLayout, QWidget
 
 from core import rules as R
@@ -41,7 +42,9 @@ class StatsTab(BaseTab):
         g = QGridLayout(self.summary)
         self.summary_cells = {}
         for i, ab in enumerate(ABILITIES):
-            g.addWidget(center(R.ABBR[ab], "head"), 0, i)
+            from .ability_icons import with_icon          # v53 : symbole devant l'abréviation
+            head = with_icon(ab, center(R.ABBR[ab], "head"), 34, 6)
+            g.addWidget(head, 0, i, Qt.AlignmentFlag.AlignHCenter)
             val = center("", "stat")
             g.addWidget(val, 1, i)
             self.summary_cells[ab] = val

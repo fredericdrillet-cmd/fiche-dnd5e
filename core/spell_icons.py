@@ -221,4 +221,8 @@ def all_spell_icons(spells) -> dict[str, str]:
 
 
 def spell_icon(spells, name: str) -> Optional[str]:
+    from . import art_sorts                              # v53 : dessins soignés des sorts les plus courants
+    drawn = art_sorts.SPELLS.get(base_name(name))
+    if drawn:
+        return drawn()
     return all_spell_icons(spells).get(base_name(name))

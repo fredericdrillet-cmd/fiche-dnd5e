@@ -15,7 +15,7 @@ from . import icons as IC
 from . import theme
 from .common import blocked
 
-# v53 : icône de chaque classe — dessin data/images/classes/<classe>.png (blanc = dessin) gravé sur une pierre de
+# v53 : icône de chaque classe — dessin data/images/classes/<classe>.png (blanc = dessin) sur un carré de
 # la couleur de la classe ; à défaut, composition de secours ci-dessous.
 CLASS_COLORS = {"artificier": "#A88F52", "barbare": "#C87253", "barde": "#B186B4", "clerc": "#898D90",
                 "druide": "#939D5C", "ensorceleur": "#C45659", "guerrier": "#5F3E35", "magicien": "#3265BA",

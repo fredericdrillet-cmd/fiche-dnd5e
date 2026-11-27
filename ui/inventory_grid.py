@@ -85,8 +85,8 @@ def tile_pixmap(name: str, category: str, rarity: str, qty: int, equipped: bool,
     p = QPainter(pix)
     p.setRenderHint(QPainter.RenderHint.Antialiasing)
     color = RARITY.get(theme.rarity_key(rarity))
-    if color:                                            # sertissure de la couleur de la rareté (pierre runique)
-        path = IC._octagon(TILE, 2)
+    if color:                                            # bordure de la couleur de la rareté
+        path = IC.tile_path(TILE, 2)
         p.setPen(QPen(QColor(color), 3.2))
         p.drawPath(path)
     f = QFont()

@@ -726,3 +726,31 @@ class IconesDeClasseTests(unittest.TestCase):
             self.assertIsNotNone(class_icon_path(name), name)
             self.assertIn(norm(name.split(" (")[0]), CLASS_COLORS, name)
         self.assertIsNone(class_icon_path("Classe inconnue"))
+
+
+class IconesSoigneesTests(unittest.TestCase):
+    """v53 : dessins soignés des armes, actions d'arme, manœuvres et sorts courants ; symboles des caractéristiques."""
+
+    def test_dessins_branches(self):
+        from core import action_icons as AI, art_armes as AA, art_sorts as AS, spell_icons as SI
+        from core.rules import norm
+        for k in AI.WEAPON_ART:                          # chaque arme connue a son dessin soigné
+            self.assertIn(k, AI._drawn_weapons(), k)
+        self.assertIn("TAILLE_FIXE", AI.weapon_body("Épée à deux mains"))
+        self.assertNotIn("TAILLE_FIXE", AI.weapon_body("Hache d'armes"))
+        self.assertEqual(AI.action_body("Parade"), AA.MANEUVERS["Parade"]())
+        self.assertEqual(AI.action_body("Écorchure"), AA.ACTIONS["Écorchure"]())
+        self.assertEqual(SI.spell_icon(DB.spells, "Boule de feu"), AS.SPELLS["Boule de feu"]())
+        for fn in list(AA.WEAPONS.values()) + list(AA.ACTIONS.values()) + list(AA.MANEUVERS.values()) + \
+                list(AS.SPELLS.values()):
+            self.assertTrue(fn().startswith("<"))
+        for n in DB.maneuvers:                           # chaque manœuvre a son dessin
+            self.assertIn(norm(n), AI._drawn_actions(), n)
+
+    def test_symboles_des_caracteristiques(self):
+        import qt_stub
+        qt_stub.install()
+        from core.rules import ABILITIES
+        from ui.ability_icons import icon_path
+        for ab in ABILITIES:
+            self.assertIsNotNone(icon_path(ab), ab)

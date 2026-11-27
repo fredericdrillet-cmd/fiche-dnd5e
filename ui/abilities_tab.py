@@ -62,6 +62,8 @@ class AbilitiesTab(BaseTab):
             cl.setSpacing(2)
             # en-tête : abréviation + dé de test (taille fixe, toujours au même endroit)
             top_row = QHBoxLayout()
+            from .ability_icons import icon_label         # v53 : symbole de la caractéristique
+            top_row.addWidget(icon_label(ab, 30))
             top_row.addWidget(make_label(R.ABBR.get(ab, ab[:3].upper()), "abbr"))
             top_row.addStretch(1)
             w["d20"] = d20_button("Test de " + ab)

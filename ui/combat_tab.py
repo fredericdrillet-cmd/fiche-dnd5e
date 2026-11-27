@@ -656,7 +656,8 @@ class CombatTab(BaseTab):
                 cl.setStretch(0, 0)                       # le dé juste à côté du bonus
                 cl.addStretch(1)
             self.save_cells[ab]["label"].setMinimumWidth(80)
-            g.addWidget(name, r, 0)
+            from .ability_icons import with_icon          # v53 : symbole devant le nom
+            g.addWidget(with_icon(ab, name, 22, 5), r, 0)
             g.addWidget(score, r, 1)
             g.addWidget(make_label("JS", "muted"), r, 2)
             g.addWidget(cell_w, r, 3)

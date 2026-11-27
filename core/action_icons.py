@@ -394,15 +394,38 @@ def _registry() -> dict:
         return {"variantes": {}, "actions": []}
 
 
+@lru_cache(maxsize=1)
+def _drawn_actions() -> dict:
+    """v53 : dessins soignés (core/art_armes) des actions d'arme et des manœuvres, par nom normalisé."""
+    from . import art_armes as AA
+    return {norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS) for k, v in d.items()}
+
+
+@lru_cache(maxsize=1)
+def _drawn_weapons() -> dict:
+    from . import art_armes as AA
+    return {norm(k): k for k in AA.WEAPONS}
+
+
 def action_body(name: str) -> str:
-    """Corps SVG de l'icône unique d'une action (variante issue du registre si deux dessins coïncident)."""
+    """Corps SVG de l'icône unique d'une action : dessin soigné s'il existe, sinon composition (variante issue du
+    registre si deux dessins coïncident)."""
     base = re.sub(r"\s*\(2024\)\s*$", "", name or "").strip()
+    drawn = _drawn_actions().get(norm(base)) or _drawn_actions().get(norm(base.split(" — ")[0]))
+    if drawn:
+        return drawn()
     return compose(base, int(_registry().get("variantes", {}).get(base, 0)))
 
 
 def weapon_body(weapon_text: str) -> Optional[str]:
     k = weapon_key(weapon_text)
-    return WEAPON_ART[k]() if k else None
+    if not k:
+        return None
+    name = _drawn_weapons().get(k)
+    if name:                                             # v53 : dessin soigné
+        from . import art_armes as AA
+        return AA.weapon_art(name)
+    return WEAPON_ART[k]()
 
 
 def canonical(name: str) -> str:
