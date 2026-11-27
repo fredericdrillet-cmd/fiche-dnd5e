@@ -111,12 +111,29 @@ def mind_sliver():
 
 
 def wolf_howl():
-    """Loup assis qui hurle à la lune : museau levé, collerette de fourrure, queue en panache."""
-    moon = Cc(52, 12, 9) + Cc(57, 8, 8, K)
-    body = P("M3 6 L16 8 L20 2 L24 11 C30 14 35 20 39 27 C45 35 50 41 51 49 C54 50 57 47 57 42 L60 45 L59 50 L62 52 "
-             "C60 58 56 60 52 60 H30 L29 47 L27 47 L25 60 H18 L20 41 L16 38 L19 35 L15 31 L19 29 L16 25 L19 22 "
-             "L12 19 L10 13 L4 9 Z")
-    eye = P("M14 11 L19 12 L15 14 Z", K)
-    lines = S("M29 47 C28 40 30 34 34 30", 1.8, K) + S("M40 49 C40 43 38 39 36 35", 1.8, K)
-    mouth = L([(5, 8), (11, 11)], 1.4, K)
-    return moon + body + eye + lines + mouth + L([(2, 62), (62, 62)], 2)
+    """Loup assis qui hurle à la lune : gueule ouverte, tête rejetée en arrière, collerette de fourrure, pattes
+    avant avec coussinets, queue touffue enroulée au sol."""
+    moon = Cc(50, 14, 11) + Cc(56, 10, 10, K) + star4(36, 6, 2.4) + star4(60, 30, 2)
+    # silhouette : museau ouvert vers le haut-gauche, oreille, crinière, dos, cuisse, queue au sol, pattes avant
+    body = P(
+        "M3 1 "                    # bout du museau (mâchoire supérieure)
+        "C8 4 13 7 17 10 "         # dessus du museau
+        "L19 3 L22 4 L23 11 "      # oreille pointue
+        "C27 12 30 15 31 19 "      # arrière du crâne
+        "C36 24 42 30 46 38 "      # nuque et dos
+        "C48 42 49 46 49 49 "      # jusqu'à la cuisse
+        "C50 54 50 57 48 59 "      # cuisse arrondie
+        "C52 59 56 58 58 55 C60 52 62 53 62 56 C62 61 56 63 50 63 "   # queue touffue enroulée au sol
+        "H31 C30 61 30 58 32 57 "  # patte arrière (pied)
+        "L30 47 "                  # intérieur
+        "L28 60 C28 62 26 63 24 63 H20 C19 62 20 60 22 60 "           # patte avant 1 + coussinet
+        "L21 42 "
+        "L19 58 C19 61 17 62 15 62 H12 C11 61 12 59 14 59 "           # patte avant 2
+        "L15 38 "
+        "L12 35 L16 32 L11 29 L15 26 L11 23 L15 21 "   # collerette de fourrure sur le poitrail
+        "C12 19 11 17 12 15 "      # gorge
+        "L2 10 "                   # mâchoire inférieure
+        "L9 8 Z")                  # commissure : la gueule s'ouvre entre les deux mâchoires
+    eye = P("M17 12 L22 13 L18 15 Z", K)
+    lines = S("M31 47 C29 40 31 34 35 31", 1.8, K) + S("M30 22 C32 26 33 30 32 34", 1.4, K)
+    return moon + body + eye + lines
