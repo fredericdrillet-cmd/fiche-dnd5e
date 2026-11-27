@@ -146,16 +146,16 @@ def _sym(pts, col="#FFFFFF"):
 
 
 def wolf_emblem():
-    """Tête de loup de face, façon emblème : oreilles dressées, joues hérissées, regard en amande, chanfrein qui
-    descend jusqu'à la truffe, marque en losange sur le front."""
-    head = _sym([(32, 14), (25, 15), (14, 1), (11, 20), (5, 22), (8, 29), (1, 34), (9, 38), (4, 45), (13, 47), (16, 54),
-                 (25, 57), (32, 62)])
-    ears = P("M16.5 9 L20.5 16.5 L15 17.8 Z", K) + P("M47.5 9 L43.5 16.5 L49 17.8 Z", K)
-    eyes = P("M14 28 L27 32 L24 35 L17 34 Z", K) + P("M50 28 L37 32 L40 35 L47 34 Z", K)
-    glint = Cc(22, 32.5, 1.3) + Cc(42, 32.5, 1.3)
-    brow = P("M32 19 L35 25 L32 29 L29 25 Z", K)
-    muzzle = S("M27 36 C28 42 29 47 29.5 51", 2.4, K) + S("M37 36 C36 42 35 47 34.5 51", 2.4, K)
-    nose = P("M26.5 50 H37.5 C37.5 53 35 56 32 57 C29 56 26.5 53 26.5 50 Z", K)
-    mouth = S("M32 57 V60", 1.8, K)
-    cheeks = S("M10 38 L18 41", 1.8, K) + S("M54 38 L46 41", 1.8, K)
+    """Tête de loup de face, façon emblème, allongée : hautes oreilles dressées, joues hérissées, regard en amande,
+    long chanfrein qui descend jusqu'à la truffe, marque en losange sur le front."""
+    head = _sym([(32, 12), (26, 13), (17, 0), (15, 17), (10, 19), (12, 25), (6, 29), (12, 33), (8, 39), (15, 41),
+                 (17, 47), (24, 52), (26, 58), (32, 64)])
+    ears = P("M18.6 7 L22.5 14 L17.6 15 Z", K) + P("M45.4 7 L41.5 14 L46.4 15 Z", K)
+    eyes = P("M16 24 L28 28 L25.5 31 L19 30 Z", K) + P("M48 24 L36 28 L38.5 31 L45 30 Z", K)
+    glint = Cc(23, 28.5, 1.2) + Cc(41, 28.5, 1.2)
+    brow = P("M32 16 L34.6 21 L32 25 L29.4 21 Z", K)
+    muzzle = S("M28 32 C29 40 29.5 47 30 54", 2.3, K) + S("M36 32 C35 40 34.5 47 34 54", 2.3, K)
+    nose = P("M27.5 53 H36.5 C36.5 56 34.5 59 32 60 C29.5 59 27.5 56 27.5 53 Z", K)
+    mouth = S("M32 60 V63", 1.6, K)
+    cheeks = S("M13 34 L20 37", 1.7, K) + S("M51 34 L44 37", 1.7, K)
     return head + ears + eyes + glint + brow + muzzle + nose + mouth + cheeks
