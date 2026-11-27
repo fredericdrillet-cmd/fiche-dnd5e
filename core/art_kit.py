@@ -159,7 +159,7 @@ def wall(kind: str = "pierre") -> str:
 
 def sphere(inner: str = "", s: float = 0.5) -> str:
     out = Cc(32, 32, 27) + Cc(32, 32, 22, K) + '<path d="M16 22 C20 14 28 10 36 11" fill="none" stroke="#FFFFFF" stroke-width="3"/>'
-    return out + (place(inner, 32, 34, s) if inner else "")
+    return out + (place(inner, 32, 34, max(s, 0.6)) if inner else "")
 
 
 def portal() -> str:

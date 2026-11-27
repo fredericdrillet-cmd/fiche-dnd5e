@@ -4,8 +4,6 @@ rage, lumières dansantes, main de mage, piqûre mentale. Grille 64 × 64, blanc
 """
 from __future__ import annotations
 
-import math
-
 from .art_armes import Cc, G, K, L, P, R, S, burst, over, star4
 
 

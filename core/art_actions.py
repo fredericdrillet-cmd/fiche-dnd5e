@@ -5,11 +5,7 @@ franches, quelques éclats. Grille 64 × 64, blanc = dessin, noir = découpe.
 """
 from __future__ import annotations
 
-import math
-
-from .art_armes import (Cc, G, K, L, P, R, S, arrow, blade_sword, boot, bubble, burst, chain, curved_arrow, dagger,
-                        eye, fist, footprint, hand, heart, hourglass, magnifier, over, shield, skull, slashes, speed,
-                        star4, sword, target)
+from .art_armes import (Cc, G, K, L, P, R, S, arrow, blade_sword, boot, bubble, burst, curved_arrow, dagger, eye, fist, hand, heart, hourglass, magnifier, over, shield, skull, speed, star4, sword, target)
 
 
 # ------------------------------------------------------------------------------------------------ motifs

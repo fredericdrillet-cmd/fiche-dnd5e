@@ -271,7 +271,7 @@ CANTRIPS = {
     "Infestation": lambda: _bug(22, 22, 1.1, -20) + _bug(42, 18, 0.9, 30) + _bug(36, 42, 1.2, 10) + _bug(16, 46, 0.8, -50) + _bug(52, 44, 0.75, 70),
     "Lame aux flammes vertes": lambda: _over(_G(_blade(30, 8.5, 20, 9, 3.6), 24, 40, 45, 1.0), _flame(46, 20, 0.55)),
     "Lame retentissante": lambda: _over(_rings(42, 22, (14, 21), 2.8), _G(_blade(30, 8.5, 20, 9, 3.6), 26, 38, 45, 1.0)),
-    "Lumière": lambda: _sun(32, 32, 1.05, False) + _C(32, 32, 6, _K) + _C(32, 32, 3),
+    "Lumière": lambda: _over(_G(_P("M-4 0 H4 L2 26 H-2 Z") + _R(-8, -4, 16, 6, 2), 30, 34, 15, 1.0), _glowball()),
     "Lumières dansantes": lambda: __import__("core.art_retouches", fromlist=["x"]).dancing_lights(),
     "Main de mage": lambda: __import__("core.art_retouches", fromlist=["x"]).mage_hand(),
     "Message": lambda: __import__("core.art_retouches", fromlist=["x"]).message(),
@@ -319,8 +319,8 @@ SPELLS.update(CANTRIPS)
 
 # ================================================================================================ v53 : lot 3
 # Sorts de niveau 1 les plus courants.
-from .art_actions import book_open as _book, feather as _feather, runner as _runner, wolf as _wolf  # noqa: E402
-from .art_armes import boot as _boot, fist as _fist, footprint as _footprint, magnifier as _magnifier  # noqa: E402
+from .art_actions import book_open as _book, feather as _feather, runner as _runner  # noqa: E402
+from .art_armes import boot as _boot, magnifier as _magnifier  # noqa: E402
 
 
 def _armor(x=32, y=32, s=1.0):
@@ -448,7 +448,7 @@ SPELLS.update(LEVEL1)
 
 # ================================================================================================ v53 : lot 4
 # Sorts de niveau 2 et 3 les plus joués.
-from .art_motifs import _chain as _chainm, _moon as _moonm  # noqa: E402
+from .art_motifs import _moon as _moonm  # noqa: E402
 
 
 def _figure(x=32, y=32, s=1.0, a=0):
@@ -656,8 +656,9 @@ def _sleet_storm():
 
 
 def _daylight():
-    return _sun(32, 32, 1.1, False) + _C(32, 32, 7, _K) + _star(32, 32, 5)
-
+    """Soleil levé au-dessus de l'horizon, grands rayons."""
+    rays = "".join(_G(_P("M-2.4 -30 L2.4 -30 L1.4 -18 L-1.4 -18 Z"), 32, 40, a) for a in range(-90, 91, 30))
+    return rays + _P("M14 40 A18 18 0 0 1 50 40 Z") + _R(2, 42, 60, 5, 2) + _R(10, 51, 44, 4, 2) + _R(20, 58, 24, 3, 1.5)
 
 def _stinking_cloud():
     return (_G(_P("M-22 14 C-30 14 -32 2 -24 -2 C-26 -12 -14 -18 -6 -12 C-2 -22 16 -22 18 -8 C28 -10 32 4 24 10 "
@@ -795,3 +796,14 @@ SPELLS.update(LEVEL4)
 SPELLS.update(LEVEL5)
 SPELLS.update(LOW)
 SPELLS.update(HIGH)
+
+# v53 : familles retouchées (core/art_familles)
+from .art_familles import POWER_WORDS  # noqa: E402
+
+SPELLS.update(POWER_WORDS)
+
+
+def _glowball():
+    """Lumière (tour de magie) : orbe rayonnant au bout d'un bâton."""
+    return _C(30, 18, 10) + _C(30, 18, 5, _K) + _C(30, 18, 2.4) + "".join(
+        _G(_P("M-1.4 -17 L1.4 -17 L0.8 -12 L-0.8 -12 Z"), 30, 18, a) for a in range(0, 360, 45))

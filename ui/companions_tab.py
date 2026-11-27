@@ -32,6 +32,20 @@ from .game_widgets import ActionChip, clear_layout
 from .orbs import GaugeBar
 
 TYPE_ICONS = {"familiar": "🐾", "class_companion": "⚔", "summons": "✨", "mount": "🐴"}
+
+
+def type_icon(key: str, size: int = 40):
+    """v53 : icône dessinée du type de compagnon (chouette, loup, portail, cheval) ; None sans rendu."""
+    try:
+        from PyQt6.QtGui import QIcon
+        from core.art_familles import COMPANIONS
+        from . import icons as IC
+        fn = COMPANIONS.get(key)
+        if fn is None or not IC.HAS_SVG:
+            return None
+        return QIcon(IC._render(fn(), "capacite", size, theme.current().key, False))
+    except (ImportError, AttributeError, TypeError):
+        return None
 ABBR = {"Force": "FOR", "Dextérité": "DEX", "Constitution": "CON", "Intelligence": "INT", "Sagesse": "SAG",
         "Charisme": "CHA"}
 
@@ -95,7 +109,15 @@ class EntityPicker(QDialog):
         chips = QHBoxLayout()
         self.type_btns: dict[str, QPushButton] = {}
         for key, label in C.TYPE_LABELS.items():
-            b = QPushButton("{} {}".format(TYPE_ICONS[key], label))
+            icon = type_icon(key, 48)
+            b = QPushButton(label if icon else "{} {}".format(TYPE_ICONS[key], label))
+            if icon:
+                try:
+                    from PyQt6.QtCore import QSize
+                    b.setIcon(icon)
+                    b.setIconSize(QSize(24, 24))
+                except (AttributeError, TypeError):
+                    pass
             b.setCheckable(True)
             b.setProperty("role", "attune")
             b.clicked.connect(lambda _=False, k=key: self.set_type(k))
@@ -279,10 +301,13 @@ class CompanionsTab(BaseTab):
             for m in ch.menagerie:
                 ent = eng.entity(m["id"]) or {}
                 sh = eng.entity_sheet(m)
-                it = QListWidgetItem("{} {}{} — PV {}/{}{}".format(
-                    TYPE_ICONS.get(ent.get("entity_type"), "•"), m.get("nom") or ent.get("name", "?"),
+                icon = type_icon(ent.get("entity_type"), 48)
+                it = QListWidgetItem("{}{}{} — PV {}/{}{}".format(
+                    "" if icon else TYPE_ICONS.get(ent.get("entity_type"), "•") + " ", m.get("nom") or ent.get("name", "?"),
                     "" if m.get("nom") == ent.get("name") else " ({})".format(ent.get("name", "")),
                     m.get("pv"), sh["pv_max"], "" if m.get("statut", "Actif") == "Actif" else " — " + m["statut"]))
+                if icon:
+                    it.setIcon(icon)
                 it.setToolTip(rich_tip(ent.get("name", ""), "Ajouté automatiquement (aptitude de classe)."
                                        if m.get("auto") else C.TYPE_LABELS.get(ent.get("entity_type"), "")))
                 self.list.addItem(it)

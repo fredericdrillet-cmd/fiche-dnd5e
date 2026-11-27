@@ -397,7 +397,9 @@ def _drawn_actions() -> dict:
     """v53 : dessins soignés (core/art_armes, core/art_actions) des actions d'arme, des manœuvres et des capacités
     de classe, par nom normalisé."""
     from . import art_actions as AC, art_armes as AA, art_capacites as CAP
+    from . import art_familles as FAM
     out = dict(CAP.drawings())
+    out.update(FAM.METAMAGIC)
     out.update({norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS, AC.FEATURES) for k, v in d.items()})
     return out
 
