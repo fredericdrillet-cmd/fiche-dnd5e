@@ -137,3 +137,25 @@ def wolf_howl():
     eye = P("M17 12 L22 13 L18 15 Z", K)
     lines = S("M31 47 C29 40 31 34 35 31", 1.8, K) + S("M30 22 C32 26 33 30 32 34", 1.4, K)
     return moon + body + eye + lines
+
+
+def _sym(pts, col="#FFFFFF"):
+    """Polygone symétrique : points de la moitié gauche (de haut en bas), miroir en x = 32."""
+    allp = pts + [(64 - x, y) for x, y in reversed(pts)]
+    return '<path d="M' + " L".join("{:g} {:g}".format(x, y) for x, y in allp) + ' Z" fill="{}"/>'.format(col)
+
+
+def wolf_emblem():
+    """Tête de loup de face, façon emblème : oreilles dressées, joues hérissées, regard en amande, chanfrein qui
+    descend jusqu'à la truffe, marque en losange sur le front."""
+    head = _sym([(32, 14), (25, 15), (14, 1), (11, 20), (5, 22), (8, 29), (1, 34), (9, 38), (4, 45), (13, 47), (16, 54),
+                 (25, 57), (32, 62)])
+    ears = P("M16.5 9 L20.5 16.5 L15 17.8 Z", K) + P("M47.5 9 L43.5 16.5 L49 17.8 Z", K)
+    eyes = P("M14 28 L27 32 L24 35 L17 34 Z", K) + P("M50 28 L37 32 L40 35 L47 34 Z", K)
+    glint = Cc(22, 32.5, 1.3) + Cc(42, 32.5, 1.3)
+    brow = P("M32 19 L35 25 L32 29 L29 25 Z", K)
+    muzzle = S("M27 36 C28 42 29 47 29.5 51", 2.4, K) + S("M37 36 C36 42 35 47 34.5 51", 2.4, K)
+    nose = P("M26.5 50 H37.5 C37.5 53 35 56 32 57 C29 56 26.5 53 26.5 50 Z", K)
+    mouth = S("M32 57 V60", 1.8, K)
+    cheeks = S("M10 38 L18 41", 1.8, K) + S("M54 38 L46 41", 1.8, K)
+    return head + ears + eyes + glint + brow + muzzle + nose + mouth + cheeks
