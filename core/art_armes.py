@@ -643,7 +643,7 @@ MANEUVERS = {
                              + curved_arrow("M10 18 Q18 6 30 8", (30, 8), 0, 3),
     "Manœuvre tactique": lambda: over(G(banner(0, 0, 0.9), 22, 32), arrow(30, 46, 60, 46, 4, 9)),
     "Parade": lambda: sword(32, 34, 45, 0.95) + over("", sword(32, 34, -45, 0.95), 0) + burst(32, 18, 8, 6),
-    "Provocation": lambda: over(bubble(32, 28, 0.95), R(29, 12, 6, 14, 3, K)) + Cc(32, 33, 3.4, K),
+    "Provocation": lambda: __import__("core.art_retouches", fromlist=["x"]).provocation(),
     "Ralliement": lambda: over(banner(28, 32, 1.0), heart(48, 46, 0.42)),
     "Riposte": lambda: over(sword(28, 36, 45, 0.9), curved_arrow("M46 46 C60 36 58 16 44 10", (44, 10), 200, 3.6)),
     "Attaque balayage": lambda: sword(22, 42, 60, 0.8) + curved_arrow("M10 26 C18 8 46 4 58 20", (58, 20), 50, 4.2)

@@ -251,8 +251,7 @@ CANTRIPS = {
     "Coup de tonnerre": lambda: _burst(32, 32, 14, 8) + _rings(32, 32, (20, 27), 3),
     "Druidisme": lambda: _R(30, 30, 4.4, 28, 2) + _P("M32 34 C22 34 10 28 8 14 C22 14 30 22 32 34 Z")
                          + _P("M32 26 C40 24 52 18 56 4 C42 4 34 12 32 26 Z") + _star(52, 50, 4.5) + _star(14, 46, 3.5),
-    "Décharge occulte": lambda: _P("M6 58 L22 40 L18 36 L36 22 L32 18 L58 6 L40 26 L44 30 L26 44 L30 48 Z")
-                                + _C(12, 52, 7) + _C(12, 52, 3.2, _K) + _burst(56, 8, 9, 8) + _star(48, 50, 4),
+    "Décharge occulte": lambda: __import__("core.art_retouches", fromlist=["x"]).eldritch_blast(),
     "Embrasement": lambda: _flame_cut(32, 26, 0.9) + _G(_R(-24, -3, 48, 6, 3), 32, 52, 15) + _G(_R(-24, -3, 48, 6, 3), 32, 52, -15),
     "Façonnage de l'eau": lambda: _S("M6 26 C14 18 22 18 30 26 C38 34 46 34 58 24", 5) + _S("M6 40 C14 32 22 32 30 40 C38 48 46 48 58 38", 5)
                                   + _drop(48, 12, 0.3) + _star(14, 54, 4),
@@ -273,14 +272,9 @@ CANTRIPS = {
     "Lame aux flammes vertes": lambda: _over(_G(_blade(30, 8.5, 20, 9, 3.6), 24, 40, 45, 1.0), _flame(46, 20, 0.55)),
     "Lame retentissante": lambda: _over(_rings(42, 22, (14, 21), 2.8), _G(_blade(30, 8.5, 20, 9, 3.6), 26, 38, 45, 1.0)),
     "Lumière": lambda: _sun(32, 32, 1.05, False) + _C(32, 32, 6, _K) + _C(32, 32, 3),
-    "Lumières dansantes": lambda: _orb(16, 18, 6) + _orb(44, 14, 7) + _orb(26, 44, 7) + _orb(50, 44, 5.5)
-                                  + _S("M16 26 C18 34 22 36 26 36", 2) + _S("M44 22 C44 30 48 34 50 38", 2),
-    "Main de mage": lambda: _over(_hand(32, 34, 1.0, 0), _star(54, 12, 6))
-                            + '<path d="M8 58 C14 54 20 58 26 54 C32 58 38 54 44 58 C50 54 56 58 60 54" fill="none" '
-                              'stroke="#FFFFFF" stroke-width="2.6" stroke-dasharray="3 3"/>',
-    "Message": lambda: _over(_P("M8 14 H44 C48 14 50 16 50 20 V34 C50 38 48 40 44 40 H24 L14 50 V40 H8 C4 40 2 38 2 34 V20 "
-                                "C2 16 4 14 8 14 Z"), _C(16, 27, 3, _K) + _C(26, 27, 3, _K) + _C(36, 27, 3, _K))
-                       + _S("M54 30 C58 34 58 42 54 46", 2.8) + _S("M58 24 C64 32 64 44 58 52", 2.4),
+    "Lumières dansantes": lambda: __import__("core.art_retouches", fromlist=["x"]).dancing_lights(),
+    "Main de mage": lambda: __import__("core.art_retouches", fromlist=["x"]).mage_hand(),
+    "Message": lambda: __import__("core.art_retouches", fromlist=["x"]).message(),
     "Moquerie cruelle": lambda: _over(_mask_face(28, 34, 0.95, False), _bolt(52, 16, 0.42)) + _bolt(10, 12, 0.3),
     "Mot de radiance": lambda: _over("".join(_G(_P("M-2.4 -30 L2.4 -30 L1.4 -20 L-1.4 -20 Z"), 32, 32, a) for a in range(0, 360, 30)),
                                      _P("M18 18 H46 C49 18 50 20 50 23 V37 C50 40 49 42 46 42 H30 L22 50 V42 H18 C15 42 14 40 14 37 "
@@ -288,10 +282,7 @@ CANTRIPS = {
     "Pierre magique": lambda: _G(_P("M-10 -14 L8 -16 L18 -4 L14 12 L-4 16 L-16 6 Z") + _P("M-10 -14 L0 -4 L18 -4", _K)
                                  .replace('fill="#000000"', 'fill="none" stroke="#000000" stroke-width="2"'), 30, 36, 0, 1.15)
                               + _star(52, 12, 7) + _star(12, 14, 4),
-    "Piqûre mentale": lambda: _G(_P("M-20 4 C-24 -8 -16 -20 -4 -20 C0 -24 10 -24 14 -18 C22 -16 26 -6 22 2 C24 10 18 16 10 16 "
-                                    "C6 20 -6 20 -10 16 C-18 16 -22 10 -20 4 Z")
-                                 + _S("M-8 -10 C-4 -6 -10 0 -4 4 M4 -14 C8 -8 2 -2 8 4 M-14 8 C-6 6 0 12 8 8", 2, _K), 32, 30, 0, 1.0)
-                          + _G(_R(-1.5, -12, 3, 18, 1.5) + _P("M0 10 L3 4 L-3 4 Z"), 50, 46, 140),
+    "Piqûre mentale": lambda: __import__("core.art_retouches", fromlist=["x"]).mind_sliver(),
     "Piqûre sapeuse": lambda: _over(_skull(30, 34, 0.9), _G(_P("M0 -14 C4 -6 4 4 0 14 C-4 4 -4 -6 0 -14 Z"), 50, 16, 40, 1.0)),
     "Poigne électrique": lambda: _over(_hand(26, 40, 0.85, 0), _bolt(46, 22, 0.75)),
     "Poussière d'étoile": lambda: _star(30, 30, 16) + _star(50, 14, 7) + _star(48, 46, 5) + _star(14, 50, 5) + _star(12, 14, 4)
@@ -403,7 +394,7 @@ LEVEL1 = {
                                        + _carrow("M18 24 C22 28 24 30 26 30", (26, 30), 40, 2.4),
     "Alarme": lambda: _over(_bell(30, 34, 1.0), _G(_R(-3.5, -16, 7, 20, 3.5) + _C(0, 12, 4), 54, 22, 0, 0.8))
                       + _S("M4 22 C0 30 0 38 4 46", 2.8),
-    "Appel de familier": lambda: _over(_owl(30, 34, 1.1), _star(54, 12, 6)),
+    "Appel de familier": lambda: __import__("core.art_retouches", fromlist=["x"]).owl(),
     "Amitié avec les animaux": lambda: _over(_paw(28, 36, 1.1), _heart(48, 16, 0.42)),
     "Armure d'Agathys": lambda: _over(_armor(28, 36, 1.0), _snowflake(48, 16, 0.45)),
     "Enchevêtrement": _vines_wrap,
