@@ -783,3 +783,11 @@ class IconesSoigneesTests(unittest.TestCase):
         from core import art_etats as AE, effects as FX
         for key, e in FX.EFFECTS.items():
             self.assertTrue(AE.effect_body(key, e["nom"]), key)
+
+    def test_toutes_les_capacites_dessinees(self):
+        import json
+        from core import action_icons as AI
+        reg = json.loads((ROOT / "data" / "action_icons.json").read_text(encoding="utf-8"))["actions"]
+        for n in reg:                                    # plus aucune capacité composée automatiquement
+            base = n.replace(" (2024)", "")
+            self.assertNotEqual(AI.action_body(n), AI.compose(base, int(AI._registry().get("variantes", {}).get(base, 0))), n)

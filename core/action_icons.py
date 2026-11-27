@@ -396,8 +396,10 @@ def _registry() -> dict:
 def _drawn_actions() -> dict:
     """v53 : dessins soignés (core/art_armes, core/art_actions) des actions d'arme, des manœuvres et des capacités
     de classe, par nom normalisé."""
-    from . import art_actions as AC, art_armes as AA
-    return {norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS, AC.FEATURES) for k, v in d.items()}
+    from . import art_actions as AC, art_armes as AA, art_capacites as CAP
+    out = dict(CAP.drawings())
+    out.update({norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS, AC.FEATURES) for k, v in d.items()})
+    return out
 
 
 @lru_cache(maxsize=1)
@@ -410,7 +412,8 @@ def action_body(name: str) -> str:
     """Corps SVG de l'icône unique d'une action : dessin soigné s'il existe, sinon composition (variante issue du
     registre si deux dessins coïncident)."""
     base = re.sub(r"\s*\(2024\)\s*$", "", name or "").strip()
-    drawn = _drawn_actions().get(norm(base)) or _drawn_actions().get(norm(base.split(" — ")[0]))
+    drawn = (_drawn_actions().get(norm(base)) or _drawn_actions().get(norm(base.split(" — ")[0]))
+             or _drawn_actions().get(canonical(base)))
     if drawn:
         return drawn()
     return compose(base, int(_registry().get("variantes", {}).get(base, 0)))
