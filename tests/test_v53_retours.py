@@ -791,3 +791,18 @@ class IconesSoigneesTests(unittest.TestCase):
         for n in reg:                                    # plus aucune capacité composée automatiquement
             base = n.replace(" (2024)", "")
             self.assertNotEqual(AI.action_body(n), AI.compose(base, int(AI._registry().get("variantes", {}).get(base, 0))), n)
+
+
+class CompatibiliteWindowsTests(unittest.TestCase):
+    """v53 : aucun fichier du projet ne porte un nom réservé sous Windows (CON, PRN, AUX, NUL, COM1…, LPT1…) — sinon
+    le dépôt ne s'extrait plus et la compilation de l'exécutable échoue."""
+
+    def test_noms_de_fichiers(self):
+        import os
+        import re
+        bad = re.compile(r"^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$", re.I)
+        found = []
+        for base, dirs, files in os.walk(ROOT):
+            dirs[:] = [d for d in dirs if d not in (".git", "__pycache__", "venv", ".venv", "build", "dist")]
+            found += [os.path.join(base, n) for n in dirs + files if bad.match(n) or n.endswith((".", " "))]
+        self.assertEqual(found, [])

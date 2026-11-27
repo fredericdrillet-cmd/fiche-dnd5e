@@ -1,6 +1,6 @@
 """
 Symboles des caractéristiques (v53) : bras (Force), sauteur (Dextérité), cœur (Constitution), tête (Intelligence),
-ampoule (Sagesse), personnage bras levé (Charisme) — data/images/caracteristiques/<clé>.png (blanc = dessin), rendus
+ampoule (Sagesse), personnage bras levé (Charisme) — data/images/caracteristiques/<caractéristique>.png (blanc = dessin), rendus
 en « carré peint sombre » de la couleur de la caractéristique.
 """
 from __future__ import annotations
@@ -14,9 +14,11 @@ from PyQt6.QtWidgets import QHBoxLayout, QLabel, QWidget
 from core.paths import get_resource_path
 from . import icons as IC
 
-KEYS = {"Force": "for", "Dextérité": "dex", "Constitution": "con", "Intelligence": "int", "Sagesse": "sag",
-        "Charisme": "cha"}
-COLORS = {"for": "#991539", "dex": "#326A83", "con": "#035F3B", "int": "#B4832D", "sag": "#680F62", "cha": "#A71758"}
+# v53 : noms de fichiers complets — « con » est un nom réservé sous Windows (le dépôt ne s'y extrait plus)
+KEYS = {"Force": "force", "Dextérité": "dexterite", "Constitution": "constitution", "Intelligence": "intelligence",
+        "Sagesse": "sagesse", "Charisme": "charisme"}
+COLORS = {"force": "#991539", "dexterite": "#326A83", "constitution": "#035F3B", "intelligence": "#B4832D",
+          "sagesse": "#680F62", "charisme": "#A71758"}
 
 
 def icon_path(ability: str) -> Optional[str]:
