@@ -444,3 +444,345 @@ LEVEL1 = {
 }
 
 SPELLS.update(LEVEL1)
+
+
+# ================================================================================================ v53 : lot 4
+# Sorts de niveau 2 et 3 les plus joués.
+from .art_motifs import _chain as _chainm, _moon as _moonm  # noqa: E402
+
+
+def _figure(x=32, y=32, s=1.0, a=0):
+    return _G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), x, y, a, s)
+
+
+def _spirit_sword():
+    blade = _G(_blade(34, 9, 22, 10, 4), 32, 34, 45, 1.0)
+    halo = '<circle cx="32" cy="32" r="27" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-dasharray="5 4"/>'
+    return halo + blade + _star(52, 12, 5)
+
+
+def _bark_skin():
+    return (_G(_P("M0 -26 L20 -19 V-2 C20 12 12 21 0 27 C-12 21 -20 12 -20 -2 V-19 Z"), 32, 32, 0, 1.1)
+            + "".join(_S(d, 2.4, _K) for d in ("M20 14 C22 24 18 32 22 44", "M32 10 C30 22 34 30 30 46",
+                                               "M44 14 C42 24 46 32 42 44", "M24 26 C28 28 30 26 32 28",
+                                               "M36 36 C40 34 42 36 44 34")))
+
+
+def _call_lightning():
+    return _over(_G(_P("M-22 14 C-30 14 -32 2 -24 -2 C-26 -12 -14 -18 -6 -12 C-2 -22 16 -22 18 -8 C28 -10 32 4 24 10 "
+                       "C26 14 22 16 18 16 H-20 C-21 16 -22 15 -22 14 Z"), 32, 20, 0, 0.95),
+                 _bolt(32, 44, 0.7))
+
+
+def _scorching_ray():
+    return (_L([(6, 58), (40, 24)], 5) + _L([(4, 44), (34, 18)], 4) + _L([(20, 60), (46, 34)], 4)
+            + _flame(46, 18, 0.42) + _flame(38, 12, 0.3) + _flame(52, 30, 0.3))
+
+
+def _shatter():
+    return (_P("M32 6 L38 22 L56 18 L44 32 L58 46 L40 42 L32 58 L26 42 L8 46 L20 32 L8 18 L26 22 Z")
+            + _L([(32, 22), (32, 42)], 2.2, _K) + _L([(22, 32), (42, 32)], 2.2, _K) + _L([(26, 26), (38, 38)], 1.8, _K))
+
+
+def _misty_step():
+    """Silhouette qui disparaît dans la brume pour réapparaître plus loin."""
+    mist = _S("M2 48 C8 44 14 52 20 48 C26 44 30 50 34 48", 3.6) + _S("M4 56 C10 52 16 60 24 56", 3.6)
+    ghost = _figure(16, 30, 0.75).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="3 3"')
+    return mist + ghost + _figure(46, 32, 0.85) + _carrow("M22 10 C30 2 40 2 46 10", (46, 10), 50, 3.2)
+
+
+def _hold_person():
+    """Silhouette figée, entourée de deux anneaux de force."""
+    fig = _figure(32, 32, 1.15)
+    rings = ('<ellipse cx="32" cy="22" rx="24" ry="6" fill="none" stroke="#FFFFFF" stroke-width="3.4"/>'
+             '<ellipse cx="32" cy="42" rx="24" ry="6" fill="none" stroke="#FFFFFF" stroke-width="3.4"/>')
+    return _over(fig, rings, 5)
+
+
+def _mirror_image():
+    return (_G(_figure(0, 0, 1.0), 16, 34) + _G(_figure(0, 0, 1.0), 48, 34)
+            + _over("", _figure(32, 32, 1.1), 7))
+
+
+def _lesser_restoration():
+    return _over(_G(_P("M0 22 C-16 10 -24 2 -24 -8 C-24 -16 -18 -21 -11 -21 C-6 -21 -2 -18 0 -14 C2 -18 6 -21 11 -21 "
+                       "C18 -21 24 -16 24 -8 C24 2 16 10 0 22 Z"), 30, 34, 0, 1.05), _star(50, 14, 10)) + _star(12, 12, 4)
+
+
+def _aid():
+    """Cœur surmonté d'une flèche montante (PV max augmentés)."""
+    heart = _G(_P("M0 22 C-16 10 -24 2 -24 -8 C-24 -16 -18 -21 -11 -21 C-6 -21 -2 -18 0 -14 C2 -18 6 -21 11 -21 "
+                  "C18 -21 24 -16 24 -8 C24 2 16 10 0 22 Z"), 28, 40, 0, 0.92)
+    up = _R(47, 20, 8, 30, 3) + _P("M51 4 L62 22 H40 Z")
+    return _over(heart, up)
+
+
+def _blur():
+    """Silhouette doublée de contours décalés, qui se brouille."""
+    out = _figure(22, 32, 1.1).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2"')
+    out += _figure(42, 32, 1.1).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2"')
+    return out + _over("", _figure(32, 32, 1.1), 6)
+
+
+def _levitate():
+    return (_figure(32, 28, 1.0) + '<ellipse cx="32" cy="58" rx="16" ry="4" fill="#FFFFFF"/>'
+            + _L([(18, 46), (18, 52)], 2.4) + _L([(32, 50), (32, 54)], 2.4) + _L([(46, 46), (46, 52)], 2.4))
+
+
+def _darkness():
+    return _C(32, 32, 27) + _C(32, 32, 21, _K) + _G(_moonm(), 32, 32, 0, 0.62).replace("translate(32 32)", "translate(12 12)")
+
+
+def _darkvision():
+    return _over(_eye(32, 36, 1.0), _G(_C(0, 0, 9) + _C(5, -4, 8, _K), 50, 12))
+
+
+def _silence():
+    return (_G(_P("M8 -8 C8 -16 16 -18 20 -12 L20 12 C16 18 8 16 8 8 Z") + _R(-12, -8, 16, 16, 2) + _P("M4 -8 L18 -20 V20 L4 8 Z"), 28, 32)
+            + _L([(6, 6), (58, 58)], 5) + _L([(6, 6), (58, 58)], 2, _K))
+
+
+def _suggestion():
+    return _over(_P("M8 12 H44 C48 12 50 14 50 18 V34 C50 38 48 40 44 40 H24 L14 50 V40 H8 C4 40 2 38 2 34 V18 "
+                    "C2 14 4 12 8 12 Z"), _spiral_small(26, 26, 9)) + _star(54, 52, 5)
+
+
+def _spiral_small(x, y, r):
+    pts = []
+    for i in range(80):
+        t = i / 79 * 3.2 * math.pi
+        rr = 0.8 + r / (3.2 * math.pi) * t
+        pts.append((x + rr * math.cos(t), y + rr * math.sin(t)))
+    return _L(pts, 2.6, _K)
+
+
+def _acid_arrow():
+    return (_L([(6, 58), (44, 20)], 3.6) + _P("M54 10 L48 30 L34 16 Z") + _P("M8 56 L4 46 L10 44 Z") + _P("M8 56 L18 60 L20 54 Z")
+            + _drop(50, 40, 0.26) + _drop(56, 50, 0.2) + _drop(42, 50, 0.18))
+
+
+def _spike_growth():
+    return (_P("M2 54 H62 V60 H2 Z") + "".join(_P("M{} 54 L{} {} L{} 54 Z".format(x - 4, x, 54 - h, x + 4))
+                                               for x, h in ((8, 18), (18, 28), (28, 20), (38, 30), (48, 22), (58, 16)))
+            + _star(52, 12, 5))
+
+
+def _flame_blade():
+    """Lame faite de flamme, garde et poignée."""
+    blade = _P("M0 -36 C8 -28 10 -18 6 -10 C10 -12 11 -16 10 -20 C15 -12 13 -4 8 0 H-8 C-12 -6 -12 -16 -6 -24 "
+               "C-6 -18 -4 -16 -2 -16 C-4 -24 -3 -30 0 -36 Z")
+    core = _P("M0 -22 C4 -16 5 -8 2 -2 H-2 C-5 -8 -4 -16 0 -22 Z", _K)
+    hilt = _R(-12, 0, 24, 5, 2.4) + _R(-3, 5, 6, 11, 1.8) + _C(0, 19, 4)
+    return _G(blade + core + hilt, 32, 32, 35, 1.0)
+
+
+def _flaming_sphere():
+    return (_C(32, 36, 18) + _flame(32, 36, 0.6).replace('fill="#FFFFFF"', 'fill="#000000"', 1)
+            + _flame(18, 16, 0.3) + _flame(46, 12, 0.36) + _flame(54, 28, 0.26))
+
+
+def _augury():
+    return (_C(32, 34, 20) + _C(32, 34, 15, _K) + _star(32, 34, 8) + _R(18, 54, 28, 6, 2)
+            + _star(10, 10, 4) + _star(54, 10, 4))
+
+
+def _detect_thoughts():
+    """Tête de profil, ondes de pensée qui en sortent."""
+    head = _P("M30 58 V48 C22 48 18 44 18 38 L12 34 L18 30 C16 18 22 8 34 8 C44 8 50 16 50 26 C50 34 46 40 42 42 V58 Z")
+    waves = _S("M50 14 C56 18 56 26 50 30", 3) + _S("M56 8 C64 16 64 28 56 36", 2.6)
+    brain = _S("M28 18 C32 14 38 16 38 20 C42 20 44 26 40 28 C40 32 34 32 32 30 C28 32 24 28 26 24 C22 22 24 16 28 18 Z", 2.2, _K)
+    return head + waves + brain
+
+
+def _enhance():
+    return _over(_G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 26, 32, 0, 1.0),
+                 _R(44, 26, 8, 22, 3) + _P("M48 10 L60 28 H36 Z"))
+
+
+def _counterspell():
+    return (_C(32, 32, 26) + _C(32, 32, 20, _K) + _star(32, 32, 14) + _L([(14, 14), (50, 50)], 6, _K) + _L([(14, 14), (50, 50)], 3.4))
+
+
+def _dispel():
+    return (_star(32, 32, 16) + "".join(_G(_P("M-2 -28 L2 -28 L1 -20 L-1 -20 Z"), 32, 32, a) for a in range(0, 360, 45))
+            + _C(32, 32, 26).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="3 5"'))
+
+
+def _haste():
+    return (_G(_C(6, -22, 6) + _P("M-2 -14 C2 -16 8 -15 10 -11 L14 -2 L22 2 C25 3 24 8 21 7 L11 3 L8 -2 L5 8 L12 14 L14 26 "
+                                  "C14 30 9 30 9 27 L7 17 L-1 11 L-6 20 L-16 24 C-19 25 -21 21 -18 19 L-10 15 L-6 4 L-4 -6 "
+                                  "L-12 -2 L-16 6 C-17 9 -22 8 -21 5 L-17 -5 C-15 -9 -8 -13 -2 -14 Z"), 38, 34, 0, 1.0)
+            + _bolt(12, 20, 0.45) + _speed(4, 44, 3, 12, 7, 0, 3))
+
+
+def _slow():
+    return _over(_G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 24, 32, 0, 1.0),
+                 _G(_R(-16, -26, 32, 5, 2) + _R(-16, 21, 32, 5, 2) + _P("M-12 -21 H12 C12 -10 3 -4 3 0 C3 4 12 10 12 21 H-12 "
+                                                                       "C-12 10 -3 4 -3 0 C-3 -4 -12 -10 -12 -21 Z"), 48, 40, 0, 0.55))
+
+
+def _spirit_guardians():
+    def wing(x, y, a):
+        return _G(_P("M0 0 C6 -10 16 -14 24 -14 C20 -10 18 -8 16 -6 C20 -6 22 -5 24 -4 C18 -2 12 0 6 2 Z"), x, y, a, 0.9)
+    return (_G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 32, 34, 0, 0.8)
+            + wing(14, 14, 200) + wing(50, 14, -20) + wing(10, 46, 160) + wing(54, 46, 20)
+            + '<circle cx="32" cy="32" r="28" fill="none" stroke="#FFFFFF" stroke-width="2"/>')
+
+
+def _mass_healing_word():
+    return (_P("M14 6 H50 C55 6 58 9 58 14 V36 C58 41 55 44 50 44 H28 L14 57 V44 C9 44 6 41 6 36 V14 C6 9 9 6 14 6 Z")
+            + '<path d="M32 15 V35 M22 25 H42" stroke="#000000" stroke-width="6.5" stroke-linecap="round"/>'
+            + _C(46, 54, 3) + _C(54, 50, 2.4) + _C(38, 58, 2.2))
+
+
+def _water_breathing():
+    return (_G(_P("M-24 0 C-14 -14 10 -14 18 0 C10 14 -14 14 -24 0 Z") + _P("M18 0 L30 -10 V10 Z") + _C(-12, -2, 2.6, _K), 30, 36)
+            + _C(18, 14, 4).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2.4"')
+            + _C(28, 8, 3).replace('fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="2.2"')
+            + _C(36, 14, 2.4))
+
+
+def _fear():
+    return (_G(_P("M0 -24 C14 -24 22 -16 22 -2 C22 14 12 24 0 24 C-12 24 -22 14 -22 -2 C-22 -16 -14 -24 0 -24 Z")
+               + '<ellipse cx="-8" cy="-4" rx="4.4" ry="6" fill="#000000"/><ellipse cx="8" cy="-4" rx="4.4" ry="6" fill="#000000"/>'
+               + '<ellipse cx="0" cy="12" rx="5" ry="7" fill="#000000"/>', 30, 34, 0, 1.0)
+            + _drop(54, 18, 0.2) + _S("M50 34 C56 38 56 46 50 50", 2.6))
+
+
+def _sleet_storm():
+    return (_G(_P("M-22 14 C-30 14 -32 2 -24 -2 C-26 -12 -14 -18 -6 -12 C-2 -22 16 -22 18 -8 C28 -10 32 4 24 10 "
+                  "C26 14 22 16 18 16 H-20 C-21 16 -22 15 -22 14 Z"), 32, 20, 0, 0.95)
+            + "".join(_L([(x, 44), (x - 4, 52)], 3) for x in (16, 30, 44)) + _snowflake(24, 58, 0.18) + _snowflake(50, 56, 0.18))
+
+
+def _daylight():
+    return _sun(32, 32, 1.1, False) + _C(32, 32, 7, _K) + _star(32, 32, 5)
+
+
+def _stinking_cloud():
+    return (_G(_P("M-22 14 C-30 14 -32 2 -24 -2 C-26 -12 -14 -18 -6 -12 C-2 -22 16 -22 18 -8 C28 -10 32 4 24 10 "
+                  "C26 14 22 16 18 16 H-20 C-21 16 -22 15 -22 14 Z"), 32, 28, 0, 1.0)
+            + _S("M20 50 C16 54 22 58 18 62", 3) + _S("M32 50 C28 54 34 58 30 62", 3) + _S("M44 50 C40 54 46 58 42 62", 3)
+            + _C(22, 26, 3, _K) + _C(36, 22, 2.4, _K) + _C(30, 32, 2, _K))
+
+
+def _blink():
+    return (_G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 20, 34, 0, 0.8)
+            + _G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"), 46, 34, 0, 0.8).replace(
+                'fill="#FFFFFF"', 'fill="none" stroke="#FFFFFF" stroke-width="1.8" stroke-dasharray="3 3"')
+            + _star(32, 12, 6) + _star(34, 54, 4))
+
+
+def _animate_dead():
+    return (_skull(32, 24, 0.9) + _G(_R(-3, -4, 6, 18, 2) + _R(-14, 0, 28, 4, 2) + _R(-10, 8, 20, 3, 1.5)
+                                     + _R(-8, 14, 16, 3, 1.5), 32, 46) + _star(54, 10, 5))
+
+
+def _curse():
+    return (_C(32, 32, 26) + _C(32, 32, 20, _K)
+            + _P("M32 14 L36 26 L48 26 L38 34 L42 46 L32 38 L22 46 L26 34 L16 26 L28 26 Z")
+            + _C(32, 32, 4, _K))
+
+
+def _vampiric_touch():
+    return _over(_hand(26, 38, 0.9, 0), _drop(46, 18, 0.42)) + _P("M44 34 L48 42 L52 34 Z")
+
+
+def _hope():
+    return (_sun(32, 40, 0.6, False) + _G(_P("M0 22 C-16 10 -24 2 -24 -8 C-24 -16 -18 -21 -11 -21 C-6 -21 -2 -18 0 -14 C2 -18 6 -21 11 -21 "
+                                             "C18 -21 24 -16 24 -8 C24 2 16 10 0 22 Z"), 32, 24, 0, 0.62)
+            + _L([(6, 58), (58, 58)], 3))
+
+
+def _hypnotic_pattern():
+    return _spiral_small(32, 32, 28).replace('stroke="#000000"', 'stroke="#FFFFFF"').replace('stroke-width="2.6"', 'stroke-width="4.4"') + _star(52, 10, 5)
+
+
+def _plant_growth():
+    return (_R(30, 30, 4.4, 30, 2) + _P("M32 40 C20 40 8 32 6 16 C22 16 30 26 32 40 Z")
+            + _P("M32 30 C42 28 54 20 58 4 C42 4 34 14 32 30 Z") + _P("M32 52 C24 50 16 44 14 34 C24 36 30 42 32 52 Z")
+            + _L([(4, 60), (60, 60)], 3.4))
+
+
+def _glyph_warding():
+    return ('<circle cx="32" cy="32" r="26" fill="none" stroke="#FFFFFF" stroke-width="4"/>'
+            + _P("M32 10 L51 43 H13 Z") + _P("M32 20 L44 40 H20 Z", _K) + _bolt(32, 32, 0.3))
+
+
+def _magic_circle():
+    return ('<circle cx="32" cy="32" r="27" fill="none" stroke="#FFFFFF" stroke-width="4"/>'
+            '<circle cx="32" cy="32" r="20" fill="none" stroke="#FFFFFF" stroke-width="2"/>'
+            + "".join(_G(_P("M0 -27 L3 -22 L0 -17 L-3 -22 Z"), 32, 32, a) for a in range(0, 360, 45)) + _star(32, 32, 10))
+
+
+def _meld_stone():
+    return (_P("M4 60 L10 20 L28 8 L50 12 L60 34 L56 60 Z") + _G(_C(0, -20, 6) + _P("M-10 -10 H10 L12 8 H6 L5 26 H-5 L-6 8 H-12 Z"),
+                                                                   32, 36, 0, 0.8).replace('fill="#FFFFFF"', 'fill="#000000"')
+            + _L([(10, 30), (18, 34)], 2, _K) + _L([(46, 22), (52, 28)], 2, _K))
+
+
+def _revivify():
+    return (_G(_P("M0 22 C-16 10 -24 2 -24 -8 C-24 -16 -18 -21 -11 -21 C-6 -21 -2 -18 0 -14 C2 -18 6 -21 11 -21 "
+                  "C18 -21 24 -16 24 -8 C24 2 16 10 0 22 Z"), 32, 34, 0, 1.05)
+            + _P("M10 32 H22 L26 24 L32 42 L37 28 L40 32 H54", _K).replace('fill="#000000"',
+                                                                            'fill="none" stroke="#000000" stroke-width="3.6" stroke-linejoin="round"')
+            + _sun(52, 10, 0.3, False))
+
+
+def _elemental_weapon():
+    return _over(_G(_blade(34, 9, 22, 10, 4), 26, 38, 45, 1.0), _flame(46, 18, 0.4) + _snowflake(54, 34, 0.22) + _bolt(40, 6, 0.22))
+
+
+def _hunters_mark():
+    return _over(_G(_P("M-24 0 C-14 -12 14 -12 24 0 C14 12 -14 12 -24 0 Z") + _C(0, 0, 8, _K) + _C(0, 0, 4), 32, 24, 0, 1.0),
+                 _G('<circle r="14" fill="none" stroke="#FFFFFF" stroke-width="3.4"/>' + _L([(0, -20), (0, -8)], 3)
+                    + _L([(0, 8), (0, 20)], 3) + _L([(-20, 0), (-8, 0)], 3) + _L([(8, 0), (20, 0)], 3), 44, 46, 0, 0.8))
+
+
+def _crusader():
+    return (_G(_blade(30, 8.5, 20, 9, 3.6), 32, 34, 0, 0.9) + '<circle cx="32" cy="32" r="27" fill="none" stroke="#FFFFFF" stroke-width="3"/>'
+            + "".join(_G(_P("M-1.6 -30 L1.6 -30 L1 -24 L-1 -24 Z"), 32, 32, a) for a in range(0, 360, 30)))
+
+
+def _lightning_arrow():
+    return (_L([(6, 58), (40, 24)], 3.6) + _P("M50 14 L44 34 L30 20 Z") + _bolt(46, 30, 0.36) + _bolt(22, 20, 0.28))
+
+
+def _tongues():
+    return (_P("M6 10 H34 C38 10 40 12 40 16 V28 C40 32 38 34 34 34 H18 L10 42 V34 H6 C2 34 0 32 0 28 V16 C0 12 2 10 6 10 Z")
+            + _P("M30 30 H58 C62 30 64 32 64 36 V48 C64 52 62 54 58 54 H54 V62 L46 54 H30 C26 54 24 52 24 48 V36 C24 32 26 30 30 30 Z")
+            + _P("M10 22 H30", _K).replace('fill="#000000"', 'fill="none" stroke="#000000" stroke-width="3"')
+            + _C(36, 42, 2.6, _K) + _C(44, 42, 2.6, _K) + _C(52, 42, 2.6, _K))
+
+
+def _sending():
+    return (_P("M6 14 H42 C46 14 48 16 48 20 V34 C48 38 46 40 42 40 H22 L12 50 V40 H6 C2 40 0 38 0 34 V20 C0 16 2 14 6 14 Z")
+            + _S("M52 18 C58 24 58 34 52 40", 3) + _S("M58 12 C66 22 66 36 58 46", 2.6) + _star(24, 27, 6, _K))
+
+
+def _speak_dead():
+    return _over(_skull(26, 36, 0.95), _P("M38 6 H60 C63 6 64 8 64 11 V21 C64 24 63 26 60 26 H50 L44 32 V26 H38 C35 26 34 24 34 21 "
+                                          "V11 C34 8 35 6 38 6 Z"))
+
+
+LEVEL23 = {
+    "Arme spirituelle": _spirit_sword, "Peau d'écorce": _bark_skin, "Appel de la foudre": _call_lightning,
+    "Rayon ardent": _scorching_ray, "Fracassement": _shatter, "Foulée brumeuse": _misty_step,
+    "Immobilisation de personne": _hold_person, "Image miroir": _mirror_image,
+    "Restauration partielle": _lesser_restoration, "Aide": _aid, "Flou": _blur, "Lévitation": _levitate,
+    "Ténèbres": _darkness, "Vision dans le noir": _darkvision, "Silence": _silence, "Suggestion": _suggestion,
+    "Flèche acide de Melf": _acid_arrow, "Croissance d'épines": _spike_growth, "Lame de feu": _flame_blade,
+    "Sphère de feu": _flaming_sphere, "Augure": _augury, "Détection des pensées": _detect_thoughts,
+    "Amélioration de caractéristique": _enhance, "Contresort": _counterspell, "Dissipation de la magie": _dispel,
+    "Hâte": _haste, "Lenteur": _slow, "Esprits gardiens": _spirit_guardians,
+    "Mot de guérison de groupe": _mass_healing_word, "Respiration aquatique": _water_breathing, "Peur": _fear,
+    "Tempête de neige": _sleet_storm, "Lumière du jour": _daylight, "Nuage nauséabond": _stinking_cloud,
+    "Clignotement": _blink, "Animation des morts": _animate_dead, "Malédiction": _curse,
+    "Toucher du vampire": _vampiric_touch, "Lueur d'espoir": _hope, "Motif hypnotique": _hypnotic_pattern,
+    "Croissance végétale": _plant_growth, "Glyphe de protection": _glyph_warding, "Cercle magique": _magic_circle,
+    "Fusion dans la pierre": _meld_stone, "Retour à la vie": _revivify, "Arme élémentaire": _elemental_weapon,
+    "Marque du chasseur": _hunters_mark, "Aura du croisé": _crusader, "Flèche de foudre": _lightning_arrow,
+    "Don des langues": _tongues, "Communication à distance": _sending, "Communication avec les morts": _speak_dead,
+}
+
+SPELLS.update(LEVEL23)
