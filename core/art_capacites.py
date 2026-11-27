@@ -192,4 +192,7 @@ def drawings() -> dict:
         out[norm(name)] = (lambda fm=formula: build(fm))
     for name, fn in CS.scenes().items():                 # v53 : scène dessinée prioritaire sur la formule
         out[norm(name)] = fn
+    from .art_finitions import CAP_FIX
+    for name, fn in CAP_FIX.items():                     # finitions : en dernier
+        out[norm(name)] = fn
     return out

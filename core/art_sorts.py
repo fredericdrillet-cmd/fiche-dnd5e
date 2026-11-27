@@ -824,3 +824,8 @@ SPELLS.update(_SCENES5)
 from .art_scenes69 import SCENES as _SCENES69  # noqa: E402
 
 SPELLS.update(_SCENES69)
+
+# v53 : finitions (dessins repris pour les icônes trop proches), appliquées en dernier
+from .art_finitions import SPELL_FIX as _SPELL_FIX  # noqa: E402
+
+SPELLS.update(_SPELL_FIX)

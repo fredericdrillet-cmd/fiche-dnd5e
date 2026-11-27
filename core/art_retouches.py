@@ -108,3 +108,15 @@ def mind_sliver():
              + S("M8 10 C6 14 10 16 12 14", 2, K))
     bolt = P("M6 -30 L-4 -14 L2 -14 L-4 -2 L10 -18 L4 -18 L10 -30 Z")
     return over(G(brain + folds, 30, 38, 0, 1.0), G(bolt, 48, 26, 0, 0.9))
+
+
+def wolf_howl():
+    """Loup assis qui hurle à la lune : museau levé, collerette de fourrure, queue en panache."""
+    moon = Cc(52, 12, 9) + Cc(57, 8, 8, K)
+    body = P("M3 6 L16 8 L20 2 L24 11 C30 14 35 20 39 27 C45 35 50 41 51 49 C54 50 57 47 57 42 L60 45 L59 50 L62 52 "
+             "C60 58 56 60 52 60 H30 L29 47 L27 47 L25 60 H18 L20 41 L16 38 L19 35 L15 31 L19 29 L16 25 L19 22 "
+             "L12 19 L10 13 L4 9 Z")
+    eye = P("M14 11 L19 12 L15 14 Z", K)
+    lines = S("M29 47 C28 40 30 34 34 30", 1.8, K) + S("M40 49 C40 43 38 39 36 35", 1.8, K)
+    mouth = L([(5, 8), (11, 11)], 1.4, K)
+    return moon + body + eye + lines + mouth + L([(2, 62), (62, 62)], 2)

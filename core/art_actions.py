@@ -164,7 +164,7 @@ FEATURES = {
     "Déluge de coups": lambda: over(fist(24, 26, 0.75), fist(40, 42, 0.75)) + speed(4, 44, 2, 8, 7, 0, 3),
     "Entrer en rage": lambda: __import__("core.art_retouches", fromlist=["x"]).rage(),
     "Esquive instinctive": lambda: figure(24, 34, 1.0, -22) + arrow(30, 8, 60, 38, 3.2, 9),
-    "Forme sauvage": lambda: __import__("core.art_retouches", fromlist=["x"]).wolf_profile(32, 32, 1.0),
+    "Forme sauvage": lambda: __import__("core.art_retouches", fromlist=["x"]).wolf_howl(),
     "Guidage magique": lambda: over(eye(32, 34, 0.9), star4(50, 12, 8)) + star4(12, 54, 5),
     "Guérison accélérée": lambda: heart_plus(30, 34, 1.0) + speed(52, 20, 3, 8, 6, 0, 2.8),
     "Imposition des mains": lambda: over(hand(32, 40, 0.9, 0), heart(32, 12, 0.4)) + star4(10, 12, 4) + star4(54, 18, 4),
