@@ -786,3 +786,12 @@ LEVEL23 = {
 }
 
 SPELLS.update(LEVEL23)
+
+
+# v53 : sorts de niveau 4 et plus (core/art_sorts_hauts)
+from .art_sorts_hauts import HIGH, LEVEL4, LEVEL5, LOW  # noqa: E402
+
+SPELLS.update(LEVEL4)
+SPELLS.update(LEVEL5)
+SPELLS.update(LOW)
+SPELLS.update(HIGH)
