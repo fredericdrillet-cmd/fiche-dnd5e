@@ -396,9 +396,10 @@ def _registry() -> dict:
 
 @lru_cache(maxsize=1)
 def _drawn_actions() -> dict:
-    """v53 : dessins soignés (core/art_armes) des actions d'arme et des manœuvres, par nom normalisé."""
-    from . import art_armes as AA
-    return {norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS) for k, v in d.items()}
+    """v53 : dessins soignés (core/art_armes, core/art_actions) des actions d'arme, des manœuvres et des capacités
+    de classe, par nom normalisé."""
+    from . import art_actions as AC, art_armes as AA
+    return {norm(k): v for d in (AA.ACTIONS, AA.MANEUVERS, AC.FEATURES) for k, v in d.items()}
 
 
 @lru_cache(maxsize=1)

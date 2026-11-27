@@ -754,3 +754,17 @@ class IconesSoigneesTests(unittest.TestCase):
         from ui.ability_icons import icon_path
         for ab in ABILITIES:
             self.assertIsNotNone(icon_path(ab), ab)
+
+    def test_actions_communes_et_capacites(self):
+        from core import action_icons as AI, art_actions as AC, tile_icons as T
+        for _key, name in T.COMMON:                      # chaque action commune a son dessin soigné
+            self.assertIn(name, AC.COMMON, name)
+        self.assertEqual(AI.action_body("Second souffle"), AC.FEATURES["Second souffle"]())
+        self.assertEqual(AI.action_body("Forme sauvage (2024)"), AC.FEATURES["Forme sauvage"]())
+
+    def test_sorts_dessines_existent(self):
+        from core import art_sorts as AS, spell_icons as SI
+        for name, fn in AS.SPELLS.items():               # chaque dessin correspond à un vrai sort de la base
+            self.assertIn(name, DB.spells, name)
+            self.assertEqual(SI.spell_icon(DB.spells, name), fn())
+        self.assertGreaterEqual(len(AS.SPELLS), 100)
