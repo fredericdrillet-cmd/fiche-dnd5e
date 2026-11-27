@@ -768,3 +768,13 @@ class IconesSoigneesTests(unittest.TestCase):
             self.assertIn(name, DB.spells, name)
             self.assertEqual(SI.spell_icon(DB.spells, name), fn())
         self.assertGreaterEqual(len(AS.SPELLS), 100)
+
+    def test_objets_et_motifs(self):
+        import qt_stub
+        qt_stub.install()
+        from core import action_icons as AI, art_motifs as AM, art_objets as AO
+        from core.tile_icons import ITEMS
+        for _k, icon in ITEMS:                           # chaque icône d'objet a son dessin soigné
+            self.assertIn(icon, AO.OBJECTS, icon)
+        self.assertIs(AI.G["flamme"], AM.MOTIFS["flamme"])
+        self.assertNotIn("<circle cx=\"49\" cy=\"49\"", AI.action_body("Pas du vent (2024)"))   # plus de médaillon

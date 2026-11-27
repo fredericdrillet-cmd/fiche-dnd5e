@@ -74,10 +74,11 @@ def _tinted(body: str, size: int, color: str) -> QImage:
 
 
 def named_body(name: str) -> str:
-    """Corps SVG d'une icône nommée : dessin soigné (core/art_actions, actions communes) s'il existe, sinon
+    """Corps SVG d'une icône nommée : dessin soigné (core/art_actions, core/art_objets) s'il existe, sinon
     data/icons, sinon dessin direct, sinon « inconnu »."""
     from core.art_actions import COMMON
-    fn = COMMON.get(name) or ICONS.get(name) or ICONS["inconnu"]
+    from core.art_objets import OBJECTS
+    fn = COMMON.get(name) or OBJECTS.get(name) or ICONS.get(name) or ICONS["inconnu"]
     return fn()
 
 

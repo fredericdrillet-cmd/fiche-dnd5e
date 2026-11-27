@@ -36,7 +36,12 @@ ITEMS = [("potion", "objet_potion"), ("elixir", "objet_potion"), ("parchemin", "
          ("gantelets", "objet_gants"), ("bracelet", "objet_gants"), ("casque", "objet_casque"),
          ("heaume", "objet_casque"), ("armure", "objet_armure"), ("bouclier", "objet_bouclier"),
          ("fleche", "objet_munitions"), ("carreau", "objet_munitions"), ("livre", "objet_livre"),
-         ("tome", "objet_livre"), ("sac", "objet_sac"), ("torche", "objet_torche")]
+         ("tome", "objet_livre"), ("sac", "objet_sac"), ("torche", "objet_torche"),
+         ("ration", "objet_ration"), ("corde", "objet_corde"), ("lanterne", "objet_lanterne"), ("luth", "objet_instrument"),
+         ("flute", "objet_instrument"), ("lyre", "objet_instrument"), ("tambour", "objet_instrument"),
+         ("cornemuse", "objet_instrument"), ("instrument", "objet_instrument"), ("gourde", "objet_gourde"),
+         ("outre", "objet_gourde"), ("coffre", "objet_coffre"), ("cle ", "objet_cle"), ("trousse", "objet_outil"),
+         ("outils", "objet_outil"), ("materiel", "objet_outil")]
 
 FEATURES = [("rage", "rage"), ("second souffle", "second_souffle"), ("sursaut", "fougue"), ("fougue", "fougue"),
             ("attaque sournoise", "attaque_sournoise"), ("chatiment", "chatiment"),
