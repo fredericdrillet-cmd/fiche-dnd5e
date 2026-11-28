@@ -293,6 +293,17 @@ _e("vol", "Vol", "🪽", "Bonus", _sort(3, "Vol"), "10 minutes",
    "pouvoir l'éviter.", True, notes=["Vitesse de vol 18 m"])
 _e("saut", "Saut", "🦘", "Bonus", _sort(1, "Saut"), "1 minute",
    "La distance de saut de la cible est triplée.", notes=["Distance de saut ×3"])
+# v53 : élixirs expérimentaux de l'Alchimiste (Artificier, Chaudron de Tasha)
+_e("elixir_rapidite", "Élixir : rapidité", "🏃", "Bonus", "Élixir expérimental (Alchimiste)", "1 heure",
+   "La vitesse de marche augmente de 3 m.", vitesse_bonus=3.0)
+_e("elixir_resistance", "Élixir : résistance", "🛡️", "Bonus", "Élixir expérimental (Alchimiste)", "10 minutes",
+   "+1 à la CA.", ca=1)
+_e("elixir_audace", "Élixir : audace", "🔥", "Bonus", "Élixir expérimental (Alchimiste)", "1 minute",
+   "Ajoutez 1d4 à vos jets d'attaque et jets de sauvegarde.", attaque="+1d4", js="+1d4")
+_e("elixir_vol", "Élixir : vol", "🪽", "Bonus", "Élixir expérimental (Alchimiste)", "10 minutes",
+   "Vitesse de vol de 3 m.", notes=["Vitesse de vol 3 m"])
+_e("elixir_transformation", "Élixir : transformation", "🎭", "Bonus", "Élixir expérimental (Alchimiste)",
+   "10 minutes", "Effet du sort Modification d'apparence (sans concentration).")
 _e("grande_foulee", "Grande foulée", "👟", "Bonus", _sort(1, "Grande foulée"), "1 heure",
    "La vitesse de la cible augmente de 3 m.", vitesse_bonus=3.0)
 _e("pattes_araignee", "Pattes d'araignée", "🕷️", "Bonus", _sort(2, "Pattes d'araignée"), "1 heure",

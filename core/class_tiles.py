@@ -372,9 +372,10 @@ TILES = [
     T("eclair_genie", "Éclair de génie", "💡", "Artificier", "", 7, "Réaction",
       "Une créature à 9 m fait un test ou un JS : ajoutez votre mod. d'Intelligence.", uses="MOD:Intelligence",
       degats="{MOD_INT}"),
-    T("elixir", "Élixir expérimental", "🧪", "Artificier", "alchimiste", 3, "Action",
-      "Créez un élixir aléatoire (soins, rapidité, résilience, audace, vol, transformation).", uses=1,
-      degats="1d6"),
+    T("elixir", "Créer un élixir", "🧪", "Artificier", "alchimiste", 3, "Action",
+      "Dépensez un emplacement de sort (niveau 1 ou plus) : un élixir expérimental de l'effet de votre choix "
+      "(Guérison, Rapidité, Résistance, Audace, Vol, Transformation) arrive dans l'inventaire. Les élixirs gratuits "
+      "sont créés à la fin du repos long.", cout={"emplacement": True}),
     T("champ_defensif", "Champ défensif", "🛡", "Artificier", "armurier", 3, "Action bonus",
       "Modèle Gardien : PV temporaires égaux à votre niveau d'artificier (appliqués).", uses="BM"),
     T("attraction_magnetique", "Attraction (Gardien parachevé)", "🧲", "Artificier", "armurier", 15, "Réaction",

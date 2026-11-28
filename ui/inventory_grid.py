@@ -199,6 +199,10 @@ class InventoryGrid(QListWidget):
             menu.addAction("✨ Équiper / déséquiper", tab._on_equip_magic)
         else:
             menu.addAction("🧍 Équiper", lambda n=it.data(KEY_ROLE): self.equip_to_best_slot(n))
+        name = str(it.data(KEY_ROLE) or "")
+        if name.startswith("Élixir expérimental"):        # v53 : élixir de l'Alchimiste
+            menu.addAction("🤝 Donner à un allié", lambda n=name: tab._on_give_elixir(n))
+        menu.addAction("✨ Infusions d'objet…", tab._on_infusions)
         menu.addSeparator()
         menu.addAction("🗑 Retirer de l'inventaire", tab._on_del_item)
         menu.exec(self.mapToGlobal(pos))

@@ -81,10 +81,16 @@ class InventoryTab(BaseTab):
         self.magic_btn.setToolTip(rich_tip("Objets magiques", "Ouvre le sous-onglet « Objets magiques » : cherchez "
                                            "un objet officiel ou créez-en un sur mesure ; il arrive ici, dans le sac."))
         self.magic_btn.clicked.connect(lambda: self.sub.setCurrentIndex(1))
+        self.infuse_btn = QPushButton("✨ Infusions d'objet…")   # v53 : toutes les fiches
+        self.infuse_btn.setToolTip(rich_tip("Infusions d'objet", "Appliquer ou retirer une infusion d'artificier sur "
+                                            "un objet ordinaire de l'inventaire (bonus appliqués selon le niveau de "
+                                            "l'artificier), ou ajouter un élixir expérimental reçu d'un Alchimiste."))
+        self.infuse_btn.clicked.connect(self._on_infusions)
         cat_row = QHBoxLayout()
         cat_row.addWidget(self.catalog_btn)
         cat_row.addWidget(self.magic_btn)
-        no_truncate(self.catalog_btn, self.magic_btn)
+        cat_row.addWidget(self.infuse_btn)
+        no_truncate(self.catalog_btn, self.magic_btn, self.infuse_btn)
         left.addLayout(cat_row)
 
         inv = QGroupBox("Équipement porté")
@@ -173,6 +179,29 @@ class InventoryTab(BaseTab):
         self.weapons_grid = QGridLayout(wbox)
         self._weapons_key = None
         right.addWidget(wbox)
+        # v53 : infusions de l'artificier (ses objets + celles posées chez un allié, saisies à la main)
+        self.inf_box = QGroupBox("Infusions en cours")
+        ifl = QVBoxLayout(self.inf_box)
+        self.inf_list = QListWidget()
+        self.inf_list.setMaximumHeight(120)
+        ifl.addWidget(self.inf_list)
+        self.inf_warn = make_label("", "warn", wrap=True)
+        ifl.addWidget(self.inf_warn)
+        irow = QHBoxLayout()
+        self.inf_ally_btn = QPushButton("＋ Chez un allié…")
+        self.inf_ally_btn.setToolTip(rich_tip("Infusion chez un allié", "Noter une infusion posée sur l'objet d'un "
+                                              "autre personnage (texte libre, aucun lien avec sa fiche)."))
+        self.inf_del_btn = QPushButton("✖ Retirer")
+        self.inf_old_btn = QPushButton("Retirer la plus ancienne")
+        self.inf_old_btn.setProperty("role", "danger")
+        for b in (self.inf_ally_btn, self.inf_del_btn, self.inf_old_btn):
+            irow.addWidget(b)
+        irow.addStretch(1)
+        ifl.addLayout(irow)
+        self.inf_ally_btn.clicked.connect(self._on_ally_infusion)
+        self.inf_del_btn.clicked.connect(self._on_del_infusion)
+        self.inf_old_btn.clicked.connect(self._on_del_oldest_infusion)
+        right.addWidget(self.inf_box)
         tools = QGroupBox("Maîtrises d'outils")
         tl = QVBoxLayout(tools)
         row = QHBoxLayout()
@@ -423,6 +452,82 @@ class InventoryTab(BaseTab):
         self.changed()
         return True
 
+    # ------------------------------------------------------------------ v53 : infusions et élixirs
+    def _on_infusions(self) -> None:
+        from .infusion_dialog import open_infusions
+        open_infusions(self.win)
+        self.changed()
+
+    def _refresh_infusions(self) -> None:
+        eng = self.engine
+        show = eng.class_level("Artificier") >= 2
+        self.inf_box.setVisible(show)
+        if not show:
+            return
+        st = eng.infusions_in_progress()
+        self._inf_rows = st["rows"]
+        self.inf_box.setTitle("Infusions en cours : {} / {}".format(len(st["rows"]), st["max"]))
+        self.inf_list.clear()
+        for r in st["rows"]:
+            self.inf_list.addItem("{} — {} ({})".format(r["infusion"], r["objet"] or "objet",
+                                                        "moi" if r["type"] == "moi" else r["personnage"] or "allié"))
+        if not st["rows"]:
+            self.inf_list.addItem("Aucune infusion en cours.")
+        old = st["rows"][0] if st["rows"] else None
+        self.inf_warn.setText("⚠ Maximum dépassé : l'infusion la plus ancienne prend fin ({} — {}).".format(
+            old["infusion"], old["objet"]) if st["depasse"] and old else "")
+        self.inf_warn.setVisible(bool(st["depasse"]))
+        self.inf_old_btn.setVisible(bool(st["depasse"]))
+        self.inf_del_btn.setEnabled(bool(st["rows"]))
+
+    def _remove_infusion_row(self, r: dict) -> None:
+        eng = self.engine
+        if r["type"] == "allie":
+            eng.remove_ally_infusion(r["idx"])
+            self.win.statusBar().showMessage("Infusion chez {} retirée.".format(r["personnage"] or "l'allié"), 6000)
+        else:
+            self.win.statusBar().showMessage(eng.remove_infusion(r["idx"]), 6000)
+        self.changed()
+
+    def _on_del_infusion(self) -> None:
+        row = self.inf_list.currentRow()
+        rows = getattr(self, "_inf_rows", [])
+        if 0 <= row < len(rows):
+            self._remove_infusion_row(rows[row])
+
+    def _on_del_oldest_infusion(self) -> None:
+        rows = getattr(self, "_inf_rows", [])
+        if rows:
+            self._remove_infusion_row(rows[0])
+
+    def _on_ally_infusion(self) -> None:
+        from PyQt6.QtWidgets import QDialog, QGridLayout, QLineEdit
+        from core.infusions import infusion_defs
+        eng = self.engine
+        dlg = QDialog(self)
+        dlg.setWindowTitle("Infusion chez un allié")
+        g = QGridLayout(dlg)
+        combo = QComboBox()
+        combo.addItems(eng.known_infusions() or list(infusion_defs()))
+        obj, who = QLineEdit(), QLineEdit()
+        obj.setPlaceholderText("Objet (ex. Épée longue)")
+        who.setPlaceholderText("Nom du personnage")
+        for r, (label, wid) in enumerate((("Infusion", combo), ("Objet", obj), ("Personnage", who))):
+            g.addWidget(make_label(label), r, 0)
+            g.addWidget(wid, r, 1)
+        ok = QPushButton("Noter l'infusion")
+        ok.clicked.connect(dlg.accept)
+        g.addWidget(ok, 3, 1)
+        if dlg.exec():
+            eng.add_ally_infusion(combo.currentText(), obj.text(), who.text())
+            self.changed()
+
+    def _on_give_elixir(self, name: str) -> None:
+        msg = self.engine.give_elixir(name)
+        if msg:
+            self.win.statusBar().showMessage(msg + " Côté allié : « ✨ Infusions d'objet… » > « Élixir reçu ».", 8000)
+            self.changed()
+
     def _on_del_item(self):
         r = self.table.currentRow()
         m = self.magic_row(r)
@@ -552,6 +657,7 @@ class InventoryTab(BaseTab):
 
     def refresh(self):
         eng, db, ch, t = self.engine, self.db, self.ch, theme.current()
+        self._refresh_infusions()                        # v53 : encart de l'artificier
         self._magic_stale = True
         self._refresh_visible_sub()
         self.paperdoll.refresh()

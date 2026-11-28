@@ -74,6 +74,8 @@ class ItemPassivesMixin:
             imm = list(item.get("immunites") or [])
             cond = list(item.get("immunites_etats") or [])
             m.update(advantage_mech(item.get("avantages"), item.get("desavantages")))   # v53
+            if item.get("vitesse_bonus"):                # v53 : Armure de propulsion arcanique (infusion)
+                m["vitesse_bonus"] = float(item["vitesse_bonus"])
             if item.get("js_bonus"):
                 m.setdefault("js", {})["*"] = [int(item["js_bonus"])]
         else:

@@ -260,6 +260,10 @@ class SpellItemBonusMixin:
             item = self.magic_item(e.get("nom", "")) or {}
             if not e.get("equipe") or e.get("detruit") or (item.get("lien") and not e.get("harmonise")):
                 continue
+            if item.get("bonus_sorts"):                  # v53 : Focaliseur arcanique amélioré (infusion)
+                atk += int(item["bonus_sorts"])
+                src.append(self.magic_display_name(e))
+                continue
             rule = spell_bonus_rule(item)
             if not rule or (rule["classes"] and class_name and class_name not in rule["classes"]):
                 continue

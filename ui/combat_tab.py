@@ -760,11 +760,37 @@ class CombatTab(BaseTab):
         if not getattr(eng, "dropped_to_zero", False):
             return
         eng.dropped_to_zero = False
+        if self._soul_of_artifice():                      # v53 : Âme de l'artifice — reste à 1 PV
+            return
         if ask_yes_no(self.win, "0 PV — inconscient", "Vous tombez à 0 PV : vous êtes inconscient et à terre.\n\n"
                       "Faites un jet de sauvegarde contre la mort au début de chacun de vos tours (10 ou plus : "
                       "réussite ; 3 réussites : stabilisé ; 3 échecs : mort).", yes="🎲 Lancer le jet maintenant",
                       no="Plus tard", default_no=False):
             self._on_death_save()
+
+    def _soul_of_artifice(self) -> bool:
+        """Artificier 20 : à 0 PV (sans être tué sur le coup), réaction pour mettre fin à une infusion et rester à
+        1 PV. Renvoie True si l'artificier y a recours."""
+        eng, ch = self.engine, self.ch
+        rows = eng.infusions_in_progress()["rows"] if eng.class_level("Artificier") >= 20 else []
+        if not rows or ch.reaction_utilisee:
+            return False
+        labels = {"{} — {} ({})".format(r["infusion"], r["objet"], r["personnage"]): r for r in rows}
+        picked = ask_choice(self.win, "Âme de l'artifice", "Vous tombez à 0 PV. Par une réaction, mettez fin à "
+                            "l'une de vos infusions pour rester à 1 PV :", ["Ne pas l'utiliser"] + list(labels))
+        if not picked or picked not in labels:
+            return False
+        r = labels[picked]
+        if r["type"] == "allie":
+            eng.remove_ally_infusion(r["idx"])
+        else:
+            eng.remove_infusion(r["idx"])
+        ch.pv_actuels = 1
+        eng.wake_up()
+        ch.reaction_utilisee = "Âme de l'artifice"
+        self._message("Âme de l'artifice : infusion « {} » terminée, vous restez à 1 PV.".format(r["infusion"]))
+        self.changed()
+        return True
 
     # ------------------------------------------------------------------ barre du tour (v30)
     TURN_FILTERS = ["Tout", "Action", "Action bonus", "Réaction", "Gratuit"]
@@ -1321,6 +1347,12 @@ class CombatTab(BaseTab):
                                                          kind="de"))
                 if r is not None:
                     self._message(eng.resolve_item_destruction(res["entree"], r.total))
+            self.changed()
+            return
+        if res.get("ok") and tile_id == "classe:cap:elixir":   # v53 : Alchimiste — effet au choix
+            from core.elixirs import ELIXIRS
+            picked = ask_choice(win, "Créer un élixir", "Emplacement dépensé. Effet de l'élixir :", list(ELIXIRS))
+            self._message(eng.create_elixir(picked or ELIXIRS[0]))
             self.changed()
             return
         if res.get("ok") and tile_id == "classe:cap:forme_sauvage":   # v39 : choix de la bête puis transformation

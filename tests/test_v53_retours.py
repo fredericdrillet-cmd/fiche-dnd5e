@@ -1171,3 +1171,138 @@ class ArmurierTests(unittest.TestCase):
         eng = self.sheet(lvl=15)
         self.assertIn("classe:cap:attraction_magnetique", self.tiles(eng))
         self.assertIn("DD", eng.armor_model_text("Gardien"))
+
+
+class InfusionsTests(unittest.TestCase):
+    """v53 : infusions d'artificier sur n'importe quelle fiche, suivi côté artificier, élixirs de l'Alchimiste."""
+
+    def fighter(self):
+        ch = Engine.new_character(DB)
+        ch.nom = "Brann"
+        ch.classes = [{"nom": "Guerrier", "niveau": 5, "sous_classe": "", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        ch.armes_cac[0]["nom"] = "Épée longue"
+        ch.armure["nom"] = "Cotte de mailles"
+        return Engine(DB, ch)
+
+    def test_liste_tasha(self):
+        from core.infusions import infusion_defs, replicable_items
+        self.assertEqual(len(infusion_defs()), 16)
+        self.assertIn("Sac sans fond", replicable_items(2))
+        self.assertNotIn("Bottes de rapidité", replicable_items(10))
+
+    def test_arme_amelioree_selon_le_niveau(self):
+        eng = self.fighter()
+        base = eng.weapon_stats(eng.ch.armes_cac[0])["attaque"]
+        self.assertIn("slot:armes_cac:0", [c["key"] for c in eng.infusion_candidates("Arme améliorée")])
+        eng.apply_infusion("Arme améliorée", "slot:armes_cac:0", "Tink", 10)
+        eng = Engine(DB, eng.ch)
+        self.assertEqual(eng.weapon_stats(eng.ch.armes_cac[0])["attaque"], base + 2)
+        idx = eng.infused_entries()[0][0]
+        eng.set_infusion_level(idx, 5)
+        eng = Engine(DB, eng.ch)
+        self.assertEqual(eng.weapon_stats(eng.ch.armes_cac[0])["attaque"], base + 1)
+        eng.remove_infusion(idx)
+        eng = Engine(DB, eng.ch)
+        self.assertEqual(eng.ch.armes_cac[0]["nom"], "Épée longue")
+        self.assertEqual(eng.weapon_stats(eng.ch.armes_cac[0])["attaque"], base)
+        self.assertEqual(eng.infused_entries(), [])
+
+    def test_defense_et_objet_non_liste(self):
+        eng = self.fighter()
+        ca = eng.armor_class()[0]
+        eng.apply_infusion("Défense améliorée", "armure", "Tink", 3)
+        self.assertEqual(Engine(DB, eng.ch).armor_class()[0], ca + 1)
+        name = eng.apply_infusion("Heaume de vigilance", "nouveau:Casque", "Tink", 10)
+        eng = Engine(DB, eng.ch)
+        self.assertTrue(name)
+        self.assertTrue(eng.initiative_detail()["avantage"])
+        idx = next(i for i, e in eng.infused_entries() if "Heaume" in e["nom"])
+        eng.remove_infusion(idx)
+        self.assertTrue(any(e["nom"] == "Casque" for e in eng.ch.equipement))   # redevient un objet ordinaire
+
+    def test_objets_magiques_exclus(self):
+        eng = self.fighter()
+        eng.apply_infusion("Arme améliorée", "slot:armes_cac:0", "Tink", 3)
+        eng = Engine(DB, eng.ch)
+        self.assertNotIn("slot:armes_cac:0", [c["key"] for c in eng.infusion_candidates("Arme améliorée")])
+
+    def test_reproduction_et_homoncule(self):
+        eng = self.fighter()
+        self.assertEqual(eng.apply_infusion("Reproduction d'objet magique", "", "Tink", 2, "Sac sans fond"),
+                         "Sac sans fond")
+        n = len(eng.ch.menagerie)
+        eng.apply_infusion("Serviteur homoncule", "nouveau:Gemme (100 po)", "Tink", 3)
+        self.assertEqual(len(eng.ch.menagerie), n + 1)
+        idx = next(i for i, e in eng.infused_entries() if "homoncule" in e["nom"].lower())
+        eng.remove_infusion(idx)
+        self.assertEqual(len(eng.ch.menagerie), n)
+
+    def test_suivi_artificier(self):
+        ch = Engine.new_character(DB)
+        ch.nom = "Tink"
+        ch.classes = [{"nom": "Artificier", "niveau": 9, "sous_classe": "Armurier", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        self.assertEqual(eng.infusion_known_count(), 6)
+        self.assertEqual(eng.infusion_max(), 3 + 2)              # Armurier 9 : +2
+        self.assertTrue(any(s["key"] == "infusions" for s in eng.option_sets()))
+        eng.add_ally_infusion("Arme améliorée", "Épée longue", "Brann")
+        eng.apply_infusion("Heaume de vigilance", "nouveau:Casque")
+        st = eng.infusions_in_progress()
+        self.assertEqual([r["type"] for r in st["rows"]], ["allie", "moi"])
+        self.assertEqual(st["depasse"], 0)
+
+    def test_elixirs(self):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Artificier", "niveau": 6, "sous_classe": "Alchimiste", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.do_long_rest(elixir_rolls=[1, 3])
+        self.assertEqual(eng.last_elixirs["crees"], ["Guérison", "Résistance"])
+        eng.do_long_rest(elixir_rolls=[5, 5])
+        self.assertEqual(eng.last_elixirs["disparus"], ["Guérison", "Résistance"])
+        idx = next(i for i, x in enumerate(ch.equipement) if x["nom"] == "Élixir expérimental (Vol)")
+        self.assertEqual(ch.equipement[idx]["qte"], 2)
+        eng.use_consumable("equipement", idx)
+        self.assertIn("vol", eng.other_speeds())
+        self.assertTrue(eng.give_elixir("Élixir expérimental (Vol)"))
+        other = _race_sheet("Humain")
+        other.receive_elixir("Guérison", 9, 3)
+        other.ch.pv_actuels = 1
+        i = next(i for i, x in enumerate(other.ch.equipement) if "Élixir" in x["nom"])
+        msg = other.use_consumable("equipement", i)
+        self.assertIn("PV temporaires", msg)                     # Ingrédients revigorants (niveau 9)
+
+    def test_interface(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        from ui.infusion_dialog import InfusionDialog
+        win = MainWindow(DB)
+        dlg = InfusionDialog(win)
+        dlg.refresh()
+        win.inventory_tab.refresh()
+        self.assertFalse(win.inventory_tab.inf_box.isVisible() and False)
+
+
+class InfusionsArmurierTests(unittest.TestCase):
+    def test_pieces_de_l_armure_arcanique(self):
+        ch = Engine.new_character(DB)
+        ch.nom = "Tink"
+        ch.classes = [{"nom": "Artificier", "niveau": 10, "sous_classe": "Armurier", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_armor_model("Gardien")
+        ch.armure["nom"] = "Harnois"
+        eng = Engine(DB, ch)
+        self.assertIn("modele", [c["key"] for c in eng.infusion_candidates("Arme améliorée")])
+        self.assertIn("nouveau:Casque (armure arcanique)",
+                      [c["key"] for c in eng.infusion_candidates("Heaume de vigilance")])
+        before = eng.weapon_stats(eng.model_slot())["attaque"]
+        eng.apply_infusion("Arme améliorée", "modele")
+        eng = Engine(DB, ch)
+        self.assertEqual(eng.weapon_stats(eng.model_slot())["attaque"], before + 2)
+        eng.remove_infusion(eng.infused_entries()[0][0])
+        self.assertEqual(ch.equipement, [])               # aucune pièce d'armure ne tombe dans le sac

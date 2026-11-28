@@ -454,6 +454,12 @@ class ExtrasMixin:
         if not 0 <= index < len(items):
             return ""
         name = items[index]["nom"]
+        if norm(name).startswith("elixir experimental"):   # v53 : élixir de l'Alchimiste
+            msg = self.drink_elixir(name, rng)
+            items[index]["qte"] = int(items[index].get("qte", 1)) - 1
+            if items[index]["qte"] <= 0:
+                items.pop(index)
+            return msg
         kind, arg = M.potion_action(name)
         rng = rng or random
         before_keys = set(self.ch.effets_actifs)
@@ -952,7 +958,8 @@ class ExtrasMixin:
         self.advance_time(SHORT_REST_MIN)
         self.log("Repos court")
 
-    def do_long_rest(self, eat_ration: bool = False, recharge_rolls: Optional[dict] = None) -> None:
+    def do_long_rest(self, eat_ration: bool = False, recharge_rolls: Optional[dict] = None,
+                     elixir_rolls: Optional[list] = None) -> None:
         self.rest_from_zero()                            # v52 : à 0 PV, on se réveille à 1 PV
         self.ch.effets_actifs = [k for k in self.ch.effets_actifs if k != "a_terre"]
         if self.ch.forme_active:
@@ -960,6 +967,9 @@ class ExtrasMixin:
         self._recharge_rolls = recharge_rolls             # v52 : recharges d'objets lancées par l'interface
         self.long_rest()
         self._recharge_rolls = None
+        self.last_elixirs = {"crees": [], "disparus": []}
+        if self.alchemist_level() or self.own_elixirs():  # v53 : élixirs expérimentaux de l'Alchimiste
+            self.last_elixirs = self.long_rest_elixirs(elixir_rolls)
         exhaustion = sorted(k for k in self.ch.effets_actifs if k.startswith("epuisement_"))
         if exhaustion:
             lvl = int(exhaustion[-1].split("_")[1])

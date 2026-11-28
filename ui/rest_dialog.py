@@ -100,6 +100,17 @@ class RestDialog(QDialog):
             self._build_spell_section(lay)
             self._build_swap_section(lay)
 
+        self.elixir_count = eng.free_elixir_count() if long_rest else 0
+        if long_rest and (self.elixir_count or eng.own_elixirs()):   # v53 : élixirs expérimentaux (Alchimiste)
+            lay.addWidget(make_label("🧪 Élixirs expérimentaux", "head"))
+            gone = [e["effet"] for e in eng.own_elixirs()]
+            lines = []
+            if self.elixir_count:
+                lines.append("À la fin du repos : {} élixir{} créé{}, effet tiré au d6 (outils d'alchimiste en main)."
+                             .format(self.elixir_count, "s" * (self.elixir_count > 1), "s" * (self.elixir_count > 1)))
+            if gone:
+                lines.append("Disparaîtront (non bus depuis le dernier repos long) : " + ", ".join(gone) + ".")
+            lay.addWidget(make_label("<br/>".join(html.escape(x) for x in lines), "muted", wrap=True))
         self.model_combo = None                          # v53 : Armurier — changer de modèle à la fin du repos
         if eng.armorer_level():
             from PyQt6.QtWidgets import QComboBox
@@ -309,7 +320,15 @@ class RestDialog(QDialog):
                 r = roll_damage_dialog(self.win, D.DamageSpec("Recharge — " + name, formula, kind="de"))
                 if r is not None:
                     rolls[idx] = r.total
-            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()), recharge_rolls=rolls)
+            elixir_rolls = []                              # v53 : 1d6 animé par élixir expérimental
+            for k in range(self.elixir_count):
+                r = roll_damage_dialog(self.win, D.DamageSpec("Élixir expérimental {} / {} — 1 Guérison, 2 Rapidité, "
+                                                               "3 Résistance, 4 Audace, 5 Vol, 6 Transformation".format(
+                                                                   k + 1, self.elixir_count), "1d6", kind="de"))
+                if r is not None:
+                    elixir_rolls.append(r.total)
+            eng.do_long_rest(eat_ration=bool(self.ration and self.ration.isChecked()), recharge_rolls=rolls,
+                             elixir_rolls=elixir_rolls)
             if self.starving is not None and self.starving.isChecked():     # v52 : après la récupération du repos
                 eng.gain_exhaustion("Privation de nourriture")
             self.spell_messages = self._apply_spell_changes()
@@ -341,6 +360,15 @@ def run_rest(win, kind: str) -> bool:
         msgs = getattr(dialog, "spell_messages", None)
         if kind == "long" and isinstance(msgs, list) and msgs:
             win.statusBar().showMessage(" ".join(msgs), 10000)
+        elix = getattr(win.engine, "last_elixirs", None)  # v53 : élixirs apparus / disparus
+        if kind == "long" and isinstance(elix, dict) and (elix.get("crees") or elix.get("disparus")):
+            from .dialogs import ask_yes_no
+            parts = []
+            if elix.get("crees"):
+                parts.append("Élixirs créés (ajoutés à l'inventaire) : " + ", ".join(elix["crees"]) + ".")
+            if elix.get("disparus"):
+                parts.append("Élixirs disparus (non bus) : " + ", ".join(elix["disparus"]) + ".")
+            ask_yes_no(win, "🧪 Élixirs expérimentaux", "\n".join(parts), yes="OK", no="Fermer", default_no=False)
         # v44 : la préparation se fait désormais DANS la fenêtre de repos (bouton « Changer les sorts préparés ») ;
         # offer_preparation() reste disponible pour l'onglet Magie
     else:

@@ -115,6 +115,8 @@ class Character:
     tour_deplacement: float = 0.0           # mètres parcourus ce tour
     modes_reactions: dict[str, str] = field(default_factory=dict)   # clé de réaction -> "auto" | "off"
     options_classe: dict[str, list] = field(default_factory=dict)   # v36 — runes, options de Tir arcanique…
+    infusions_allies: list[dict] = field(default_factory=list)   # v53 : infusions posées chez un allié (texte libre)
+    elixirs: list[dict] = field(default_factory=list)            # v53 : élixirs expérimentaux de l'Alchimiste
     technique_manoeuvre: str = ""           # v35 — style « Technique supérieure » : manœuvre apprise
     jeu_armes: str = "melee"                # v31, sans effet depuis v34 (gardé pour les anciennes sauvegardes)
     temps_minutes: int = 0                  # temps de jeu écoulé depuis le jour 1, 8 h 00

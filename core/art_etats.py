@@ -244,3 +244,18 @@ def effect_body(key: str, name: str) -> Optional[str]:
         if k in n:
             return M[motif]()
     return None
+
+
+
+# v53 : élixirs expérimentaux de l'Alchimiste — fiole et symbole de l'effet
+def _elixir(motif: str):
+    from .art_kit import place
+    flask = (P("M24 8 H40 V14 H37 V24 C46 28 52 36 52 44 C52 54 43 60 32 60 C21 60 12 54 12 44 C12 36 18 28 27 24 "
+               "V14 H24 Z") + black(P("M18 44 C18 36 24 31 30 28 H34 C40 31 46 36 46 44 C46 51 40 55 32 55 C24 55 18 51 "
+                                     "18 44 Z")))
+    return flask + place(M[motif](), 32, 44, 0.42)
+
+
+CONDITIONS.update({"elixir_rapidite": lambda: _elixir("eclair"), "elixir_resistance": lambda: _elixir("bouclier"),
+                   "elixir_audace": lambda: _elixir("flamme"), "elixir_vol": lambda: _elixir("aile"),
+                   "elixir_transformation": lambda: _elixir("masque")})

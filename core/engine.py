@@ -122,6 +122,8 @@ from .situational import SituationalMixin  # noqa: E402
 from .automation import AutomationMixin  # noqa: E402
 from .passives import PassivesMixin  # noqa: E402
 from .armorer import ArmorerMixin  # noqa: E402
+from .infusions import InfusionsMixin  # noqa: E402
+from .elixirs import ElixirsMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -153,7 +155,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
              LightMixin, JournalMixin, ItemPassivesMixin, SituationalMixin,
-             AutomationMixin, PassivesMixin, ArmorerMixin):
+             AutomationMixin, PassivesMixin, ArmorerMixin,
+             InfusionsMixin, ElixirsMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db

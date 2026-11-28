@@ -72,7 +72,13 @@ class ArmorerMixin:
         return next((n for n, w in MODEL_WEAPONS.items() if w["modele"] == model), "")
 
     def model_slot(self) -> dict:
-        return {"nom": self.model_weapon_name(), "bonus": 0, "maitrise": True, "affichage": self.model_weapon_name()}
+        bonus, label = 0, self.model_weapon_name()
+        for e in self.ch.objets_magiques:                 # v53 : infusion posée sur l'arme du modèle (Armurier 9)
+            item = (self.ch.objets_perso or {}).get(e.get("nom", "")) or {}
+            if item.get("arme_modele_bonus") and e.get("equipe", True) and (e.get("harmonise") or not item.get("lien")):
+                bonus = max(bonus, int(item["arme_modele_bonus"]))
+                label = "{} ({})".format(label, item.get("infusion", ""))
+        return {"nom": self.model_weapon_name(), "bonus": bonus, "maitrise": True, "affichage": label}
 
     def armorer_modifiers(self) -> list[tuple[str, dict]]:
         if self.arcane_armor_active() and self.armor_model_base() == "Infiltré":

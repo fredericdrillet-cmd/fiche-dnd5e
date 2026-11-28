@@ -155,6 +155,9 @@ class SubclassFeaturesMixin:
             tech = self.ch.technique_manoeuvre
             out.append({"key": "technique_superieure", "label": "Technique supérieure (style de combat)", "total": 1,
                         "options": dict(self.db.maneuvers), "chosen": [tech] if tech in self.db.maneuvers else []})
+        inf = self.infusion_option_set() if hasattr(self, "infusion_option_set") else None
+        if inf:                                          # v53 : infusions connues de l'Artificier
+            out.append(inf)
         meta = self.metamagic_option_set()               # v39 : options de métamagie de l'Ensorceleur
         if meta:
             out.append(meta)

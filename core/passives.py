@@ -239,6 +239,8 @@ class PassivesMixin:
         out: dict[str, float] = {}
         if hasattr(self, "swim_speed") and self.swim_speed():
             out["nage"] = self.swim_speed()               # Don des profondeurs (manifestation)
+        if "elixir_vol" in self.ch.effets_actifs:         # v53 : élixir expérimental (Vol)
+            out["vol"] = max(out.get("vol", 0.0), 3.0)
         for _, spec in self.passive_entries():
             for kind, val in (spec.get("vitesses") or {}).items():
                 v = walk if val == "marche" else float(val)
