@@ -120,6 +120,7 @@ from .journal import JournalMixin  # noqa: E402
 from .item_passives import ItemPassivesMixin  # noqa: E402
 from .situational import SituationalMixin  # noqa: E402
 from .automation import AutomationMixin  # noqa: E402
+from .passives import PassivesMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -151,7 +152,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
              LightMixin, JournalMixin, ItemPassivesMixin, SituationalMixin,
-             AutomationMixin):
+             AutomationMixin, PassivesMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -1022,6 +1023,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         monk = self.class_level("Moine")
         if monk >= 2 and armor.get("categorie", "aucune") == "aucune" and not self.ch.armure.get("bouclier"):
             base += 3 if monk < 6 else 4.5 if monk < 10 else 6 if monk < 14 else 7.5 if monk < 18 else 9
+        base = max(base, self.passive_speed_min())           # v53 : Bottes de sept lieues (9 m au moins)
         beast = self.wild_form()
         if beast is not None:                                # Forme sauvage : vitesse de marche de la bête
             m = re.match(r"\s*([\d,\.]+)", beast["vitesse"])
@@ -1166,6 +1168,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                 options["Défense sans armure (barbare)"] = [("10", 10), ("Dex", dex), ("Con", self.mod("Constitution"))]
             options.update(self.subclass_unarmored())    # v52 : Pirouettes éblouissantes (Collège de la Danse)
             options.update(self.tattoo_unarmored())      # v53 : Tatouage barrière (bouclier permis)
+            options.update(self.natural_armor_options())  # v53 : armure naturelle (Homme-lézard, Tortle…)
             if self.class_level("Moine") and not a.get("bouclier"):
                 options["Défense sans armure (moine)"] = [("10", 10), ("Dex", dex), ("Sag", self.mod("Sagesse"))]
             for e in self.ch.classes:
@@ -1392,6 +1395,10 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if self.style_active("Combat à mains nues"):
             notes.append("Combat à mains nues : d6 (d8 si aucune arme ni bouclier)")
             best = max(best, 6)
+        nat = self.natural_weapon()                       # v53 : arme naturelle de la race (Serres, Griffes…)
+        if nat[0]:
+            notes.append("{} : d{} {}".format(nat[2], nat[0], nat[1]))
+            best = max(best, nat[0])
         dance = self.subclass24_unarmed_die()             # v52 : Collège de la Danse (dé d'inspiration)
         if dance:
             notes.append("Dégâts bardiques : d{}".format(dance))
@@ -1425,7 +1432,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             ab = "Dextérité"
         else:
             ab = "Force"
-        auto = R.weapon_proficient(w["nom"], w["categorie"], self.weapon_proficiencies()) or unarmed
+        bow_prof, bow_dmg, bow_src = self.bow_item_bonus(w["nom"])   # v53 : Bracelets d'archer
+        auto = R.weapon_proficient(w["nom"], w["categorie"], self.weapon_proficiencies()) or unarmed or bow_prof
         prof = auto if slot.get("maitrise") is None else bool(slot["maitrise"])
         magic = int(slot.get("bonus", 0))
         mod = self.mod(ab)
@@ -1435,11 +1443,15 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             attack += 2
             notes.append("Archerie : +2 au toucher")
         die = w["degats"]
+        dtype = w["type_degats"]
         if unarmed:
             sides, sources = self.unarmed_die()
             if sides:
                 die = f"1d{sides}"
                 notes += sources
+                nat = self.natural_weapon()               # v53 : type de dégâts de l'arme naturelle
+                if nat[0] and nat[0] == sides and nat[1]:
+                    dtype = nat[1]
         twf = self.style_active("Combat à deux armes")
         mod_used = mod if (not offhand or mod < 0 or twf) else 0
         flat = mod_used + magic
@@ -1448,6 +1460,9 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if magic:
             terms.append(("Objet magique : {}".format(slot["affichage"]) if slot.get("affichage")
                           else "Arme magique", magic))
+        if bow_dmg:
+            flat += bow_dmg
+            terms.append(("Objet : " + bow_src, bow_dmg))
         if offhand:
             notes.append("Main secondaire : modificateur {} aux dégâts{}".format(
                 "ajouté (style Combat à deux armes)" if twf and mod > 0 else
@@ -1524,7 +1539,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             calc_1m, calc_2m = calc, ""
         versatile = (one_txt if two_handed_grip else two_txt) if w.get("polyvalent") else ""
         return {"nom": w["nom"], "affichage": slot.get("affichage") or w["nom"], "carac": ab, "maitrise": bool(prof), "auto_maitrise": bool(auto),
-                "attaque": attack, "degats": text, "polyvalent": versatile, "type_degats": w["type_degats"],
+                "attaque": attack, "degats": text, "polyvalent": versatile, "type_degats": dtype,
                 "polyvalente": bool(w.get("polyvalent")), "deux_mains": two_handed_grip,
                 "deux_mains_possible": versatile_ok, "degats_1m": one_txt, "degats_2m": two_txt,
                 "prise": ("à deux mains" if two_handed_grip else "à une main") if w.get("polyvalent") else "",
@@ -2557,7 +2572,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         """×2 pour les races dotées de « Puissante carrure » (Goliath, Firbolg, Centaure...)."""
         race = self.db.races.get(self.ch.race, {})
         strong = any(norm(c.get("nom", "")).startswith("puissante carrure") for c in race.get("capacites", []))
-        return 2 if strong else 1
+        return 2 if strong or self.passive_carry_x2() else 1      # v53 : « compte comme une taille de plus »
 
     def carry_capacity(self) -> float:
         """Capacité de charge (Manuel des Joueurs) : Force × 7,5 kg (× 2 avec Puissante carrure)."""

@@ -72,6 +72,8 @@ class RaceTab(BaseTab):
         ll.addWidget(self.langs)
         self.add_lang = QPushButton("Noter les langues de l'historique")
         ll.addWidget(self.add_lang)
+        self.item_langs = make_label("", "muted", wrap=True)   # v53 : langues parlées grâce à un objet porté
+        ll.addWidget(self.item_langs)
         root.addWidget(lbox, 1)
 
         self.race.activated.connect(self._on_race)
@@ -149,6 +151,10 @@ class RaceTab(BaseTab):
         state = "" if have == allowed else "  — {} de trop".format(have - allowed) if have > allowed else \
             "  — {} à choisir".format(allowed - have)
         self.lang_count.setText("Langues choisies : {} / {}{}".format(have, allowed, state))
+        by_items = eng.item_languages()
+        self.item_langs.setText("Grâce à vos objets : " + ", ".join("{} ({})".format(l, o) for l, o in by_items)
+                                if by_items else "")
+        self.item_langs.setVisible(bool(by_items))
         self.lang_count.setStyleSheet("color: {}; font-weight: bold;".format(color))
         lines = ["Langues fixes (espèce, historique) : {}".format(len(eng.languages_fixed()))]
         lines += ["{} : {} au choix".format(src, n) for src, n in eng.language_grants()]
@@ -220,8 +226,9 @@ class RaceTab(BaseTab):
             bonus = (bonus + " ; " if bonus else "") + "{} au choix (sur des caractéristiques différentes, onglet " \
                 "Caractéristiques)".format(", ".join(R.fmt_bonus(v) for v in free))
         bonus = bonus or "aucun"
-        self.race_meta.setText("Source : {} — Vitesse : {} — Bonus de caractéristiques : {}".format(
-            race.get("source", "?"), eng.speed_text(), bonus))
+        others = eng.other_speeds_text()                 # v53 : nage, vol, escalade
+        self.race_meta.setText("Source : {} — Vitesse : {}{} — Bonus de caractéristiques : {}".format(
+            race.get("source", "?"), eng.speed_text(), " (" + others + ")" if others else "", bonus))
         self._traits = eng.race_traits()
         row = self.traits.currentRow()
         with blocked(self.traits):

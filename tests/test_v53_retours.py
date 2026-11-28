@@ -1052,3 +1052,65 @@ class SurMesureEtModeLibreTests(unittest.TestCase):
         self.assertTrue(win.stats_tab.abilities.compact_racial)
         from ui.abilities_tab import AbilitiesTab
         self.assertFalse(AbilitiesTab(win).compact_racial)   # assistant de création : inchangé
+
+
+class PassifsSansConditionTests(unittest.TestCase):
+    """v53 : effets passifs lus et appliqués (CA naturelle, vitesses, initiative, charge, sens, objets…)."""
+
+    def sheet(self, race="Humain", cls="Guerrier", sub="", items=(), lvl=5):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": cls, "niveau": lvl, "sous_classe": sub, "pv_jets": []}]
+        ch.race = race
+        eng = Engine(DB, ch)
+        eng.normalize()
+        for it in items:
+            ch.objets_magiques.append({"nom": it, "equipe": True, "harmonise": True})
+        return Engine(DB, ch)
+
+    def test_armure_naturelle(self):
+        base = self.sheet().armor_class()[0]
+        self.assertEqual(self.sheet("Homme lézard").armor_class()[0], base + 3)       # 13 + Dex au lieu de 10 + Dex
+        self.assertEqual(self.sheet("Tortle").armor_class()[0], 17)
+        self.assertEqual(self.sheet("Forgelier").armor_class()[0], base + 1)
+
+    def test_vitesses_speciales_et_charge(self):
+        self.assertIn("vol", self.sheet("Aarakocra").other_speeds())
+        self.assertIn("nage", self.sheet("Triton").other_speeds())
+        self.assertEqual(self.sheet().other_speeds(), {})
+        self.assertEqual(self.sheet("Goliath").carry_multiplier(), 2)
+        self.assertEqual(self.sheet(items=["Anneau de nage"]).other_speeds()["nage"], 12)
+
+    def test_initiative_conil(self):
+        eng = self.sheet("Conil")
+        self.assertEqual(eng.initiative_detail()["total"], self.sheet().initiative_detail()["total"] + eng.prof)
+
+    def test_objets(self):
+        base = self.sheet()
+        self.assertEqual(self.sheet(items=["Bottes du bourlingueur"]).speed(), base.speed() + 3)
+        self.assertEqual(self.sheet(items=["Bracelets de défense"]).armor_class()[0], base.armor_class()[0] + 2)
+        row = next(r for r in self.sheet(items=["Gants de chapardeur"]).skill_rows() if r["nom"] == "Escamotage")
+        self.assertIn("+5", str(row["detail"]))
+        self.assertEqual(self.sheet(items=["Lunettes de nuit"]).darkvision()["portee"], 18)
+        st = self.sheet("Humain", "Magicien", items=["Bracelets d'archer"]).weapon_stats({"nom": "Arc long"})
+        self.assertTrue(st["maitrise"])
+        self.assertIn("Vision aveugle", self.sheet(items=["Sens draconiques"]).darkvision()["detail"])
+        self.assertTrue(self.sheet(items=["Grovelthrash"]).item_languages())
+
+    def test_armes_naturelles(self):
+        st = self.sheet("Tabaxi").weapon_stats({"nom": "Mains nues"})
+        self.assertTrue(st["degats"].startswith("1d6"))
+        self.assertEqual(st["type_degats"], "tranchant")
+
+    def test_ame_de_la_forge(self):
+        eng = self.sheet(cls="Clerc", sub="Domaine de la Forge", lvl=6)
+        eng.ch.armure["nom"] = "Harnois"
+        forge = Engine(DB, eng.ch).armor_class()[0]
+        plain = self.sheet(cls="Clerc", lvl=6)
+        plain.ch.armure["nom"] = "Harnois"
+        self.assertEqual(forge, Engine(DB, plain.ch).armor_class()[0] + 1)
+
+    def test_rapport_reconnait_les_passifs(self):
+        eng = self.sheet("Homme lézard")
+        traits = {c["nom"]: c["description"] for c in eng._race_trait_list()}
+        rep = eng.text_automation("Armure naturelle", traits["Armure naturelle"], "race")
+        self.assertTrue(any("CA sans armure" in x for x in rep["auto"]))

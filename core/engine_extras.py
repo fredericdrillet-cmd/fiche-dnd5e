@@ -310,6 +310,7 @@ class ExtrasMixin:
         out += self.subclass_modifiers()                 # v52 : résistances et auras de sous-classe
         out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
         out += self.imported_race_modifiers()            # v53 : d4 des marques draconiques, Sens incisif…
+        out += self.passive_modifiers()                  # v53 : passifs lus (Forgelier, Bracelets de défense…)
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = dict(M.item_mech(entry.get("nom", "")) or M.item_mech(item.get("comme", "") or "-"))
@@ -336,7 +337,8 @@ class ExtrasMixin:
                     out.append(("Armure non maîtrisée : " + armor["nom"],
                                 {"tests": {"Force": [M.DIS], "Dextérité": [M.DIS]},
                                  "js": {"Force": [M.DIS], "Dextérité": [M.DIS]}, "attaque": [M.DIS]}))
-                if armor.get("force_min") and self.score("Force") < armor["force_min"]:
+                if armor.get("force_min") and self.score("Force") < armor["force_min"] and \
+                        not self.heavy_armor_no_slow():  # v53 : nains — vitesse non réduite en armure lourde
                     out.append(("Armure trop lourde (Force {} requise)".format(armor["force_min"]),
                                 {"vitesse_bonus": -3.0}))
         return out
@@ -889,6 +891,12 @@ class ExtrasMixin:
         if sub_dv:
             gain = sub_dv if (best == 0 or self._ed24) else 9.0
             best, src = best + gain if best else sub_dv, "Vision ombreuse (Traqueur des ténèbres)"
+        item_dv, item_src = self.item_darkvision()        # v53 : Lunettes de nuit, Couronne du prisme
+        if item_dv:
+            if best:
+                best, src = best + item_dv, src + " + " + item_src
+            else:
+                best, src, text = item_dv, item_src, "Vision dans le noir à {:g} m (objet).".format(item_dv)
         if self.tattoo_darkvision() > best:              # v53 : Tatouage de Gisombre
             best, src, text = self.tattoo_darkvision(), "Tatouage de Gisombre", "Vision dans le noir à 18 m."
         if "vision_noir" in self.ch.effets_actifs and best < 18:
@@ -907,6 +915,8 @@ class ExtrasMixin:
             if spec.get("vision_aveugle"):
                 text += "\nVision aveugle {} m ({}).".format(spec["vision_aveugle"], f)
         for line in self.class_senses():
+            text += "\n" + line + "."
+        for line in self.passive_senses():               # v53 : vision aveugle, perception des vibrations…
             text += "\n" + line + "."
         return {"portee": best, "source": src, "superieure": best >= 36, "detail": text.strip(), "magique": magic}
 

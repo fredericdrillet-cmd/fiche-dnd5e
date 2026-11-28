@@ -119,12 +119,73 @@ class AutomationMixin:
                 auto.append("tuile{} dans l'onglet En partie une fois équipé{}".format(
                     " « " + " », « ".join(sp["nom"] for sp in spells[:3]) + " »" if spells else "",
                     " ({} charges, décomptées)".format(mc.group(1)) if mc else ""))
+        if not item.get("perso"):
+            auto += self._passive_lines(desc, "objet", skip_ca=bool(item.get("ca")))
         jet = ["avantage {} ({})".format(o["condition"], self._target_label(o))
                for o in parse_situational(desc, name)] if not item.get("perso") else []
         main = self._manual_sentences(desc, covered=bool(auto) or bool(jet), item=item, entry=entry)
         if item.get("perso"):
             main = []                                     # objet sur mesure : tout ce qui est coché est appliqué
         return {"auto": list(dict.fromkeys(auto)), "jet": list(dict.fromkeys(jet)), "main": main}
+
+    @staticmethod
+    def _passive_lines(desc: str, kind: str, skip_ca: bool = False) -> list[str]:
+        """Lignes lisibles des passifs appliqués (core/passives.py)."""
+        from .passives import parse_passives
+        spec = parse_passives(desc, kind)
+        if kind == "don":
+            spec = {k: v for k, v in spec.items() if k in ("ca_naturelle", "init_avantage", "vitesses", "charge_x2")}
+        elif kind == "classe":
+            spec = {k: v for k, v in spec.items() if k in ("ca", "ca_si_armure")}
+            if any(w in norm(desc) for w in __import__("core.passives", fromlist=["x"]).TEMPORARY):
+                spec.pop("ca", None)
+        out = []
+        if spec.get("ca_naturelle"):
+            base, ab = spec["ca_naturelle"]
+            out.append("CA sans armure {}{} (retenue si elle est meilleure)".format(base, " + " + ab if ab else ""))
+        if spec.get("ca") and not skip_ca:
+            out.append("+{} à la CA".format(spec["ca"]))
+        if spec.get("ca_sans_armure"):
+            out.append("+{} à la CA sans armure ni bouclier".format(spec["ca_sans_armure"]))
+        if spec.get("ca_si_armure"):
+            out.append("+{} à la CA en armure {}".format(spec["ca_si_armure"][1], spec["ca_si_armure"][0].replace(
+                "intermediaire", "intermédiaire").replace("legere", "légère")))
+        for k, v in (spec.get("vitesses") or {}).items():
+            out.append("vitesse de {} {}".format(k, "égale à la vitesse de marche" if v == "marche" else
+                                                 "{:g} m".format(v).replace(".", ",")))
+        if spec.get("vitesse_bonus"):
+            out.append("vitesse de marche +{:g} m".format(spec["vitesse_bonus"]).replace(".", ","))
+        if spec.get("vitesse_min"):
+            out.append("vitesse de marche {:g} m au moins".format(spec["vitesse_min"]).replace(".", ","))
+        if spec.get("init") == "maitrise":
+            out.append("bonus de maîtrise à l'initiative")
+        elif spec.get("init"):
+            out.append("+{} à l'initiative".format(spec["init"]))
+        if spec.get("init_avantage"):
+            out.append("avantage à l'initiative")
+        if spec.get("charge_x2"):
+            out.append("capacité de charge doublée")
+        for sense, dist in (spec.get("sens") or {}).items():
+            out.append("{} {:g} m".format(sense, dist).replace(".", ","))
+        for sk, v in (spec.get("competences") or {}).items():
+            out.append("+{} en {}".format(v, sk))
+        if spec.get("langues"):
+            out.append("langues : " + ", ".join(spec["langues"]))
+        if spec.get("pv_par_niveau"):
+            out.append("PV max +1 par niveau")
+        if spec.get("pv_fixe_niveau"):
+            out.append("PV max +{} + niveau".format(spec["pv_fixe_niveau"]))
+        if spec.get("vision_noir"):
+            out.append("vision dans le noir {:g} m (cumulée)".format(spec["vision_noir"]))
+        if spec.get("arcs_maitrise"):
+            out.append("maîtrise des arcs longs et courts")
+        if spec.get("arcs_degats"):
+            out.append("+{} aux dégâts avec un arc".format(spec["arcs_degats"]))
+        if spec.get("armure_lourde_sans_malus"):
+            out.append("vitesse non réduite en armure lourde")
+        if spec.get("maladies"):
+            out.append("immunité aux maladies")
+        return out
 
     @staticmethod
     def _target_label(o: dict) -> str:
@@ -148,11 +209,32 @@ class AutomationMixin:
             out.append(_short(s))
         return out[:6]
 
-    def _sentence_handled(self, sentence: str, item: dict | None, entry: dict | None) -> bool:
+    def _sentence_handled(self, sentence: str, item: dict | None, entry: dict | None, kind: str = "") -> bool:
         from . import mechanics as M
+        from .passives import parse_passives
         n = norm(sentence)
         if parse_situational(sentence, "-"):
             return True
+        spec = parse_passives(sentence, "objet" if item is not None else kind or "race")
+        if kind == "don":                                 # dons : seules ces clés sont lues (le reste : feat_effects)
+            spec = {k: v for k, v in spec.items() if k in ("ca_naturelle", "init_avantage", "vitesses", "charge_x2")}
+        elif kind == "classe":
+            spec = {k: v for k, v in spec.items() if k in ("ca", "ca_si_armure")}
+        if spec:
+            return True                                   # passif appliqué (core/passives.py)
+        if kind == "race" and re.search(r"armes? naturelles?|attaques? a mains nues|(?:un coup reussi|en cas de coup au "
+                                        r"but)[^.]*inflig|caracteristique d'incantation|sans composante|^\d+, 1/repos|"
+                                        r"lancer \*|\(niv|lancer un d4 et ajouter|ajoutez un d4|"
+                                        r"vous connaissez le tour de magie", n):
+            return True                                   # armes naturelles, sorts raciaux, d4 des marques (gérés)
+        if kind in ("race", "don") and re.search(r"(?:points de vie maximum|maximum de points de vie|pv maximum) "
+                                                 r"augmente", n):
+            return True                                   # Ténacité naine, Robuste, Faveur de vigueur
+        if kind == "don" and re.search(r"vitesse (?:de marche )?augmente de \d|\+\d+ a l'initiative|"
+                                       r"ajouter votre bonus de maitrise au jet|bonus de \+\d (?:a la ca|aux jets de "
+                                       r"sauvegarde)|valeur de \w+ augmente", n) and \
+                not re.search(r"lorsque vous|quand vous|pendant", n):
+            return True                                   # dons calculés par core/feat_effects.py
         if M.innate_from_text(sentence):
             return True
         if item is not None:
@@ -168,6 +250,9 @@ class AutomationMixin:
             if re.search(r"(?:possede|a) \d+ charges|regagne \d|recupere \d|lancer (?:le sort|l'un des sorts)|"
                          r"depenser \d+ charges?|lancer [a-z]|\bcharges?\b|derniere charge", n):
                 return True                               # charges et sorts : tuile de l'onglet En partie
+            if re.search(r"bonus (?:de \+\d )?aux jets d'attaque (?:de|des|avec un|avec les) sorts?|dd de sauvegarde de "
+                         r"(?:vos|ses) sorts|bonus a la ca|bonus aux jets d'attaque et de degats", n):
+                return True                               # bonus de sorts (core/tattoos.py) et objets +1/+2/+3
             if re.search(r"harmonis|lien avec|vous devez etre", n):
                 return True                               # condition d'harmonisation : gérée par la fiche
         return False
@@ -200,6 +285,7 @@ class AutomationMixin:
                 auto.append("{} PV temporaires si l'attaque touche (question posée)".format(a["pv_temp_si_touche"]))
             if a.get("degats") and a.get("jet") == "degats":
                 auto.append("dés lancés : {}".format(a["degats"]))
+        auto += self._passive_lines(desc, kind)
         if re.search(r"(?:connait|connaissez|apprenez) (?:le|un) tour de magie|pouvez lancer le sort", nd):
             auto.append("sorts accordés ajoutés à l'onglet Magie")
         if re.search(r"maitrise (?:de la|des|d'une|de deux|de la competence)|vous maitrisez|maitrise de l'outil", nd):
@@ -208,7 +294,7 @@ class AutomationMixin:
         handled_by_tile = bool(acts)
         main = []
         for s in _sentences(desc):
-            if not _is_rule(s) or self._sentence_handled(s, None, None):
+            if not _is_rule(s) or self._sentence_handled(s, None, None, kind):
                 continue
             ns = norm(s)
             if handled_by_tile and re.search(r"utilis|repos|une fois|action bonus|par une action|nombre de fois", ns):

@@ -49,6 +49,9 @@ class InitiativeMixin:
                 terms.append(("{} ({})".format(label, ab), max(minimum, self.mod(ab))))
         sub_terms, sub_adv = self.subclass_initiative()  # v52 : Embusqué redoutable, Athlète accompli, Assassinat
         terms += sub_terms
+        p_terms, p_adv = self.passive_initiative()       # v53 : Conil, Armure de scorpion, Disciple de Keranos
+        terms += p_terms
+        sub_adv = list(sub_adv) + p_adv
         fx = self.check_mods("Dextérité")
         dice = []
         for label, val in fx["detail"]:

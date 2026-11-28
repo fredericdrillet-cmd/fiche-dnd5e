@@ -167,4 +167,7 @@ class ItemPassivesMixin:
                 continue
             for key in self.item_passive_mech(entry, item).get("etats_immunises", []):
                 out.setdefault(key, "Objet : " + self.magic_display_name(entry))
+        for label, m in self.passive_modifiers() if hasattr(self, "passive_modifiers") else []:
+            for key in m.get("etats_immunises", []):     # v53 : Amulette de santé (maladies)
+                out.setdefault(key, label)
         return out

@@ -2718,7 +2718,8 @@ class CombatTab(BaseTab):
                             + ["🎲 Cliquez sur le d20 pour lancer l'initiative."])
         self.stat_labels["init"].setToolTip(init_tip)
         self.init_btn.setToolTip(init_tip)
-        self.stat_labels["vit"].setText(eng.speed_text())
+        others = eng.other_speeds_text()                 # v53 : nage, vol, escalade (race, objets)
+        self.stat_labels["vit"].setText(eng.speed_text() + ("\n" + others if others else ""))
         fx = eng.effect_mods()
         self.stat_labels["vit"].setToolTip(calc_tip("Vitesse de marche", [
             ("Vitesse de base (race, classe, dons)", "{:g} m".format(
@@ -2726,8 +2727,7 @@ class CombatTab(BaseTab):
             ("Bonus des effets", "{:+g} m".format(fx["vitesse_bonus"])), ("Multiplicateur des effets",
                                                                           "×{:g}".format(fx["vitesse_mult"]))],
             eng.speed_text(), ["1 case = 1,50 m (règle officielle D&D 5e)."] + (
-                ["Vitesse de nage : {} (Don des profondeurs).".format(R.fmt_speed(eng.swim_speed()))]
-                if eng.swim_speed() else [])))
+                ["Autres vitesses : " + others] if others else [])))
         self.stat_labels["prof"].setText(R.fmt_bonus(eng.prof))
         self.stat_labels["prof"].setToolTip(rich_tip("Bonus de maîtrise", "Dépend du niveau global du personnage "
                                                      "(+2 aux niveaux 1-4, +3 aux niveaux 5-8, … +6 aux niveaux 17-20)."))
