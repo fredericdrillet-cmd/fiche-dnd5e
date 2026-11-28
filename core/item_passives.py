@@ -33,6 +33,26 @@ SKILLS = ["Acrobaties", "Arcanes", "Athlétisme", "Discrétion", "Dressage", "Es
           "Survie", "Tromperie"]
 
 
+# v53 : cibles d'avantage / de désavantage d'un objet sur mesure (clé, libellé)
+ADVANTAGE_TARGETS = ([("comp:" + s, s) for s in SKILLS] + [("js:" + a, "JS de " + a) for a in _ABILITY.values()]
+                     + [("init", "Initiative")])
+
+
+def advantage_mech(adv: list, dis: list) -> dict:
+    """Modificateur (format mechanics) des avantages / désavantages choisis pour un objet sur mesure. Avantage et
+    désavantage sur le même jet s'annulent (dont le désavantage de Discrétion d'une armure lourde)."""
+    m: dict = {}
+    for keys, val in ((adv or [], "avantage"), (dis or [], "désavantage")):
+        for k in keys:
+            if k.startswith("comp:"):
+                m.setdefault("competences", {}).setdefault(k[5:], []).append(val)
+            elif k.startswith("js:"):
+                m.setdefault("js", {}).setdefault(k[3:], []).append(val)
+            elif k == "init":
+                m.setdefault("initiative", []).append(val)
+    return m
+
+
 def damage_types_in(text: str) -> list[str]:
     n = norm(text)
     return [t for t in DAMAGE_TYPES if re.search(r"\b{}s?\b".format(norm(t)), n)]
@@ -53,8 +73,9 @@ class ItemPassivesMixin:
             res = list(item.get("resistances") or [])
             imm = list(item.get("immunites") or [])
             cond = list(item.get("immunites_etats") or [])
+            m.update(advantage_mech(item.get("avantages"), item.get("desavantages")))   # v53
             if item.get("js_bonus"):
-                m["js"] = {"*": [int(item["js_bonus"])]}
+                m.setdefault("js", {})["*"] = [int(item["js_bonus"])]
         else:
             desc = item.get("description", "") or ""
             if re.search(r"le (?:md|mj) choisit|determine de maniere aleatoire|determine aleatoirement", norm(desc)):

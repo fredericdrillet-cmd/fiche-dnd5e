@@ -919,3 +919,29 @@ class EnPartieRetours53Tests(unittest.TestCase):
     def test_icones_de_caracteristiques_cliquables(self):
         tab = self.win.stats_tab
         self.assertTrue(hasattr(tab, "_roll_check"))
+
+
+class ObjetSurMesureAvantagesTests(unittest.TestCase):
+    """v53 : avantage / désavantage choisis dans le créateur d'objets ; ils s'annulent avec ceux de l'armure."""
+
+    def test_avantage_annule_le_desavantage_d_armure_lourde(self):
+        eng = _race_sheet("Humain")
+        name = eng.add_custom_magic_item("Harnois du silence", "Armure", base="Harnois", bonus=1,
+                                         avantages=["comp:Discrétion", "init"], desavantages=["comp:Persuasion"])
+        eng.equip_magic_gear(len(eng.ch.objets_magiques) - 1)
+        eng = Engine(DB, eng.ch)
+        row = next(r for r in eng.skill_rows() if r["nom"] == "Discrétion")
+        self.assertTrue(row["avantage"] and row["desavantage"])
+        self.assertEqual(eng.skill_spec("Discrétion").mode, "")          # ni avantage ni désavantage
+        self.assertEqual(eng.skill_spec("Persuasion").mode, "désavantage")
+        self.assertEqual(eng.initiative_spec().mode, "avantage")
+        self.assertIn("avantage : Discrétion", eng.ch.objets_perso[name]["description"])
+
+    def test_objet_merveilleux_js(self):
+        eng = _race_sheet("Humain")
+        name = eng.add_custom_magic_item("Broche du roc", avantages=["js:Constitution"], js_bonus=1)
+        eng.ch.objets_magiques[-1]["equipe"] = True
+        eng = Engine(DB, eng.ch)
+        fx = eng.save_mods("Constitution")
+        self.assertIn("Objet : " + name, fx["avantage"])
+        self.assertEqual(fx["bonus"], 1)

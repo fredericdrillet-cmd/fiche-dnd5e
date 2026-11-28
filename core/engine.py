@@ -2249,7 +2249,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                               base: str = "", bonus: int = 0, degats_sup: Optional[list] = None,
                               resistances: Optional[list] = None, immunites: Optional[list] = None,
                               immunites_etats: Optional[list] = None, js_bonus: int = 0, sort: str = "",
-                              charges: int = 0) -> str:
+                              charges: int = 0, avantages: Optional[list] = None,
+                              desavantages: Optional[list] = None) -> str:
         """Objet sur mesure : fiche enregistrée avec le personnage puis ajoutée à l'équipement. Renvoie son nom
         (suffixé « (sur mesure) » s'il porte le nom d'un objet officiel), ou « » si le nom est vide."""
         nom = (nom or "").strip()
@@ -2266,7 +2267,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             # v52 : pouvoirs passifs et sort de l'objet sur mesure
             "resistances": list(resistances or []), "immunites": list(immunites or []),
             "immunites_etats": list(immunites_etats or []), "js_bonus": max(0, int(js_bonus or 0)),
-            "sort_perso": sort or "", "charges": max(0, int(charges or 0))}
+            "sort_perso": sort or "", "charges": max(0, int(charges or 0)),
+            "avantages": list(avantages or []), "desavantages": list(desavantages or [])}   # v53
         powers = []
         if resistances:
             powers.append("résistance : " + ", ".join(resistances))
@@ -2275,6 +2277,12 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
                                                                                immunites_etats or []]))
         if js_bonus:
             powers.append("+{} aux jets de sauvegarde".format(js_bonus))
+        from .item_passives import ADVANTAGE_TARGETS
+        labels = dict(ADVANTAGE_TARGETS)
+        if avantages:
+            powers.append("avantage : " + ", ".join(labels.get(k, k) for k in avantages))
+        if desavantages:
+            powers.append("désavantage : " + ", ".join(labels.get(k, k) for k in desavantages))
         if sort:
             powers.append("lancer le sort {} ({})".format(sort, "{} charge(s), regagnées à l'aube".format(charges)
                                                           if charges else "à volonté"))

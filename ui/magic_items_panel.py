@@ -125,6 +125,14 @@ def _power_fields(spell_names: list[str]) -> tuple[QWidget, dict]:
     f["js"].setRange(0, 3)
     f["js"].setPrefix("Bonus aux jets de sauvegarde +")
     g.addWidget(f["js"], 2, 0, 1, 2)
+    # v53 : avantage / désavantage aux compétences, aux jets de sauvegarde et à l'initiative
+    from core.item_passives import ADVANTAGE_TARGETS
+    f["adv"] = checklist(ADVANTAGE_TARGETS)
+    f["dis"] = checklist(ADVANTAGE_TARGETS)
+    g.addWidget(QLabel("Avantage à…"), 5, 0)
+    g.addWidget(QLabel("Désavantage à…"), 5, 1)
+    g.addWidget(f["adv"], 6, 0)
+    g.addWidget(f["dis"], 6, 1)
     f["spell"] = QComboBox()
     f["spell"].setEditable(True)
     f["spell"].addItems(["— aucun sort —"] + spell_names)
@@ -232,6 +240,7 @@ def ask_custom_item(parent, name: str = "", weapon_names: list[str] | None = Non
     spell = pf["spell"].currentText().strip()
     data.update(resistances=_checked(pf["res"]), immunites=[k for k in imm if not k.startswith("etat:")],
                 immunites_etats=[k[5:] for k in imm if k.startswith("etat:")], js_bonus=pf["js"].value(),
+                avantages=_checked(pf["adv"]), desavantages=_checked(pf["dis"]),
                 sort=spell if spell in (spell_names or []) else "",
                 charges=pf["charges"].value() if use == "n" else 1 if use == "1" else 0)
     if data["type_"] == "Arme" and weapon_names:
