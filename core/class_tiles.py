@@ -376,7 +376,11 @@ TILES = [
       "Créez un élixir aléatoire (soins, rapidité, résilience, audace, vol, transformation).", uses=1,
       degats="1d6"),
     T("champ_defensif", "Champ défensif", "🛡", "Artificier", "armurier", 3, "Action bonus",
-      "Modèle Gardien : PV temporaires égaux à votre niveau d'artificier.", uses="BM", degats="{NIV}"),
+      "Modèle Gardien : PV temporaires égaux à votre niveau d'artificier (appliqués).", uses="BM"),
+    T("attraction_magnetique", "Attraction (Gardien parachevé)", "🧲", "Artificier", "armurier", 15, "Réaction",
+      "Une créature de taille TG ou moins termine son tour à 9 m de vous : JS de Force ou elle est attirée de 9 m "
+      "vers vous ; si elle arrive à 1,50 m, attaque de corps à corps (gantelets) dans la même réaction.",
+      uses="MOD:Intelligence", js="INT", js_carac="Force"),
     T("canon_occulte", "Canon occulte", "💥", "Artificier", "artilleur", 3, "Action",
       "Créez un canon (Lance-flammes 2d8 feu JS Dex, Baliste de force 2d8 force, Protecteur 1d8 + Int PV "
       "temporaires) — une fois par repos long, ou un emplacement de sort.", uses=1, degats={3: "2d8", 15: "3d8"},
@@ -538,6 +542,9 @@ class ClassTilesMixin:
             alt = self.tile_feature_2024(t)              # v52 : texte 2024 d'une sous-classe renommée
             if alt.get("masquer") or (alt and lvl < alt["niveau"]):
                 continue
+            from .armorer import MODEL_TILES               # v53 : Armurier — tuiles propres au modèle choisi
+            if t["id"] in MODEL_TILES and self.armor_model_base() != MODEL_TILES[t["id"]]:
+                continue
             ctx = self._tile_context(t, lvl)
             dmg = str(_tier(t["degats"], lvl) or "")
             dmg = re.sub(r"\{([A-Z_]+)\}", lambda m: ctx.get(m.group(1), "{" + m.group(1) + "}"), dmg)
@@ -560,6 +567,8 @@ class ClassTilesMixin:
             if t["naturelle"]:
                 a["naturelle"] = t["naturelle"]
                 a["attaque_arme"] = True
+            if t["id"] == "cap:champ_defensif":            # v53 : PV temporaires = niveau d'artificier, appliqués
+                a["pv_temp"] = self.class_level("Artificier")
             if alt:
                 a.update(nom=alt["nom"], description=alt["description"] + (
                     " (DD {})".format(desc.rsplit("(DD ", 1)[1].split(" ")[0]) if "(DD " in desc else ""),

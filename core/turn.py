@@ -290,6 +290,23 @@ class TurnMixin:
                             "description": "Aucune arme en main principale. Jet de toucher {} ; dégâts {} {}.".format(
                                 R.fmt_bonus(st["attaque"]), st["degats"], st["type_degats"]),
                             "disponible": attack_open, "raison": why_attack, "cout": "", "ref": {"mains_nues": True}})
+        if not beast_form and self.arcane_armor_active() and self.model_weapon_name():   # v53 : arme du modèle
+            st = self.weapon_stats(self.model_slot())
+            if st:
+                out.append({"id": "arme:modele", "nom": "Attaque — " + st["nom"], "icone": "🛡", "type": "Action",
+                            "origine": "armure arcanique ({}){}".format(self.armor_model_base(), count_txt),
+                            "description": "Arme du modèle {} : jet de toucher {} ; si l'attaque touche : {} {}.{}\n"
+                                           "Calcul des dégâts : {}".format(
+                                               self.armor_model_base(), R.fmt_bonus(st["attaque"]), st["degats"],
+                                               st["type_degats"], " Portée {}.".format(st["portee"]) if st.get(
+                                                   "portee") else "", st.get("calcul", "")),
+                            "disponible": attack_open, "raison": why_attack, "cout": "", "ref": {"modele": True}})
+        if self.armorer_level():                           # v53 : changer de modèle (fin d'un repos)
+            model = self.armor_model_base()
+            tile("modele:changer", "Modèle d'armure : " + (model or "à choisir"), "🔧", "Gratuit", "Armurier",
+                 "Change le modèle de votre armure arcanique (Gardien ⇄ Infiltré). Règle : à la fin d'un repos court "
+                 "ou long, outils de forgeron en main.\n\n" + (self.armor_model_text(model) if model else ""),
+                 ref={"modele_changer": True})
         off = self.off_hand_slot() if not beast_form else None
         if off is not None:                                # combat à deux armes : action bonus
             st = self.weapon_stats(off, offhand=True)
@@ -551,7 +568,8 @@ class TurnMixin:
             res.update(ok=True, attaque=spec, degats=self.weapon_damage_spec(slot, offhand=True),
                        message="{} : attaque (action bonus).".format(t["nom"]))
         elif tile_id.startswith("arme:"):
-            slot = self.unarmed_slot() if ref.get("mains_nues") else getattr(self.ch, ref["slot"])[ref["index"]]
+            slot = self.unarmed_slot() if ref.get("mains_nues") else self.model_slot() if ref.get("modele") else \
+                getattr(self.ch, ref["slot"])[ref["index"]]
             self.ch.tour_attaques = int(self.ch.tour_attaques) + 1
             self.spend_economy(kind)
             n = self.attacks_per_action()
@@ -610,6 +628,8 @@ class TurnMixin:
             slot = self.quick_slots()[int(tile_id.split(":")[1])]
             self.spend_economy(kind)
             res.update(ok=True, rapide=slot, message="{} : {}.".format(t["nom"], kind.lower()))
+        elif tile_id == "modele:changer":                  # v53 : Armurier — le choix se fait dans l'interface
+            res.update(ok=True, modele_changer=True, message="Modèle d'armure : choisissez Gardien ou Infiltré.")
         elif tile_id == "potion:boire":                    # le choix et l'effet de la potion se font dans l'interface
             self.spend_economy("Action bonus")
             res.update(ok=True, potion=True, message="Boire une potion : action bonus.")

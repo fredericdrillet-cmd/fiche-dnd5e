@@ -144,7 +144,7 @@ class CombatFlowMixin:
         wtype = st.get("type_degats", "")
         parts = [(st["degats"], wtype)]
         formula = st["degats"]
-        notes = []
+        notes = [n for n in st.get("styles", []) if n.startswith(("Gantelets tonnants", "Armure parachevée"))]   # v53
         for label, dice in always:
             formula += "+" + dice
             notes.append("{} : +{}".format(label, dice))
@@ -439,6 +439,9 @@ class OnHitMixin:
         out = []
         if not slot:
             return out
+        if slot.get("nom") == "Lance-foudre" and not self.per_turn_used("lance_foudre"):   # v53 : Infiltré
+            out.append({"key": "lance_foudre", "label": "Lance-foudre — dégâts de foudre (une fois par tour)",
+                        "dice": "1d6", "cout": "1 fois par tour", "action": "", "niveau": 0, "tour": "lance_foudre"})
         sup = next((t for t in self.resource_trackers() if t["key"] == "superiorite"), None)
         sup_left = sup is not None and (sup.get("total") or 0) - self.resource_used("superiorite") > 0
         for a in acts.values():                          # une action « manoeuvre:<nom> » par manœuvre choisie

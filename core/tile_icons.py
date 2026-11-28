@@ -104,6 +104,8 @@ def tile_icon(x: dict) -> tuple[str, str, str]:
         return "sort", tid[5:], ""
     if tid.startswith("sort:") or group == "magie" and x.get("sort"):
         return "sort", (x.get("sort") or tid[5:]), ""
+    if tid == "arme:modele":                           # v53 : arme du modèle d'armure (Armurier)
+        return "action", base, "attaque"
     if tid.startswith("arme_action:"):
         return "action", base, "attaque"
     if group == "generiques":

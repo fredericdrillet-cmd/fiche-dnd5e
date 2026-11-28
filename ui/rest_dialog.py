@@ -100,6 +100,20 @@ class RestDialog(QDialog):
             self._build_spell_section(lay)
             self._build_swap_section(lay)
 
+        self.model_combo = None                          # v53 : Armurier — changer de modèle à la fin du repos
+        if eng.armorer_level():
+            from PyQt6.QtWidgets import QComboBox
+            from core.armorer import MODELS
+            row = QHBoxLayout()
+            row.addWidget(make_label("🔧 Modèle d'armure (outils de forgeron en main) :", "head"))
+            self.model_combo = QComboBox()
+            self.model_combo.addItems(list(MODELS))
+            cur = eng.armor_model_base()
+            if cur in MODELS:
+                self.model_combo.setCurrentIndex(list(MODELS).index(cur))
+            row.addWidget(self.model_combo, 1)
+            lay.addLayout(row)
+
         self.ration = None
         self.starving = None
         if long_rest:
@@ -285,6 +299,8 @@ class RestDialog(QDialog):
 
     def apply(self):
         eng = self.win.engine
+        if self.model_combo is not None:                 # v53 : modèle d'armure choisi pendant le repos
+            eng.set_armor_model(self.model_combo.currentText())
         if self.kind == "long":
             rolls = {}                                     # v52 : recharge des objets magiques (formule, dés animés)
             from core import dice as D

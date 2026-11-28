@@ -1114,3 +1114,60 @@ class PassifsSansConditionTests(unittest.TestCase):
         traits = {c["nom"]: c["description"] for c in eng._race_trait_list()}
         rep = eng.text_automation("Armure naturelle", traits["Armure naturelle"], "race")
         self.assertTrue(any("CA sans armure" in x for x in rep["auto"]))
+
+
+class ArmurierTests(unittest.TestCase):
+    """v53 : Artificier Armurier (2014) — armure arcanique, modèles, armes du modèle, changement de modèle."""
+
+    def sheet(self, lvl=3, model="Gardien", armor="Harnois"):
+        ch = Engine.new_character(DB)
+        ch.classes = [{"nom": "Artificier", "niveau": lvl, "sous_classe": "Armurier", "pv_jets": []}]
+        eng = Engine(DB, ch)
+        eng.normalize()
+        eng.set_armor_model(model)
+        ch.armure["nom"] = armor
+        return Engine(DB, ch)
+
+    def tiles(self, eng):
+        return {t["id"]: t for t in eng.turn_actions()}
+
+    def test_gardien(self):
+        eng = self.sheet()
+        t = self.tiles(eng)
+        self.assertEqual(t["arme:modele"]["nom"], "Attaque — Gantelets tonnants")
+        self.assertIn("classe:cap:champ_defensif", t)
+        self.assertIn("modele:changer", t)
+        res = eng.use_turn_action("arme:modele")
+        self.assertEqual(res["degats"].damage_type, "tonnerre")
+        self.assertIn("désavantage", res["degats"].note)
+        eng.ch.tour_action = eng.ch.tour_bonus = False
+        eng.use_turn_action("classe:cap:champ_defensif")
+        self.assertEqual(eng.ch.pv_temporaires, 3)        # niveau d'artificier
+
+    def test_infiltre(self):
+        eng = self.sheet(model="Infiltré")
+        t = self.tiles(eng)
+        self.assertEqual(t["arme:modele"]["nom"], "Attaque — Lance-foudre")
+        self.assertNotIn("classe:cap:champ_defensif", t)
+        self.assertEqual(eng.speed(), 10.5)               # Pas motorisés (Force requise ignorée)
+        self.assertEqual(eng.skill_spec("Discrétion").mode, "")   # avantage annule le désavantage du harnois
+        self.assertIn("lance_foudre", [o["key"] for o in eng.on_hit_options(eng.model_slot(), [])])
+
+    def test_armure_arcanique_sans_force(self):
+        eng = self.sheet()
+        self.assertEqual(eng.speed(), 9.0)                # Force 8 < 15 : pas de malus avec l'armure arcanique
+
+    def test_sans_armure_pas_d_arme(self):
+        eng = self.sheet(armor="Aucune armure")
+        self.assertNotIn("arme:modele", self.tiles(eng))
+
+    def test_changer_de_modele(self):
+        eng = self.sheet()
+        self.assertTrue(eng.set_armor_model("Infiltré"))
+        self.assertEqual(eng.armor_model_base(), "Infiltré")
+        self.assertEqual(eng.use_turn_action("modele:changer").get("modele_changer"), True)
+
+    def test_parachevee(self):
+        eng = self.sheet(lvl=15)
+        self.assertIn("classe:cap:attraction_magnetique", self.tiles(eng))
+        self.assertIn("DD", eng.armor_model_text("Gardien"))

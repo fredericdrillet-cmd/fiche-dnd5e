@@ -121,6 +121,7 @@ from .item_passives import ItemPassivesMixin  # noqa: E402
 from .situational import SituationalMixin  # noqa: E402
 from .automation import AutomationMixin  # noqa: E402
 from .passives import PassivesMixin  # noqa: E402
+from .armorer import ArmorerMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -152,7 +153,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
              LightMixin, JournalMixin, ItemPassivesMixin, SituationalMixin,
-             AutomationMixin, PassivesMixin):
+             AutomationMixin, PassivesMixin, ArmorerMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -1018,8 +1019,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if self.class_level("Barbare") >= 5 and not heavy:
             base += 3
         base += self.class_speed_bonus(armor.get("categorie", "aucune"))      # v52 : Nomade (Rôdeur 2024)
-        if norm(self.armor_model()[0]).startswith("infiltre"):
-            base += 1.5                                      # armure d'exocombat « Infiltré »
+        if self.armor_model_base() == "Infiltré" and self.arcane_armor_active():
+            base += 1.5                                      # Pas motorisés (armure arcanique « Infiltré »)
         monk = self.class_level("Moine")
         if monk >= 2 and armor.get("categorie", "aucune") == "aucune" and not self.ch.armure.get("bouclier"):
             base += 3 if monk < 6 else 4.5 if monk < 10 else 6 if monk < 14 else 7.5 if monk < 18 else 9
@@ -1415,7 +1416,7 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         """Statistiques d'une arme équipée. `offhand` (v39) : attaque en main secondaire (combat à deux armes) —
         le modificateur de caractéristique n'est PAS ajouté aux dégâts, sauf s'il est négatif ou avec le style
         « Combat à deux armes » ; le style Duel ne s'applique pas."""
-        w = self.db.weapons.get(slot.get("nom", ""))
+        w = self.db.weapons.get(slot.get("nom", "")) or self.model_weapon(slot.get("nom", ""))   # v53 : armurier
         if not w:
             return None
         props = [norm(p) for p in w.get("proprietes", [])]
@@ -1432,13 +1433,23 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
             ab = "Dextérité"
         else:
             ab = "Force"
+        if w.get("modele") and self.mod("Intelligence") > self.mod(ab):
+            ab = "Intelligence"                           # v53 : armes du modèle d'armure (Armurier)
+        model_notes = []
+        if w.get("modele") == "Gardien":
+            model_notes.append("Gantelets tonnants : la cible touchée a le désavantage aux attaques contre d'autres "
+                               "cibles que vous jusqu'au début de votre prochain tour")
+        elif w.get("modele") == "Infiltré" and self.armorer_level() >= 15:
+            model_notes.append("Armure parachevée : la cible scintille — prochaine attaque contre elle avec avantage, "
+                               "+1d6 foudre si elle touche")
         bow_prof, bow_dmg, bow_src = self.bow_item_bonus(w["nom"])   # v53 : Bracelets d'archer
-        auto = R.weapon_proficient(w["nom"], w["categorie"], self.weapon_proficiencies()) or unarmed or bow_prof
+        auto = R.weapon_proficient(w["nom"], w["categorie"], self.weapon_proficiencies()) or unarmed or bow_prof \
+            or bool(w.get("modele"))
         prof = auto if slot.get("maitrise") is None else bool(slot["maitrise"])
         magic = int(slot.get("bonus", 0))
         mod = self.mod(ab)
         attack = mod + (self.prof if prof else 0) + magic
-        notes: list[str] = []
+        notes: list[str] = list(model_notes)
         if w["type"] == "distance" and self.style_active("Archerie"):
             attack += 2
             notes.append("Archerie : +2 au toucher")

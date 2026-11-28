@@ -311,6 +311,7 @@ class ExtrasMixin:
         out += self.subclass24_modifiers()               # v52 : Ours, Protégé de dame Nature, Avatar de bataille…
         out += self.imported_race_modifiers()            # v53 : d4 des marques draconiques, Sens incisif…
         out += self.passive_modifiers()                  # v53 : passifs lus (Forgelier, Bracelets de défense…)
+        out += self.armorer_modifiers()                  # v53 : Champ d'atténuation (Armurier Infiltré)
         for entry in self.ch.objets_magiques:              # objets magiques équipés (et harmonisés si requis)
             item = (self.magic_item(entry.get("nom", "")) or {})
             m = dict(M.item_mech(entry.get("nom", "")) or M.item_mech(item.get("comme", "") or "-"))
@@ -338,7 +339,8 @@ class ExtrasMixin:
                                 {"tests": {"Force": [M.DIS], "Dextérité": [M.DIS]},
                                  "js": {"Force": [M.DIS], "Dextérité": [M.DIS]}, "attaque": [M.DIS]}))
                 if armor.get("force_min") and self.score("Force") < armor["force_min"] and \
-                        not self.heavy_armor_no_slow():  # v53 : nains — vitesse non réduite en armure lourde
+                        not self.heavy_armor_no_slow() and not self.arcane_armor_active():
+                    # v53 : nains — vitesse non réduite en armure lourde ; armure arcanique : plus de Force requise
                     out.append(("Armure trop lourde (Force {} requise)".format(armor["force_min"]),
                                 {"vitesse_bonus": -3.0}))
         return out
@@ -605,7 +607,8 @@ class ExtrasMixin:
                 n = norm(f["nom"])
                 curated = next((c for c in REACTION_FEATURES if c[0] in n), None)
                 generic = ("votre reaction" in norm(f["description"]) or "par une reaction" in norm(f["description"])) \
-                    and not n.startswith("style de combat")    # Protection / Interception : voir plus bas
+                    and not n.startswith("style de combat") and n != "armure parachevee"
+                # (Protection / Interception : voir plus bas ; Armure parachevée : tuile « Attraction » du Gardien)
                 if (curated or generic) and f["nom"] not in seen:
                     seen.add(f["nom"])
                     out.append({"cle": "apt:" + f["nom"], "nom": f["nom"], "icone": curated[1] if curated else "⚡",

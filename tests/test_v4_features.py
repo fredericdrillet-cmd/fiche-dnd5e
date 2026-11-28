@@ -103,7 +103,9 @@ class StyleSlotTests(unittest.TestCase):
         self.assertEqual(eng.style_options(slot["id"]), ["Gardien", "Infiltré"])
         eng.ch.styles_combat[slot["id"]] = "Infiltré"
         self.assertEqual(eng.armor_model()[0], "Infiltré")
-        self.assertEqual(eng.speed(), 9 + 1.5)
+        self.assertEqual(eng.speed(), 9)                   # v53 : sans armure arcanique portée, pas de bonus
+        eng.ch.armure["nom"] = "Cotte de mailles"
+        self.assertEqual(eng.speed(), 9 + 1.5)             # Pas motorisés (armure arcanique)
         eng.ch.classes[0]["niveau"] = 15
         eng.normalize()
         self.assertEqual(eng.armor_model()[0], "Infiltré parachevé")

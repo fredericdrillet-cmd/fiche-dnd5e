@@ -1296,6 +1296,9 @@ class CombatTab(BaseTab):
                               self._attack_flow)
             self.changed()
             return
+        if res.get("modele_changer"):                     # v53 : Armurier — Gardien ⇄ Infiltré
+            self.change_armor_model()
+            return
         if res.get("rapide"):                             # v53 : emplacement rapide (potion, huile, parchemin)
             self._use_quick(res["rapide"], tile_id)
             self.changed()
@@ -1354,6 +1357,22 @@ class CombatTab(BaseTab):
             eng.apply_temp_hp(res["pv_temp_si_touche"])
             self._message("{} PV temporaires.".format(self.ch.pv_temporaires))
         self.changed()
+
+    def change_armor_model(self) -> bool:
+        """v53 : modèle de l'armure arcanique (règle : fin d'un repos court ou long, outils de forgeron en main)."""
+        from core.armorer import MODELS
+        eng = self.engine
+        current = eng.armor_model_base()
+        labels = {"{}{} — {}".format(m, " (actuel)" if m == current else "", eng.armor_model_text(m)[:90] + "…"): m
+                  for m in MODELS}
+        picked = ask_choice(self.win, "Modèle d'armure", "Règle : le modèle se change à la fin d'un repos court ou "
+                            "long, outils de forgeron en main.\nNouveau modèle :", list(labels))
+        if not picked or labels[picked] == current:
+            return False
+        eng.set_armor_model(labels[picked])
+        self._message("Armure arcanique : modèle {}.".format(labels[picked]))
+        self.changed()
+        return True
 
     def _escape(self, res: dict) -> None:
         eng, conds = self.engine, res["liberer"]
@@ -2655,7 +2674,7 @@ class CombatTab(BaseTab):
             current = self.ch.styles_combat.get(sl["id"], "")
             options = eng.style_options(sl["id"])
             if is_model:
-                tips = {n: rich_tip(n, db.armor_models.get(n, "")) for n in options}
+                tips = {n: rich_tip(n, eng.armor_model_text(n) or db.armor_models.get(n, "")) for n in options}
                 noun, ask = "Modèle d'armure", "— choisir un modèle —"
             else:
                 tips = {n: rich_tip(n, db.style_description(sl["classe"], n)) for n in options}
@@ -2670,7 +2689,7 @@ class CombatTab(BaseTab):
                 w["desc"].setText("Se débloque au niveau {} de {}.".format(sl["niveau_requis"], sl["classe"]))
             elif is_model:
                 name, desc = eng.armor_model()
-                w["desc"].setText("{} : {}".format(name, desc) if name else "")
+                w["desc"].setText("{} : {}".format(name, eng.armor_model_text(name) or desc) if name else "")
             else:
                 w["desc"].setText(db.style_description(sl["classe"], current))
             from core.class_actions import SUPERIOR_TECHNIQUE

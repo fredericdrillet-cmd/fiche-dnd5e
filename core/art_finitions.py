@@ -6,6 +6,7 @@ clés normalisées). Grille 64 × 64, blanc = dessin, noir = découpe.
 from __future__ import annotations
 
 from .art_armes import Cc, G, L, P, R, S, arrow, burst, dagger, fist, over, star4
+from .rules import norm
 from .art_kit import black, cloud, dragon_head, figure, place, tree
 from .art_motifs import MOTIFS as M
 from .art_scenes2 import _drop, _flame, _hand, _rays, _snow, _sword
@@ -97,3 +98,35 @@ SPELL_VARIANTS = {
     "rapetissement": lambda: (figure(32, 35, 0.48) + arrow(3, 3, 18, 18, 4.2, 10) + arrow(61, 3, 46, 18, 4.2, 10)
                               + arrow(3, 63, 18, 48, 4.2, 10) + arrow(61, 63, 46, 48, 4.2, 10)),
 }
+
+
+# v53 — Armurier : armes du modèle, changement de modèle, Gardien parachevé
+def _gauntlet():
+    return (place(fist(), 28, 36, 1.05) + black(L([(14, 44), (42, 44)], 2.2))
+            + S("M50 16 C58 22 58 34 50 40", 3.2) + S("M55 8 C66 18 66 38 55 48", 2.6) + burst(52, 56, 5, 6))
+
+
+def _launcher():
+    arm = (P("M2 50 C2 44 6 40 12 40 H34 L40 34 H50 V48 H40 L34 54 H12 C6 54 2 52 2 50 Z")
+           + black(L([(12, 44), (12, 52)], 1.8) + L([(20, 44), (20, 52)], 1.8) + L([(28, 44), (28, 52)], 1.8)))
+    return arm + R(44, 30, 18, 8, 2) + black(Cc(60, 34, 1.8)) + P("M40 2 L52 2 L46 12 L54 12 L36 30 L42 17 L34 17 Z")
+
+
+def _model():
+    helm = (P("M14 34 C14 18 24 10 34 10 C44 10 54 18 54 34 V48 L44 54 H24 L14 48 Z")
+            + black(P("M20 30 H48 V36 C48 38 46 40 44 40 H36 L34 44 L32 40 H24 C22 40 20 38 20 36 Z")))
+    wrench = G(R(-2.6, -14, 5.2, 26, 2) + P("M-7 -22 C-7 -27 -3 -29 0 -29 C3 -29 7 -27 7 -22 L3 -18 V-14 H-3 V-18 Z")
+               + black(R(-1.8, -27, 3.6, 6, 1)), 50, 46, 45, 0.9)
+    return over(helm, wrench, 3)
+
+
+def _magnet():
+    u = S("M14 50 V28 C14 16 22 8 32 8 C42 8 50 16 50 28 V50", 10)
+    tips = R(9, 48, 10, 8, 1) + R(45, 48, 10, 8, 1) + black(L([(9, 52), (19, 52)], 1.8) + L([(45, 52), (55, 52)], 1.8))
+    return u + tips + place(figure(), 32, 46, 0.42) + S("M32 34 V24", 2.6) + P("M27 27 L32 20 L37 27 Z")
+
+
+CAP_FIX.update({norm(k): v for k, v in {
+    "Attaque — Gantelets tonnants": _gauntlet, "Attaque — Lance-foudre": _launcher,
+    "Modèle d'armure : Gardien": _model, "Modèle d'armure : Infiltré": _model, "Modèle d'armure : à choisir": _model,
+    "Attraction (Gardien parachevé)": _magnet}.items()})
