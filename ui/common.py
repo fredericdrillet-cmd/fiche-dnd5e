@@ -109,6 +109,23 @@ def formula_tip(engine, title: str, text: str, class_name: str = "") -> str:
     return rich_tip(title, annotate(text, engine.formula_context(class_name)))
 
 
+def auto_report(engine, title: str, text: str, kind: str) -> dict:
+    """v53 : ce que la fiche applique d'elle-même / propose au jet / laisse à la main (core/automation.py)."""
+    try:
+        return engine.text_automation(title, text, kind)
+    except Exception:                                    # jamais bloquant pour une infobulle
+        return {}
+
+
+def auto_tip(engine, title: str, text: str, kind: str, class_name: str = "") -> str:
+    """Info-bulle à formules évaluées + rapport « appliqué automatiquement / à gérer à la main » (v53)."""
+    from core.automation import report_text
+    from core.formulas import annotate
+    rep = report_text(auto_report(engine, title, text, kind))
+    body = annotate(text, engine.formula_context(class_name))
+    return rich_tip(title, body + ("\n\n" + rep if rep else ""))
+
+
 def formula_html(engine, text: str, class_name: str = "") -> str:
     """Description HTML dont les valeurs calculées sont mises en évidence (gras, couleur d'accent)."""
     from core.formulas import annotate_html

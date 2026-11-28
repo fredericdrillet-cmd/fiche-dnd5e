@@ -43,6 +43,8 @@ class RollSpec:
     floor_label: str = ""                                # source du plancher (affichée)
     reroll_ones: str = ""                                # v52 : Chanceux du Halfelin (relance des 1 naturels)
     luck_dice: list[int] = field(default_factory=list)   # v52 : don Chanceux 2014 (d20 déjà lancés, + 1)
+    ability: str = ""                                    # v53 : caractéristique du jet (avantages sous condition)
+    skill: str = ""                                      # v53 : compétence du jet
 
     @property
     def flat(self) -> int:

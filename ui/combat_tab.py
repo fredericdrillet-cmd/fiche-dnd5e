@@ -1348,6 +1348,11 @@ class CombatTab(BaseTab):
             r = roll_damage_dialog(win, res["degats"])
             if r is not None and res.get("soin"):
                 eng.heal(r.total)
+        if res.get("pv_temp_si_touche") and ask_yes_no(   # v53 : Mâchoires affamées — PV temp. si l'attaque touche
+                win, "L'attaque touche-t-elle ?", "Si l'attaque touche, vous gagnez {} PV temporaires.".format(
+                    res["pv_temp_si_touche"]), yes="Oui : gagner les PV temporaires", no="Non"):
+            eng.apply_temp_hp(res["pv_temp_si_touche"])
+            self._message("{} PV temporaires.".format(self.ch.pv_temporaires))
         self.changed()
 
     def _escape(self, res: dict) -> None:

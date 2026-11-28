@@ -552,13 +552,18 @@ class MagicItemsPanel(BaseTab):
             bonus.append("bonus choisi : +{}".format(entry["bonus"]))
         if item["ca"]:
             bonus.append("+{} à la CA".format(item["ca"]) + (" et aux jets de sauvegarde" if item["js"] else ""))
+        from core.automation import report_html          # v53 : automatique / proposé au jet / à la main
+        try:
+            report = report_html(self.engine.item_automation(item["nom"], entry))
+        except Exception:
+            report = ""
         self.detail.setHtml(
-            "<h3 style='color:{}'>{}</h3><p><i>{}{} — {} — {}</i></p><p><b>Harmonisation :</b> {}</p>{}<p>{}</p>".format(
+            "<h3 style='color:{}'>{}</h3><p><i>{}{} — {} — {}</i></p><p><b>Harmonisation :</b> {}</p>{}{}<p>{}</p>".format(
                 theme.rarity_color(item["rarete"]), html.escape(self.engine.magic_display_name(entry) if entry else item["nom"]),
                 html.escape(item["type"]), " ({})".format(html.escape(item["precision"])) if item["precision"] else "",
                 html.escape(item["rarete"]), html.escape(SOURCE_FR.get(item["source"], item["source"]) or "source inconnue")
                 + (" — {:g} kg".format(item["poids"]).replace(".", ",") if item.get("poids") else ""), attune,
-                "<p><b>Bonus :</b> {}</p>".format(html.escape(" ; ".join(bonus))) if bonus else "",
+                "<p><b>Bonus :</b> {}</p>".format(html.escape(" ; ".join(bonus))) if bonus else "", report,
                 html.escape(item["description"]).replace("\n", "<br/>")))
 
     # ------------------------------------------------------------------ rafraîchissement

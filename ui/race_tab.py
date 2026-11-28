@@ -9,7 +9,7 @@ from PyQt6.QtWidgets import (QComboBox, QGridLayout, QGroupBox, QHBoxLayout, QLi
 
 from core import rules as R
 from . import theme
-from .common import BaseTab, blocked, fill_combo, formula_html, formula_tip, make_label, rich_tip
+from .common import BaseTab, auto_report, auto_tip, blocked, fill_combo, formula_html, make_label, rich_tip
 from .race_portrait import RaceIllustration
 
 
@@ -120,8 +120,10 @@ class RaceTab(BaseTab):
             return
         if 0 <= row < len(self._traits):
             t = self._traits[row]
-            self.detail.setHtml("<h3 style='color:{}'>{}</h3><p>{}</p>".format(
-                theme.current().accent_text, html.escape(t["nom"]), formula_html(self.engine, t["description"])))
+            from core.automation import report_html
+            self.detail.setHtml("<h3 style='color:{}'>{}</h3><p>{}</p>{}".format(
+                theme.current().accent_text, html.escape(t["nom"]), formula_html(self.engine, t["description"]),
+                report_html(auto_report(self.engine, t["nom"], t["description"], "race"))))
 
     def _on_add_inv(self):
         self.engine.add_background_gear()
@@ -226,7 +228,7 @@ class RaceTab(BaseTab):
             self.traits.clear()
             for tr in self._traits:
                 it = QListWidgetItem(tr["nom"])
-                it.setToolTip(formula_tip(eng, tr["nom"], tr["description"]))
+                it.setToolTip(auto_tip(eng, tr["nom"], tr["description"], "race"))   # v53 : automatique / à la main
                 self.traits.addItem(it)
             if self._traits:
                 self.traits.setCurrentRow(min(max(row, 0), len(self._traits) - 1))

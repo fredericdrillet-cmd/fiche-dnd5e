@@ -971,18 +971,21 @@ class ExtrasMixin:
         fx = self.check_mods(ab)
         detail = [(R.mod_label(ab), "{:+d}".format(self.mod(ab)))] + fx["detail"]
         spec = D.spec_from_detail("Test de " + ab, "test", detail, fx["avantage"], fx["desavantage"], fx["echec"])
+        spec.ability = ab                                # v53 : avantages sous condition
         return self._apply_floors(spec, ab, "test")
 
     def skill_spec(self, name: str) -> "D.RollSpec":
         row = next(r for r in self.skill_rows() if r["nom"] == name)
         spec = D.spec_from_detail("{} ({})".format(name, row["carac"]), "competence", row["detail"],
                                   row["avantage"], row["desavantage"], row["echec"])
+        spec.ability, spec.skill = row["carac"], name     # v53 : avantages sous condition
         return self._apply_floors(spec, row["carac"], "test", proficient=row["maitrise"])
 
     def save_spec(self, ab: str) -> "D.RollSpec":
         row = next(r for r in self.save_rows() if r["carac"] == ab)
         spec = D.spec_from_detail("Jet de sauvegarde de " + ab, "sauvegarde", row["detail"],
                                   row["avantage"], row["desavantage"], row["echec"])
+        spec.ability = ab                                # v53 : avantages sous condition
         spec = self._apply_floors(spec, ab, "sauvegarde")
         if ab == "Dextérité" and self.ch.armure.get("bouclier") and any(
                 feat_base_name(f) == "maitre des boucliers" for f in self.chosen_feats()):
@@ -1361,8 +1364,10 @@ class ExtrasMixin:
         fx = self.save_mods("mort") if hasattr(self, "save_mods") else {"avantage": [], "desavantage": []}
         adv = list(fx.get("avantage", [])) + ["Don : " + f for f in self.feat_flag("mort_avantage")] + (
             ["Survivant (Champion)"] if self.death_save_crit_min() < 20 else [])
-        return D.spec_from_detail("Jet contre la mort", "sauvegarde", [], adv, list(fx.get("desavantage", [])), (),
+        spec = D.spec_from_detail("Jet contre la mort", "sauvegarde", [], adv, list(fx.get("desavantage", [])), (),
                                   "10 ou plus : réussite ; 1 : deux échecs ; 20 : vous reprenez 1 PV.")
+        spec.ability = "mort"                            # v53 : avantages sous condition « contre la mort »
+        return spec
 
     def apply_death_save(self, natural: int, total: Optional[int] = None) -> str:
         """Applique le résultat d'un jet contre la mort (20 naturel : 1 PV ; 1 naturel : 2 échecs)."""

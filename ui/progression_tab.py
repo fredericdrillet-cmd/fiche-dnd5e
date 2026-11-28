@@ -201,6 +201,11 @@ class ProgressionTab(BaseTab):
         return self._tips
 
     def _feat_tip(self, f: dict) -> str:
+        if f["nom"] in self.engine.chosen_feats():      # v53 : don acquis — automatique / à la main
+            from .common import auto_tip
+            feat = self.db.feats.get(f["nom"]) or {}
+            return auto_tip(self.engine, f["nom"], "Prérequis : {} — Augmentation : {} — {}".format(
+                feat.get("prerequis", ""), feat.get("asi_texte") or "aucune", feat.get("description", "")), "don")
         return self._all_tips().get(f["nom"], "")
 
     def _fill_catalog(self):

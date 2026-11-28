@@ -118,6 +118,8 @@ from .counterspell import CounterspellMixin  # noqa: E402
 from .light import LightMixin  # noqa: E402
 from .journal import JournalMixin  # noqa: E402
 from .item_passives import ItemPassivesMixin  # noqa: E402
+from .situational import SituationalMixin  # noqa: E402
+from .automation import AutomationMixin  # noqa: E402
 from .features_2024 import FeatPrereq2024Mixin, Features2024Mixin, is_prereq_2024  # noqa: E402
 
 
@@ -148,7 +150,8 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
              SpellItemBonusMixin,
              DurationsMixin, ConditionsMixin, LuckMixin, CombatEndMixin,
              EnvironmentMixin, ComponentsMixin, SearchMixin, CounterspellMixin,
-             LightMixin, JournalMixin, ItemPassivesMixin):
+             LightMixin, JournalMixin, ItemPassivesMixin, SituationalMixin,
+             AutomationMixin):
     def __init__(self, db: Database, char: Character):
         self.ch = char
         self.db = db
@@ -2286,27 +2289,46 @@ class Engine(ExtrasMixin, ClassActionsMixin, CompanionsMixin, RaceActionsMixin, 
         if sort:
             powers.append("lancer le sort {} ({})".format(sort, "{} charge(s), regagnées à l'aube".format(charges)
                                                           if charges else "à volonté"))
-        if powers and not (description or "").strip():
-            self.ch.objets_perso[nom]["description"] = "Objet sur mesure : " + " ; ".join(powers) + "."
-        if type_ == "Arme" and base in self.db.weapons:   # v52 : arme sur mesure (arme de base, bonus, dégâts en plus)
-            extras = [d for d in (degats_sup or []) if d.get("des")]
-            self.ch.objets_perso[nom].update(bonus_fixe=max(0, min(3, int(bonus or 0))), degats_sup=extras)
-            if not (description or "").strip():          # description lisible par défaut
-                self.ch.objets_perso[nom]["description"] = "{}{}{}.".format(
-                    base, " +{}".format(bonus) if bonus else "", "".join(
-                        " ; +{} {}{}".format(d["des"], d.get("type", ""), "" if d.get("condition", "toujours") ==
-                                             "toujours" else " ({})".format(d.get("note") or d["condition"]))
-                        for d in extras))
-            self.add_magic_gear(nom, base)
-            return nom
+        user_text = (description or "").strip()
+        head = ""                                        # v53 : l'objet de base et son bonus en tête de description
+        is_weapon = type_ == "Arme" and base in self.db.weapons
         shields = getattr(self.db, "shields", {}) or {}
-        if type_ == "Armure" and (base in self.db.armors or base in shields) and base != "Aucune armure":
-            # v53 : armure / bouclier sur mesure — objet de base (CA, catégorie, force, Discrétion) + bonus de CA
+        is_armor = type_ == "Armure" and (base in self.db.armors or base in shields) and base != "Aucune armure"
+        if is_weapon:
+            extras = [d for d in (degats_sup or []) if d.get("des")]
+            tier = max(0, min(3, int(bonus or 0)))
+            self.ch.objets_perso[nom].update(bonus_fixe=tier, degats_sup=extras)
+            w = self.db.weapons[base]
+            head = "{}{} ({}{} {})".format(base, " +{}".format(tier) if tier else "", w.get("degats", ""),
+                                          "+{}".format(tier) if tier and w.get("degats") else "",
+                                          w.get("type_degats", "")).replace(" ()", "")
+            powers = ["+{} {}{}".format(d["des"], d.get("type", ""), "" if d.get("condition", "toujours") == "toujours"
+                                        else " ({})".format(d.get("note") or d["condition"])) for d in extras] + powers
+        elif is_armor:
             tier = max(0, min(3, int(bonus or ca or 0)))
-            self.ch.objets_perso[nom].update(bonus_fixe=tier, ca=tier,
-                                            precision="bouclier" if base in shields else "")
-            if not (description or "").strip() and not powers:
-                self.ch.objets_perso[nom]["description"] = "{}{}.".format(base, " +{}".format(tier) if tier else "")
+            self.ch.objets_perso[nom].update(bonus_fixe=tier, ca=tier, precision="bouclier" if base in shields else "")
+            if base in shields:
+                head = "{}{} (CA +{})".format(base, " +{}".format(tier) if tier else "",
+                                             int(shields[base].get("bonus_ca", 2)) + tier)
+            else:
+                arm = self.db.armors[base]
+                dex = "" if arm.get("dex_max") == 0 else " + Dex" + (" (max {})".format(arm["dex_max"])
+                                                                    if arm.get("dex_max") else "")
+                head = "{}{} (CA {}{})".format(base, " +{}".format(tier) if tier else "",
+                                              int(arm.get("ca_base", 10)) + tier, dex)
+        elif ca:
+            head = "+{} à la CA".format(ca)
+        auto_text = " — ".join(x for x in (head, " ; ".join(powers)) if x)
+        if auto_text:
+            auto_text = auto_text[:1].upper() + auto_text[1:] + "."
+        if user_text and auto_text:                       # le texte du joueur d'abord, le résumé en dessous
+            desc = user_text + "\n\n" + auto_text
+        else:
+            desc = user_text or (auto_text if auto_text else "Objet sur mesure.")
+        if not user_text and auto_text and not head:
+            desc = "Objet sur mesure : " + auto_text[:1].lower() + auto_text[1:]
+        self.ch.objets_perso[nom]["description"] = desc
+        if is_weapon or is_armor:
             self.add_magic_gear(nom, base)
             return nom
         self.add_magic_item(nom)

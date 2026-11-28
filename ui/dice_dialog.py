@@ -585,6 +585,58 @@ def dice_blocked(win) -> bool:
     return getattr(win, "no_dice", False) is True
 
 
+class SituationDialog(QDialog):
+    """v53 : « Situation particulière ? » — avantages sous condition à cocher avant le d20 (décochés)."""
+
+    def __init__(self, parent, title: str, options: list[dict]):
+        super().__init__(parent)
+        from PyQt6.QtWidgets import QCheckBox, QVBoxLayout
+        from .common import indicator_qss, rich_tip
+        self.setWindowTitle("Situation particulière ?")
+        self.setStyleSheet(indicator_qss(theme.current()))
+        lay = QVBoxLayout(self)
+        lay.addWidget(make_label(title, "head", wrap=True))
+        lay.addWidget(make_label("Cochez ce qui s'applique à ce jet (avantage) :", "muted", wrap=True))
+        self.checks = []
+        for o in options:
+            cb = QCheckBox(o["label"])
+            cb.setToolTip(rich_tip(o["source"], "Avantage {}.".format(o.get("detail") or o["label"])))
+            lay.addWidget(cb)
+            self.checks.append((cb, o["source"]))
+        row = QHBoxLayout()
+        row.addStretch(1)
+        cancel = QPushButton("Annuler")
+        cancel.setProperty("role", "ghost")
+        cancel.clicked.connect(self.reject)
+        ok = QPushButton("🎲 Lancer")
+        ok.setDefault(True)
+        ok.clicked.connect(self.accept)
+        row.addWidget(cancel)
+        row.addWidget(ok)
+        lay.addLayout(row)
+
+    def chosen(self) -> list[str]:
+        return [src for cb, src in self.checks if cb.isChecked()]
+
+
+def ask_situation(win, spec):
+    """v53 : propose les avantages sous condition du personnage pour ce jet. Renvoie le jet (éventuellement avec
+    avantage), ou None si le joueur annule. Sans avantage possible : le jet tel quel, sans fenêtre."""
+    eng = getattr(win, "engine", None)
+    if eng is None or not hasattr(eng, "situational_options"):
+        return spec
+    try:
+        options = eng.situational_options(spec)
+    except Exception:                                    # jamais bloquant pour un lancer de dés
+        return spec
+    if not options:
+        return spec
+    dlg = SituationDialog(win, spec.title, options)
+    if not dlg.exec():
+        return None
+    return eng.apply_situational(spec, dlg.chosen())
+
+
 def roll_dice(win, spec) -> "D.RollResult | None":
     """Ouvre la fenêtre de lancer (fond flouté semi-transparent) et renvoie le résultat."""
     if spec is None or dice_blocked(win):
@@ -592,6 +644,10 @@ def roll_dice(win, spec) -> "D.RollResult | None":
     eng = getattr(win, "engine", None)
     if eng is not None and hasattr(eng, "prepare_d20_spec"):
         spec = eng.prepare_d20_spec(spec)               # v52 : Chanceux du Halfelin
+    if getattr(spec, "kind", "") in ("test", "competence", "sauvegarde", "attaque") and spec.mode != "échec":
+        spec = ask_situation(win, spec)                 # v53 : avantages sous condition (si le personnage en a)
+        if spec is None:
+            return None
     while True:
         backdrop = BlurBackdrop(win, tint="rgba(0, 0, 0, 90)")
         dialog = DiceRollDialog(win, spec)

@@ -652,7 +652,8 @@ class ClassActionsMixin:
         msg = "{}{}{}.".format(a["nom"], " — {}".format(spent) if spent else " : utilisé",
                                " — réaction du round consommée" if reaction else "")
         return {"ok": True, "message": msg, "attaque": attack, "degats": dmg, "soin": bool(a.get("soin")),
-                "lancer_maintenant": a.get("jet") != "attaque_mains_nues"}
+                "lancer_maintenant": a.get("jet") != "attaque_mains_nues",
+                "pv_temp_si_touche": int(a.get("pv_temp_si_touche") or 0)}    # v53 : Mâchoires affamées
 
     def class_action_preview(self, action_id: str) -> Optional["D.DamageSpec"]:
         """Dé d'une action « dépensé seulement en cas de réussite » (Savoir-faire renforcé, Frappes autoguidées) :

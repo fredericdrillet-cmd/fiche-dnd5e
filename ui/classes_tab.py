@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (QCheckBox, QComboBox, QGroupBox, QHBoxLayout, QList
 
 from core import rules as R
 from . import theme
-from .common import BaseTab, blocked, fill_combo, formula_html, formula_tip, make_label, rich_tip
+from .common import BaseTab, auto_tip, blocked, fill_combo, formula_html, formula_tip, make_label, rich_tip
 from .dialogs import ask_yes_no
 
 
@@ -400,7 +400,9 @@ class ClassPanel(QWidget):
                 tag = "★ " if f["sous_classe"] else ""
                 item = QListWidgetItem("Niv. {:>2} — {}{}{}".format(f["niveau"], tag, f["nom"], "  ✨ Nouveau" if
                                                                       eng.is_new("apt:" + f["nom"]) else ""))
-                item.setToolTip(formula_tip(eng, "{} (niveau {})".format(f["nom"], f["niveau"]), f["description"], e["nom"]))
+                item.setToolTip(auto_tip(eng, f["nom"], f["description"], "classe", e["nom"]) if f.get("debloque")
+                                else formula_tip(eng, "{} (niveau {})".format(f["nom"], f["niveau"]), f["description"],
+                                                 e["nom"]))      # v53 : automatique / à la main (capacités acquises)
                 if not f["debloque"]:
                     item.setForeground(QBrush(QColor(theme.current().locked)))
                 self.feat_list.addItem(item)

@@ -35,6 +35,7 @@ class StatsTab(BaseTab):
         lay.setSpacing(4)                                # v51 : page compacte, sans défilement sur un écran 1080p
         lay.setContentsMargins(4, 2, 4, 2)
         self.abilities = AbilitiesTab(win)
+        self.abilities.set_compact_layout()              # v53 : Mode libre — sans défilement en 16:9
         self.skills = SkillsTab(win, compact=True)
         # résumé en lecture seule (Mode guidé)
         self.summary = QGroupBox("Caractéristiques (lecture seule — Mode guidé)")

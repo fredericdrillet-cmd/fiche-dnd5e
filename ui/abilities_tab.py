@@ -41,6 +41,7 @@ class AbilitiesTab(BaseTab):
             btns.addWidget(b)
         btns.addStretch(1)
         root.addLayout(btns)
+        self._top_row = top
         self.rolls_label = make_label("", "muted", wrap=True)
         root.addWidget(self.rolls_label)
 
@@ -144,6 +145,16 @@ class AbilitiesTab(BaseTab):
         root.addWidget(box)
 
         # ---------------- bonus raciaux
+        # v53 : onglet Caractéristiques en Mode libre — encart replié quand rien n'est à choisir (page sans défilement)
+        self.compact_racial = False
+        self._racial_open = False
+        self.racial_toggle = QPushButton("▸ Bonus raciaux de caractéristiques")
+        self.racial_toggle.setProperty("role", "ghost")
+        self.racial_toggle.setToolTip(rich_tip("Bonus raciaux", "Afficher l'encart des bonus raciaux (règle libre "
+                                               "« +2 / +1 », variante +1 / +1 / +1)."))
+        self.racial_toggle.clicked.connect(self._open_racial)
+        self.racial_toggle.setVisible(False)
+        btns.insertWidget(btns.count() - 1, self.racial_toggle)
         rbox = self.racial_bonus_box = QGroupBox("Bonus raciaux de caractéristiques")
         rl = QVBoxLayout(rbox)
         self.race_info = make_label("", wrap=True)
@@ -294,10 +305,31 @@ class AbilitiesTab(BaseTab):
         self.changed()
 
     # ------------------------------------------------------------------ rafraîchissement
+    def set_compact_layout(self) -> None:
+        """v53 : onglet Caractéristiques (Mode libre) — bonus raciaux repliés, boutons sur la ligne de la méthode,
+        pour tenir sans défilement en 16:9. L'assistant de création garde sa mise en page."""
+        self.compact_racial = True
+        top = self._top_row
+        for b in (self.roll_btn, self.auto_btn, self.reset_btn, self.racial_toggle):
+            top.insertWidget(top.count() - 1, b)
+
+    def _open_racial(self) -> None:
+        self._racial_open = not self._racial_open
+        self.refresh()
+
     def refresh(self):
-        self.mark_box(self.racial_bonus_box, "Bonus raciaux de caractéristiques", "caracteristiques",
-                      "Bonus raciaux de caractéristiques")
+        pending = self.mark_box(self.racial_bonus_box, "Bonus raciaux de caractéristiques", "caracteristiques",
+                                "Bonus raciaux de caractéristiques")
         ch, eng = self.ch, self.engine
+        if self.compact_racial:                          # v53 : replié s'il n'y a rien à choisir (Mode libre)
+            self.layout().setSpacing(4)
+            show = bool(pending) or self._racial_open
+            self.racial_bonus_box.setVisible(show)
+            self.racial_toggle.setVisible(not pending)
+            self.racial_toggle.setText(("▾ " if show else "▸ ") + "Bonus raciaux de caractéristiques")
+        else:
+            self.racial_bonus_box.setVisible(True)
+            self.racial_toggle.setVisible(False)
         with blocked(self.method):
             self.method.setCurrentIndex(list(METHODS.values()).index(ch.methode))
         m = ch.methode
@@ -416,3 +448,4 @@ class AbilitiesTab(BaseTab):
         warns = [w for w in eng.warnings() if any(k in w for k in ("Budget", "valeurs", "bonus raciaux", "Multiclassage",
                                                                    "doit être"))]
         self.warn.setText("\n".join("⚠ " + w for w in warns))
+        self.warn.setVisible(bool(warns))                # v53 : pas de ligne vide sous les cartes

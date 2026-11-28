@@ -945,3 +945,110 @@ class ObjetSurMesureAvantagesTests(unittest.TestCase):
         fx = eng.save_mods("Constitution")
         self.assertIn("Objet : " + name, fx["avantage"])
         self.assertEqual(fx["bonus"], 1)
+
+
+class AvantagesSousConditionTests(unittest.TestCase):
+    """v53 : avantages sous condition proposés avant le d20, seulement si le personnage en possède un."""
+
+    def test_rien_pour_un_personnage_ordinaire(self):
+        eng = _race_sheet("Humain")
+        for spec in (eng.skill_spec("Perception"), eng.save_spec("Sagesse"), eng.ability_check_spec("Force"),
+                     eng.death_save_spec()):
+            self.assertEqual(eng.situational_options(spec), [])
+
+    def test_yeux_de_lynx_seulement_en_perception(self):
+        eng = _race_sheet("Humain")
+        eng.ch.objets_magiques.append({"nom": "Yeux de lynx", "equipe": True, "harmonise": True})
+        eng = Engine(DB, eng.ch)
+        opts = eng.situational_options(eng.skill_spec("Perception"))
+        self.assertEqual([o["source"] for o in opts], ["Yeux de lynx"])
+        self.assertIn("vue", opts[0]["label"])
+        self.assertEqual(eng.situational_options(eng.skill_spec("Athlétisme")), [])
+        spec = eng.apply_situational(eng.skill_spec("Perception"), ["Yeux de lynx"])
+        self.assertEqual(spec.mode, "avantage")
+        self.assertEqual(eng.apply_situational(eng.skill_spec("Perception"), []).mode, "")
+
+    def test_annule_par_un_desavantage(self):
+        eng = _race_sheet("Humain")
+        eng.ch.objets_magiques.append({"nom": "Yeux de lynx", "equipe": True, "harmonise": True})
+        eng = Engine(DB, eng.ch)
+        spec = eng.skill_spec("Perception")
+        spec.desavantage = ["Aveuglé"]
+        self.assertEqual(eng.apply_situational(spec, ["Yeux de lynx"]).mode, "")
+
+    def test_trait_racial_sur_les_jets_de_sauvegarde(self):
+        eng = _race_sheet("Nain des collines")
+        self.assertTrue(any("poison" in o["label"] for o in eng.situational_options(eng.save_spec("Constitution"))))
+        self.assertEqual(eng.situational_options(eng.death_save_spec()), [])
+        self.assertEqual(eng.situational_options(eng.skill_spec("Discrétion")), [])
+
+    def test_objet_non_equipe_ignore(self):
+        eng = _race_sheet("Humain")
+        eng.ch.objets_magiques.append({"nom": "Yeux de lynx", "equipe": False, "harmonise": True})
+        eng = Engine(DB, eng.ch)
+        self.assertEqual(eng.situational_options(eng.skill_spec("Perception")), [])
+
+    def test_machoires_affamees_pv_temp_si_touche(self):
+        eng = _race_sheet("Homme lézard")
+        act = next(a for a in eng.race_actions() if "machoires" in a["id"])
+        self.assertEqual(act["pv_temp_si_touche"], eng.prof)
+        self.assertEqual(eng.use_class_action(act["id"])["pv_temp_si_touche"], eng.prof)
+        self.assertEqual(eng.ch.pv_temporaires, 0)        # pas appliqués avant la réponse « touché »
+
+
+class AutomatisationVisibleTests(unittest.TestCase):
+    """v53 : « appliqué automatiquement / proposé au jet / à gérer à la main » sur objets, traits, capacités, dons."""
+
+    def test_objets(self):
+        eng = _race_sheet("Humain")
+        rep = eng.item_automation("Armure du zéphyr")
+        self.assertTrue(any("Acrobaties" in x for x in rep["auto"]))
+        rep = eng.item_automation("Yeux de lynx")
+        self.assertTrue(any("vue" in x for x in rep["jet"]))
+        rep = eng.item_automation("Cape de déplacement")
+        self.assertFalse(rep["auto"])
+        self.assertTrue(rep["main"])                     # illusion : à gérer soi-même
+        rep = eng.item_automation("Baguette de boules de feu")
+        self.assertTrue(any("Boule de feu" in x for x in rep["auto"]))
+        self.assertEqual(rep["main"], [])
+
+    def test_traits_raciaux(self):
+        eng = _race_sheet("Homme lézard")
+        traits = {c["nom"]: c["description"] for c in eng._race_trait_list()}
+        rep = eng.text_automation("Mâchoires affamées", traits["Mâchoires affamées"], "race")
+        self.assertTrue(any("tuile" in x for x in rep["auto"]))
+        self.assertEqual(rep["main"], [])
+        rep = eng.text_automation("Apnée", traits["Apnée"], "race")
+        self.assertTrue(rep["main"])
+
+    def test_rapport_html(self):
+        from core.automation import report_html
+        html = report_html({"auto": ["a"], "jet": [], "main": []})
+        self.assertIn("Appliqué automatiquement", html)
+        self.assertIn("rien", html)
+        self.assertEqual(report_html({"auto": [], "jet": [], "main": []}), "")
+
+
+class SurMesureEtModeLibreTests(unittest.TestCase):
+    def test_description_objet_sur_mesure(self):
+        eng = _race_sheet("Humain")
+        n = eng.add_custom_magic_item("Harnois du silence", "Armure", base="Harnois", bonus=1,
+                                      avantages=["comp:Discrétion"], resistances=["feu"])
+        self.assertEqual(eng.ch.objets_perso[n]["description"],
+                         "Harnois +1 (CA 19) — résistance : feu ; avantage : Discrétion.")
+        n = eng.add_custom_magic_item("Cuir runique", "Armure", base="Armure de cuir", bonus=1,
+                                      description="Gravée de runes naines.")
+        self.assertEqual(eng.ch.objets_perso[n]["description"],
+                         "Gravée de runes naines.\n\nArmure de cuir +1 (CA 12 + Dex).")
+        n = eng.add_custom_magic_item("Lame ardente", "Arme", base="Épée longue", bonus=1,
+                                      degats_sup=[{"des": "1d6", "type": "feu", "condition": "toujours"}])
+        self.assertTrue(eng.ch.objets_perso[n]["description"].startswith("Épée longue +1 (1d8+1"))
+
+    def test_bonus_raciaux_replies_en_mode_libre_seulement(self):
+        import qt_stub
+        qt_stub.install()
+        from ui.main_window import MainWindow
+        win = MainWindow(DB)
+        self.assertTrue(win.stats_tab.abilities.compact_racial)
+        from ui.abilities_tab import AbilitiesTab
+        self.assertFalse(AbilitiesTab(win).compact_racial)   # assistant de création : inchangé

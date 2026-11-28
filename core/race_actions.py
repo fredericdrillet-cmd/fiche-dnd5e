@@ -117,15 +117,15 @@ class RaceActionsMixin:
             return str(self.prof if m.group(1) == "bonus de maitrise" else self.total_level), dtype, heal
         return "", dtype, heal
 
-    def _race_temp_hp(self, description: str) -> int:
+    def _race_temp_hp(self, description: str, on_hit: bool = False) -> int:
         """PV temporaires gagnés sans condition à l'utilisation d'un trait : « un nombre de points de vie
         temporaires égal à votre bonus de maîtrise » (Orc), « égaux à 2 × votre bonus de maîtrise » (Féral).
         Un gain conditionnel (« si elle touche » : Mâchoires affamées) reste à appliquer à la main."""
         d = norm(description)
         m = re.search(r"(?:points de vie|pv) temporaires eg(?:al|ale|aux|ales) a (?:(\d+) [x×] )?votre "
                       r"(bonus de maitrise|niveau)", d)
-        if not m or re.search(r"si (?:elle|l'attaque|vous) touche", d[:m.start()]):
-            return 0
+        if not m or bool(re.search(r"si (?:elle|l'attaque|vous) touche", d[:m.start()])) != on_hit:
+            return 0                                     # on_hit : seulement le gain conditionné au toucher
         return int(m.group(1) or 1) * (self.prof if m.group(2) == "bonus de maitrise" else self.total_level)
 
     def race_actions(self) -> list[dict]:
@@ -153,11 +153,13 @@ class RaceActionsMixin:
                 formula, dtype, heal = self._race_formula(desc)
             jet = "degats" if formula and ("d" in formula or heal) else "aucun"     # bonus fixe : affiché seulement
             temp = self._race_temp_hp(desc)              # v53 : Poussée d'adrénaline, Métamorphose… PV temp. appliqués
+            temp_hit = self._race_temp_hp(desc, on_hit=True)   # v53 : « si elle touche » (Mâchoires affamées)
             out.append({"id": key, "nom": name, "icone": "🐉" if is_breath else _ICONS[kind],
                         "classe": "", "race": c["_src"] or self.ch.race, "niveau": lvl, "type": kind,
                         "cout": {"ressource": key, "n": 1} if uses else {}, "jet": jet, "degats": formula,
                         "type_degats": dtype, "soin": heal, "description": desc, "origine": "race",
                         "ressource_race": key if uses else "", "utilisations": uses or 0, "pv_temp": temp,
+                        "pv_temp_si_touche": temp_hit,
                         "recuperation": (breath.get("recuperation") or "repos court") if is_breath else recovery_of(desc)})
         level = self.total_level
         return [a for a in out if level >= a["niveau"]]

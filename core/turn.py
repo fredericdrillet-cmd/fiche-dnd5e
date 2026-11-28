@@ -597,7 +597,7 @@ class TurnMixin:
         elif tile_id.startswith("classe:"):
             out = self.use_class_action(ref["action"])
             res.update(ok=out["ok"], message=out["message"], attaque=out.get("attaque"), degats=out.get("degats"),
-                       soin=out.get("soin", False))
+                       soin=out.get("soin", False), pv_temp_si_touche=out.get("pv_temp_si_touche", 0))
             if out["ok"] and kind != "Réaction":            # la réaction est déjà synchronisée par use_class_action
                 self.spend_economy(kind)
         elif tile_id.startswith("reaction:"):

@@ -600,9 +600,14 @@ class InventoryTab(BaseTab):
             if item.get("lien"):                          # v53 : équipé = harmonisé
                 state += ", ◉ harmonisé" if entry.get("harmonise") else ", harmonisation à l'équipement"
             warn = eng.item_proficiency_warning(label) if entry.get("equipe") else ""
-            tip = rich_tip(("⚠ " if warn else "✨ ") + label, "{}{}\n{} — {} ({})".format(
+            try:                                          # v53 : automatique / proposé au jet / à la main
+                from core.automation import report_text
+                rep = report_text(eng.item_automation(entry["nom"], entry))
+            except Exception:
+                rep = ""
+            tip = rich_tip(("⚠ " if warn else "✨ ") + label, "{}{}\n{} — {} ({}){}".format(
                 warn + "\n" if warn else "", item.get("description", "")[:500], item.get("type", "Objet magique"),
-                item.get("rarete", ""), state))
+                item.get("rarete", ""), state, "\n\n" + rep if rep else ""))
             name_cell = cell(("⚠ " if warn else "") + "✨ " + label + (" — " + gone if gone else ""), "left", tip,
                              t.warn if warn else (t.muted if gone else theme.rarity_color(item.get("rarete", ""), t, theme.table_bgs(t))),
                              bold=not gone)
